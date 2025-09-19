@@ -7,7 +7,7 @@ The goal of this sprint was to initiate the Disaster Response Project by underst
 
 ## Team Roles
 - **Scrum Master:** Sepideh Qorbani  
-- **Product Owner (Client):** External stakeholder  
+- **Product Owner (Client):** Ivo
 - **Team Members:** Sepideh, Faezeh, Furqan (shared responsibilities in development, documentation, and analysis)
 
 ---
