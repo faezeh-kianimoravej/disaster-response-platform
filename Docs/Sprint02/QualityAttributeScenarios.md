@@ -1,0 +1,24 @@
+# Quality Attribute Scenarios
+## Main Goals
+1. **Timely communication & alerts** → Performance, Availability, Reliability.
+2. **Effective decision-making** → Usability, Performance, Scalability.
+3. **Citizen safety & trust** → Security, Reliability, Availability.
+4. **Future-proof growth** → Scalability, Maintainability, Interoperability, Portability.
+
+## Prioritized Scenarios
+---
+
+| Priority | Environment               | Quality Attribute | Source                        | Stimulus                                                    | Artifact                            | Response                                                   | Response Measure                                     |
+| -------- | ------------------------- | ----------------- | ----------------------------- | ----------------------------------------------------------- | ----------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------- |
+| 1        | Normal operation          | Performance       | Citizen                       | Subscribes to emergency alerts                              | Mobile App                          | Delivers critical alert to citizen                         | Delivered within **60 seconds** of official issuance |
+| 2        | Limited data connection   | Availability      | Citizen                       | Requests nearest shelter location                           | Mobile App                          | Provides result using cached data if live connection fails | System available **99.95%**, fallback within **10s** |
+| 3        | High traffic              | Reliability       | Emergency responder           | Sends resource status update                                | Resource Management Portal          | Update stored and visible to authorities                   | **99.9% success rate** without data loss             |
+| 4        | High traffic              | Performance       | Authority                     | Requests optimized allocation                               | Decision-support dashboard          | Returns prioritized recommendations                        | Output delivered in **< 120s**                       |
+| 5        | High traffic              | Scalability       | System                        | Surge of concurrent requests                                | Backend Infrastructure              | Handles all concurrent requests without degradation        | Supports **100k+ users**, avg latency < **3s**       |
+| 6        | Crisis response operation | Usability         | Authority (regional official) | Opens decision-support dashboard                            | Centralized Decision-Support System | Provides prioritized recommendations with clear UI         | Resource allocation in **< 2 minutes**               |
+| 7        | Normal operation          | Security          | Citizen                       | Provides location and personal data for evacuation guidance | Citizen database                    | Encrypts and stores data securely                          | **100% encrypted** at rest and in transit            |
+| 8        | Normal operation          | Maintainability   | System administrator          | Deploys a minor bug fix during active operations            | Backend services                    | Patch applied without interrupting users                   | Deployment downtime ≤ **30s**, zero data loss        |
+| 9        | Normal operation          | Security          | Unauthorized user (attacker)  | Attempts to access citizen location data                    | Data storage system                 | Denies access and logs intrusion attempt                   | **100% of unauthorized requests blocked**            |
+| 10       | High traffic              | Interoperability  | Authority                     | Shares incident data with national emergency system         | Data exchange API                   | Data exchanged successfully                                | **100% compliance** with CAP, OASIS                  |
+| 11       | Limited data connection   | Portability       | Citizen                       | Runs the disaster app on iOS or Android                     | Mobile App                          | Functions consistently across platforms                    | **100% feature parity**, performance diff < **10%**  |
+| 12       | Staging environment       | Testability       | QA engineer                   | Runs automated tests                                        | Automated test framework            | Generates pass/fail test results                           | **95% coverage** validated automatically             |
