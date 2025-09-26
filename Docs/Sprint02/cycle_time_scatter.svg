@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="600" height="360" xmlns="http://www.w3.org/2000/svg" aria-labelledby="title desc" role="img">
+  <title id="title">Cycle time scatter plot (Sprint 2)</title>
+  <desc id="desc">Placeholder scatter plot showing no completed stories in Sprint 2.</desc>
+  <rect width="100%" height="100%" fill="#ffffff"/>
+  <g transform="translate(60,30)">
+    <rect width="480" height="300" fill="#f8f9fb" stroke="#ddd"/>
+    <!-- Axes -->
+    <line x1="0" y1="300" x2="480" y2="300" stroke="#333" stroke-width="1"/>
+    <line x1="0" y1="0" x2="0" y2="300" stroke="#333" stroke-width="1"/>
+    <!-- Labels -->
+    <text x="240" y="340" font-family="Arial" font-size="12" text-anchor="middle">Story start →</text>
+    <text transform="translate(-40,150) rotate(-90)" font-family="Arial" font-size="12" text-anchor="middle">Cycle time (days)</text>
+    <!-- Placeholder message -->
+    <text x="240" y="160" font-family="Arial" font-size="14" fill="#666" text-anchor="middle">No completed stories in Sprint 2</text>
+    <text x="240" y="185" font-family="Arial" font-size="12" fill="#999" text-anchor="middle">Scatter plot will appear here when cycle time data is available</text>
+  </g>
+</svg>
