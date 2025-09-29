@@ -41,6 +41,8 @@ system only be deployed on-premise?
 # Notes
 **Impact map**
 - Client expands scope to include keeping track of people during riots (Are we allowed to track people for this purpose? Is this scope creep? How can we keep track of people?)
+- Add external API interfacing to keep track of current population in disaster zones using celltowers (How many people are in earthquake affected area)
+- Add external data source to get citizen density based on residence/ occupation
 
 **Domain stories**
 - Expand options to register disasters in the system, there's more options than just 112 (Rangers, seismic institues etc.)
@@ -69,3 +71,5 @@ system only be deployed on-premise?
 
 # Actions
 - Refine the user story map. Split up the stories into smaller parts. Start with first objectives first, no need to refine all stories in one go.
+- Iterate Domain stories based on meeting
+- Iterate Impact map based on meeting
