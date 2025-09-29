@@ -62,6 +62,7 @@ system only be deployed on-premise?
 - Update #3 to be 100%
 - Rewrite #4 to be about starting the system from start
 - Interoperability should probably about exchanging information without problems and connecting without problems. A standard/ protocol is a solutions not a scenario.
+- Re-prioritize scenario's. Which are important for us, in our first iterations. Try and reduce to 5 top priority.
 
 **Questions**
 - Look into GGD GHOR instead of hospitals. Take their perspective into account as well
