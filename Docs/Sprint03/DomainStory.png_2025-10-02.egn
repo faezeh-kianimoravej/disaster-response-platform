@@ -1,0 +1,1171 @@
+{
+  "domain": {
+    "name": "default",
+    "actors": {
+      "Person": "<svg viewBox=\"0 0 24 26\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M12 5.9c1.16 0 2.1.94 2.1 2.1s-.94 2.1-2.1 2.1S9.9 9.16 9.9 8s.94-2.1 2.1-2.1m0 9c2.97 0 6.1 1.46 6.1 2.1v1.1H5.9V17c0-.64 3.13-2.1 6.1-2.1M12 4C9.79 4 8 5.79 8 8s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 9c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4z\"/><path d=\"M0 0h24v24H0z\" fill=\"none\"/></svg>",
+      "Group": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"48\" viewBox=\"0 0 24 26\"><path d=\"M0 0h24v24H0z\" fill=\"none\"/><path d=\"M16.5 13c-1.2 0-3.07.34-4.5 1-1.43-.67-3.3-1-4.5-1C5.33 13 1 14.08 1 16.25V19h22v-2.75c0-2.17-4.33-3.25-6.5-3.25zm-4 4.5h-10v-1.25c0-.54 2.56-1.75 5-1.75s5 1.21 5 1.75v1.25zm9 0H14v-1.25c0-.46-.2-.86-.52-1.22.88-.3 1.96-.53 3.02-.53 2.44 0 5 1.21 5 1.75v1.25zM7.5 12c1.93 0 3.5-1.57 3.5-3.5S9.43 5 7.5 5 4 6.57 4 8.5 5.57 12 7.5 12zm0-5.5c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm9 5.5c1.93 0 3.5-1.57 3.5-3.5S18.43 5 16.5 5 13 6.57 13 8.5s1.57 3.5 3.5 3.5zm0-5.5c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z\"/></svg>",
+      "System": "<svg viewBox=\"0 0 24 26\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M20,18c1.1,0,2-0.9,2-2V6c0-1.1-0.9-2-2-2H4C2.9,4,2,4.9,2,6v10c0,1.1,0.9,2,2,2H0v2h24v-2H20z M4,6h16v10H4V6z\"/></svg>",
+      "Car": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.85 7h10.29l1.08 3.11H5.77L6.85 7zM19 17H5v-5h14v5z\"/><circle cx=\"7.5\" cy=\"14.5\" r=\"1.5\"/><circle cx=\"16.5\" cy=\"14.5\" r=\"1.5\"/></svg>"
+    },
+    "workObjects": {
+      "Document": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M8 16h8v2H8zm0-4h8v2H8zm6-10H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z\"/></svg>",
+      "Folder": "<svg viewBox=\"0 0 24 26\" xmlns=\"http://www.w3.org/2000/svg\"><path fill=\"none\" d=\"M0,0h24v24H0V0z\"/><path d=\"M9.17,6l2,2H20v10L4,18V6H9.17 M10,4H4C2.9,4,2.01,4.9,2.01,6L2,18c0,1.1,0.9,2,2,2h16c1.1,0,2-0.9,2-2V8c0-1.1-0.9-2-2-2 h-8L10,4L10,4z\"/></svg>",
+      "Call": "<svg viewBox=\"0 0 24 26\" xmlns=\"http://www.w3.org/2000/svg\"><path fill=\"none\" d=\"M0,0h24v24H0V0z\"/><path d=\"M6.54,5C6.6,5.89,6.75,6.76,6.99,7.59l-1.2,1.2C5.38,7.59,5.12,6.32,5.03,5H6.54 M16.4,17.02c0.85,0.24,1.72,0.39,2.6,0.45 v1.49c-1.32-0.09-2.59-0.35-3.8-0.75L16.4,17.02 M7.5,3H4C3.45,3,3,3.45,3,4c0,9.39,7.61,17,17,17c0.55,0,1-0.45,1-1v-3.49\tc0-0.55-0.45-1-1-1c-1.24,0-2.45-0.2-3.57-0.57c-0.1-0.04-0.21-0.05-0.31-0.05c-0.26,0-0.51,0.1-0.71,0.29l-2.2,2.2 c-2.83-1.45-5.15-3.76-6.59-6.59l2.2-2.2C9.1,8.31,9.18,7.92,9.07,7.57C8.7,6.45,8.5,5.25,8.5,4C8.5,3.45,8.05,3,7.5,3L7.5,3z\"/></svg>",
+      "Email": "<svg viewBox=\"0 0 24 26\" xmlns=\"http://www.w3.org/2000/svg\"><path fill=\"none\" d=\"M0,0h24v24H0V0z\"/><path fill-opacity=\"0.9\" d=\"M12,1.95c-5.52,0-10,4.48-10,10s4.48,10,10,10h5v-2h-5c-4.34,0-8-3.66-8-8s3.66-8,8-8s8,3.66,8,8v1.43 c0,0.79-0.71,1.57-1.5,1.57S17,14.17,17,13.38v-1.43c0-2.76-2.24-5-5-5s-5,2.24-5,5s2.24,5,5,5c1.38,0,2.64-0.56,3.54-1.47 c0.65,0.89,1.77,1.47,2.96,1.47c1.97,0,3.5-1.6,3.5-3.57v-1.43C22,6.43,17.52,1.95,12,1.95z M12,14.95c-1.66,0-3-1.34-3-3 s1.34-3,3-3s3,1.34,3,3S13.66,14.95,12,14.95z\"/></svg>",
+      "Conversation": "<svg height=\"48\" viewBox=\"0 0 24 26\" width=\"24\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M0 0h24v24H0V0z\" fill=\"none\"/><path d=\"M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z\"/></svg>",
+      "Info": "<svg height=\"48\" viewBox=\"0 0 24 26\" width=\"24\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M0 0h24v24H0z\" fill=\"none\"/><path d=\"M11 17h2v-6h-2v6zm1-15C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zM11 9h2V7h-2v2z\"/></svg>",
+      "Problem": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M12 5.99L19.53 19H4.47L12 5.99M12 2L1 21h22L12 2zm1 14h-2v2h2v-2zm0-6h-2v4h2v-4z\"/></svg>",
+      "Meeting-room": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M19 19V4h-4V3H5v16H3v2h12V6h2v15h4v-2h-2zm-6 0H7V5h6v14zm-3-8h2v2h-2z\"/></svg>",
+      "Calendar": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\" /><path d=\"M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V9h14v10zm0-12H5V5h14v2zM7 11h5v5H7z\" /></svg>",
+      "Place": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zM7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 2.88-2.88 7.19-5 9.88C9.92 16.21 7 11.85 7 9z\"/><circle cx=\"12\" cy=\"9\" r=\"2.5\"/></svg>",
+      "Share": "<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\" viewBox=\"0 0 24 24\" width=\"24px\"><path d=\"M0 0h24v24H0V0z\" fill=\"none\"/><path d=\"M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92zM18 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM6 13c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm12 7.02c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z\"/></svg>",
+      "Business": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z\"/></svg>",
+      "Dashboard": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M19 5v2h-4V5h4M9 5v6H5V5h4m10 8v6h-4v-6h4M9 17v2H5v-2h4M21 3h-8v6h8V3zM11 3H3v10h8V3zm10 8h-8v10h8V11zm-10 4H3v6h8v-6z\"/></svg>",
+      "Security": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 28\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z\"/></svg>",
+      "Search": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z\"/></svg>",
+      "Update": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M11 8v5l4.25 2.52.77-1.28-3.52-2.09V8zm10 2V3l-2.64 2.64C16.74 4.01 14.49 3 12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9h-2c0 3.86-3.14 7-7 7s-7-3.14-7-7 3.14-7 7-7c1.93 0 3.68.79 4.95 2.05L14 10h7z\"/></svg>",
+      "Tablet": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 28\"><path fill=\"none\" d=\"M0 0h24v24H0V0zm0 0h24v24H0V0z\"/><path d=\"M18 0H6C4.34 0 3 1.34 3 3v18c0 1.66 1.34 3 3 3h12c1.66 0 3-1.34 3-3V3c0-1.66-1.34-3-3-3zm-4 22h-4v-1h4v1zm5.25-3H4.75V3h14.5v16z\"/></svg>",
+      "Hotel": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M7 14c1.66 0 3-1.34 3-3S8.66 8 7 8s-3 1.34-3 3 1.34 3 3 3zm0-4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm12-3h-8v8H3V5H1v15h2v-3h18v3h2v-9c0-2.21-1.79-4-4-4zm2 8h-8V9h6c1.1 0 2 .9 2 2v4z\"/></svg>",
+      "Contact-Mail": "<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\" viewBox=\"0 0 24 24\" width=\"24px\"><path d=\"M0 0h24v24H0z\" fill=\"none\"/><path d=\"M22 3H2C.9 3 0 3.9 0 5v14c0 1.1.9 2 2 2h20c1.1 0 1.99-.9 1.99-2L24 5c0-1.1-.9-2-2-2zm0 16H2V5h20v14zM21 6h-7v5h7V6zm-1 2l-2.5 1.75L15 8V7l2.5 1.75L20 7v1zM9 12c1.65 0 3-1.35 3-3s-1.35-3-3-3-3 1.35-3 3 1.35 3 3 3zm0-4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm6 8.59c0-2.5-3.97-3.58-6-3.58s-6 1.08-6 3.58V18h12v-1.41zM5.48 16c.74-.5 2.22-1 3.52-1s2.77.49 3.52 1H5.48z\"/></svg>",
+      "Flight-landing": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M2.5 19h19v2h-19v-2zm16.84-3.15c.8.21 1.62-.26 1.84-1.06.21-.8-.26-1.62-1.06-1.84l-5.31-1.42-2.76-9.02L10.12 2v8.28L5.15 8.95l-.93-2.32-1.45-.39v5.17l16.57 4.44z\"/></svg>",
+      "Flight-takeoff": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M2.5 19h19v2h-19v-2zm19.57-9.36c-.21-.8-1.04-1.28-1.84-1.06L14.92 10l-6.9-6.43-1.93.51 4.14 7.17-4.97 1.33-1.97-1.54-1.45.39 2.59 4.49L21 11.49c.81-.23 1.28-1.05 1.07-1.85z\"/></svg>",
+      "Time": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z\"/></svg>",
+      "Walking": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.56-.89-1.68-1.25-2.65-.84L6 8.3V13h2V9.6l1.8-.7\"/></svg>",
+      "Circle-Arrows": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M19 8l-4 4h3c0 3.31-2.69 6-6 6-1.01 0-1.97-.25-2.8-.7l-1.46 1.46C8.97 19.54 10.43 20 12 20c4.42 0 8-3.58 8-8h3l-4-4zM6 12c0-3.31 2.69-6 6-6 1.01 0 1.97.25 2.8.7l1.46-1.46C15.03 4.46 13.57 4 12 4c-4.42 0-8 3.58-8 8H1l4 4 4-4H6z\"/></svg>",
+      "Gavel": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 28\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M1 21h12v2H1v-2zM5.24 8.07l2.83-2.83 14.14 14.14-2.83 2.83L5.24 8.07zM12.32 1l5.66 5.66-2.83 2.83-5.66-5.66L12.32 1zM3.83 9.48l5.66 5.66-2.83 2.83L1 12.31l2.83-2.83z\"/></svg>",
+      "DNS": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M19 15v4H5v-4h14m1-2H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-6c0-.55-.45-1-1-1zM7 18.5c-.82 0-1.5-.67-1.5-1.5s.68-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM19 5v4H5V5h14m1-2H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1zM7 8.5c-.82 0-1.5-.67-1.5-1.5S6.18 5.5 7 5.5s1.5.68 1.5 1.5S7.83 8.5 7 8.5z\"/></svg>",
+      "Water": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M17 16.99c-1.35 0-2.2.42-2.95.8-.65.33-1.18.6-2.05.6-.9 0-1.4-.25-2.05-.6-.75-.38-1.57-.8-2.95-.8s-2.2.42-2.95.8c-.65.33-1.17.6-2.05.6v1.95c1.35 0 2.2-.42 2.95-.8.65-.33 1.17-.6 2.05-.6s1.4.25 2.05.6c.75.38 1.57.8 2.95.8s2.2-.42 2.95-.8c.65-.33 1.18-.6 2.05-.6.9 0 1.4.25 2.05.6.75.38 1.58.8 2.95.8v-1.95c-.9 0-1.4-.25-2.05-.6-.75-.38-1.6-.8-2.95-.8zm0-4.45c-1.35 0-2.2.43-2.95.8-.65.32-1.18.6-2.05.6-.9 0-1.4-.25-2.05-.6-.75-.38-1.57-.8-2.95-.8s-2.2.43-2.95.8c-.65.32-1.17.6-2.05.6v1.95c1.35 0 2.2-.43 2.95-.8.65-.35 1.15-.6 2.05-.6s1.4.25 2.05.6c.75.38 1.57.8 2.95.8s2.2-.43 2.95-.8c.65-.35 1.15-.6 2.05-.6s1.4.25 2.05.6c.75.38 1.58.8 2.95.8v-1.95c-.9 0-1.4-.25-2.05-.6-.75-.38-1.6-.8-2.95-.8zm2.95-8.08c-.75-.38-1.58-.8-2.95-.8s-2.2.42-2.95.8c-.65.32-1.18.6-2.05.6-.9 0-1.4-.25-2.05-.6-.75-.37-1.57-.8-2.95-.8s-2.2.42-2.95.8c-.65.33-1.17.6-2.05.6v1.93c1.35 0 2.2-.43 2.95-.8.65-.33 1.17-.6 2.05-.6s1.4.25 2.05.6c.75.38 1.57.8 2.95.8s2.2-.43 2.95-.8c.65-.32 1.18-.6 2.05-.6.9 0 1.4.25 2.05.6.75.38 1.58.8 2.95.8V5.04c-.9 0-1.4-.25-2.05-.58zM17 8.09c-1.35 0-2.2.43-2.95.8-.65.35-1.15.6-2.05.6s-1.4-.25-2.05-.6c-.75-.38-1.57-.8-2.95-.8s-2.2.43-2.95.8c-.65.35-1.15.6-2.05.6v1.95c1.35 0 2.2-.43 2.95-.8.65-.32 1.18-.6 2.05-.6s1.4.25 2.05.6c.75.38 1.57.8 2.95.8s2.2-.43 2.95-.8c.65-.32 1.18-.6 2.05-.6.9 0 1.4.25 2.05.6.75.38 1.58.8 2.95.8V9.49c-.9 0-1.4-.25-2.05-.6-.75-.38-1.6-.8-2.95-.8z\"/></svg>",
+      "How-To-Reg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill-rule=\"evenodd\" clip-rule=\"evenodd\" fill=\"none\" d=\"M0 0h24v24H0z\"/><g fill-rule=\"evenodd\" clip-rule=\"evenodd\"><path d=\"M9 17l3-2.94c-.39-.04-.68-.06-1-.06-2.67 0-8 1.34-8 4v2h9l-3-3zm2-5c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4\"/><path d=\"M15.47 20.5L12 17l1.4-1.41 2.07 2.08 5.13-5.17 1.4 1.41z\"/></g></svg>"
+    }
+  },
+  "dst": [
+    {
+      "type": "domainStory:activity",
+      "name": "In",
+      "id": "connection_0685",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -275,
+            "y": 244
+          },
+          "x": -313,
+          "y": 287
+        },
+        {
+          "original": {
+            "x": -538,
+            "y": 539
+          },
+          "x": -538,
+          "y": 539
+        }
+      ],
+      "source": "shape_4129",
+      "target": "shape_7165",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "sends",
+      "id": "connection_1125",
+      "pickedColor": "black",
+      "number": 17,
+      "waypoints": [
+        {
+          "original": {
+            "x": -566,
+            "y": 564
+          },
+          "x": -604,
+          "y": 583
+        },
+        {
+          "original": {
+            "x": -1073,
+            "y": 821
+          },
+          "x": -1045,
+          "y": 807
+        }
+      ],
+      "source": "shape_7165",
+      "target": "shape_7218",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "To",
+      "id": "connection_1245",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -435,
+            "y": 65
+          },
+          "x": -400,
+          "y": 58
+        },
+        {
+          "original": {
+            "x": 58,
+            "y": -33
+          },
+          "x": 20,
+          "y": -25
+        }
+      ],
+      "source": "shape_8123",
+      "target": "shape_7326",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "to",
+      "id": "connection_1440",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -408,
+            "y": 778
+          },
+          "x": -436,
+          "y": 740
+        },
+        {
+          "original": {
+            "x": -566,
+            "y": 564
+          },
+          "x": -544,
+          "y": 594
+        }
+      ],
+      "source": "shape_0920",
+      "target": "shape_7165",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "In",
+      "id": "connection_1522",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -183,
+            "y": 405
+          },
+          "x": -221,
+          "y": 421
+        },
+        {
+          "original": {
+            "x": -566,
+            "y": 564
+          },
+          "x": -536,
+          "y": 552
+        }
+      ],
+      "source": "shape_3900",
+      "target": "shape_7165",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "Set Grip Level",
+      "id": "connection_1666",
+      "pickedColor": "black",
+      "number": 9,
+      "waypoints": [
+        {
+          "original": {
+            "x": 58,
+            "y": -33
+          },
+          "x": 20,
+          "y": -1
+        },
+        {
+          "original": {
+            "x": -275,
+            "y": 244
+          },
+          "x": -252,
+          "y": 225
+        }
+      ],
+      "source": "shape_7326",
+      "target": "shape_4129",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "Prioritize",
+      "id": "connection_1727",
+      "pickedColor": "black",
+      "number": 8,
+      "waypoints": [
+        {
+          "original": {
+            "x": 58,
+            "y": -33
+          },
+          "x": 20,
+          "y": -15
+        },
+        {
+          "original": {
+            "x": -345,
+            "y": 155
+          },
+          "x": -316,
+          "y": 141
+        }
+      ],
+      "source": "shape_7326",
+      "target": "shape_8953",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "Make",
+      "id": "connection_1822",
+      "pickedColor": "black",
+      "number": 3,
+      "waypoints": [
+        {
+          "original": {
+            "x": -1402,
+            "y": 572
+          },
+          "x": -1402,
+          "y": 534
+        },
+        {
+          "original": {
+            "x": -1402,
+            "y": 340
+          },
+          "x": -1402,
+          "y": 387
+        }
+      ],
+      "source": "shape_8365",
+      "target": "shape_8046",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "To",
+      "id": "connection_2231",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": 353,
+            "y": 582
+          },
+          "x": 315,
+          "y": 582
+        },
+        {
+          "original": {
+            "x": 38,
+            "y": 582
+          },
+          "x": 81,
+          "y": 582
+        }
+      ],
+      "source": "shape_7876",
+      "target": "shape_0281",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:connection",
+      "name": "",
+      "id": "connection_2918",
+      "waypoints": [
+        {
+          "original": {
+            "x": -566,
+            "y": 564
+          },
+          "x": -586,
+          "y": 611
+        },
+        {
+          "original": {
+            "x": -647,
+            "y": 751
+          },
+          "x": -625,
+          "y": 701
+        }
+      ],
+      "source": "shape_7165",
+      "target": "shape_3633"
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "take",
+      "id": "connection_3112",
+      "pickedColor": "black",
+      "number": 14,
+      "waypoints": [
+        {
+          "original": {
+            "x": 38,
+            "y": 930
+          },
+          "x": 79,
+          "y": 929
+        },
+        {
+          "original": {
+            "x": 394,
+            "y": 919
+          },
+          "x": 356,
+          "y": 920
+        }
+      ],
+      "source": "shape_3102",
+      "target": "shape_8094",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "From",
+      "id": "connection_3169",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -566,
+            "y": -33
+          },
+          "x": -566,
+          "y": 14
+        },
+        {
+          "original": {
+            "x": -566,
+            "y": 564
+          },
+          "x": -566,
+          "y": 526
+        }
+      ],
+      "source": "shape_6206",
+      "target": "shape_7165",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "sends",
+      "id": "connection_3278",
+      "pickedColor": "black",
+      "number": 15,
+      "waypoints": [
+        {
+          "original": {
+            "x": 38,
+            "y": 930
+          },
+          "x": 0,
+          "y": 917
+        },
+        {
+          "original": {
+            "x": -408,
+            "y": 778
+          },
+          "x": -370,
+          "y": 791
+        }
+      ],
+      "source": "shape_3102",
+      "target": "shape_0920",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "In",
+      "id": "connection_3389",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -737,
+            "y": 340
+          },
+          "x": -715,
+          "y": 369
+        },
+        {
+          "original": {
+            "x": -566,
+            "y": 564
+          },
+          "x": -595,
+          "y": 526
+        }
+      ],
+      "source": "shape_8162",
+      "target": "shape_7165",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "Get",
+      "id": "connection_4444",
+      "pickedColor": "black",
+      "number": 7,
+      "waypoints": [
+        {
+          "original": {
+            "x": 58,
+            "y": -33
+          },
+          "x": 20,
+          "y": -33
+        },
+        {
+          "original": {
+            "x": -566,
+            "y": -33
+          },
+          "x": -523,
+          "y": -33
+        }
+      ],
+      "source": "shape_7326",
+      "target": "shape_6206",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "To",
+      "id": "connection_4893",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -1402,
+            "y": 340
+          },
+          "x": -1359,
+          "y": 340
+        },
+        {
+          "original": {
+            "x": -1073,
+            "y": 340
+          },
+          "x": -1111,
+          "y": 340
+        }
+      ],
+      "source": "shape_8046",
+      "target": "shape_3895",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "Send",
+      "id": "connection_4904",
+      "pickedColor": "black",
+      "number": 13,
+      "waypoints": [
+        {
+          "original": {
+            "x": 58,
+            "y": -33
+          },
+          "x": 75,
+          "y": 2
+        },
+        {
+          "original": {
+            "x": 353,
+            "y": 582
+          },
+          "x": 335,
+          "y": 544
+        }
+      ],
+      "source": "shape_7326",
+      "target": "shape_7876",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "",
+      "id": "connection_4971",
+      "pickedColor": "black",
+      "number": 5,
+      "waypoints": [
+        {
+          "original": {
+            "x": -1073,
+            "y": 448
+          },
+          "x": -1040,
+          "y": 438
+        },
+        {
+          "original": {
+            "x": -768,
+            "y": 360
+          },
+          "x": -775,
+          "y": 362
+        }
+      ],
+      "source": "shape_2158",
+      "target": "shape_8162",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "to",
+      "id": "connection_5505",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -1073,
+            "y": 821
+          },
+          "x": -1111,
+          "y": 792
+        },
+        {
+          "original": {
+            "x": -1402,
+            "y": 572
+          },
+          "x": -1373,
+          "y": 594
+        }
+      ],
+      "source": "shape_7218",
+      "target": "shape_8365",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "Create",
+      "id": "connection_5924",
+      "pickedColor": "black",
+      "number": 11,
+      "waypoints": [
+        {
+          "original": {
+            "x": -566,
+            "y": 564
+          },
+          "x": -522,
+          "y": 565
+        },
+        {
+          "original": {
+            "x": 38,
+            "y": 582
+          },
+          "x": 0,
+          "y": 581
+        }
+      ],
+      "source": "shape_7165",
+      "target": "shape_0281",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "in",
+      "id": "connection_6133",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -183,
+            "y": 683
+          },
+          "x": -221,
+          "y": 671
+        },
+        {
+          "original": {
+            "x": -566,
+            "y": 564
+          },
+          "x": -527,
+          "y": 576
+        }
+      ],
+      "source": "shape_4243",
+      "target": "shape_7165",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "Send",
+      "id": "connection_6273",
+      "pickedColor": "black",
+      "number": 6,
+      "waypoints": [
+        {
+          "original": {
+            "x": -566,
+            "y": 564
+          },
+          "x": -557,
+          "y": 530
+        },
+        {
+          "original": {
+            "x": -435,
+            "y": 65
+          },
+          "x": -447,
+          "y": 112
+        }
+      ],
+      "source": "shape_7165",
+      "target": "shape_8123",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "sends",
+      "id": "connection_6597",
+      "pickedColor": "black",
+      "number": 16,
+      "waypoints": [
+        {
+          "original": {
+            "x": -566,
+            "y": 564
+          },
+          "x": -604,
+          "y": 568
+        },
+        {
+          "original": {
+            "x": -1073,
+            "y": 622
+          },
+          "x": -1035,
+          "y": 618
+        }
+      ],
+      "source": "shape_7165",
+      "target": "shape_7301",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "to",
+      "id": "connection_7497",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -1073,
+            "y": 622
+          },
+          "x": -1111,
+          "y": 616
+        },
+        {
+          "original": {
+            "x": -1402,
+            "y": 572
+          },
+          "x": -1357,
+          "y": 579
+        }
+      ],
+      "source": "shape_7301",
+      "target": "shape_8365",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "displays",
+      "id": "connection_7624",
+      "pickedColor": "black",
+      "number": 2,
+      "waypoints": [
+        {
+          "original": {
+            "x": -566,
+            "y": 564
+          },
+          "x": -529,
+          "y": 558
+        },
+        {
+          "original": {
+            "x": 38,
+            "y": 467
+          },
+          "x": 0,
+          "y": 473
+        }
+      ],
+      "source": "shape_7165",
+      "target": "shape_6350",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "Register",
+      "id": "connection_7625",
+      "pickedColor": "black",
+      "number": 4,
+      "waypoints": [
+        {
+          "original": {
+            "x": -1073,
+            "y": 340
+          },
+          "x": -1030,
+          "y": 340
+        },
+        {
+          "original": {
+            "x": -737,
+            "y": 340
+          },
+          "x": -775,
+          "y": 340
+        }
+      ],
+      "source": "shape_3895",
+      "target": "shape_8162",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "For",
+      "id": "connection_7652",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": 38,
+            "y": 582
+          },
+          "x": 38,
+          "y": 629
+        },
+        {
+          "original": {
+            "x": 38,
+            "y": 930
+          },
+          "x": 38,
+          "y": 892
+        }
+      ],
+      "source": "shape_0281",
+      "target": "shape_3102",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "to",
+      "id": "connection_7707",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -566,
+            "y": 919
+          },
+          "x": -523,
+          "y": 920
+        },
+        {
+          "original": {
+            "x": 38,
+            "y": 930
+          },
+          "x": 0,
+          "y": 929
+        }
+      ],
+      "source": "shape_4480",
+      "target": "shape_3102",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "In",
+      "id": "connection_8075",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -345,
+            "y": 155
+          },
+          "x": -370,
+          "y": 202
+        },
+        {
+          "original": {
+            "x": -566,
+            "y": 564
+          },
+          "x": -551,
+          "y": 536
+        }
+      ],
+      "source": "shape_8953",
+      "target": "shape_7165",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "input",
+      "id": "connection_8241",
+      "pickedColor": "black",
+      "number": 1,
+      "waypoints": [
+        {
+          "original": {
+            "x": 38,
+            "y": 930
+          },
+          "x": 4,
+          "y": 892
+        },
+        {
+          "original": {
+            "x": -183,
+            "y": 683
+          },
+          "x": -159,
+          "y": 710
+        }
+      ],
+      "source": "shape_3102",
+      "target": "shape_4243",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "to",
+      "id": "connection_8438",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": 38,
+            "y": 467
+          },
+          "x": 40,
+          "y": 429
+        },
+        {
+          "original": {
+            "x": 58,
+            "y": -14
+          },
+          "x": 57,
+          "y": 14
+        }
+      ],
+      "source": "shape_6350",
+      "target": "shape_7326",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "send",
+      "id": "connection_9464",
+      "pickedColor": "black",
+      "number": 12,
+      "waypoints": [
+        {
+          "original": {
+            "x": -566,
+            "y": 564
+          },
+          "x": -566,
+          "y": 611
+        },
+        {
+          "original": {
+            "x": -566,
+            "y": 919
+          },
+          "x": -566,
+          "y": 881
+        }
+      ],
+      "source": "shape_7165",
+      "target": "shape_4480",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "Plan (continuous process)",
+      "id": "connection_9527",
+      "pickedColor": "black",
+      "number": 10,
+      "waypoints": [
+        {
+          "original": {
+            "x": 58,
+            "y": -33
+          },
+          "x": 32,
+          "y": 14
+        },
+        {
+          "original": {
+            "x": -183,
+            "y": 405
+          },
+          "x": -168,
+          "y": 378
+        }
+      ],
+      "source": "shape_7326",
+      "target": "shape_3900",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "at",
+      "id": "connection_9918",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": 394,
+            "y": 919
+          },
+          "x": 394,
+          "y": 881
+        },
+        {
+          "original": {
+            "x": 394,
+            "y": 716
+          },
+          "x": 394,
+          "y": 763
+        }
+      ],
+      "source": "shape_8094",
+      "target": "shape_2443",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:workObjectConversation",
+      "name": "Chat Room",
+      "id": "shape_0281",
+      "x": 0,
+      "y": 544
+    },
+    {
+      "type": "domainStory:workObjectCircle-Arrows",
+      "name": "updates",
+      "id": "shape_0920",
+      "x": -446,
+      "y": 740
+    },
+    {
+      "type": "domainStory:actorGroup",
+      "name": "Rangers, seismic institues etc",
+      "id": "shape_2158",
+      "x": -1111,
+      "y": 410
+    },
+    {
+      "type": "domainStory:workObjectPlace",
+      "name": "Disaster Location",
+      "id": "shape_2443",
+      "x": 356,
+      "y": 678
+    },
+    {
+      "type": "domainStory:actorGroup",
+      "name": "Responders (Emergency Teams)",
+      "id": "shape_3102",
+      "x": 0,
+      "y": 892
+    },
+    {
+      "type": "domainStory:textAnnotation",
+      "name": "",
+      "id": "shape_3633",
+      "x": -697,
+      "y": 701,
+      "text": "System supports Training Mode for Coordinators & Responders",
+      "number": 99.99374389648438,
+      "height": 99.99374389648438,
+      "width": 99.99374389648438
+    },
+    {
+      "type": "domainStory:actorGroup",
+      "name": "112",
+      "id": "shape_3895",
+      "x": -1111,
+      "y": 302
+    },
+    {
+      "type": "domainStory:workObjectDocument",
+      "name": "Incident",
+      "id": "shape_3900",
+      "x": -221,
+      "y": 367
+    },
+    {
+      "type": "domainStory:workObjectDocument",
+      "name": "Incident",
+      "id": "shape_4129",
+      "x": -313,
+      "y": 206
+    },
+    {
+      "type": "domainStory:workObjectHow-To-Reg",
+      "name": "Available Resources",
+      "id": "shape_4243",
+      "x": -221,
+      "y": 645
+    },
+    {
+      "type": "domainStory:workObjectContact-Mail",
+      "name": "invites",
+      "id": "shape_4480",
+      "x": -604,
+      "y": 881
+    },
+    {
+      "type": "domainStory:workObjectDocument",
+      "name": "Incident Info",
+      "id": "shape_6206",
+      "x": -604,
+      "y": -71
+    },
+    {
+      "type": "domainStory:workObjectDashboard",
+      "name": "Interactive Dashboard",
+      "id": "shape_6350",
+      "x": 0,
+      "y": 429
+    },
+    {
+      "type": "domainStory:actorSystem",
+      "name": "System(Trainng mode/Real mode)",
+      "id": "shape_7165",
+      "x": -604,
+      "y": 526,
+      "pickedColor": "#000000"
+    },
+    {
+      "type": "domainStory:workObjectPlace",
+      "name": "Shelter Locations",
+      "id": "shape_7218",
+      "x": -1111,
+      "y": 783
+    },
+    {
+      "type": "domainStory:workObjectInfo",
+      "name": "Notification ( Status/  Blocked Roads)",
+      "id": "shape_7301",
+      "x": -1111,
+      "y": 584
+    },
+    {
+      "type": "domainStory:actorGroup",
+      "name": "veiligheidsregio",
+      "id": "shape_7326",
+      "x": 20,
+      "y": -71
+    },
+    {
+      "type": "domainStory:workObjectDocument",
+      "name": "Instructions",
+      "id": "shape_7876",
+      "x": 315,
+      "y": 544
+    },
+    {
+      "type": "domainStory:workObjectCall",
+      "name": "Emergency call",
+      "id": "shape_8046",
+      "x": -1440,
+      "y": 302
+    },
+    {
+      "type": "domainStory:workObjectGavel",
+      "name": "action",
+      "id": "shape_8094",
+      "x": 356,
+      "y": 881
+    },
+    {
+      "type": "domainStory:workObjectProblem",
+      "name": "Alert",
+      "id": "shape_8123",
+      "x": -473,
+      "y": 27
+    },
+    {
+      "type": "domainStory:workObjectDocument",
+      "name": "Incident Report",
+      "id": "shape_8162",
+      "x": -775,
+      "y": 302
+    },
+    {
+      "type": "domainStory:actorPerson",
+      "name": "Citizen",
+      "id": "shape_8365",
+      "x": -1440,
+      "y": 534
+    },
+    {
+      "type": "domainStory:workObjectDocument",
+      "name": "Incident",
+      "id": "shape_8953",
+      "x": -383,
+      "y": 117
+    },
+    {
+      "info": ""
+    },
+    {
+      "version": "3.0.0"
+    }
+  ]
+}
