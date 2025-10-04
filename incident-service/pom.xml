@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>nl.saxion.disaster</groupId>
-	<artifactId>resource-service</artifactId>
+	<artifactId>incident-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>resource-service</name>
-	<description>Resource Service for Disaster Response System - manages emergency team resources (vehicles, equipment, staff)</description>
+	<name>incident-service</name>
+	<description>A microservice that manages disaster incidents, including creation, update, and status tracking</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -64,14 +64,6 @@
 
 	<build>
 		<plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.4</version>
-                <configuration>
-                    <skipTests>true</skipTests>
-                </configuration>
-            </plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
