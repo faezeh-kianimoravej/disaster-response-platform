@@ -33,11 +33,8 @@ test:client-app:
       changes:
         - client-app/**/*
   script:
-    # Run linting
     - npm run lint
-    # Run tests with coverage
     - npm run coverage
-    # Run format check
     - npm run format:check
   artifacts:
     when: always
@@ -59,7 +56,6 @@ test:client-app:feature-branches:
       changes:
         - client-app/**/*
   script:
-    # Run linting and tests (without coverage for faster execution)
     - npm run lint
     - npm run test:run
     - npm run format:check
@@ -68,18 +64,3 @@ test:client-app:feature-branches:
     paths:
       - client-app/coverage/
     expire_in: 1 day
-
-# Optional: Build job for deployment preparation
-build:client-app:
-  extends: .client-app-base
-  stage: build
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main"
-      changes:
-        - client-app/**/*
-  script:
-    - npm run build
-  artifacts:
-    paths:
-      - client-app/build/
-    expire_in: 1 week
