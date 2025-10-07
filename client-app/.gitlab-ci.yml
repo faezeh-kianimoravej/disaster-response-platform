@@ -80,6 +80,21 @@ build:client-app:
       - client-app/build/
     expire_in: 1 week
 
+# Debug job: check AWS credentials and basic access (non-destructive)
+debug:client-app-aws:
+  image: amazon/aws-cli:2.13.20
+  stage: deploy
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - client-app/**/*
+  script:
+    - echo "DEBUG: AWS env vars present: AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:+set} AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:+set} ROLE_ARN=${ROLE_ARN:+set} CI_JOB_JWT=${CI_JOB_JWT:+set}"
+    - aws sts get-caller-identity || true
+    - aws s3 ls "s3://$S3_BUCKET" || true
+  when: on_success
+  allow_failure: true
+
 # Deploy job: builds client app and deploys to S3 on merges to main
 deploy:client-app:
   image: amazon/aws-cli:2.13.20
