@@ -133,15 +133,15 @@ deploy:client-app:
       if [ -s /tmp/assume.json ]; then
         # Parse JSON into exports
         python - <<'PY' > /tmp/creds.sh
-import json
-data = json.load(open('/tmp/assume.json'))
-creds = data.get('Credentials')
-if not creds:
-    raise SystemExit('No Credentials in assume-role response')
-print("export AWS_ACCESS_KEY_ID='%s'" % creds['AccessKeyId'])
-print("export AWS_SECRET_ACCESS_KEY='%s'" % creds['SecretAccessKey'])
-print("export AWS_SESSION_TOKEN='%s'" % creds['SessionToken'])
-PY
+        import json
+        data = json.load(open('/tmp/assume.json'))
+        creds = data.get('Credentials')
+        if not creds:
+            raise SystemExit('No Credentials in assume-role response')
+        print("export AWS_ACCESS_KEY_ID='%s'" % creds['AccessKeyId'])
+        print("export AWS_SECRET_ACCESS_KEY='%s'" % creds['SecretAccessKey'])
+        print("export AWS_SESSION_TOKEN='%s'" % creds['SessionToken'])
+        PY
         chmod +x /tmp/creds.sh
         source /tmp/creds.sh
         echo "Using AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:0:4}..."
@@ -155,20 +155,7 @@ PY
           exit 1
         fi
       fi
-      # Parse JSON into exports
-      python - <<'PY' > /tmp/creds.sh
-import json
-data = json.load(open('/tmp/assume.json'))
-creds = data.get('Credentials')
-if not creds:
-    raise SystemExit('No Credentials in assume-role response')
-print("export AWS_ACCESS_KEY_ID='%s'" % creds['AccessKeyId'])
-print("export AWS_SECRET_ACCESS_KEY='%s'" % creds['SecretAccessKey'])
-print("export AWS_SESSION_TOKEN='%s'" % creds['SessionToken'])
-PY
-    - chmod +x /tmp/creds.sh
-    - source /tmp/creds.sh
-    - echo "Using AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:0:4}..."
+  # ...credentials already parsed above if available; proceed to use them
     - aws configure set region "$AWS_REGION"
     - aws s3 sync client-app/build/ "s3://$S3_BUCKET" --delete --acl public-read
     - |
