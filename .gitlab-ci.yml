@@ -1,92 +1,19 @@
-# GitLab CI/CD Pipeline Configuration
-# This pipeline runs tests for the client-app when changes are made to that folder
+# DRCCS Multi-Service GitLab CI/CD Pipeline
+# This is the main pipeline orchestrator that includes service-specific configurations
 
+# Define global stages that all services can use
 stages:
   - test
 
-# Define variables
+# Global variables that can be used across all services
 variables:
   NODE_VERSION: "20"
 
-# Cache configuration for faster builds
-.cache_template: &cache_template
-  cache:
-    key:
-      files:
-        - client-app/package-lock.json
-    paths:
-      - client-app/node_modules/
-
-# Job to test client-app
-test:client-app:
-  stage: test
-  image: node:${NODE_VERSION}
-  <<: *cache_template
+# Include service-specific pipeline configurations
+include:
+  # Frontend Application
+  - local: 'client-app/.gitlab-ci.yml'
   
-  # Only run this job when:
-  # 1. Changes are made to the client-app/ directory
-  # 2. On the main branch (or merge requests targeting main)
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main"
-      changes:
-        - client-app/**/*
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
-      changes:
-        - client-app/**/*
-  
-  before_script:
-    # Navigate to client-app directory
-    - cd client-app
-    # Install dependencies
-    - npm ci
-  
-  script:
-    # Run linting
-    - npm run lint
-    # Run tests with coverage
-    - npm run coverage
-    # Optional: Run format check
-    - npm run format:check
-  
-  # Collect test coverage artifacts
-  artifacts:
-    when: always
-    reports:
-      coverage_report:
-        coverage_format: cobertura
-        path: client-app/coverage/cobertura-coverage.xml
-    paths:
-      - client-app/coverage/
-    expire_in: 7 days
-  
-  # Define coverage percentage threshold (optional)
-  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
-
-# Optional: Job to run tests on feature branches for client-app changes
-test:client-app:feature-branches:
-  stage: test
-  image: node:${NODE_VERSION}
-  <<: *cache_template
-  
-  # Run on feature branches when client-app changes are made
-  rules:
-    - if: $CI_COMMIT_BRANCH != "main" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME != "main"
-      changes:
-        - client-app/**/*
-  
-  before_script:
-    - cd client-app
-    - npm ci
-  
-  script:
-    # Run linting and tests (without coverage for faster execution)
-    - npm run lint
-    - npm run test:run
-    - npm run format:check
-  
-  # Don't collect artifacts for feature branches to save space
-  artifacts:
-    when: on_failure
-    paths:
-      - client-app/coverage/
-    expire_in: 1 day
+  # Additional services will be added here as they are moved to their own directories
+  # Example:
+  # - local: 'backend/.gitlab-ci.yml'

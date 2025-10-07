@@ -1,0 +1,85 @@
+# Client App CI/CD Pipeline Configuration
+# This file contains the pipeline configuration specific to the React/Vite client application
+
+variables:
+  NODE_VERSION: "20"
+
+# Cache configuration for faster builds
+.client-app-cache: &client-app-cache
+  cache:
+    key:
+      files:
+        - client-app/package-lock.json
+    paths:
+      - client-app/node_modules/
+
+# Base job template for client-app jobs
+.client-app-base:
+  image: node:${NODE_VERSION}
+  <<: *client-app-cache
+  before_script:
+    - cd client-app
+    - npm ci
+
+# Main branch and MR testing with full coverage
+test:client-app:
+  extends: .client-app-base
+  stage: test
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes:
+        - client-app/**/*
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
+      changes:
+        - client-app/**/*
+  script:
+    # Run linting
+    - npm run lint
+    # Run tests with coverage
+    - npm run coverage
+    # Run format check
+    - npm run format:check
+  artifacts:
+    when: always
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: client-app/coverage/cobertura-coverage.xml
+    paths:
+      - client-app/coverage/
+    expire_in: 7 days
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+
+# Feature branch testing (lighter, faster)
+test:client-app:feature-branches:
+  extends: .client-app-base
+  stage: test
+  rules:
+    - if: $CI_COMMIT_BRANCH != "main" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME != "main"
+      changes:
+        - client-app/**/*
+  script:
+    # Run linting and tests (without coverage for faster execution)
+    - npm run lint
+    - npm run test:run
+    - npm run format:check
+  artifacts:
+    when: on_failure
+    paths:
+      - client-app/coverage/
+    expire_in: 1 day
+
+# Optional: Build job for deployment preparation
+build:client-app:
+  extends: .client-app-base
+  stage: build
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes:
+        - client-app/**/*
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - client-app/build/
+    expire_in: 1 week
