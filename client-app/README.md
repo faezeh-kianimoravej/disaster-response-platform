@@ -8,29 +8,47 @@ In the project directory, you can run:
 
 ### `npm run dev`
 
-Runs the app in the development mode using Vite.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner using Vitest. See [Vitest documentation](https://vitest.dev/) for more information.
+Runs the app in development mode using Vite. Open [http://localhost:3000](http://localhost:3000) to view it in your browser. Hot reload is enabled.
 
 ### `npm run build`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See Vite documentation for [deployment](https://vitejs.dev/guide/static-deploy.html).
+Type-checks the codebase and builds the app for production to the `build` folder. Optimizes and bundles React for best performance.
 
 ### `npm run preview`
 
-Runs the built app in preview mode using Vite.
+Runs the built app in preview mode using Vite. Simulates production locally.
+
+### `npm test`
+
+Runs all tests using Vitest in watch mode. See [Vitest documentation](https://vitest.dev/).
+
+### `npm run test:ui`
+
+Launches the Vitest UI for interactive test running and debugging.
+
+### `npm run test:run`
+
+Runs all tests once (no watch mode).
+
+### `npm run coverage`
+
+Runs tests and generates a coverage report (text, JSON, HTML output).
+
+### `npm run lint`
+
+Checks code for lint errors using ESLint. Fails if any errors or warnings are found.
+
+### `npm run lint:fix`
+
+Automatically fixes lint errors and warnings using ESLint.
+
+### `npm run format`
+
+Formats code using Prettier (all supported file types).
+
+### `npm run format:check`
+
+Checks code formatting using Prettier (does not modify files).
 
 ## Learn More
 
