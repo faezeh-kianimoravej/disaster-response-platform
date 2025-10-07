@@ -82,7 +82,7 @@ build:client-app:
 
 # Deploy job: builds client app and deploys to S3 on merges to main
 deploy:client-app:
-  image: bitnami/aws-cli:2.11.32
+  image: amazon/aws-cli:2.13.20
   stage: deploy
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
