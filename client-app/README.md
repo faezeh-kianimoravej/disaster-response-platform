@@ -1,5 +1,10 @@
 # DRCCS Client App
 
+![Pipeline Status](../../badges/main/pipeline.svg) ![Coverage](../../badges/main/coverage.svg)
+![React](https://img.shields.io/badge/React-18+-61DAFB?logo=react&logoColor=white&style=flat-square)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white&style=flat-square)
+![Vite](https://img.shields.io/badge/Vite-5.x-646CFF?logo=vite&logoColor=white&style=flat-square)
+
 This project is a TypeScript React application for the Disaster Response Crisis Communication System (DRCCS), built with Vite for modern development and build tooling.
 
 ## Available Scripts

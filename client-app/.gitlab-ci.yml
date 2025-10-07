@@ -118,10 +118,13 @@ smoke:client-app:
   needs:
     - job: deploy:client-app
       optional: false
+  variables:
+    # Allow override; default to CloudFront URL if not provided
+    SMOKE_TEST_URL: ${SMOKE_TEST_URL:-https://d2m24xdy5zz2ti.cloudfront.net/}
   script:
-    - echo "Running smoke test against https://d2m24xdy5zz2ti.cloudfront.net/"
+    - echo "Running smoke test against $SMOKE_TEST_URL"
     - |
-      target_url="https://d2m24xdy5zz2ti.cloudfront.net/"
+      target_url="$SMOKE_TEST_URL"
       attempts=0
       max_attempts=6
       sleep_base=5
