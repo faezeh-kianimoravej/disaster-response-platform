@@ -89,7 +89,10 @@ debug:client-app-aws:
       changes:
         - client-app/**/*
   script:
-    - echo "DEBUG: AWS env vars present: AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:+set} AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:+set} ROLE_ARN=${ROLE_ARN:+set} CI_JOB_JWT=${CI_JOB_JWT:+set}"
+    - echo "DEBUG: AWS_ACCESS_KEY_ID set? ${AWS_ACCESS_KEY_ID:+yes}"
+    - echo "DEBUG: AWS_SECRET_ACCESS_KEY set? ${AWS_SECRET_ACCESS_KEY:+yes}"
+    - echo "DEBUG: ROLE_ARN set? ${ROLE_ARN:+yes}"
+    - echo "DEBUG: CI_JOB_JWT set? ${CI_JOB_JWT:+yes}"
     - aws sts get-caller-identity || true
     - aws s3 ls "s3://$S3_BUCKET" || true
   when: on_success
