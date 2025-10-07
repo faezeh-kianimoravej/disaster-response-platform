@@ -16,7 +16,7 @@ export default function Navigation() {
 					<div className="flex items-center">
 						<Logo withText className="mx-auto mb-6" />
 						<Link to="/" className="text-white text-xl font-bold">
-							 DRCCS
+							DRCCS
 						</Link>
 					</div>
 					<div className="flex space-x-8">
