@@ -32,16 +32,16 @@ deploy:client-app:
   needs:
     - job: build:client-app
       artifacts: true
-  script:
-    - echo "Deploying client build to s3://$S3_BUCKET" 
-    - if [ -z "$S3_BUCKET" ]; then echo "ERROR: S3_BUCKET not set"; exit 1; fi
-    - aws --version || true
-    - aws s3 sync client-app/build/ "s3://$S3_BUCKET" --delete --acl public-read
-    - |
-      if [ -n "$CLOUDFRONT_DISTRIBUTION_ID" ]; then
-        echo "Invalidating CloudFront distribution $CLOUDFRONT_DISTRIBUTION_ID";
-        aws cloudfront create-invalidation --distribution-id "$CLOUDFRONT_DISTRIBUTION_ID" --paths "/*" || echo "WARN: CloudFront invalidation failed";
-      fi
+  script: |
+    set -e
+    echo "Deploying client build to s3://$S3_BUCKET"
+    if [ -z "$S3_BUCKET" ]; then echo "ERROR: S3_BUCKET not set"; exit 1; fi
+    aws --version || true
+    aws s3 sync client-app/build/ "s3://$S3_BUCKET" --delete --acl public-read
+    if [ -n "$CLOUDFRONT_DISTRIBUTION_ID" ]; then
+      echo "Invalidating CloudFront distribution $CLOUDFRONT_DISTRIBUTION_ID"
+      aws cloudfront create-invalidation --distribution-id "$CLOUDFRONT_DISTRIBUTION_ID" --paths "/*" || echo "WARN: CloudFront invalidation failed"
+    fi
   environment:
     name: production
     url: "https://$S3_BUCKET.s3.amazonaws.com"
