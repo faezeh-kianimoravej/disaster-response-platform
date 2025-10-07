@@ -96,7 +96,9 @@ deploy:client-app:
     echo "Deploying client build to s3://$S3_BUCKET"
     if [ -z "$S3_BUCKET" ]; then echo "ERROR: S3_BUCKET not set"; exit 1; fi
     aws --version || true
-    aws s3 sync client-app/build/ "s3://$S3_BUCKET" --delete --acl public-read
+    echo "Running S3 sync (no ACLs; bucket likely has ObjectOwnership=BucketOwnerEnforced)"
+    # Allow optional extra args via AWS_S3_SYNC_EXTRA_ARGS variable
+    aws s3 sync client-app/build/ "s3://$S3_BUCKET" --delete --no-progress ${AWS_S3_SYNC_EXTRA_ARGS:-}
     if [ -n "$CLOUDFRONT_DISTRIBUTION_ID" ]; then
       echo "Invalidating CloudFront distribution $CLOUDFRONT_DISTRIBUTION_ID"
       aws cloudfront create-invalidation --distribution-id "$CLOUDFRONT_DISTRIBUTION_ID" --paths "/*" || echo "WARN: CloudFront invalidation failed"
