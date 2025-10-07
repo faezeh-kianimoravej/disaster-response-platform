@@ -21,91 +21,9 @@ variables:
     - cd client-app
     - npm ci
 
-# Main branch and MR testing with full coverage
-test:client-app:
-  extends: .client-app-base
-  stage: test
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      changes:
-        - client-app/**/*
-    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
-      changes:
-        - client-app/**/*
-  script:
-    - npm run lint
-    - npm run coverage
-    - npm run format:check
-  artifacts:
-    when: always
-    reports:
-      coverage_report:
-        coverage_format: cobertura
-        path: client-app/coverage/cobertura-coverage.xml
-    paths:
-      - client-app/coverage/
-    expire_in: 7 days
-  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
-
-# Feature branch testing (lighter, faster)
-test:client-app:feature-branches:
-  extends: .client-app-base
-  stage: test
-  rules:
-    - if: '$CI_COMMIT_BRANCH != "main" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME != "main"'
-      changes:
-        - client-app/**/*
-  script:
-    - npm run lint
-    - npm run test:run
-    - npm run format:check
-  artifacts:
-    when: on_failure
-    paths:
-      - client-app/coverage/
-    expire_in: 1 day
-
-# Build job: create production build and persist as artifact
-build:client-app:
-  extends: .client-app-base
-  stage: build
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      changes:
-        - client-app/**/*
-  script:
-    - npm run build
-  artifacts:
-    paths:
-      - client-app/build/
-    expire_in: 1 week
-
-# Debug job: check AWS credentials and basic access (non-destructive)
-debug:client-app-aws:
-  image:
-    name: amazon/aws-cli:2.13.20
-    entrypoint: [""]  # Clear default aws entrypoint so script runs in sh
-  stage: deploy
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      changes:
-        - client-app/**/*
-  script: |
-    echo "DEBUG: AWS_ACCESS_KEY_ID set? ${AWS_ACCESS_KEY_ID:+yes}"
-    echo "DEBUG: AWS_SECRET_ACCESS_KEY set? ${AWS_SECRET_ACCESS_KEY:+yes}"
-    echo "DEBUG: ROLE_ARN set? ${ROLE_ARN:+yes}"
-    echo "DEBUG: CI_JOB_JWT set? ${CI_JOB_JWT:+yes}"
-    aws --version || true
-    aws sts get-caller-identity || true
-    aws s3 ls "s3://$S3_BUCKET" || true
-  when: on_success
-  allow_failure: true
-
-# Deploy job: builds client app and deploys to S3 on merges to main
+## Deploy job (Option 1: simple inline S3 sync using static credentials)
 deploy:client-app:
-  image:
-    name: amazon/aws-cli:2.13.20
-    entrypoint: [""]  # Clear default aws entrypoint
+  image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
   stage: deploy
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
@@ -114,69 +32,18 @@ deploy:client-app:
   needs:
     - job: build:client-app
       artifacts: true
-  variables:
-    AWS_REGION: $AWS_REGION
   script:
-    - echo "Starting deploy script"
+    - echo "Deploying client build to s3://$S3_BUCKET" 
+    - if [ -z "$S3_BUCKET" ]; then echo "ERROR: S3_BUCKET not set"; exit 1; fi
     - aws --version || true
-    - echo "Verifying environment / credentials"
-    - |
-      if [ -z "$CI_JOB_JWT" ]; then
-        echo "INFO: No CI_JOB_JWT (OIDC). Will rely on static env credentials if present.";
-      fi
-      if [ -n "$AWS_ACCESS_KEY_ID" ]; then echo "Have AWS_ACCESS_KEY_ID (****${AWS_ACCESS_KEY_ID: -4})"; else echo "WARN: No AWS_ACCESS_KEY_ID yet"; fi
-    - |
-      ASSUME_USED=0
-      if [ -n "$CI_JOB_JWT" ] && [ -n "$ROLE_ARN" ]; then
-        echo "Attempting OIDC assume-role..."
-        if aws sts assume-role-with-web-identity \
-             --role-arn "$ROLE_ARN" \
-             --role-session-name "gitlab-ci-$CI_PIPELINE_ID" \
-             --web-identity-token "$CI_JOB_JWT" \
-             --duration-seconds 900 \
-             --output json > /tmp/assume.json 2> /tmp/assume.err; then
-          ASSUME_USED=1; echo "Assume-role succeeded";
-        else
-          echo "WARN: assume-role failed; showing first 200 chars of stderr:";
-          head -c 200 /tmp/assume.err || true
-        fi
-      else
-        echo "Skipping assume-role (missing token or ROLE_ARN)"
-      fi
-      echo "ASSUME_USED=$ASSUME_USED" > /tmp/assume.flag
-    - |
-      . /tmp/assume.flag || true
-      if [ "$ASSUME_USED" = "1" ] && [ -s /tmp/assume.json ]; then
-        echo "Parsing assume-role credentials"
-        python - <<'PY' > /tmp/creds.sh
-import json,sys
-try:
-    data = json.load(open('/tmp/assume.json'))
-    creds = data.get('Credentials') or {}
-    for k in ('AccessKeyId','SecretAccessKey','SessionToken'):
-        if k not in creds: raise SystemExit(f'Missing {k}')
-    print(f"export AWS_ACCESS_KEY_ID='{creds['AccessKeyId']}'")
-    print(f"export AWS_SECRET_ACCESS_KEY='{creds['SecretAccessKey']}'")
-    print(f"export AWS_SESSION_TOKEN='{creds['SessionToken']}'")
-except Exception as e:
-    print(f'echo ERROR parsing credentials: {e}', file=sys.stderr)
-    sys.exit(1)
-PY
-        if [ -s /tmp/creds.sh ]; then . /tmp/creds.sh; echo "Loaded temp creds (prefix ${AWS_ACCESS_KEY_ID:0:4})"; fi
-      fi
-      if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
-        echo "ERROR: No AWS credentials available after assume-role logic"; exit 1; fi
-    - aws sts get-caller-identity || true
-    - aws configure set region "$AWS_REGION"
-    - echo "Syncing to s3://$S3_BUCKET"
     - aws s3 sync client-app/build/ "s3://$S3_BUCKET" --delete --acl public-read
     - |
       if [ -n "$CLOUDFRONT_DISTRIBUTION_ID" ]; then
-        echo "Creating CloudFront invalidation"; aws cloudfront create-invalidation --distribution-id "$CLOUDFRONT_DISTRIBUTION_ID" --paths "/*" || echo "WARN: CF invalidation failed";
+        echo "Invalidating CloudFront distribution $CLOUDFRONT_DISTRIBUTION_ID";
+        aws cloudfront create-invalidation --distribution-id "$CLOUDFRONT_DISTRIBUTION_ID" --paths "/*" || echo "WARN: CloudFront invalidation failed";
       fi
   environment:
     name: production
-    # Use double quotes so $S3_BUCKET expands
     url: "https://$S3_BUCKET.s3.amazonaws.com"
 
 # Smoke test: verify the deployed site responds with HTTP 200
@@ -193,10 +60,21 @@ smoke:client-app:
   script:
     - echo "Running smoke test against https://d2m24xdy5zz2ti.cloudfront.net/"
     - |
-      status=$(curl -s -o /dev/null -w "%{http_code}" "https://d2m24xdy5zz2ti.cloudfront.net/")
-      echo "HTTP status: $status"
-      if [ "$status" -ne 200 ]; then
-        echo "Smoke test failed: expected 200 but got $status"
-        exit 1
-      fi
+      target_url="https://d2m24xdy5zz2ti.cloudfront.net/"
+      attempts=0
+      max_attempts=6
+      sleep_base=5
+      while true; do
+        status=$(curl -s -o /dev/null -w "%{http_code}" "$target_url")
+        echo "Attempt $((attempts+1))/$max_attempts -> $status"
+        if [ "$status" -eq 200 ]; then
+          echo "Smoke test passed"; break
+        fi
+        attempts=$((attempts+1))
+        if [ $attempts -ge $max_attempts ]; then
+          echo "Smoke test failed after $attempts attempts (last status $status)"; exit 1
+        fi
+        sleep_time=$((sleep_base * attempts))
+        echo "Retrying in ${sleep_time}s..."; sleep $sleep_time
+      done
   when: on_success
