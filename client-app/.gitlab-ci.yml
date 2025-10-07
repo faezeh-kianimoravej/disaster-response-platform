@@ -114,24 +114,58 @@ deploy:client-app:
       fi
     # Use aws sts assume-role-with-web-identity and request json output then parse it with Python
     - |
-      set -e
-      aws sts assume-role-with-web-identity \
-        --role-arn "$ROLE_ARN" \
-        --role-session-name "gitlab-ci-$CI_PIPELINE_ID" \
-        --web-identity-token "$CI_JOB_JWT" \
-        --duration-seconds 900 \
-        --output json > /tmp/assume.json
-      echo "assume-role output:" && cat /tmp/assume.json
+      # Run assume-role and capture stdout/stderr for debugging
+      if [ -z "$CI_JOB_JWT" ] || [ -z "$ROLE_ARN" ]; then
+        echo "Skipping assume-role because CI_JOB_JWT or ROLE_ARN is missing"
+      else
+        aws sts assume-role-with-web-identity \
+          --role-arn "$ROLE_ARN" \
+          --role-session-name "gitlab-ci-$CI_PIPELINE_ID" \
+          --web-identity-token "$CI_JOB_JWT" \
+          --duration-seconds 900 \
+          --output json > /tmp/assume.json 2> /tmp/assume.err || true
+      fi
+      echo "assume-role exit code: $?"
+      echo "--- assume-role stderr (first 200 chars) ---"
+      head -c 200 /tmp/assume.err || true
+      echo "\n--- assume-role stdout (first 2000 chars) ---"
+      head -c 2000 /tmp/assume.json || true
+      if [ -s /tmp/assume.json ]; then
+        # Parse JSON into exports
+        python - <<'PY' > /tmp/creds.sh
+import json
+data = json.load(open('/tmp/assume.json'))
+creds = data.get('Credentials')
+if not creds:
+    raise SystemExit('No Credentials in assume-role response')
+print("export AWS_ACCESS_KEY_ID='%s'" % creds['AccessKeyId'])
+print("export AWS_SECRET_ACCESS_KEY='%s'" % creds['SecretAccessKey'])
+print("export AWS_SESSION_TOKEN='%s'" % creds['SessionToken'])
+PY
+        chmod +x /tmp/creds.sh
+        source /tmp/creds.sh
+        echo "Using AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:0:4}..."
+      else
+        echo "No assume-role credentials; checking for AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY environment variables"
+        if [ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
+          echo "Using provided AWS credentials from environment"
+        else
+          echo "ERROR: No credentials available (no assume-role output and no AWS env vars). Aborting."
+          echo "assume-role stderr:" && sed -n '1,200p' /tmp/assume.err || true
+          exit 1
+        fi
+      fi
+      # Parse JSON into exports
       python - <<'PY' > /tmp/creds.sh
-        import json
-        data = json.load(open('/tmp/assume.json'))
-        creds = data.get('Credentials')
-        if not creds:
-            raise SystemExit('No Credentials in assume-role response')
-        print("export AWS_ACCESS_KEY_ID='%s'" % creds['AccessKeyId'])
-        print("export AWS_SECRET_ACCESS_KEY='%s'" % creds['SecretAccessKey'])
-        print("export AWS_SESSION_TOKEN='%s'" % creds['SessionToken'])
-      PY
+import json
+data = json.load(open('/tmp/assume.json'))
+creds = data.get('Credentials')
+if not creds:
+    raise SystemExit('No Credentials in assume-role response')
+print("export AWS_ACCESS_KEY_ID='%s'" % creds['AccessKeyId'])
+print("export AWS_SECRET_ACCESS_KEY='%s'" % creds['SecretAccessKey'])
+print("export AWS_SESSION_TOKEN='%s'" % creds['SessionToken'])
+PY
     - chmod +x /tmp/creds.sh
     - source /tmp/creds.sh
     - echo "Using AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:0:4}..."
