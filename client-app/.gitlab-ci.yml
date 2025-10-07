@@ -1,0 +1,189 @@
+# Client App CI/CD Pipeline Configuration
+# This file contains the pipeline configuration specific to the React/Vite client application
+
+variables:
+  NODE_VERSION: '20'
+
+# Cache configuration for faster builds
+.client-app-cache: &client-app-cache
+  cache:
+    key:
+      files:
+        - client-app/package-lock.json
+    paths:
+      - client-app/node_modules/
+
+# Base job template for client-app jobs
+.client-app-base:
+  image: node:${NODE_VERSION}
+  <<: *client-app-cache
+  before_script:
+    - cd client-app
+    - npm ci
+
+# Main branch and MR testing with full coverage
+test:client-app:
+  extends: .client-app-base
+  stage: test
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - client-app/**/*
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+      changes:
+        - client-app/**/*
+  script:
+    - npm run lint
+    - npm run coverage
+    - npm run format:check
+  artifacts:
+    when: always
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: client-app/coverage/cobertura-coverage.xml
+    paths:
+      - client-app/coverage/
+    expire_in: 7 days
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+
+# Feature branch testing (lighter, faster)
+test:client-app:feature-branches:
+  extends: .client-app-base
+  stage: test
+  rules:
+    - if: '$CI_COMMIT_BRANCH != "main" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME != "main"'
+      changes:
+        - client-app/**/*
+  script:
+    - npm run lint
+    - npm run test:run
+    - npm run format:check
+  artifacts:
+    when: on_failure
+    paths:
+      - client-app/coverage/
+    expire_in: 1 day
+
+# Build job: create production build and persist as artifact
+build:client-app:
+  extends: .client-app-base
+  stage: build
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - client-app/**/*
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - client-app/build/
+    expire_in: 1 week
+
+# Deploy job: builds client app and deploys to S3 on merges to main
+deploy:client-app:
+  image: amazon/aws-cli:2.13.20
+  stage: deploy
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - client-app/**/*
+  needs:
+    - job: build:client-app
+      artifacts: true
+  variables:
+    AWS_REGION: $AWS_REGION
+  script:
+    - echo "Assuming role using GitLab OIDC token"
+    # Debug: verify aws binary and version
+    - which aws || true
+    - aws --version || true
+    - echo "--- aws help quick-list (first lines) ---"
+    - aws help | head -n 20 || true
+    # Make sure the GitLab OIDC token is present (CI_JOB_JWT)
+    - |
+      if [ -z "$CI_JOB_JWT" ]; then
+        echo "ERROR: CI_JOB_JWT is empty. GitLab OIDC token is not available."
+        echo "If you intended to use OIDC, enable it in GitLab and ensure the project/group allows OIDC."
+        if [ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
+          echo "AWS env credentials present; will proceed using those instead of OIDC."
+        else
+          echo "No fallback AWS credentials found; aborting deploy to avoid unpredictable aws-cli behavior."
+          exit 1
+        fi
+      fi
+    # Use aws sts assume-role-with-web-identity and request json output then parse it with Python
+    - |
+      # Run assume-role and capture stdout/stderr for debugging
+      if [ -z "$CI_JOB_JWT" ] || [ -z "$ROLE_ARN" ]; then
+        echo "Skipping assume-role because CI_JOB_JWT or ROLE_ARN is missing"
+      else
+        aws sts assume-role-with-web-identity \
+          --role-arn "$ROLE_ARN" \
+          --role-session-name "gitlab-ci-$CI_PIPELINE_ID" \
+          --web-identity-token "$CI_JOB_JWT" \
+          --duration-seconds 900 \
+          --output json > /tmp/assume.json 2> /tmp/assume.err || true
+      fi
+      echo "assume-role exit code: $?"
+      echo "--- assume-role stderr (first 200 chars) ---"
+      head -c 200 /tmp/assume.err || true
+      echo "\n--- assume-role stdout (first 2000 chars) ---"
+      head -c 2000 /tmp/assume.json || true
+      if [ -s /tmp/assume.json ]; then
+        # Parse JSON into exports
+        python - <<'PY' > /tmp/creds.sh
+        import json
+        data = json.load(open('/tmp/assume.json'))
+        creds = data.get('Credentials')
+        if not creds:
+            raise SystemExit('No Credentials in assume-role response')
+        print("export AWS_ACCESS_KEY_ID='%s'" % creds['AccessKeyId'])
+        print("export AWS_SECRET_ACCESS_KEY='%s'" % creds['SecretAccessKey'])
+        print("export AWS_SESSION_TOKEN='%s'" % creds['SessionToken'])
+        PY
+        chmod +x /tmp/creds.sh
+        source /tmp/creds.sh
+        echo "Using AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:0:4}..."
+      else
+        echo "No assume-role credentials; checking for AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY environment variables"
+        if [ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
+          echo "Using provided AWS credentials from environment"
+        else
+          echo "ERROR: No credentials available (no assume-role output and no AWS env vars). Aborting."
+          echo "assume-role stderr:" && sed -n '1,200p' /tmp/assume.err || true
+          exit 1
+        fi
+      fi
+  # ...credentials already parsed above if available; proceed to use them
+    - aws configure set region "$AWS_REGION"
+    - aws s3 sync client-app/build/ "s3://$S3_BUCKET" --delete --acl public-read
+    - |
+      if [ -n "$CLOUDFRONT_DISTRIBUTION_ID" ]; then
+        aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
+      fi
+  environment:
+    name: production
+    url: 'https://$S3_BUCKET.s3.amazonaws.com'
+
+# Smoke test: verify the deployed site responds with HTTP 200
+smoke:client-app:
+  image: curlimages/curl:8.5.0
+  stage: deploy
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - client-app/**/*
+  needs:
+    - job: deploy:client-app
+      optional: false
+  script:
+    - echo "Running smoke test against https://d2m24xdy5zz2ti.cloudfront.net/"
+    - |
+      status=$(curl -s -o /dev/null -w "%{http_code}" "https://d2m24xdy5zz2ti.cloudfront.net/")
+      echo "HTTP status: $status"
+      if [ "$status" -ne 200 ]; then
+        echo "Smoke test failed: expected 200 but got $status"
+        exit 1
+      fi
+  when: on_success
