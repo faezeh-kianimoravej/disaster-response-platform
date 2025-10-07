@@ -123,15 +123,15 @@ deploy:client-app:
         --output json > /tmp/assume.json
       echo "assume-role output:" && cat /tmp/assume.json
       python - <<'PY' > /tmp/creds.sh
-import json
-data = json.load(open('/tmp/assume.json'))
-creds = data.get('Credentials')
-if not creds:
-    raise SystemExit('No Credentials in assume-role response')
-print("export AWS_ACCESS_KEY_ID='%s'" % creds['AccessKeyId'])
-print("export AWS_SECRET_ACCESS_KEY='%s'" % creds['SecretAccessKey'])
-print("export AWS_SESSION_TOKEN='%s'" % creds['SessionToken'])
-PY
+        import json
+        data = json.load(open('/tmp/assume.json'))
+        creds = data.get('Credentials')
+        if not creds:
+            raise SystemExit('No Credentials in assume-role response')
+        print("export AWS_ACCESS_KEY_ID='%s'" % creds['AccessKeyId'])
+        print("export AWS_SECRET_ACCESS_KEY='%s'" % creds['SecretAccessKey'])
+        print("export AWS_SESSION_TOKEN='%s'" % creds['SessionToken'])
+      PY
     - chmod +x /tmp/creds.sh
     - source /tmp/creds.sh
     - echo "Using AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:0:4}..."
