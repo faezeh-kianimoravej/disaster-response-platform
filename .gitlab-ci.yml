@@ -4,6 +4,8 @@
 # Define global stages that all services can use
 stages:
   - test
+  - build
+  - deploy
 
 # Global variables that can be used across all services
 variables:
