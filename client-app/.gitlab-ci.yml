@@ -21,6 +21,65 @@ variables:
     - cd client-app
     - npm ci
 
+# Test job (full coverage on main & MRs to main)
+test:client-app:
+  extends: .client-app-base
+  stage: test
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - client-app/**/*
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+      changes:
+        - client-app/**/*
+  script:
+    - npm run lint
+    - npm run coverage
+    - npm run format:check
+  artifacts:
+    when: always
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: client-app/coverage/cobertura-coverage.xml
+    paths:
+      - client-app/coverage/
+    expire_in: 7 days
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+
+# Feature branch lighter test job
+test:client-app:feature-branches:
+  extends: .client-app-base
+  stage: test
+  rules:
+    - if: '$CI_COMMIT_BRANCH != "main" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME != "main"'
+      changes:
+        - client-app/**/*
+  script:
+    - npm run lint
+    - npm run test:run
+    - npm run format:check
+  artifacts:
+    when: on_failure
+    paths:
+      - client-app/coverage/
+    expire_in: 1 day
+
+# Build job providing artifact for deploy
+build:client-app:
+  extends: .client-app-base
+  stage: build
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - client-app/**/*
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - client-app/build/
+    expire_in: 1 week
+
 ## Deploy job (Option 1: simple inline S3 sync using static credentials)
 deploy:client-app:
   image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
