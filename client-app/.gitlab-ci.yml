@@ -83,6 +83,8 @@ build:client-app:
 # Debug job: check AWS credentials and basic access (non-destructive)
 debug:client-app-aws:
   image: amazon/aws-cli:2.13.20
+  # Clear the default aws-cli ENTRYPOINT so our script runs under /bin/sh
+  entrypoint: [""]
   stage: deploy
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
@@ -102,6 +104,8 @@ debug:client-app-aws:
 # Deploy job: builds client app and deploys to S3 on merges to main
 deploy:client-app:
   image: amazon/aws-cli:2.13.20
+  # Clear ENTRYPOINT; otherwise aws-cli image tries to treat each script line as aws args
+  entrypoint: [""]
   stage: deploy
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
@@ -183,7 +187,8 @@ deploy:client-app:
       fi
   environment:
     name: production
-    url: 'https://$S3_BUCKET.s3.amazonaws.com'
+    # Use double quotes so $S3_BUCKET expands
+    url: "https://$S3_BUCKET.s3.amazonaws.com"
 
 # Smoke test: verify the deployed site responds with HTTP 200
 smoke:client-app:
