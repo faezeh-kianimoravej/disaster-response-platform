@@ -82,9 +82,9 @@ build:client-app:
 
 # Debug job: check AWS credentials and basic access (non-destructive)
 debug:client-app-aws:
-  image: amazon/aws-cli:2.13.20
-  # Clear the default aws-cli ENTRYPOINT so our script runs under /bin/sh
-  entrypoint: [""]
+  image:
+    name: amazon/aws-cli:2.13.20
+    entrypoint: [""]  # Clear default aws entrypoint so script runs in sh
   stage: deploy
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
@@ -103,9 +103,9 @@ debug:client-app-aws:
 
 # Deploy job: builds client app and deploys to S3 on merges to main
 deploy:client-app:
-  image: amazon/aws-cli:2.13.20
-  # Clear ENTRYPOINT; otherwise aws-cli image tries to treat each script line as aws args
-  entrypoint: [""]
+  image:
+    name: amazon/aws-cli:2.13.20
+    entrypoint: [""]  # Clear default aws entrypoint
   stage: deploy
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
