@@ -88,13 +88,14 @@ debug:client-app-aws:
     - if: '$CI_COMMIT_BRANCH == "main"'
       changes:
         - client-app/**/*
-  script:
-    - echo "DEBUG: AWS_ACCESS_KEY_ID set? ${AWS_ACCESS_KEY_ID:+yes}"
-    - echo "DEBUG: AWS_SECRET_ACCESS_KEY set? ${AWS_SECRET_ACCESS_KEY:+yes}"
-    - echo "DEBUG: ROLE_ARN set? ${ROLE_ARN:+yes}"
-    - echo "DEBUG: CI_JOB_JWT set? ${CI_JOB_JWT:+yes}"
-    - aws sts get-caller-identity || true
-    - aws s3 ls "s3://$S3_BUCKET" || true
+  script: |
+    echo "DEBUG: AWS_ACCESS_KEY_ID set? ${AWS_ACCESS_KEY_ID:+yes}"
+    echo "DEBUG: AWS_SECRET_ACCESS_KEY set? ${AWS_SECRET_ACCESS_KEY:+yes}"
+    echo "DEBUG: ROLE_ARN set? ${ROLE_ARN:+yes}"
+    echo "DEBUG: CI_JOB_JWT set? ${CI_JOB_JWT:+yes}"
+    aws --version || true
+    aws sts get-caller-identity || true
+    aws s3 ls "s3://$S3_BUCKET" || true
   when: on_success
   allow_failure: true
 
