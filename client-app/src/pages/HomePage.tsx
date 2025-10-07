@@ -4,7 +4,7 @@ export default function HomePage() {
 	return (
 		<div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
 			<div className="max-w-4xl mx-auto text-center px-4">
-				<Logo withText className="mx-auto mb-6" />
+				
 				<h1 className="text-4xl font-bold text-gray-900 mb-4">
 					Disaster Response Crisis Communication System
 				</h1>

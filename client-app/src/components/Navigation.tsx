@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-
+import Logo from '@/components/Logo';
 export default function Navigation() {
 	const location = useLocation();
 
@@ -10,12 +10,13 @@ export default function Navigation() {
 	];
 
 	return (
-		<nav className="bg-blue-600 shadow-lg">
+		<nav className="bg-[#164273] shadow-lg">
 			<div className="max-w-6xl mx-auto px-4">
 				<div className="flex justify-between items-center py-4">
 					<div className="flex items-center">
+						<Logo withText className="mx-auto mb-6" />
 						<Link to="/" className="text-white text-xl font-bold">
-							DRCCS
+							 DRCCS
 						</Link>
 					</div>
 					<div className="flex space-x-8">

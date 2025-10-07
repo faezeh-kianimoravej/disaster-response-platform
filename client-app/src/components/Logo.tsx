@@ -7,12 +7,10 @@ export default function Logo({
 }) {
 	return (
 		<img
-			src={withText ? '/logo-drccs.jpg' : '/favicon.jpg'}
-			alt={withText ? 'DRCCS Logo' : 'DRCCS Icon'}
-			className={className}
-			width={withText ? 256 : 64}
-			height={withText ? 256 : 64}
-			style={{ display: 'block', margin: '0 auto' }}
+  			src={withText ? '/logo-drccs.jpg' : '/favicon.jpg'}
+  			alt={withText ? 'DRCCS Logo' : 'DRCCS Icon'}
+  			className={`${className} h-8 w-auto object-contain`} // ارتفاع حدود 32px
+  			style={{ display: 'block', margin: '0 auto' }}
 		/>
 	);
 }
