@@ -95,16 +95,46 @@ deploy:client-app:
     AWS_REGION: $AWS_REGION
   script:
     - echo "Assuming role using GitLab OIDC token"
-    # Use aws sts assume-role-with-web-identity and request text output with the credentials
-    - set -- $(aws sts assume-role-with-web-identity \
-      --role-arn "$ROLE_ARN" \
-      --role-session-name "gitlab-ci-$CI_PIPELINE_ID" \
-      --web-identity-token "$CI_JOB_JWT" \
-      --duration-seconds 900 \
-      --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]' \
-      --output text)
-    - export AWS_ACCESS_KEY_ID="$1" AWS_SECRET_ACCESS_KEY="$2" AWS_SESSION_TOKEN="$3"
-    - aws --version
+    # Debug: verify aws binary and version
+    - which aws || true
+    - aws --version || true
+    - echo "--- aws help quick-list (first lines) ---"
+    - aws help | head -n 20 || true
+    # Make sure the GitLab OIDC token is present (CI_JOB_JWT)
+    - |
+      if [ -z "$CI_JOB_JWT" ]; then
+        echo "ERROR: CI_JOB_JWT is empty. GitLab OIDC token is not available."
+        echo "If you intended to use OIDC, enable it in GitLab and ensure the project/group allows OIDC."
+        if [ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
+          echo "AWS env credentials present; will proceed using those instead of OIDC."
+        else
+          echo "No fallback AWS credentials found; aborting deploy to avoid unpredictable aws-cli behavior."
+          exit 1
+        fi
+      fi
+    # Use aws sts assume-role-with-web-identity and request json output then parse it with Python
+    - |
+      set -e
+      aws sts assume-role-with-web-identity \
+        --role-arn "$ROLE_ARN" \
+        --role-session-name "gitlab-ci-$CI_PIPELINE_ID" \
+        --web-identity-token "$CI_JOB_JWT" \
+        --duration-seconds 900 \
+        --output json > /tmp/assume.json
+      echo "assume-role output:" && cat /tmp/assume.json
+      python - <<'PY' > /tmp/creds.sh
+import json
+data = json.load(open('/tmp/assume.json'))
+creds = data.get('Credentials')
+if not creds:
+    raise SystemExit('No Credentials in assume-role response')
+print("export AWS_ACCESS_KEY_ID='%s'" % creds['AccessKeyId'])
+print("export AWS_SECRET_ACCESS_KEY='%s'" % creds['SecretAccessKey'])
+print("export AWS_SESSION_TOKEN='%s'" % creds['SessionToken'])
+PY
+    - chmod +x /tmp/creds.sh
+    - source /tmp/creds.sh
+    - echo "Using AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:0:4}..."
     - aws configure set region "$AWS_REGION"
     - aws s3 sync client-app/build/ "s3://$S3_BUCKET" --delete --acl public-read
     - |
