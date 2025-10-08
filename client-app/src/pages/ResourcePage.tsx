@@ -2,6 +2,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { getResourceById, updateResource, deleteResource } from '@/data/resources';
 import type { Resource } from '@/data/resources';
+import Button from '@/components/Button';
 
 export default function ResourcePage() {
 	const { resourceId } = useParams();
@@ -108,24 +109,15 @@ export default function ResourcePage() {
 										</p>
 									</div>
 									<div className="mt-6 flex space-x-3">
-										<button
-											onClick={() => setEditing(true)}
-											className="px-4 py-2 bg-blue-600 text-white rounded"
-										>
+										<Button onClick={() => setEditing(true)} variant="primary">
 											Edit
-										</button>
-										<button
-											onClick={handleDelete}
-											className="px-4 py-2 bg-red-600 text-white rounded"
-										>
+										</Button>
+										<Button onClick={handleDelete} variant="danger">
 											Delete
-										</button>
-										<button
-											onClick={() => navigate('/resources')}
-											className="px-4 py-2 border rounded"
-										>
+										</Button>
+										<Button onClick={() => navigate('/resources')} variant="outline">
 											Back
-										</button>
+										</Button>
 									</div>
 								</>
 							) : (
@@ -173,15 +165,12 @@ export default function ResourcePage() {
 										</div>
 									</div>
 									<div className="mt-6 flex space-x-3">
-										<button
-											onClick={handleSave}
-											className="px-4 py-2 bg-green-600 text-white rounded"
-										>
+										<Button onClick={handleSave} variant="success">
 											Save
-										</button>
-										<button onClick={() => setEditing(false)} className="px-4 py-2 border rounded">
+										</Button>
+										<Button onClick={() => setEditing(false)} variant="outline">
 											Cancel
-										</button>
+										</Button>
 									</div>
 								</div>
 							)}
