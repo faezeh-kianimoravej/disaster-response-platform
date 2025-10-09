@@ -1,13 +1,25 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getResources } from '@/data/resources';
+import Button from '@/components/Button';
 
 export default function ResourcesPage() {
 	const resources = getResources();
+	const navigate = useNavigate();
+
+	const handleAddNew = () => {
+		console.log('Button clicked!'); // Debug log
+		navigate('/resources/new');
+	};
 
 	return (
 		<div className="min-h-screen bg-gray-50 py-8">
 			<div className="max-w-6xl mx-auto px-4">
-				<h1 className="text-3xl font-bold text-gray-900 mb-8">Resource Management</h1>
+				<div className="flex justify-between items-center mb-8">
+					<h1 className="text-3xl font-bold text-gray-900">Resource Management</h1>
+					<Button onClick={handleAddNew} variant="primary">
+						Add New Resource
+					</Button>
+				</div>
 
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 					{resources.map(r => (

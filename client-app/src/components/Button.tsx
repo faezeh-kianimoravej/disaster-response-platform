@@ -1,6 +1,6 @@
 import React from 'react';
 
-type Variant = 'primary' | 'danger' | 'success' | 'outline' | 'ghost';
+type Variant = 'primary' | 'danger' | 'success' | 'outline' | 'ghost' | 'disabled';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 	variant?: Variant;
@@ -13,6 +13,7 @@ const variantClasses: Record<Variant, string> = {
 	success: 'bg-green-600 text-white',
 	outline: 'border text-gray-700 bg-white',
 	ghost: 'bg-transparent text-gray-700',
+	disabled: 'bg-gray-300 text-gray-500 cursor-not-allowed',
 };
 
 export default function Button({

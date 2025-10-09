@@ -1,3 +1,6 @@
+import type { ValidationResult } from '@/utils/validation';
+import { createValidationRule, validateRequired, validateMinValue } from '@/utils/validation';
+
 export interface Resource {
 	resourceId: number;
 	departmentId: number;
@@ -7,6 +10,56 @@ export interface Resource {
 	available: number;
 	resourceType: string;
 	image: string;
+}
+
+export interface ResourceFormData {
+	name: string;
+	description: string;
+	quantity: number;
+	available: number;
+	resourceType: string;
+	departmentId: number;
+	image: string;
+}
+
+// Fields that actually need validation
+type ResourceValidationFields = Pick<
+	ResourceFormData,
+	'name' | 'quantity' | 'available' | 'departmentId' | 'image'
+>;
+
+// Simplified validation - only validate fields that need it
+export function validateResource(
+	data: ResourceFormData
+): ValidationResult<ResourceValidationFields> {
+	return {
+		name: validateRequired(data.name, 'Resource name'),
+		quantity: validateMinValue(data.quantity, 1, 'Quantity'),
+		available: createValidationRule(
+			data.available >= 0 && data.available <= data.quantity,
+			'Available must be between 0 and quantity'
+		),
+		departmentId: validateMinValue(data.departmentId, 1, 'Department ID'),
+		image: validateRequired(data.image, 'Image'),
+	};
+}
+
+export const RESOURCE_TYPES = {
+	Medical: 'Medical',
+	Vehicle: 'Vehicle',
+	Human: 'Human',
+} as const;
+
+export type ResourceType = keyof typeof RESOURCE_TYPES;
+
+export const RESOURCE_TYPE_IMAGES: Record<ResourceType, string> = {
+	Medical: '/images/first-aid-box.png',
+	Vehicle: '/images/ambulance.png',
+	Human: '/images/response.png',
+};
+
+export function getImageForResourceType(resourceType: string): string {
+	return RESOURCE_TYPE_IMAGES[resourceType as ResourceType] || RESOURCE_TYPE_IMAGES.Medical;
 }
 
 let resources: Resource[] = [
