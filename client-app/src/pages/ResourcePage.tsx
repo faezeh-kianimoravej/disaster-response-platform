@@ -3,18 +3,22 @@ import { useState, useEffect } from 'react';
 import { useResource } from '@/hooks/useResource';
 import ResourceForm from '@/components/ResourceForm';
 import ResourceView from '@/components/ResourceView';
+import ConfirmModal from '@/components/ConfirmModal';
 import { getImageForResourceType, type ResourceFormData } from '@/data/resources';
+import { useToast } from '@/components/ToastProvider';
 
 export default function ResourcePage() {
 	const { resourceId } = useParams();
 	const isNewResource = resourceId === 'new';
 	const navigate = useNavigate();
+	const { showSuccess, showError } = useToast();
 
 	const { resource, loading, saveResource, removeResource } = useResource(
 		resourceId,
 		isNewResource
 	);
 	const [editing, setEditing] = useState(isNewResource);
+	const [showDeleteModal, setShowDeleteModal] = useState(false);
 	const [currentImageSrc, setCurrentImageSrc] = useState<string>(
 		getImageForResourceType('Medical')
 	);
@@ -46,20 +50,33 @@ export default function ResourcePage() {
 		const savedResource = saveResource(formData);
 		if (savedResource) {
 			if (isNewResource) {
+				showSuccess(`Resource "${savedResource.name}" has been created successfully!`);
 				navigate(`/resources/${savedResource.resourceId}`);
 			} else {
+				showSuccess(`Resource "${savedResource.name}" has been updated successfully!`);
 				setEditing(false);
 			}
+		} else {
+			showError('Failed to save resource. Please try again.');
 		}
 	};
 
 	const handleDelete = () => {
 		if (!resource) return;
+		setShowDeleteModal(true);
+	};
 
-		if (!confirm(`Delete resource "${resource.name}"? This cannot be undone.`)) return;
+	const confirmDelete = () => {
+		if (!resource) return;
 
 		const success = removeResource();
-		if (success) navigate('/resources');
+		if (success) {
+			showSuccess(`Resource "${resource.name}" has been deleted successfully.`);
+			navigate('/resources');
+		} else {
+			showError('Failed to delete resource. Please try again.');
+		}
+		setShowDeleteModal(false);
 	};
 
 	const handleCancel = () => {
@@ -122,6 +139,18 @@ export default function ResourcePage() {
 					</div>
 				</div>
 			</div>
+
+			{/* Delete Confirmation Modal */}
+			<ConfirmModal
+				isOpen={showDeleteModal}
+				title="Delete Resource"
+				message={`Are you sure you want to delete "${resource?.name}"? This action cannot be undone.`}
+				confirmText="Delete"
+				cancelText="Cancel"
+				variant="danger"
+				onConfirm={confirmDelete}
+				onCancel={() => setShowDeleteModal(false)}
+			/>
 		</div>
 	);
 }

@@ -4,6 +4,7 @@ import FormInput, { createOptionsFromObject } from './FormInput';
 import type { Resource, ResourceFormData } from '@/data/resources';
 import { RESOURCE_TYPES, getImageForResourceType, validateResource } from '@/data/resources';
 import { isFormValid } from '@/utils/validation';
+import { useToast } from './ToastProvider';
 
 interface ResourceFormProps {
 	initialData?: Partial<Resource>;
@@ -20,6 +21,7 @@ export default function ResourceForm({
 	onCancel,
 	onImageChange,
 }: ResourceFormProps) {
+	const { showError } = useToast();
 	const [form, setForm] = useState<ResourceFormData>({
 		name: initialData?.name || '',
 		description: initialData?.description || '',
@@ -129,7 +131,7 @@ export default function ResourceForm({
 			const errors = Object.values(validation)
 				.filter(field => !field.isValid)
 				.map(field => field.message);
-			alert('Please fix the following errors:\n' + errors.join('\n'));
+			showError('Please fix the following errors:\n' + errors.join('\n'));
 			return;
 		}
 

@@ -1,10 +1,16 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import ResourceForm from '../components/ResourceForm';
+import { ToastProvider } from '../components/ToastProvider';
 import type { Resource } from '../data/resources';
 
 // Mock the image import issue that might occur in tests
 vi.mock('../assets', () => ({}));
+
+// Helper function to render component with ToastProvider
+const renderWithToast = (component: React.ReactElement) => {
+	return render(<ToastProvider>{component}</ToastProvider>);
+};
 
 describe('ResourceForm component', () => {
 	const mockOnSave = vi.fn();
@@ -35,7 +41,7 @@ describe('ResourceForm component', () => {
 
 	describe('form rendering', () => {
 		it('should render all form fields for new resource', () => {
-			render(<ResourceForm {...defaultProps} />);
+			renderWithToast(<ResourceForm {...defaultProps} />);
 
 			expect(screen.getByLabelText(/^Name/)).toBeInTheDocument();
 			expect(screen.getByLabelText('Description')).toBeInTheDocument();
@@ -46,13 +52,13 @@ describe('ResourceForm component', () => {
 		});
 
 		it('should render Create button for new resource', () => {
-			render(<ResourceForm {...defaultProps} />);
+			renderWithToast(<ResourceForm {...defaultProps} />);
 
 			expect(screen.getByRole('button', { name: 'Create' })).toBeInTheDocument();
 		});
 
 		it('should render Save button for existing resource', () => {
-			render(
+			renderWithToast(
 				<ResourceForm {...defaultProps} isNewResource={false} initialData={existingResource} />
 			);
 
@@ -60,13 +66,13 @@ describe('ResourceForm component', () => {
 		});
 
 		it('should render Cancel button', () => {
-			render(<ResourceForm {...defaultProps} />);
+			renderWithToast(<ResourceForm {...defaultProps} />);
 
 			expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
 		});
 
 		it('should show required asterisks only on required fields', () => {
-			render(<ResourceForm {...defaultProps} />);
+			renderWithToast(<ResourceForm {...defaultProps} />);
 
 			// Required fields should have asterisks
 			expect(screen.getByText('Name')).toBeInTheDocument();
@@ -76,7 +82,7 @@ describe('ResourceForm component', () => {
 
 	describe('form initialization', () => {
 		it('should initialize with empty values for new resource', () => {
-			render(<ResourceForm {...defaultProps} />);
+			renderWithToast(<ResourceForm {...defaultProps} />);
 
 			const nameInput = screen.getByLabelText(/^Name/);
 			const quantityInput = screen.getByLabelText('Quantity');
@@ -86,7 +92,7 @@ describe('ResourceForm component', () => {
 		});
 
 		it('should initialize with existing data when editing', () => {
-			render(
+			renderWithToast(
 				<ResourceForm {...defaultProps} isNewResource={false} initialData={existingResource} />
 			);
 
@@ -98,7 +104,7 @@ describe('ResourceForm component', () => {
 		});
 
 		it('should set default resource type to Medical', () => {
-			render(<ResourceForm {...defaultProps} />);
+			renderWithToast(<ResourceForm {...defaultProps} />);
 
 			const select = screen.getByDisplayValue('Medical');
 			expect(select).toBeInTheDocument();
@@ -107,9 +113,8 @@ describe('ResourceForm component', () => {
 
 	describe('form validation', () => {
 		it('should show validation error for empty required name', async () => {
-			render(<ResourceForm {...defaultProps} />);
+			renderWithToast(<ResourceForm {...defaultProps} />);
 
-			const nameInput = screen.getByLabelText(/^Name/);
 			const submitButton = screen.getByRole('button', { name: 'Create' });
 
 			// Try to submit with empty name
@@ -121,7 +126,7 @@ describe('ResourceForm component', () => {
 		});
 
 		it('should show validation error for invalid quantity', async () => {
-			render(<ResourceForm {...defaultProps} />);
+			renderWithToast(<ResourceForm {...defaultProps} />);
 
 			const nameInput = screen.getByLabelText(/^Name/);
 			const quantityInput = screen.getByLabelText('Quantity');
@@ -140,14 +145,14 @@ describe('ResourceForm component', () => {
 		});
 
 		it('should disable submit button when form is invalid', () => {
-			render(<ResourceForm {...defaultProps} />);
+			renderWithToast(<ResourceForm {...defaultProps} />);
 
 			const submitButton = screen.getByRole('button', { name: 'Create' });
 			expect(submitButton).toHaveClass('bg-gray-300'); // disabled styling
 		});
 
 		it('should enable submit button when form is valid', async () => {
-			render(<ResourceForm {...defaultProps} />);
+			renderWithToast(<ResourceForm {...defaultProps} />);
 
 			const nameInput = screen.getByLabelText(/^Name/);
 			const quantityInput = screen.getByLabelText('Quantity');
@@ -164,7 +169,7 @@ describe('ResourceForm component', () => {
 
 	describe('form interactions', () => {
 		it('should update form values when user types', () => {
-			render(<ResourceForm {...defaultProps} />);
+			renderWithToast(<ResourceForm {...defaultProps} />);
 
 			const nameInput = screen.getByLabelText(/^Name/);
 			fireEvent.change(nameInput, { target: { value: 'New Name' } });
@@ -173,7 +178,7 @@ describe('ResourceForm component', () => {
 		});
 
 		it('should update image when resource type changes', () => {
-			render(<ResourceForm {...defaultProps} />);
+			renderWithToast(<ResourceForm {...defaultProps} />);
 
 			const resourceTypeSelect = screen.getByLabelText('Resource Type');
 			fireEvent.change(resourceTypeSelect, { target: { value: 'Vehicle' } });
@@ -183,7 +188,7 @@ describe('ResourceForm component', () => {
 		});
 
 		it('should call onCancel when Cancel button is clicked', () => {
-			render(<ResourceForm {...defaultProps} />);
+			renderWithToast(<ResourceForm {...defaultProps} />);
 
 			const cancelButton = screen.getByRole('button', { name: 'Cancel' });
 			fireEvent.click(cancelButton);
@@ -192,7 +197,7 @@ describe('ResourceForm component', () => {
 		});
 
 		it('should call onSave with form data when valid form is submitted', async () => {
-			render(<ResourceForm {...defaultProps} />);
+			renderWithToast(<ResourceForm {...defaultProps} />);
 
 			// Fill in required fields
 			const nameInput = screen.getByLabelText(/^Name/);
@@ -221,7 +226,7 @@ describe('ResourceForm component', () => {
 		});
 
 		it('should not call onSave when invalid form is submitted', () => {
-			render(<ResourceForm {...defaultProps} />);
+			renderWithToast(<ResourceForm {...defaultProps} />);
 
 			// Submit without filling required fields
 			const submitButton = screen.getByRole('button', { name: 'Create' });
@@ -233,13 +238,13 @@ describe('ResourceForm component', () => {
 
 	describe('help text and field information', () => {
 		it('should show help text for available field', () => {
-			render(<ResourceForm {...defaultProps} />);
+			renderWithToast(<ResourceForm {...defaultProps} />);
 
 			expect(screen.getByText('Maximum: 0')).toBeInTheDocument();
 		});
 
 		it('should update available field help text when quantity changes', () => {
-			render(<ResourceForm {...defaultProps} />);
+			renderWithToast(<ResourceForm {...defaultProps} />);
 
 			const quantityInput = screen.getByLabelText('Quantity');
 			fireEvent.change(quantityInput, { target: { value: '20' } });
@@ -250,7 +255,7 @@ describe('ResourceForm component', () => {
 
 	describe('accessibility', () => {
 		it('should have proper labels for all form controls', () => {
-			render(<ResourceForm {...defaultProps} />);
+			renderWithToast(<ResourceForm {...defaultProps} />);
 
 			expect(screen.getByLabelText(/^Name/)).toBeInTheDocument();
 			expect(screen.getByLabelText('Description')).toBeInTheDocument();
@@ -261,7 +266,7 @@ describe('ResourceForm component', () => {
 		});
 
 		it('should have proper button roles', () => {
-			render(<ResourceForm {...defaultProps} />);
+			renderWithToast(<ResourceForm {...defaultProps} />);
 
 			expect(screen.getByRole('button', { name: 'Create' })).toBeInTheDocument();
 			expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
