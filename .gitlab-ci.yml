@@ -6,6 +6,7 @@ stages:
   - test
   - build
   - deploy
+  - smoke
 
 # Global variables that can be used across all services
 variables:

@@ -1,5 +1,26 @@
 # Client App CI/CD Pipeline Configuration
-# This file contains the pipeline configuration specific to the React/Vite client application
+# Triggers and behavior:
+# - A top-level workflow will only create pipelines when files under `client-app/` change
+#   (this file's `workflow.rules` controls that).
+# - Jobs inside this file assume the pipeline has been created because of changes to
+#   the `client-app/` folder; therefore jobs don't need per-job `changes:` filters.
+# - Test job: runs full test suite on main and on merge requests targeting main; also
+#   runs in MR pipelines so MRs can validate changes.
+# - Build job: runs for MRs and on main to produce artifacts for deploy.
+# - Deploy job: runs only on commits pushed to `main`.
+# - Smoke job: runs in its own `smoke` stage after deploy to verify the deployed site.
+
+# Only create pipelines when files under client-app/ change, or when manually/API/schedule triggered.
+workflow:
+  rules:
+    - changes:
+        - client-app/**/*
+      when: always
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: always
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: always
+    - when: never
 
 variables:
   NODE_VERSION: '20'
@@ -26,12 +47,9 @@ test:client-app:
   extends: .client-app-base
   stage: test
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-      changes:
-        - client-app/**/*
-    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
-      changes:
-        - client-app/**/*
+    # Pipeline is already filtered by the top-level workflow for client-app changes.
+    # Run full tests in all pipelines created for client-app (including MRs and feature branches).
+    - when: always
   script:
     - npm run lint
     - npm run coverage
@@ -47,32 +65,17 @@ test:client-app:
     expire_in: 7 days
   coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
 
-# Feature branch lighter test job
-test:client-app:feature-branches:
-  extends: .client-app-base
-  stage: test
-  rules:
-    - if: '$CI_COMMIT_BRANCH != "main" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME != "main"'
-      changes:
-        - client-app/**/*
-  script:
-    - npm run lint
-    - npm run test:run
-    - npm run format:check
-  artifacts:
-    when: on_failure
-    paths:
-      - client-app/coverage/
-    expire_in: 1 day
-
 # Build job providing artifact for deploy
 build:client-app:
   extends: .client-app-base
   stage: build
   rules:
+    # Build artifacts for merge requests so deploy can be tested from MR pipelines
+    - if: '$CI_MERGE_REQUEST_ID'
+      when: always
+    # Optional: also build on main to produce artifacts for deploy
     - if: '$CI_COMMIT_BRANCH == "main"'
-      changes:
-        - client-app/**/*
+      when: always
   script:
     - npm run build
   artifacts:
@@ -85,9 +88,9 @@ deploy:client-app:
   image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
   stage: deploy
   rules:
+    # Only deploy when commits are pushed to main
     - if: '$CI_COMMIT_BRANCH == "main"'
-      changes:
-        - client-app/**/*
+      when: always
   needs:
     - job: build:client-app
       artifacts: true
@@ -105,16 +108,16 @@ deploy:client-app:
     fi
   environment:
     name: production
-    url: "https://$S3_BUCKET.s3.amazonaws.com"
+    url: 'https://$S3_BUCKET.s3.amazonaws.com'
 
 # Smoke test: verify the deployed site responds with HTTP 200
 smoke:client-app:
   image: curlimages/curl:8.5.0
-  stage: deploy
+  stage: smoke
   rules:
+    # Run smoke tests after successful deploys to main
     - if: '$CI_COMMIT_BRANCH == "main"'
-      changes:
-        - client-app/**/*
+      when: always
   needs:
     - job: deploy:client-app
       optional: false
