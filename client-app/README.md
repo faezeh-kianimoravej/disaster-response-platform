@@ -1,60 +1,50 @@
 # DRCCS Client App
 
-![Pipeline Status](../../badges/main/pipeline.svg) ![Coverage](../../badges/main/coverage.svg)
 ![React](https://img.shields.io/badge/React-18+-61DAFB?logo=react&logoColor=white&style=flat-square)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white&style=flat-square)
 ![Vite](https://img.shields.io/badge/Vite-5.x-646CFF?logo=vite&logoColor=white&style=flat-square)
 
-This project is a TypeScript React application for the Disaster Response Crisis Communication System (DRCCS), built with Vite for modern development and build tooling.
+A TypeScript React application for the Disaster Response Crisis Communication System (DRCCS), built with Vite for fast development and modern build tooling.
 
-## Available Scripts
+## 🌐 Hosted Frontend
+The web portal is live!
 
-In the project directory, you can run:
+**Access via AWS (S3 + CloudFront):**  
+[👉 DRCCS Web Portal](https://d2m24xdy5zz2ti.cloudfront.net/)
 
-### `npm run dev`
+## Getting Started
 
-Runs the app in development mode using Vite. Open [http://localhost:3000](http://localhost:3000) to view it in your browser. Hot reload is enabled.
+Install dependencies:
 
-### `npm run build`
+```bash
+npm install
+```
 
-Type-checks the codebase and builds the app for production to the `build` folder. Optimizes and bundles React for best performance.
+Start the development server:
 
-### `npm run preview`
+```bash
+npm run dev
+```
 
-Runs the built app in preview mode using Vite. Simulates production locally.
+Open [http://localhost:3000](http://localhost:3000) in your browser. Hot reload is enabled.
 
-### `npm test`
+## Scripts
 
-Runs all tests using Vitest in watch mode. See [Vitest documentation](https://vitest.dev/).
-
-### `npm run test:ui`
-
-Launches the Vitest UI for interactive test running and debugging.
-
-### `npm run test:run`
-
-Runs all tests once (no watch mode).
-
-### `npm run coverage`
-
-Runs tests and generates a coverage report (text, JSON, HTML output).
-
-### `npm run lint`
-
-Checks code for lint errors using ESLint. Fails if any errors or warnings are found.
-
-### `npm run lint:fix`
-
-Automatically fixes lint errors and warnings using ESLint.
-
-### `npm run format`
-
-Formats code using Prettier (all supported file types).
-
-### `npm run format:check`
-
-Checks code formatting using Prettier (does not modify files).
+- **`npm run dev`** – Start development server
+- **`npm run build`** – Build for production
+- **`npm run preview`** – Preview production build locally
+- **`npm test`** – Run tests (Vitest)
+- **`npm run test:ui`** – Launch Vitest UI
+- **`npm run test:run`** – Run tests once
+- **`npm run coverage`** – Generate coverage report
+- **`npm run lint`** – Lint code (ESLint)
+- **`npm run lint:fix`** – Auto-fix lint errors
+- **`npm run format`** – Format code (Prettier)
+- **`npm run format:check`** – Check code formatting
 
 ## Learn More
 
-See [Vite documentation](https://vitejs.dev/), [React documentation](https://react.dev/), and [Tailwind CSS documentation](https://tailwindcss.com/) for more information.
+- [Vite documentation](https://vitejs.dev/)
+- [React documentation](https://react.dev/)
+- [Tailwind CSS documentation](https://tailwindcss.com/)
+- [Vitest documentation](https://vitest.dev/)
