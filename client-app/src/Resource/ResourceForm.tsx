@@ -3,11 +3,9 @@ import Button from '../components/Button';
 import FormInput, { createOptionsFromObject } from '../components/FormInput';
 import type { Resource, ResourceFormData } from './types';
 import { validateResource } from './validation';
-import{ getImageForResourceType,RESOURCE_TYPES} from './utils';
+import { getImageForResourceType, RESOURCE_TYPES } from './utils';
 import { isFormValid } from '@/utils/validation';
 import { useToast } from '../components/ToastProvider';
-
-
 
 interface ResourceFormProps {
 	initialData?: Partial<Resource>;
@@ -137,7 +135,6 @@ export default function ResourceForm({
 			showError('Please fix the following errors:\n' + errors.join('\n'));
 			return;
 		}
-		
 
 		onSave(form);
 	}
@@ -175,7 +172,6 @@ export default function ResourceForm({
 						type="select"
 						options={createOptionsFromObject(RESOURCE_TYPES)}
 					/>
-
 
 					<FormInput
 						label="Department ID"

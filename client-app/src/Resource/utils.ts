@@ -15,4 +15,3 @@ export const RESOURCE_TYPE_IMAGES: Record<ResourceType, string> = {
 export function getImageForResourceType(resourceType: string): string {
 	return RESOURCE_TYPE_IMAGES[resourceType as ResourceType] || RESOURCE_TYPE_IMAGES.Medical;
 }
-

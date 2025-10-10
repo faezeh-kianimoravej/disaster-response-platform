@@ -47,7 +47,6 @@ export default function ResourcePage() {
 		}
 	}, [resource, isNewResource]);
 
-	
 	const handleSave = async (formData: ResourceFormData) => {
 		try {
 			const savedResource = await saveResource(formData);
@@ -73,7 +72,6 @@ export default function ResourcePage() {
 		setShowDeleteModal(true);
 	};
 
-	
 	const confirmDelete = async () => {
 		if (!resource) return;
 		try {

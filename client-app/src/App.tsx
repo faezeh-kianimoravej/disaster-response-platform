@@ -20,8 +20,11 @@ function App() {
 						<Route path="/alerts" element={<AlertsPage />} />
 						<Route path="/resources" element={<ResourcesPage />} />
 						<Route path="/resources/:resourceId" element={<ResourcePage />} />
-						<Route path="/departments" element={<DepartmentsPage municipalityId={201} />}/>
-						<Route path="/departments/:departmentId" element={<DepartmentPage municipalityId={201} />}/>
+						<Route path="/departments" element={<DepartmentsPage municipalityId={201} />} />
+						<Route
+							path="/departments/:departmentId"
+							element={<DepartmentPage municipalityId={201} />}
+						/>
 					</Routes>
 				</div>
 			</Router>

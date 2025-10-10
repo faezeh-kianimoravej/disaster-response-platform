@@ -10,8 +10,7 @@ interface ResourceViewProps {
 
 export default function ResourceView({ resource, onEdit, onDelete, onBack }: ResourceViewProps) {
 	return (
-		<div className="relative">			
-
+		<div className="relative">
 			<h2 className="text-2xl font-semibold pr-40">{resource.name}</h2>
 			<p className="text-gray-600 mt-2">{resource.description}</p>
 			<div className="mt-4 text-gray-700">
