@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { validateResource, type ResourceFormData } from '../Resource/validation';
+import { validateResource } from '../Resource/validation';
+import type { ResourceFormData } from '../Resource/types';
 
 describe('resource validation', () => {
 	const validResourceData: ResourceFormData = {
