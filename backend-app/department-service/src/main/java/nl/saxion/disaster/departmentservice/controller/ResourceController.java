@@ -3,7 +3,7 @@ package nl.saxion.disaster.departmentservice.controller;
 import lombok.RequiredArgsConstructor;
 import nl.saxion.disaster.departmentservice.model.entity.Resource;
 import nl.saxion.disaster.departmentservice.model.enums.ResourceType;
-import nl.saxion.disaster.departmentservice.service.ResourceService;
+import nl.saxion.disaster.departmentservice.service.contract.ResourceService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
