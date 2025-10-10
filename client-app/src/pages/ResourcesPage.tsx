@@ -1,45 +1,33 @@
-const resourcesData = [
-	{
-		resourceId: 1,
-		departmentId: 101,
-		name: 'Medical Supplies',
-		description: 'First aid kits and medicines',
-		quantity: 150,
-		available: 120,
-		resourceType: 'Medical',
-		image: '/images/first-aid-box.png',
-	},
-	{
-		resourceId: 2,
-		departmentId: 102,
-		name: 'Emergency Vehicles',
-		description: 'Ambulances and fire trucks',
-		quantity: 25,
-		available: 23,
-		resourceType: 'Vehicle',
-		image: '/images/ambulance.png',
-	},
-	{
-		resourceId: 3,
-		departmentId: 103,
-		name: 'Personnel',
-		description: 'On-duty emergency staff',
-		quantity: 50,
-		available: 39,
-		resourceType: 'Human',
-		image: '/images/response.png',
-	},
-];
+import { Link, useNavigate } from 'react-router-dom';
+import { getResources } from '@/data/resources';
+import Button from '@/components/Button';
 
 export default function ResourcesPage() {
+	const resources = getResources();
+	const navigate = useNavigate();
+
+	const handleAddNew = () => {
+		console.log('Button clicked!'); // Debug log
+		navigate('/resources/new');
+	};
+
 	return (
 		<div className="min-h-screen bg-gray-50 py-8">
 			<div className="max-w-6xl mx-auto px-4">
-				<h1 className="text-3xl font-bold text-gray-900 mb-8">Resource Management</h1>
+				<div className="flex justify-between items-center mb-8">
+					<h1 className="text-3xl font-bold text-gray-900">Resource Management</h1>
+					<Button onClick={handleAddNew} variant="primary">
+						Add New Resource
+					</Button>
+				</div>
 
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-					{resourcesData.map(r => (
-						<div key={r.resourceId} className="bg-white rounded-lg shadow-md p-6">
+					{resources.map(r => (
+						<Link
+							key={r.resourceId}
+							to={`/resources/${r.resourceId}`}
+							className="block bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition"
+						>
 							<img src={r.image} alt={r.name} className="h-24 w-24 object-contain mx-auto mb-4" />
 							<h3 className="text-lg font-semibold text-gray-800 mb-2">{r.name}</h3>
 							<p className="text-sm text-gray-500 mb-2">{r.description}</p>
@@ -52,7 +40,7 @@ export default function ResourcesPage() {
 							<p className="text-gray-700">
 								<strong>Type:</strong> {r.resourceType}
 							</p>
-						</div>
+						</Link>
 					))}
 				</div>
 			</div>
