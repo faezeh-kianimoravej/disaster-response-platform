@@ -8,7 +8,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/resources")
@@ -17,6 +19,15 @@ import java.util.List;
 public class ResourceController {
 
     private final ResourceService resourceService;
+
+    @GetMapping("/resource-types")
+    public ResponseEntity<List<Map<String, String>>> getAllResourceTypes() {
+        List<Map<String, String>> resourceTypes = Arrays.stream(ResourceType.values())
+                .map(type -> Map.of("name", type.name(), "description", type.getDescription()))
+                .toList();
+
+        return ResponseEntity.ok(resourceTypes);
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<Resource> getResourceById(@PathVariable Long id) {
