@@ -5,6 +5,7 @@ import AlertsPage from './pages/AlertsPage';
 import ResourcesPage from './pages/ResourcesPage';
 import ResourcePage from './pages/ResourcePage';
 import { ToastProvider } from './components/ToastProvider';
+import DepartmentsPage from './pages/DepartmentPage';
 
 function App() {
 	return (
