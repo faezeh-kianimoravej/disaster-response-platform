@@ -1,10 +1,11 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { useResource } from '@/hooks/useResource';
-import ResourceForm from '@/components/ResourceForm';
-import ResourceView from '@/components/ResourceView';
+import { useResource } from '@/Resource/useResource';
+import ResourceForm from '@/Resource/ResourceForm';
+import ResourceView from '@/Resource/ResourceView';
 import ConfirmModal from '@/components/ConfirmModal';
-import { getImageForResourceType, type ResourceFormData } from '@/data/resources';
+import { getImageForResourceType } from './utils';
+import { type ResourceFormData } from './types';
 import { useToast } from '@/components/ToastProvider';
 
 export default function ResourcePage() {
@@ -46,18 +47,24 @@ export default function ResourcePage() {
 		}
 	}, [resource, isNewResource]);
 
-	const handleSave = (formData: ResourceFormData) => {
-		const savedResource = saveResource(formData);
-		if (savedResource) {
-			if (isNewResource) {
-				showSuccess(`Resource "${savedResource.name}" has been created successfully!`);
-				navigate(`/resources/${savedResource.resourceId}`);
+	
+	const handleSave = async (formData: ResourceFormData) => {
+		try {
+			const savedResource = await saveResource(formData);
+			if (savedResource) {
+				if (isNewResource) {
+					showSuccess(`Resource "${savedResource.name}" has been created successfully!`);
+					navigate(`/resources/${savedResource.resourceId}`);
+				} else {
+					showSuccess(`Resource "${savedResource.name}" has been updated successfully!`);
+					setEditing(false);
+				}
 			} else {
-				showSuccess(`Resource "${savedResource.name}" has been updated successfully!`);
-				setEditing(false);
+				showError('Failed to save resource. Please try again.');
 			}
-		} else {
-			showError('Failed to save resource. Please try again.');
+		} catch (err) {
+			showError('An unexpected error occurred while saving.');
+			console.error(err);
 		}
 	};
 
@@ -66,15 +73,20 @@ export default function ResourcePage() {
 		setShowDeleteModal(true);
 	};
 
-	const confirmDelete = () => {
+	
+	const confirmDelete = async () => {
 		if (!resource) return;
-
-		const success = removeResource();
-		if (success) {
-			showSuccess(`Resource "${resource.name}" has been deleted successfully.`);
-			navigate('/resources');
-		} else {
-			showError('Failed to delete resource. Please try again.');
+		try {
+			const success = await removeResource();
+			if (success) {
+				showSuccess(`Resource "${resource.name}" has been deleted successfully.`);
+				navigate('/resources');
+			} else {
+				showError('Failed to delete resource. Please try again.');
+			}
+		} catch (err) {
+			showError('An unexpected error occurred while deleting.');
+			console.error(err);
 		}
 		setShowDeleteModal(false);
 	};

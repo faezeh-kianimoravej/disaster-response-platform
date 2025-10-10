@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
-import Button from './Button';
-import FormInput, { createOptionsFromObject } from './FormInput';
-import type { Resource, ResourceFormData } from '@/data/resources';
-import { RESOURCE_TYPES, getImageForResourceType, validateResource } from '@/data/resources';
+import Button from '../components/Button';
+import FormInput, { createOptionsFromObject } from '../components/FormInput';
+import type { Resource, ResourceFormData } from './types';
+import { validateResource } from './validation';
+import{ getImageForResourceType,RESOURCE_TYPES} from './utils';
 import { isFormValid } from '@/utils/validation';
-import { useToast } from './ToastProvider';
+import { useToast } from '../components/ToastProvider';
+
+
 
 interface ResourceFormProps {
 	initialData?: Partial<Resource>;
@@ -134,6 +137,7 @@ export default function ResourceForm({
 			showError('Please fix the following errors:\n' + errors.join('\n'));
 			return;
 		}
+		
 
 		onSave(form);
 	}
@@ -172,6 +176,7 @@ export default function ResourceForm({
 						options={createOptionsFromObject(RESOURCE_TYPES)}
 					/>
 
+
 					<FormInput
 						label="Department ID"
 						name="departmentId"
@@ -209,7 +214,7 @@ export default function ResourceForm({
 					/>
 				</div>
 			</div>
-			<div className="mt-6 flex space-x-3">
+			<div className="mt-6 flex justify-end space-x-3">
 				<Button onClick={handleSubmit} variant={isValid ? 'success' : 'disabled'}>
 					{isNewResource ? 'Create' : 'Save'}
 				</Button>

@@ -1,8 +1,8 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import ResourceForm from '../components/ResourceForm';
+import ResourceForm from '../Resource/ResourceForm';
 import { ToastProvider } from '../components/ToastProvider';
-import type { Resource } from '../data/resources';
+import type { Resource } from '../Resource/types';
 
 // Mock the image import issue that might occur in tests
 vi.mock('../assets', () => ({}));

@@ -2,10 +2,12 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navigation from './components/Navigation';
 import HomePage from './pages/HomePage';
 import AlertsPage from './pages/AlertsPage';
-import ResourcesPage from './pages/ResourcesPage';
-import ResourcePage from './pages/ResourcePage';
+import ResourcesPage from './Resource/ResourcesPage';
+import ResourcePage from './Resource/ResourcePage';
+import DepartmentPage from './Department/DepartmentPage';
+import DepartmentsPage from './Department/DepartmentsPage';
+
 import { ToastProvider } from './components/ToastProvider';
-import DepartmentsPage from './pages/DepartmentPage';
 
 function App() {
 	return (
@@ -18,6 +20,8 @@ function App() {
 						<Route path="/alerts" element={<AlertsPage />} />
 						<Route path="/resources" element={<ResourcesPage />} />
 						<Route path="/resources/:resourceId" element={<ResourcePage />} />
+						<Route path="/departments" element={<DepartmentsPage municipalityId={201} />}/>
+						<Route path="/departments/:departmentId" element={<DepartmentPage municipalityId={201} />}/>
 					</Routes>
 				</div>
 			</Router>
