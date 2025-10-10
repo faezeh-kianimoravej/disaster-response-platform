@@ -3,7 +3,8 @@ package nl.saxion.disaster.departmentservice.service;
 import lombok.RequiredArgsConstructor;
 import nl.saxion.disaster.departmentservice.model.entity.Resource;
 import nl.saxion.disaster.departmentservice.model.enums.ResourceType;
-import nl.saxion.disaster.departmentservice.repository.ResourceRepository;
+import nl.saxion.disaster.departmentservice.repository.contract.ResourceRepository;
+import nl.saxion.disaster.departmentservice.service.contract.ResourceService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

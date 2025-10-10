@@ -1,4 +1,4 @@
-package nl.saxion.disaster.departmentservice.repository;
+package nl.saxion.disaster.departmentservice.repository.contract;
 
 import nl.saxion.disaster.departmentservice.model.entity.Resource;
 import nl.saxion.disaster.departmentservice.model.enums.ResourceType;
