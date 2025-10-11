@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getResources } from './api';
+import { getResources } from '@/api/resource';
 import Button from '@/components/Button';
-import type { Resource } from './types';
+import type { Resource } from '@/types/resource';
 
 export default function ResourcesPage() {
 	const [resources, setResources] = useState<Resource[]>([]);

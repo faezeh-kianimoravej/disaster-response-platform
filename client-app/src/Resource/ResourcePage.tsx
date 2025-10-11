@@ -1,12 +1,12 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { useResource } from '@/Resource/useResource';
-import ResourceForm from '@/Resource/ResourceForm';
-import ResourceView from '@/Resource/ResourceView';
-import ConfirmModal from '@/components/ConfirmModal';
-import { getImageForResourceType } from './utils';
-import { type ResourceFormData } from './types';
-import { useToast } from '@/components/ToastProvider';
+import { useResource } from '@/hooks/useResource';
+import ResourceForm from '@/components/forms/ResourceForm';
+import ResourceView from '@/components/views/ResourceView';
+import ConfirmModal from '@/components/modals/ConfirmModal';
+import { getImageForResourceType } from '@/utils/resourceUtils';
+import { type ResourceFormData } from '@/types/resource';
+import { useToast } from '@/components/toast/ToastProvider';
 
 export default function ResourcePage() {
 	const { resourceId } = useParams();

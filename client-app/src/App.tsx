@@ -2,12 +2,12 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navigation from './components/Navigation';
 import HomePage from './pages/HomePage';
 import AlertsPage from './pages/AlertsPage';
-import ResourcesPage from './Resource/ResourcesPage';
-import ResourcePage from './Resource/ResourcePage';
+import { ResourcesPage } from './pages/resources';
+import { ResourcePage } from './pages/resources';
 import DepartmentPage from './Department/DepartmentPage';
 import DepartmentsPage from './Department/DepartmentsPage';
 
-import { ToastProvider } from './components/ToastProvider';
+import { ToastProvider } from './components/toast/ToastProvider';
 
 function App() {
 	return (

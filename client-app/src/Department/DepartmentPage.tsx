@@ -4,7 +4,7 @@ import { useDepartment } from './useDepartment';
 import DepartmentForm from './DepartmentForm';
 import DepartmentView from './DepartmentView';
 import ConfirmModal from '@/components/ConfirmModal';
-import { useToast } from '@/components/ToastProvider';
+import { useToast } from '@/components/toast/ToastProvider';
 import type { DepartmentFormData } from './types';
 
 interface DepartmentsPageProps {

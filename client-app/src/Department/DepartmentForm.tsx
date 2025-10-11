@@ -4,7 +4,7 @@ import FormInput from '@/components/FormInput';
 import type { Department, DepartmentFormData } from './types';
 import { validateDepartment } from './validation';
 import { isFormValid } from '@/utils/validation';
-import { useToast } from '@/components/ToastProvider';
+import { useToast } from '@/components/toast/ToastProvider';
 
 interface DepartmentFormProps {
 	initialData?: Partial<Department>;
