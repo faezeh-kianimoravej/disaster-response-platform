@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Button from '@/components/Button';
 import FormInput from '@/components/FormInput';
 import type { Department, DepartmentFormData } from '@/types/department';
-import { validateDepartment } from '@/Department/validation';
+import { validateDepartment } from '@/validation/departmentValidation';
 import { isFormValid } from '@/utils/validation';
 import { useToast } from '@/components/toast/ToastProvider';
 

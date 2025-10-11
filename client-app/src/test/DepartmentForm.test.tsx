@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import DepartmentForm from '@/components/forms/DepartmentForm';
 import { ToastProvider } from '@/components/toast/ToastProvider';
-import type { Department } from '../Department/types';
+import type { Department } from '@/types/department';
 
 // Helper to render with Toast context
 const renderWithToast = (component: React.ReactElement) => {

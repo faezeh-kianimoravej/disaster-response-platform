@@ -1,11 +1,11 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { useDepartment } from './useDepartment';
+import { useDepartment } from '@/hooks/useDepartment';
 import DepartmentForm from '@/components/forms/DepartmentForm';
 import DepartmentView from '@/components/views/DepartmentView';
 import ConfirmModal from '@/components/ConfirmModal';
 import { useToast } from '@/components/toast/ToastProvider';
-import type { DepartmentFormData } from './types';
+import type { DepartmentFormData } from '@/types/department';
 
 interface DepartmentsPageProps {
 	municipalityId: number;
@@ -70,13 +70,9 @@ export default function DepartmentPage({ municipalityId }: DepartmentsPageProps)
 	const confirmDelete = async () => {
 		if (!department) return;
 		try {
-			const success = await removeDepartment();
-			if (success) {
-				showSuccess(`Department "${department.name}" deleted successfully.`);
-				navigate('/departments');
-			} else {
-				showError('Failed to delete department. Please try again.');
-			}
+			await removeDepartment();
+			showSuccess(`Department "${department.name}" deleted successfully.`);
+			navigate('/departments');
 		} catch (err) {
 			showError('An unexpected error occurred while deleting.');
 			console.error(err);

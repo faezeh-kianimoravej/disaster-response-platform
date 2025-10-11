@@ -2,10 +2,10 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navigation from './components/Navigation';
 import HomePage from './pages/HomePage';
 import AlertsPage from './pages/AlertsPage';
-import { ResourcesPage } from './pages/resources';
-import { ResourcePage } from './pages/resources';
-import DepartmentPage from './Department/DepartmentPage';
-import DepartmentsPage from './Department/DepartmentsPage';
+import ResourcesPage from './pages/ResourcesPage';
+import ResourcePage from './pages/ResourcePage';
+import DepartmentPage from './pages/DepartmentPage';
+import DepartmentsPage from './pages/DepartmentsPage';
 
 import { ToastProvider } from './components/toast/ToastProvider';
 

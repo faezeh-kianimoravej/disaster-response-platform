@@ -1,8 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { getDepartments } from './api';
+import { getDepartments } from '@/api/department';
 import Button from '@/components/Button';
-import type { Department } from './types';
+import type { Department } from '@/types/department';
 
 interface DepartmentsPageProps {
 	municipalityId: number;
@@ -16,7 +16,9 @@ export default function DepartmentsPage({ municipalityId }: DepartmentsPageProps
 		async function loadDepartments() {
 			const allDepartments = await getDepartments();
 
-			const filtered = allDepartments.filter(d => d.municipalityId === municipalityId);
+			const filtered = allDepartments.filter(
+				(d: Department) => d.municipalityId === municipalityId
+			);
 			setDepartments(filtered);
 		}
 

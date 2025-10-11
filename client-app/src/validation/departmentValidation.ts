@@ -1,11 +1,10 @@
+// Moved from Department/validation.ts
 import type { ValidationResult } from '@/utils/validation';
 import { validateRequired } from '@/utils/validation';
-import type { DepartmentFormData } from './types';
+import type { DepartmentFormData } from '@/types/department';
 
-// Fields that need validation
 type DepartmentValidationFields = Pick<DepartmentFormData, 'name' | 'image'>;
 
-// Simple validation function
 export function validateDepartment(
 	data: DepartmentFormData
 ): ValidationResult<DepartmentValidationFields> {
