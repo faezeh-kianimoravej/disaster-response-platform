@@ -20,9 +20,20 @@ semgrep-sast:
   image: returntocorp/semgrep:latest
   stage: test
   variables:
-    SEMGREP_TIMEOUT: "15m"
+    SEMGREP_TIMEOUT: "900"
   script:
     - semgrep --config auto --exclude node_modules --exclude dist --exclude build --exclude coverage --exclude target --sarif -o semgrep.sarif . || true
+    - |
+      echo "\n=== Semgrep summary (from SARIF) ==="
+      errors=$(grep -o '"level"[[:space:]]*:[[:space:]]*"error"' semgrep.sarif | wc -l || true)
+      warnings=$(grep -o '"level"[[:space:]]*:[[:space:]]*"warning"' semgrep.sarif | wc -l || true)
+      notes=$(grep -o '"level"[[:space:]]*:[[:space:]]*"note"' semgrep.sarif | wc -l || true)
+      total=$((errors + warnings + notes))
+      echo "Findings: total=$total error=$errors warning=$warnings note=$notes"
+      echo "\nTop rules (by occurrences):"
+      grep -o '"ruleId"[[:space:]]*:[[:space:]]*"[^"]*"' semgrep.sarif | \
+        sed 's/"ruleId"[[:space:]]*:[[:space:]]*"//;s/"$//' | \
+        sort | uniq -c | sort -nr | head -n 10 || true
   artifacts:
     when: always
     paths:
