@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useResource } from '@/hooks/useResource';
 import ResourceForm from '@/components/forms/ResourceForm';
@@ -9,51 +9,55 @@ import { type ResourceFormData } from '@/types/resource';
 import { useToast } from '@/components/toast/ToastProvider';
 
 export default function ResourcePage() {
-	const { resourceId } = useParams();
-	const isNewResource = resourceId === 'new';
+	const { resourceId, departmentId } = useParams<{ resourceId: string; departmentId: string }>();
+	const location = useLocation();
 	const navigate = useNavigate();
 	const { showSuccess, showError } = useToast();
 
 	const { resource, loading, saveResource, removeResource } = useResource(
 		resourceId,
-		isNewResource
+		resourceId === 'new'
 	);
-	const [editing, setEditing] = useState(isNewResource);
+
+	const [editing, setEditing] = useState(resourceId === 'new');
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
 	const [currentImageSrc, setCurrentImageSrc] = useState<string>(
 		getImageForResourceType('Medical')
 	);
 
-	// Handle navigation for invalid IDs
-	useEffect(() => {
-		if (!isNewResource && resourceId && isNaN(Number(resourceId))) {
-			navigate('/resources');
-		}
-	}, [resourceId, navigate, isNewResource]);
+	const municipalityIdFromState = location.state?.municipalityId;
+	const [municipalityId, setMunicipalityId] = useState<number | null>(
+		municipalityIdFromState || Number(localStorage.getItem('municipalityId')) || null
+	);
 
-	// Update image when resource changes
+	useEffect(() => {
+		if (municipalityIdFromState) {
+			localStorage.setItem('municipalityId', String(municipalityIdFromState));
+			setMunicipalityId(municipalityIdFromState);
+		}
+	}, [municipalityIdFromState]);
+
+	useEffect(() => {
+		if (!resourceId || (isNaN(Number(resourceId)) && resourceId !== 'new')) {
+			navigate(`/resources/${departmentId}`, { state: { municipalityId } });
+		}
+	}, [resourceId, navigate, departmentId, municipalityId]);
+
 	useEffect(() => {
 		if (resource) {
 			setCurrentImageSrc(resource.image);
-		} else if (isNewResource) {
+		} else if (resourceId === 'new') {
 			setCurrentImageSrc(getImageForResourceType('Medical'));
 		}
-	}, [resource, isNewResource]);
-
-	// Set editing to false when loading existing resource
-	useEffect(() => {
-		if (!isNewResource && resource) {
-			setEditing(false);
-		}
-	}, [resource, isNewResource]);
+	}, [resource, resourceId]);
 
 	const handleSave = async (formData: ResourceFormData) => {
 		try {
-			const savedResource = await saveResource(formData);
+			const savedResource = await saveResource({ ...formData, departmentId: Number(departmentId) });
 			if (savedResource) {
-				if (isNewResource) {
+				if (resourceId === 'new') {
 					showSuccess(`Resource "${savedResource.name}" has been created successfully!`);
-					navigate(`/resources/${savedResource.resourceId}`);
+					navigate(`/resources/${departmentId}`, { state: { municipalityId } });
 				} else {
 					showSuccess(`Resource "${savedResource.name}" has been updated successfully!`);
 					setEditing(false);
@@ -77,7 +81,7 @@ export default function ResourcePage() {
 		try {
 			await removeResource();
 			showSuccess(`Resource "${resource.name}" has been deleted successfully.`);
-			navigate('/resources');
+			navigate(`/resources/${departmentId}`, { state: { municipalityId } });
 		} catch (err) {
 			showError('An unexpected error occurred while deleting.');
 			console.error(err);
@@ -86,8 +90,8 @@ export default function ResourcePage() {
 	};
 
 	const handleCancel = () => {
-		if (isNewResource) {
-			navigate('/resources');
+		if (resourceId === 'new') {
+			navigate(`/resources/${departmentId}`, { state: { municipalityId } });
 		} else {
 			setEditing(false);
 		}
@@ -96,14 +100,12 @@ export default function ResourcePage() {
 	if (loading) {
 		return (
 			<div className="min-h-screen bg-gray-50 py-8">
-				<div className="max-w-4xl mx-auto px-4">
-					<div className="text-center">Loading...</div>
-				</div>
+				<div className="max-w-4xl mx-auto px-4 text-center">Loading...</div>
 			</div>
 		);
 	}
 
-	if (!resource && !isNewResource) {
+	if (!resource && resourceId !== 'new') {
 		return (
 			<div className="min-h-screen bg-gray-50 py-8">
 				<div className="max-w-4xl mx-auto px-4">
@@ -121,7 +123,9 @@ export default function ResourcePage() {
 					<div className="flex items-start space-x-6">
 						<img
 							src={currentImageSrc}
-							alt={editing || isNewResource ? 'Resource preview' : resource?.name || 'Resource'}
+							alt={
+								editing || resourceId === 'new' ? 'Resource preview' : resource?.name || 'Resource'
+							}
 							className="h-32 w-32 object-contain"
 						/>
 						<div className="flex-1">
@@ -130,12 +134,14 @@ export default function ResourcePage() {
 									resource={resource}
 									onEdit={() => setEditing(true)}
 									onDelete={handleDelete}
-									onBack={() => navigate('/resources')}
+									onBack={() =>
+										navigate(`/resources/${departmentId}`, { state: { municipalityId } })
+									}
 								/>
 							) : (
 								<ResourceForm
 									{...(resource && { initialData: resource })}
-									isNewResource={isNewResource}
+									isNewResource={resourceId === 'new'}
 									onSave={handleSave}
 									onCancel={handleCancel}
 									onImageChange={setCurrentImageSrc}
@@ -145,7 +151,6 @@ export default function ResourcePage() {
 					</div>
 				</div>
 			</div>
-
 			{/* Delete Confirmation Modal */}
 			<ConfirmModal
 				isOpen={showDeleteModal}

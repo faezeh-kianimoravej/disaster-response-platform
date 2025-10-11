@@ -23,7 +23,7 @@ describe('DepartmentForm component', () => {
 
 	const existingDepartment: Partial<Department> = {
 		departmentId: 1,
-		municipalityId: 201,
+		municipalityId: 301,
 		name: 'Medical Department',
 		image: '/images/medical-department.png',
 	};

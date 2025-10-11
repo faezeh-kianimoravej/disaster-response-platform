@@ -154,16 +154,6 @@ export default function ResourceForm({
 						type="select"
 						options={createOptionsFromObject(RESOURCE_TYPES)}
 					/>
-
-					<FormInput
-						label="Department ID"
-						name="departmentId"
-						value={form.departmentId}
-						onChange={handleChange}
-						type="number"
-						validation={validation.departmentId}
-						showValidation={showValidation('departmentId')}
-					/>
 				</div>
 
 				<div className="grid grid-cols-2 gap-3">

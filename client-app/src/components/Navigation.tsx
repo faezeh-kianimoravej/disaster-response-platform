@@ -6,8 +6,7 @@ export default function Navigation() {
 	const navItems = [
 		{ path: '/', label: 'Dashboard' },
 		{ path: '/alerts', label: 'Alerts' },
-		{ path: '/resources', label: 'Resources' },
-		{ path: '/departments', label: 'Departments' },
+		{ path: '/municipalities', label: 'Municipalities' },
 	];
 
 	return (
