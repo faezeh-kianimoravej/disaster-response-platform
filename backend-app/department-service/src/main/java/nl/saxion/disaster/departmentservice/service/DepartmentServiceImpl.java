@@ -3,6 +3,7 @@ package nl.saxion.disaster.departmentservice.service;
 import nl.saxion.disaster.departmentservice.model.entity.Department;
 import nl.saxion.disaster.departmentservice.repository.contract.DepartmentRepository;
 import nl.saxion.disaster.departmentservice.service.contract.DepartmentService;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -40,4 +41,5 @@ public class DepartmentServiceImpl implements DepartmentService {
     public void deleteDepartment(Long id) {
         departmentRepository.deleteDepartment(id);
     }
+
 }
