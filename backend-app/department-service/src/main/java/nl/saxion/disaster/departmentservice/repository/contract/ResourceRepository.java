@@ -23,4 +23,5 @@ public interface ResourceRepository {
     Resource edit(Long id, Resource updatedResource);
 
     void deleteById(Long id);
+
 }
