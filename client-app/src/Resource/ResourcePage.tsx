@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useResource } from '@/hooks/useResource';
 import ResourceForm from '@/components/forms/ResourceForm';
 import ResourceView from '@/components/views/ResourceView';
-import ConfirmModal from '@/components/modals/ConfirmModal';
+import ConfirmModal from '@/components/ConfirmModal';
 import { getImageForResourceType } from '@/utils/resourceUtils';
 import { type ResourceFormData } from '@/types/resource';
 import { useToast } from '@/components/toast/ToastProvider';

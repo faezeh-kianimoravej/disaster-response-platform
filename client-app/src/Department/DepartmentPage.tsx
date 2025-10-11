@@ -1,8 +1,8 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useDepartment } from './useDepartment';
-import DepartmentForm from './DepartmentForm';
-import DepartmentView from './DepartmentView';
+import DepartmentForm from '@/components/forms/DepartmentForm';
+import DepartmentView from '@/components/views/DepartmentView';
 import ConfirmModal from '@/components/ConfirmModal';
 import { useToast } from '@/components/toast/ToastProvider';
 import type { DepartmentFormData } from './types';

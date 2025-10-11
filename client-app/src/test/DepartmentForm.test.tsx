@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import DepartmentForm from '../Department/DepartmentForm';
+import DepartmentForm from '@/components/forms/DepartmentForm';
 import { ToastProvider } from '@/components/toast/ToastProvider';
 import type { Department } from '../Department/types';
 
