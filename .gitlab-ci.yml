@@ -15,7 +15,6 @@ include:
   - local: 'client-app/.gitlab-ci.yml'
   - template: Security/SAST.gitlab-ci.yml
   - template: Security/Secret-Detection.gitlab-ci.yml
-  # - local: 'backend/.gitlab-ci.yml' # Additional services can be included here
 
 semgrep-sast:
   image: returntocorp/semgrep:latest
@@ -23,10 +22,7 @@ semgrep-sast:
   variables:
     SEMGREP_TIMEOUT: "15m"
   script:
-    - semgrep ci --config auto \
-        --exclude node_modules --exclude dist --exclude build \
-        --exclude coverage --exclude target \
-        --sarif --output semgrep.sarif || true
+    - semgrep --config auto --exclude node_modules --exclude dist --exclude build --exclude coverage --exclude target --sarif -o semgrep.sarif . || true
   artifacts:
     when: always
     paths:
