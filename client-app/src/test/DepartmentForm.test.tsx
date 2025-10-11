@@ -15,13 +15,12 @@ describe('DepartmentForm component', () => {
 	const mockOnImageChange = vi.fn();
 
 	const defaultProps = {
-	municipalityId: 101, 
-	isNewDepartment: true,
-	onSave: mockOnSave,
-	onCancel: mockOnCancel,
-	onImageChange: mockOnImageChange,
-};
-
+		municipalityId: 101,
+		isNewDepartment: true,
+		onSave: mockOnSave,
+		onCancel: mockOnCancel,
+		onImageChange: mockOnImageChange,
+	};
 
 	const existingDepartment: Partial<Department> = {
 		departmentId: 1,
