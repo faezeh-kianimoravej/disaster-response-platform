@@ -10,17 +10,7 @@
 # - Deploy job: runs only on commits pushed to `main`.
 # - Smoke job: runs in its own `smoke` stage after deploy to verify the deployed site.
 
-# Only create pipelines when files under client-app/ change, or when manually/API/schedule triggered.
-workflow:
-  rules:
-    - changes:
-        - client-app/**/*
-      when: always
-    - if: '$CI_PIPELINE_SOURCE == "schedule"'
-      when: always
-    - if: '$CI_PIPELINE_SOURCE == "web"'
-      when: always
-    - when: never
+## Job-level rules below restrict execution to client-app changes.
 
 variables:
   NODE_VERSION: '20'
@@ -47,9 +37,15 @@ test:client-app:
   extends: .client-app-base
   stage: test
   rules:
-    # Pipeline is already filtered by the top-level workflow for client-app changes.
-    # Run full tests in all pipelines created for client-app (including MRs and feature branches).
-    - when: always
+    # Run tests only when client-app files change (or manual/schedule)
+    - changes:
+        - client-app/**/*
+      when: always
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: always
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: always
+    - when: never
   script:
     - npm run lint
     - npm run coverage
@@ -70,12 +66,16 @@ build:client-app:
   extends: .client-app-base
   stage: build
   rules:
-    # Build artifacts for merge requests so deploy can be tested from MR pipelines
+    # Build only when client-app files change
     - if: '$CI_MERGE_REQUEST_ID'
+      changes:
+        - client-app/**/*
       when: always
-    # Optional: also build on main to produce artifacts for deploy
     - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - client-app/**/*
       when: always
+    - when: never
   script:
     - npm run build
   artifacts:
@@ -88,9 +88,12 @@ deploy:client-app:
   image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
   stage: deploy
   rules:
-    # Only deploy when commits are pushed to main
+    # Deploy only when client-app files change on main
     - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - client-app/**/*
       when: always
+    - when: never
   needs:
     - job: build:client-app
       artifacts: true
@@ -115,9 +118,12 @@ smoke:client-app:
   image: curlimages/curl:8.5.0
   stage: smoke
   rules:
-    # Run smoke tests after successful deploys to main
+    # Run smoke tests only when a client-app deploy occurred (same change condition)
     - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - client-app/**/*
       when: always
+    - when: never
   needs:
     - job: deploy:client-app
       optional: false

@@ -73,6 +73,17 @@ See [`Docs/Team-Charter.md`](Docs/Team-Charter.md) for process, meetings, and ro
 
 ---
 
+## 🔐 Security Scanning
+This repo uses a Free‑tier friendly security setup in GitLab CI:
+
+- SAST: included via GitLab’s Security/SAST template. On Free, results appear in job logs/artifacts rather than the full Security dashboard.
+- Secret Detection: included via Security/Secret‑Detection template to catch leaked credentials/tokens.
+- Semgrep OSS: additional SAST job that outputs a SARIF report artifact and summarises findings in logs.
+
+Notes:
+- Scans exclude heavy build folders (node_modules, dist/build, coverage, target) to keep jobs fast.
+- Jobs are non‑blocking by default. We can enforce fail‑on‑severity (e.g., High/Critical) once noise is acceptable.
+
 ## 📬 Contact / Support
 - Open an issue in this repository  
 - Or contact the project coordinator (see [`Docs/Team-Charter.md`](Docs/Team-Charter.md))

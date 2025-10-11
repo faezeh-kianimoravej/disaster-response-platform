@@ -1,22 +1,40 @@
-# DRCCS Multi-Service GitLab CI/CD Pipeline
-# This is the main pipeline orchestrator that includes service-specific configurations
-
-# Define global stages that all services can use
+# DRCCS GitLab CI/CD Pipeline
 stages:
   - test
   - build
   - deploy
   - smoke
 
-# Global variables that can be used across all services
 variables:
   NODE_VERSION: "20"
+  # Security scan exclusions
+  SAST_EXCLUDED_PATHS: "**/node_modules,**/dist,**/build,**/.next,**/coverage,**/target"
+  SECRET_DETECTION_EXCLUDED_PATHS: "**/node_modules,**/dist,**/build,**/.next,**/coverage,**/target"
 
-# Include service-specific pipeline configurations
 include:
-  # Frontend Application
   - local: 'client-app/.gitlab-ci.yml'
-  
-  # Additional services will be added here as they are moved to their own directories
-  # Example:
-  # - local: 'backend/.gitlab-ci.yml'
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Secret-Detection.gitlab-ci.yml
+  # - local: 'backend/.gitlab-ci.yml' # Additional services can be included here
+
+semgrep-sast:
+  image: returntocorp/semgrep:latest
+  stage: test
+  variables:
+    SEMGREP_TIMEOUT: "15m"
+  script:
+    - semgrep ci --config auto \
+        --exclude node_modules --exclude dist --exclude build \
+        --exclude coverage --exclude target \
+        --sarif --output semgrep.sarif || true
+  artifacts:
+    when: always
+    paths:
+      - semgrep.sarif
+    reports:
+      sast: semgrep.sarif
+  allow_failure: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+      when: on_success
