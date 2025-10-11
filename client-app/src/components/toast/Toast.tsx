@@ -1,3 +1,4 @@
+// re-export Toast from its current location
 import { useEffect, useState } from 'react';
 
 export interface ToastProps {
@@ -12,10 +13,8 @@ export default function Toast({ message, type = 'info', duration = 5000, onClose
 	const [isAnimating, setIsAnimating] = useState(false);
 
 	useEffect(() => {
-		// Start enter animation
 		setIsAnimating(true);
 
-		// Auto-dismiss after duration
 		const timer = setTimeout(() => {
 			handleClose();
 		}, duration);
@@ -25,16 +24,13 @@ export default function Toast({ message, type = 'info', duration = 5000, onClose
 
 	const handleClose = () => {
 		setIsAnimating(false);
-		// Wait for exit animation before removing
 		setTimeout(() => {
 			setIsVisible(false);
 			onClose?.();
 		}, 300);
 	};
 
-	if (!isVisible) {
-		return null;
-	}
+	if (!isVisible) return null;
 
 	const getTypeStyles = () => {
 		switch (type) {

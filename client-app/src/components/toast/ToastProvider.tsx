@@ -1,3 +1,4 @@
+// ToastProvider: provides a small toast API and renders Toast components
 import { createContext, useContext, useState, ReactNode } from 'react';
 import Toast, { ToastProps } from './Toast';
 
@@ -16,9 +17,7 @@ const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 export function useToast() {
 	const context = useContext(ToastContext);
-	if (!context) {
-		throw new Error('useToast must be used within a ToastProvider');
-	}
+	if (!context) throw new Error('useToast must be used within a ToastProvider');
 	return context;
 }
 
@@ -31,30 +30,17 @@ export function ToastProvider({ children }: ToastProviderProps) {
 
 	const showToast = (message: string, type: ToastProps['type'] = 'info', duration = 5000) => {
 		const id = Date.now().toString();
-		const newToast: ToastMessage = {
-			id,
-			message,
-			type,
-			duration,
-		};
-
+		const newToast: ToastMessage = { id, message, type, duration };
 		setToasts(prev => [...prev, newToast]);
 	};
 
-	const removeToast = (id: string) => {
-		setToasts(prev => prev.filter(toast => toast.id !== id));
-	};
+	const removeToast = (id: string) => setToasts(prev => prev.filter(t => t.id !== id));
 
 	const showError = (message: string) => showToast(message, 'error', 7000);
 	const showSuccess = (message: string) => showToast(message, 'success', 4000);
 	const showWarning = (message: string) => showToast(message, 'warning', 6000);
 
-	const value = {
-		showToast,
-		showError,
-		showSuccess,
-		showWarning,
-	};
+	const value = { showToast, showError, showSuccess, showWarning };
 
 	return (
 		<ToastContext.Provider value={value}>

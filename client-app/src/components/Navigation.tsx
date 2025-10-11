@@ -7,6 +7,7 @@ export default function Navigation() {
 		{ path: '/', label: 'Dashboard' },
 		{ path: '/alerts', label: 'Alerts' },
 		{ path: '/resources', label: 'Resources' },
+		{ path: '/departments', label: 'Departments' },
 	];
 
 	return (

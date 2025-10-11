@@ -4,7 +4,10 @@ import HomePage from './pages/HomePage';
 import AlertsPage from './pages/AlertsPage';
 import ResourcesPage from './pages/ResourcesPage';
 import ResourcePage from './pages/ResourcePage';
-import { ToastProvider } from './components/ToastProvider';
+import DepartmentPage from './pages/DepartmentPage';
+import DepartmentsPage from './pages/DepartmentsPage';
+
+import { ToastProvider } from './components/toast/ToastProvider';
 
 function App() {
 	return (
@@ -17,6 +20,11 @@ function App() {
 						<Route path="/alerts" element={<AlertsPage />} />
 						<Route path="/resources" element={<ResourcesPage />} />
 						<Route path="/resources/:resourceId" element={<ResourcePage />} />
+						<Route path="/departments" element={<DepartmentsPage municipalityId={201} />} />
+						<Route
+							path="/departments/:departmentId"
+							element={<DepartmentPage municipalityId={201} />}
+						/>
 					</Routes>
 				</div>
 			</Router>

@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import Button from './Button';
-import FormInput, { createOptionsFromObject } from './FormInput';
-import type { Resource, ResourceFormData } from '@/data/resources';
-import { RESOURCE_TYPES, getImageForResourceType, validateResource } from '@/data/resources';
+import Button from '@/components/Button';
+import FormInput, { createOptionsFromObject } from '@/components/FormInput';
+import type { Resource, ResourceFormData } from '@/types/resource';
+import { validateResource } from '@/validation/resourceValidation';
+import { getImageForResourceType, RESOURCE_TYPES } from '@/utils/resourceUtils';
 import { isFormValid } from '@/utils/validation';
-import { useToast } from './ToastProvider';
+import { useToast } from '@/components/toast/ToastProvider';
 
 interface ResourceFormProps {
 	initialData?: Partial<Resource>;
@@ -34,14 +35,12 @@ export default function ResourceForm({
 
 	const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
 
-	// Notify parent of initial image for new resources
 	useEffect(() => {
 		if (isNewResource && !initialData) {
 			onImageChange?.(form.image);
 		}
 	}, [isNewResource, initialData, form.image, onImageChange]);
 
-	// Update form when initialData changes
 	useEffect(() => {
 		if (initialData) {
 			const newForm: ResourceFormData = {
@@ -54,15 +53,11 @@ export default function ResourceForm({
 				image: initialData.image || getImageForResourceType(initialData.resourceType || 'Medical'),
 			};
 			setForm(newForm);
-			// Notify parent of initial image
 			onImageChange?.(newForm.image);
 		}
 	}, [initialData, onImageChange]);
 
-	// Use validation functions from resources.ts
 	const validation = validateResource(form);
-
-	// Computed validation state
 	const isValid = isFormValid(validation);
 	const showValidation = (fieldName: string): boolean =>
 		(touched[fieldName] && !validation[fieldName as keyof typeof validation]?.isValid) || false;
@@ -74,32 +69,23 @@ export default function ResourceForm({
 		const isNumberField = name === 'quantity' || name === 'available' || name === 'departmentId';
 		const newValue = isNumberField ? Number(value) : value;
 
-		// Mark field as touched
 		setTouched(prev => ({ ...prev, [name]: true }));
 
 		setForm((prev: ResourceFormData) => {
-			const updatedForm = {
-				...prev,
-				[name]: newValue,
-			};
+			const updatedForm = { ...prev, [name]: newValue } as unknown as ResourceFormData;
 
-			// Update image when resource type changes
 			if (name === 'resourceType' && typeof newValue === 'string') {
 				updatedForm.image = getImageForResourceType(newValue);
-				// Notify parent component of image change
 				onImageChange?.(updatedForm.image);
 			}
 
-			// Smart quantity/available adjustment logic
 			if (name === 'quantity' && typeof newValue === 'number') {
 				const oldQuantity = prev.quantity;
 				const quantityChange = newValue - oldQuantity;
 
 				if (quantityChange > 0) {
-					// Quantity increased: add the increase to available (new items are available)
 					updatedForm.available = Math.min(prev.available + quantityChange, newValue);
 				} else if (quantityChange < 0) {
-					// Quantity decreased: cap available at new quantity (might have removed unavailable items)
 					updatedForm.available = Math.min(prev.available, newValue);
 				}
 			} else if (
@@ -107,7 +93,6 @@ export default function ResourceForm({
 				typeof newValue === 'number' &&
 				newValue > updatedForm.quantity
 			) {
-				// Ensure available never exceeds quantity when directly editing available
 				updatedForm.available = updatedForm.quantity;
 			}
 
@@ -116,7 +101,6 @@ export default function ResourceForm({
 	}
 
 	function handleSubmit() {
-		// Mark all fields as touched to show validation
 		setTouched({
 			name: true,
 			description: true,
@@ -126,7 +110,6 @@ export default function ResourceForm({
 			departmentId: true,
 		});
 
-		// Check if form is valid using centralized validation
 		if (!isValid) {
 			const errors = Object.values(validation)
 				.filter(field => !field.isValid)
@@ -209,7 +192,7 @@ export default function ResourceForm({
 					/>
 				</div>
 			</div>
-			<div className="mt-6 flex space-x-3">
+			<div className="mt-6 flex justify-end space-x-3">
 				<Button onClick={handleSubmit} variant={isValid ? 'success' : 'disabled'}>
 					{isNewResource ? 'Create' : 'Save'}
 				</Button>

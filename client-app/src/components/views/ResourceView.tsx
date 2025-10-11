@@ -1,5 +1,6 @@
-import Button from './Button';
-import type { Resource } from '@/data/resources';
+// re-export ResourceView from its current location
+import Button from '@/components/Button';
+import type { Resource } from '@/types/resource';
 
 interface ResourceViewProps {
 	resource: Resource;
@@ -11,13 +12,6 @@ interface ResourceViewProps {
 export default function ResourceView({ resource, onEdit, onDelete, onBack }: ResourceViewProps) {
 	return (
 		<div className="relative">
-			{/* Navigation Button - Absolute Top Right */}
-			<div className="absolute top-0 right-0">
-				<Button onClick={onBack} variant="outline">
-					← Back to Resources
-				</Button>
-			</div>
-
 			<h2 className="text-2xl font-semibold pr-40">{resource.name}</h2>
 			<p className="text-gray-600 mt-2">{resource.description}</p>
 			<div className="mt-4 text-gray-700">
@@ -32,8 +26,10 @@ export default function ResourceView({ resource, onEdit, onDelete, onBack }: Res
 				</p>
 			</div>
 
-			{/* Action Buttons - Bottom */}
-			<div className="mt-6 flex space-x-3">
+			<div className="flex justify-end w-full space-x-3 mt-6">
+				<Button onClick={onBack} variant="outline">
+					Back
+				</Button>
 				<Button onClick={onEdit} variant="primary">
 					Edit
 				</Button>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { getResourceById, updateResource, deleteResource, addResource } from '@/data/resources';
-import type { Resource, ResourceFormData } from '@/data/resources';
+import { getResourceById, updateResource, deleteResource, addResource } from '@/api/resource';
+import type { Resource, ResourceFormData } from '@/types/resource';
 
 export function useResource(resourceId: string | undefined, isNewResource: boolean) {
 	const [resource, setResource] = useState<Resource | null>(null);
@@ -18,14 +18,24 @@ export function useResource(resourceId: string | undefined, isNewResource: boole
 			return;
 		}
 
-		const r = getResourceById(id);
-		setResource(r || null);
-		setLoading(false);
+		const fetchResource = async () => {
+			try {
+				const r = await getResourceById(id);
+				setResource(r || null);
+			} catch (err) {
+				console.error('Failed to fetch resource:', err);
+				setResource(null);
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		fetchResource();
 	}, [resourceId, isNewResource]);
 
-	const saveResource = (formData: ResourceFormData): Resource | null => {
+	const saveResource = async (formData: ResourceFormData): Promise<Resource | null> => {
 		if (isNewResource) {
-			const newResource = addResource({
+			const newResource = await addResource({
 				departmentId: formData.departmentId,
 				resourceType: formData.resourceType,
 				image: formData.image,
@@ -34,37 +44,26 @@ export function useResource(resourceId: string | undefined, isNewResource: boole
 				quantity: formData.quantity,
 				available: formData.available,
 			});
+			setResource(newResource);
 			return newResource;
 		} else if (resource) {
 			const updated: Resource = {
-				resourceId: resource.resourceId,
-				departmentId: formData.departmentId,
-				resourceType: formData.resourceType,
-				image: formData.image,
-				name: formData.name,
-				description: formData.description,
-				quantity: formData.quantity,
-				available: formData.available,
+				...resource,
+				...formData,
 			};
-
-			const success = updateResource(updated);
-			if (success) {
-				setResource(updated);
-				return updated;
-			}
+			const saved = await updateResource(updated);
+			setResource(saved);
+			return saved;
 		}
 		return null;
 	};
 
-	const removeResource = (): boolean => {
-		if (!resource) return false;
-		return deleteResource(resource.resourceId);
+	const removeResource = async (): Promise<void> => {
+		if (resource) {
+			await deleteResource(resource.resourceId);
+			setResource(null);
+		}
 	};
 
-	return {
-		resource,
-		loading,
-		saveResource,
-		removeResource,
-	};
+	return { resource, loading, saveResource, removeResource };
 }
