@@ -16,4 +16,6 @@ public interface DepartmentRepository {
     Department updateDepartment(Department department);
 
     void deleteDepartment(Long id);
+
+    List<Department> findDepartmentByMunicipalityId(Long municipalityId);
 }
