@@ -17,6 +17,8 @@ public class Department {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long departmentId;
 
+    private Long municipalityId;
+
     private String name;
     /** To Do
      * Does department need location or comp

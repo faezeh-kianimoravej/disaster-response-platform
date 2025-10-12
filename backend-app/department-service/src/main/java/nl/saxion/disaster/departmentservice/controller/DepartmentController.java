@@ -1,8 +1,10 @@
 package nl.saxion.disaster.departmentservice.controller;
 
 import lombok.RequiredArgsConstructor;
+import nl.saxion.disaster.departmentservice.model.dto.DepartmentDto;
 import nl.saxion.disaster.departmentservice.model.entity.Department;
 import nl.saxion.disaster.departmentservice.service.contract.DepartmentService;
+import org.hibernate.sql.model.PreparableMutationOperation;
 import org.springframework.http.HttpStatus;
 import nl.saxion.disaster.departmentservice.model.entity.Resource;
 import org.springframework.http.ResponseEntity;
@@ -61,5 +63,10 @@ public class DepartmentController {
         return departmentService.getDepartmentById(id)
                 .map(department -> ResponseEntity.ok(department.getResources()))
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/by-municipality/{municipalityId}")
+    public List<DepartmentDto> getDepartmentsByMunicipality(@PathVariable Long municipalityId) {
+        return departmentService.getDepartmentsByMunicipality(municipalityId);
     }
 }
