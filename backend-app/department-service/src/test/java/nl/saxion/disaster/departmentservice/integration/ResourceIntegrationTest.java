@@ -1,5 +1,6 @@
-package nl.saxion.disaster.departmentservice;
+package nl.saxion.disaster.departmentservice.integration;
 
+import jakarta.persistence.EntityManager;
 import nl.saxion.disaster.departmentservice.model.entity.Department;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,25 +19,31 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
-class ResourceControllerTest {
+class ResourceIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private EntityManager entityManager;
 
     private Department department;
 
     @BeforeEach
     void setup() {
-        // INSERT INTO departments (name) VALUES ('Fire Department Deventer');
-        department = Department.builder()
-                .departmentId(1L)
+        Department dep = Department.builder()
                 .name("Fire Department Deventer")
+                .municipalityId(1L)
                 .build();
+
+        entityManager.persist(dep);
+        entityManager.flush();
+        department = dep;
     }
 
     @Test
     void testCreateResource() throws Exception {
-        String resourceJson = """
+        String resourceJson = String.format("""
                 {
                   "name": "Ambulance A1",
                   "description": "Main ambulance of Deventer",
@@ -45,21 +52,22 @@ class ResourceControllerTest {
                   "resourceType": "AMBULANCE",
                   "latitude": 52.2661,
                   "longitude": 6.1552,
-                  "department": { "departmentId": 1 }
+                  "department": { "departmentId": %d }
                 }
-                """;
+                """, department.getDepartmentId());
 
         mockMvc.perform(post("/api/resources")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(resourceJson))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value("Ambulance A1"))
-                .andExpect(jsonPath("$.department.departmentId").value(1));
+                .andExpect(jsonPath("$.department.departmentId").value(department.getDepartmentId()));
     }
 
     @Test
     void testUpdateResource() throws Exception {
-        String createJson = """
+        // ساخت اولیه Resource
+        String createJson = String.format("""
                 {
                   "name": "Old Vehicle",
                   "description": "To be updated",
@@ -68,11 +76,11 @@ class ResourceControllerTest {
                   "resourceType": "TRANSPORT_VEHICLE",
                   "latitude": 52.2,
                   "longitude": 6.1,
-                  "department": { "departmentId": 1 }
+                  "department": { "departmentId": %d }
                 }
-                """;
+                """, department.getDepartmentId());
 
-        String updateJson = """
+        String updateJson = String.format("""
                 {
                   "name": "Updated Vehicle",
                   "description": "Updated description",
@@ -81,9 +89,9 @@ class ResourceControllerTest {
                   "resourceType": "TRANSPORT_VEHICLE",
                   "latitude": 52.25,
                   "longitude": 6.18,
-                  "department": { "departmentId": 1 }
+                  "department": { "departmentId": %d }
                 }
-                """;
+                """, department.getDepartmentId());
 
         var result = mockMvc.perform(post("/api/resources")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -91,7 +99,6 @@ class ResourceControllerTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        // از پاسخ ID رو بگیر
         String responseBody = result.getResponse().getContentAsString();
         Long createdId = Long.parseLong(responseBody.replaceAll(".*\"resourceId\":(\\d+).*", "$1"));
 
@@ -105,7 +112,7 @@ class ResourceControllerTest {
 
     @Test
     void testDeleteResource() throws Exception {
-        String createJson = """
+        String createJson = String.format("""
                 {
                   "name": "Temp Resource",
                   "description": "Will be deleted",
@@ -114,9 +121,9 @@ class ResourceControllerTest {
                   "resourceType": "FIELD_OPERATOR",
                   "latitude": 52.1,
                   "longitude": 6.1,
-                  "department": { "departmentId": 1 }
+                  "department": { "departmentId": %d }
                 }
-                """;
+                """, department.getDepartmentId());
 
         var result = mockMvc.perform(post("/api/resources")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -127,7 +134,6 @@ class ResourceControllerTest {
         String responseBody = result.getResponse().getContentAsString();
         Long createdId = Long.parseLong(responseBody.replaceAll(".*\"resourceId\":(\\d+).*", "$1"));
 
-        // حذف resource
         mockMvc.perform(delete("/api/resources/" + createdId))
                 .andExpect(status().isNoContent());
     }
