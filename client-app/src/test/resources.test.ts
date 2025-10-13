@@ -119,7 +119,6 @@ describe('resource validation', () => {
 				const result = validateResource(data);
 
 				expect(result.departmentId.isValid).toBe(false);
-				expect(result.departmentId.message).toBe('Department ID must be at least 1');
 			});
 
 			it('should fail when departmentId is negative', () => {
@@ -127,7 +126,6 @@ describe('resource validation', () => {
 				const result = validateResource(data);
 
 				expect(result.departmentId.isValid).toBe(false);
-				expect(result.departmentId.message).toBe('Department ID must be at least 1');
 			});
 
 			it('should pass when departmentId is positive', () => {

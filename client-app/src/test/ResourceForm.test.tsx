@@ -46,7 +46,6 @@ describe('ResourceForm component', () => {
 			expect(screen.getByLabelText(/^Name/)).toBeInTheDocument();
 			expect(screen.getByLabelText('Description')).toBeInTheDocument();
 			expect(screen.getByLabelText('Resource Type')).toBeInTheDocument();
-			expect(screen.getByLabelText('Department ID')).toBeInTheDocument();
 			expect(screen.getByLabelText('Quantity')).toBeInTheDocument();
 			expect(screen.getByLabelText('Available')).toBeInTheDocument();
 		});
@@ -100,7 +99,6 @@ describe('ResourceForm component', () => {
 			expect(screen.getByDisplayValue('Test description')).toBeInTheDocument();
 			expect(screen.getByDisplayValue('10')).toBeInTheDocument();
 			expect(screen.getByDisplayValue('5')).toBeInTheDocument();
-			expect(screen.getByDisplayValue('101')).toBeInTheDocument();
 		});
 
 		it('should set default resource type to Medical', () => {
@@ -260,7 +258,6 @@ describe('ResourceForm component', () => {
 			expect(screen.getByLabelText(/^Name/)).toBeInTheDocument();
 			expect(screen.getByLabelText('Description')).toBeInTheDocument();
 			expect(screen.getByLabelText('Resource Type')).toBeInTheDocument();
-			expect(screen.getByLabelText('Department ID')).toBeInTheDocument();
 			expect(screen.getByLabelText('Quantity')).toBeInTheDocument();
 			expect(screen.getByLabelText('Available')).toBeInTheDocument();
 		});

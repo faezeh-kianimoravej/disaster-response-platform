@@ -1,32 +1,42 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { getDepartments } from '@/api/department';
 import Button from '@/components/Button';
+import { Edit } from 'lucide-react';
 import type { Department } from '@/types/department';
 
-interface DepartmentsPageProps {
-	municipalityId: number;
-}
-
-export default function DepartmentsPage({ municipalityId }: DepartmentsPageProps) {
+export default function DepartmentsPage() {
 	const [departments, setDepartments] = useState<Department[]>([]);
 	const navigate = useNavigate();
+	const { municipalityId } = useParams<{ municipalityId: string }>();
 
 	useEffect(() => {
 		async function loadDepartments() {
 			const allDepartments = await getDepartments();
-
-			const filtered = allDepartments.filter(
-				(d: Department) => d.municipalityId === municipalityId
-			);
-			setDepartments(filtered);
+			if (municipalityId) {
+				const filtered = allDepartments.filter(
+					(d: Department) => d.municipalityId === Number(municipalityId)
+				);
+				setDepartments(filtered);
+			}
 		}
 
 		loadDepartments();
 	}, [municipalityId]);
 
 	const handleAddNew = () => {
-		navigate('/departments/new');
+		if (municipalityId) {
+			navigate(`/departments/${municipalityId}/new`);
+		}
+	};
+
+	const handleDepartmentClick = (departmentId: number) => {
+		navigate(`/resources/${departmentId}`, { state: { municipalityId } });
+	};
+
+	const handleEditClick = (e: React.MouseEvent, departmentId: number) => {
+		e.stopPropagation();
+		navigate(`/departments/${municipalityId}/${departmentId}`);
 	};
 
 	return (
@@ -34,9 +44,14 @@ export default function DepartmentsPage({ municipalityId }: DepartmentsPageProps
 			<div className="max-w-6xl mx-auto px-4">
 				<div className="flex justify-between items-center mb-8">
 					<h1 className="text-3xl font-bold text-gray-900">Departments</h1>
-					<Button onClick={handleAddNew} variant="primary">
-						Add New Department
-					</Button>
+					<div className="flex space-x-3">
+						<Button onClick={() => navigate('/municipalities')} variant="secondary">
+							Back
+						</Button>
+						<Button onClick={handleAddNew} variant="primary">
+							Add New Department
+						</Button>
+					</div>
 				</div>
 
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -44,14 +59,21 @@ export default function DepartmentsPage({ municipalityId }: DepartmentsPageProps
 						<p className="text-gray-600">No departments found for this municipality.</p>
 					) : (
 						departments.map(d => (
-							<Link
+							<div
 								key={d.departmentId}
-								to={`/departments/${d.departmentId}`}
-								className="block bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition"
+								onClick={() => handleDepartmentClick(d.departmentId)}
+								className="relative bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition cursor-pointer"
 							>
+								<button
+									onClick={e => handleEditClick(e, d.departmentId)}
+									className="absolute top-3 right-3 text-gray-500 hover:text-blue-600"
+								>
+									<Edit size={20} />
+								</button>
+
 								<img src={d.image} alt={d.name} className="h-24 w-24 object-contain mx-auto mb-4" />
-								<h3 className="text-lg font-semibold text-gray-800 mb-2">{d.name}</h3>
-							</Link>
+								<h3 className="text-lg font-semibold text-gray-800 text-center">{d.name}</h3>
+							</div>
 						))
 					)}
 				</div>

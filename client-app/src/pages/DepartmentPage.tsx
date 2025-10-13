@@ -7,12 +7,11 @@ import ConfirmModal from '@/components/ConfirmModal';
 import { useToast } from '@/components/toast/ToastProvider';
 import type { DepartmentFormData } from '@/types/department';
 
-interface DepartmentsPageProps {
-	municipalityId: number;
-}
-
-export default function DepartmentPage({ municipalityId }: DepartmentsPageProps) {
-	const { departmentId } = useParams();
+export default function DepartmentPage() {
+	const { departmentId, municipalityId } = useParams<{
+		departmentId?: string;
+		municipalityId?: string;
+	}>();
 	const isNewDepartment = departmentId === 'new';
 	const navigate = useNavigate();
 	const { showSuccess, showError } = useToast();
@@ -20,7 +19,7 @@ export default function DepartmentPage({ municipalityId }: DepartmentsPageProps)
 	const { department, loading, saveDepartment, removeDepartment } = useDepartment(
 		departmentId,
 		isNewDepartment,
-		municipalityId
+		municipalityId ? Number(municipalityId) : 0
 	);
 
 	const [editing, setEditing] = useState(isNewDepartment);
@@ -29,7 +28,7 @@ export default function DepartmentPage({ municipalityId }: DepartmentsPageProps)
 	// Handle navigation for invalid IDs
 	useEffect(() => {
 		if (!isNewDepartment && departmentId && isNaN(Number(departmentId))) {
-			navigate('/departments');
+			navigate(`/departments/${municipalityId}`);
 		}
 	}, [departmentId, navigate, isNewDepartment]);
 
@@ -47,7 +46,7 @@ export default function DepartmentPage({ municipalityId }: DepartmentsPageProps)
 			if (savedDept) {
 				if (isNewDepartment) {
 					showSuccess(`Department "${savedDept.name}" created successfully!`);
-					navigate(`/departments/${savedDept.departmentId}`);
+					navigate(`/departments/${municipalityId}`);
 				} else {
 					showSuccess(`Department "${savedDept.name}" updated successfully!`);
 					setEditing(false);
@@ -72,7 +71,7 @@ export default function DepartmentPage({ municipalityId }: DepartmentsPageProps)
 		try {
 			await removeDepartment();
 			showSuccess(`Department "${department.name}" deleted successfully.`);
-			navigate('/departments');
+			navigate(`/departments/${municipalityId}`);
 		} catch (err) {
 			showError('An unexpected error occurred while deleting.');
 			console.error(err);
@@ -82,7 +81,7 @@ export default function DepartmentPage({ municipalityId }: DepartmentsPageProps)
 
 	const handleCancel = () => {
 		if (isNewDepartment) {
-			navigate('/departments');
+			navigate(`/departments/${municipalityId}`);
 		} else {
 			setEditing(false);
 		}
@@ -117,13 +116,14 @@ export default function DepartmentPage({ municipalityId }: DepartmentsPageProps)
 							isNewDepartment={isNewDepartment}
 							onSave={handleSave}
 							onCancel={handleCancel}
+							municipalityId={Number(municipalityId)}
 						/>
 					) : (
 						<DepartmentView
 							department={department!}
 							onEdit={() => setEditing(true)}
 							onDelete={handleDelete}
-							onBack={() => navigate('/departments')}
+							onBack={() => navigate(`/departments/${municipalityId}`)}
 						/>
 					)}
 				</div>

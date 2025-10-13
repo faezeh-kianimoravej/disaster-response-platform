@@ -64,26 +64,6 @@ const fakeResources: Resource[] = [
 		resourceType: 'Equipment',
 		image: '/images/radio-equipment.png',
 	},
-	{
-		resourceId: 7,
-		departmentId: 1,
-		name: 'Defibrillators',
-		description: 'Automated external defibrillators for cardiac emergencies',
-		quantity: 15,
-		available: 12,
-		resourceType: 'Medical',
-		image: '/images/defibrillator.png',
-	},
-	{
-		resourceId: 8,
-		departmentId: 2,
-		name: 'Protective Gear',
-		description: 'Firefighter helmets, suits and breathing apparatus',
-		quantity: 50,
-		available: 35,
-		resourceType: 'Equipment',
-		image: '/images/firefighter-gear.png',
-	},
 ];
 
 export async function getResources(): Promise<Resource[]> {

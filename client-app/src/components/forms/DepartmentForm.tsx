@@ -12,6 +12,7 @@ interface DepartmentFormProps {
 	onSave: (formData: DepartmentFormData) => void;
 	onCancel: () => void;
 	onImageChange?: (imageSrc: string) => void;
+	municipalityId: number;
 }
 
 export default function DepartmentForm({
@@ -20,13 +21,14 @@ export default function DepartmentForm({
 	onSave,
 	onCancel,
 	onImageChange,
+	municipalityId, //
 }: DepartmentFormProps) {
 	const { showError } = useToast();
 
 	const [form, setForm] = useState<DepartmentFormData>({
 		name: initialData?.name || '',
 		image: initialData?.image || '',
-		municipalityId: initialData?.municipalityId || 201,
+		municipalityId: initialData?.municipalityId || municipalityId, // 👈 use dynamic id
 	});
 
 	const [preview, setPreview] = useState<string>(form.image);
@@ -34,15 +36,14 @@ export default function DepartmentForm({
 
 	useEffect(() => {
 		if (initialData) {
-			const newForm: DepartmentFormData = {
+			setForm({
 				name: initialData.name || '',
 				image: initialData.image || '',
-				municipalityId: initialData.municipalityId || 201,
-			};
-			setForm(newForm);
-			setPreview(newForm.image);
+				municipalityId: initialData.municipalityId || municipalityId, // 👈 updated here too
+			});
+			setPreview(initialData.image || '');
 		}
-	}, [initialData]);
+	}, [initialData, municipalityId]);
 
 	// Validation
 	const validation = validateDepartment(form);

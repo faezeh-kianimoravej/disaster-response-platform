@@ -8,7 +8,7 @@ import type { Department, DepartmentFormData } from '@/types/department';
 const fakeDepartments: Department[] = [
 	{
 		departmentId: 1,
-		municipalityId: 201,
+		municipalityId: 301,
 		name: 'Emergency Medical Services',
 		description: 'Emergency medical response and ambulance services',
 		contactInfo: '+1 (555) 123-4567',
@@ -18,7 +18,7 @@ const fakeDepartments: Department[] = [
 	},
 	{
 		departmentId: 2,
-		municipalityId: 201,
+		municipalityId: 301,
 		name: 'Fire Department',
 		description: 'Fire suppression and rescue operations',
 		contactInfo: '+1 (555) 234-5678',
@@ -28,7 +28,7 @@ const fakeDepartments: Department[] = [
 	},
 	{
 		departmentId: 3,
-		municipalityId: 201,
+		municipalityId: 301,
 		name: 'Police Department',
 		description: 'Law enforcement and community safety',
 		contactInfo: '+1 (555) 345-6789',
@@ -38,7 +38,7 @@ const fakeDepartments: Department[] = [
 	},
 	{
 		departmentId: 4,
-		municipalityId: 201,
+		municipalityId: 302,
 		name: 'Emergency Management',
 		description: 'Disaster response coordination and preparedness',
 		contactInfo: '+1 (555) 456-7890',
@@ -48,7 +48,7 @@ const fakeDepartments: Department[] = [
 	},
 	{
 		departmentId: 5,
-		municipalityId: 201,
+		municipalityId: 302,
 		name: 'Search and Rescue',
 		description: 'Wilderness and urban search and rescue operations',
 		contactInfo: '+1 (555) 567-8901',
