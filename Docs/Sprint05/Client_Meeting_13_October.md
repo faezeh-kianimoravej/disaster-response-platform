@@ -1,4 +1,4 @@
-# Sprint Meeting — Agenda and Minutes
+# Client Meeting — Agenda and Minutes
 
 **Location:** Saxion  
 **Date:** 06 October 2025  
@@ -24,7 +24,7 @@
 - Overview of updates and demo of **User Story 01 (Resource Reporting)** and its subtasks.
 
 #### **User Story 01 — Resource Reporting**
-> As a department user, I should be able to **add, edit, and delete resources**, so that I can manage resource information for incident reporting effectively.
+> As a Responder, I want to report available resources for incident response so that resource allocation can be managed.
 
 ##### **Subtasks**
 **Backend (BE):**
