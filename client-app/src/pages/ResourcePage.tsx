@@ -18,11 +18,10 @@ export default function ResourcePage() {
 		resourceId,
 		resourceId === 'new'
 	);
-
 	const [editing, setEditing] = useState(resourceId === 'new');
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
 	const [currentImageSrc, setCurrentImageSrc] = useState<string>(
-		getImageForResourceType('Medical')
+		getImageForResourceType('FIELD_OPERATOR')
 	);
 
 	const municipalityIdFromState = location.state?.municipalityId;
@@ -45,9 +44,9 @@ export default function ResourcePage() {
 
 	useEffect(() => {
 		if (resource) {
-			setCurrentImageSrc(resource.image);
+			setCurrentImageSrc(getImageForResourceType(resource.resourceType));
 		} else if (resourceId === 'new') {
-			setCurrentImageSrc(getImageForResourceType('Medical'));
+			setCurrentImageSrc(getImageForResourceType('FIELD_OPERATOR'));
 		}
 	}, [resource, resourceId]);
 

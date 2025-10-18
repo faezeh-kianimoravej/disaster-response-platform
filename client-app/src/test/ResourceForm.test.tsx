@@ -30,9 +30,9 @@ describe('ResourceForm component', () => {
 		description: 'Test description',
 		quantity: 10,
 		available: 5,
-		resourceType: 'Medical',
+		resourceType: 'FIELD_OPERATOR',
 		departmentId: 101,
-		image: '/images/medical.png',
+		image: '/images/fieldoperator.png',
 	};
 
 	beforeEach(() => {
@@ -73,9 +73,8 @@ describe('ResourceForm component', () => {
 		it('should show required asterisks only on required fields', () => {
 			renderWithToast(<ResourceForm {...defaultProps} />);
 
-			// Required fields should have asterisks
 			expect(screen.getByText('Name')).toBeInTheDocument();
-			expect(screen.getAllByText('*')).toHaveLength(1); // Only name should be required
+			expect(screen.getAllByText('*')).toHaveLength(1); // Only name required
 		});
 	});
 
@@ -101,10 +100,10 @@ describe('ResourceForm component', () => {
 			expect(screen.getByDisplayValue('5')).toBeInTheDocument();
 		});
 
-		it('should set default resource type to Medical', () => {
+		it('should set default resource type to Field Operator', () => {
 			renderWithToast(<ResourceForm {...defaultProps} />);
 
-			const select = screen.getByDisplayValue('Medical');
+			const select = screen.getByDisplayValue('Field Operator');
 			expect(select).toBeInTheDocument();
 		});
 	});
@@ -114,8 +113,6 @@ describe('ResourceForm component', () => {
 			renderWithToast(<ResourceForm {...defaultProps} />);
 
 			const submitButton = screen.getByRole('button', { name: 'Create' });
-
-			// Try to submit with empty name
 			fireEvent.click(submitButton);
 
 			await waitFor(() => {
@@ -129,11 +126,9 @@ describe('ResourceForm component', () => {
 			const nameInput = screen.getByLabelText(/^Name/);
 			const quantityInput = screen.getByLabelText('Quantity');
 
-			// Set valid name but invalid quantity (0)
 			fireEvent.change(nameInput, { target: { value: 'Test Resource' } });
 			fireEvent.change(quantityInput, { target: { value: '0' } });
 
-			// Trigger validation by trying to submit
 			const submitButton = screen.getByRole('button', { name: 'Create' });
 			fireEvent.click(submitButton);
 
@@ -146,7 +141,7 @@ describe('ResourceForm component', () => {
 			renderWithToast(<ResourceForm {...defaultProps} />);
 
 			const submitButton = screen.getByRole('button', { name: 'Create' });
-			expect(submitButton).toHaveClass('bg-gray-300'); // disabled styling
+			expect(submitButton).toHaveClass('bg-gray-300');
 		});
 
 		it('should enable submit button when form is valid', async () => {
@@ -160,7 +155,7 @@ describe('ResourceForm component', () => {
 
 			await waitFor(() => {
 				const submitButton = screen.getByRole('button', { name: 'Create' });
-				expect(submitButton).toHaveClass('bg-green-600'); // enabled styling
+				expect(submitButton).toHaveClass('bg-green-600');
 			});
 		});
 	});
@@ -179,9 +174,8 @@ describe('ResourceForm component', () => {
 			renderWithToast(<ResourceForm {...defaultProps} />);
 
 			const resourceTypeSelect = screen.getByLabelText('Resource Type');
-			fireEvent.change(resourceTypeSelect, { target: { value: 'Vehicle' } });
+			fireEvent.change(resourceTypeSelect, { target: { value: 'AMBULANCE' } });
 
-			// The component should call onImageChange with the vehicle image
 			expect(mockOnImageChange).toHaveBeenCalledWith('/images/ambulance.png');
 		});
 
@@ -197,7 +191,6 @@ describe('ResourceForm component', () => {
 		it('should call onSave with form data when valid form is submitted', async () => {
 			renderWithToast(<ResourceForm {...defaultProps} />);
 
-			// Fill in required fields
 			const nameInput = screen.getByLabelText(/^Name/);
 			const quantityInput = screen.getByLabelText('Quantity');
 			const availableInput = screen.getByLabelText('Available');
@@ -206,7 +199,6 @@ describe('ResourceForm component', () => {
 			fireEvent.change(quantityInput, { target: { value: '10' } });
 			fireEvent.change(availableInput, { target: { value: '5' } });
 
-			// Submit the form
 			const submitButton = screen.getByRole('button', { name: 'Create' });
 			fireEvent.click(submitButton);
 
@@ -216,8 +208,10 @@ describe('ResourceForm component', () => {
 						name: 'Test Resource',
 						quantity: 10,
 						available: 5,
-						resourceType: 'Medical',
+						resourceType: 'FIELD_OPERATOR',
 						departmentId: 101,
+						description: '',
+						image: '/images/fieldoperator.png',
 					})
 				);
 			});
@@ -226,7 +220,6 @@ describe('ResourceForm component', () => {
 		it('should not call onSave when invalid form is submitted', () => {
 			renderWithToast(<ResourceForm {...defaultProps} />);
 
-			// Submit without filling required fields
 			const submitButton = screen.getByRole('button', { name: 'Create' });
 			fireEvent.click(submitButton);
 

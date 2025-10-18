@@ -18,7 +18,13 @@ export default function DepartmentView({
 		<div className="space-y-6">
 			<div className="flex items-center space-x-6">
 				<img
-					src={department.image}
+					src={
+						department.image
+							? department.image.startsWith('data:')
+								? department.image
+								: `data:image/png;base64,${department.image}`
+							: '/images/default.png'
+					}
 					alt={department.name}
 					className="h-32 w-32 object-contain rounded border"
 				/>

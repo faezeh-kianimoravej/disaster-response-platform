@@ -118,7 +118,6 @@ describe('FormInput component', () => {
 			expect(onChange).toHaveBeenCalledTimes(1);
 			const call = onChange.mock.calls[0]?.[0];
 			expect(call?.target.name).toBe('testField');
-			// The value we see depends on the actual input's controlled value, not the fireEvent mock
 			expect(call?.type).toBe('change');
 		});
 
@@ -221,9 +220,9 @@ describe('createOptionsFromObject utility', () => {
 		const result = createOptionsFromObject(obj);
 
 		expect(result).toEqual([
-			{ value: 'Value 1', label: 'Value 1' },
-			{ value: 'Value 2', label: 'Value 2' },
-			{ value: 'Value 3', label: 'Value 3' },
+			{ value: 'key1', label: 'Value 1' },
+			{ value: 'key2', label: 'Value 2' },
+			{ value: 'key3', label: 'Value 3' },
 		]);
 	});
 
