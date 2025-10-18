@@ -38,7 +38,7 @@ export function useResource(resourceId: string | undefined, isNewResource: boole
 			const newResource = await addResource({
 				departmentId: formData.departmentId,
 				resourceType: formData.resourceType,
-				image: formData.image,
+				image: '',
 				name: formData.name,
 				description: formData.description,
 				quantity: formData.quantity,

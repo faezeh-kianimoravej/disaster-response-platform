@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { getDepartments } from '@/api/department';
+import { getDepartmentsByMunicipalityId } from '@/api/department';
 import Button from '@/components/Button';
 import { Edit } from 'lucide-react';
 import type { Department } from '@/types/department';
@@ -12,23 +12,20 @@ export default function DepartmentsPage() {
 
 	useEffect(() => {
 		async function loadDepartments() {
-			const allDepartments = await getDepartments();
 			if (municipalityId) {
-				const filtered = allDepartments.filter(
-					(d: Department) => d.municipalityId === Number(municipalityId)
-				);
-				setDepartments(filtered);
+				const allDepartments = await getDepartmentsByMunicipalityId(Number(municipalityId));
+				setDepartments(allDepartments);
 			}
 		}
 
 		loadDepartments();
 	}, [municipalityId]);
 
-	const handleAddNew = () => {
-		if (municipalityId) {
-			navigate(`/departments/${municipalityId}/new`);
-		}
-	};
+	// const handleAddNew = () => {
+	// 	if (municipalityId) {
+	// 		navigate(`/departments/${municipalityId}/new`);
+	// 	}
+	// };
 
 	const handleDepartmentClick = (departmentId: number) => {
 		navigate(`/resources/${departmentId}`, { state: { municipalityId } });
@@ -48,9 +45,9 @@ export default function DepartmentsPage() {
 						<Button onClick={() => navigate('/municipalities')} variant="secondary">
 							Back
 						</Button>
-						<Button onClick={handleAddNew} variant="primary">
+						{/* <Button onClick={handleAddNew} variant="primary">
 							Add New Department
-						</Button>
+						</Button> */}
 					</div>
 				</div>
 
@@ -71,7 +68,11 @@ export default function DepartmentsPage() {
 									<Edit size={20} />
 								</button>
 
-								<img src={d.image} alt={d.name} className="h-24 w-24 object-contain mx-auto mb-4" />
+								<img
+									src={d.image.startsWith('data:') ? d.image : `/images/${d.image}`}
+									alt={d.name}
+									className="h-24 w-24 object-contain mx-auto mb-4"
+								/>
 								<h3 className="text-lg font-semibold text-gray-800 text-center">{d.name}</h3>
 							</div>
 						))

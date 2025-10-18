@@ -31,12 +31,22 @@ export default function MunicipalitiesPage() {
 					) : (
 						municipalities.map(m => (
 							<div
-								key={m.MunicipalityId}
+								key={m.municipalityId}
 								className="block bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition cursor-pointer"
-								onClick={() => handleMunicipalityClick(m.MunicipalityId)}
+								onClick={() => handleMunicipalityClick(m.municipalityId)}
 							>
-								<img src={m.Image} alt={m.Name} className="h-24 w-24 object-contain mx-auto mb-4" />
-								<h3 className="text-lg font-semibold text-gray-800 mb-2">{m.Name}</h3>
+								<img
+									src={
+										m.image
+											? m.image.startsWith('data:')
+												? m.image
+												: `data:image/png;base64,${m.image}`
+											: '/images/default.png'
+									}
+									alt={m.name}
+									className="h-24 w-24 object-contain mx-auto mb-4"
+								/>
+								<h3 className="text-lg font-semibold text-gray-800 mb-2">{m.name}</h3>
 							</div>
 						))
 					)}
