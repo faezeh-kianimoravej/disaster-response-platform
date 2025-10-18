@@ -15,7 +15,7 @@ import java.util.List;
 @Tag(name = "Department Management",
         description = "Endpoints for managing departments and retrieving their related resources or municipalities.")
 @RestController
-@RequestMapping("/api/department")
+@RequestMapping("/api/departments")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class DepartmentController {

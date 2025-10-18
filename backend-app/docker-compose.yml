@@ -14,7 +14,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
       - ./init-scripts:/docker-entrypoint-initdb.d
     networks:
       - backend-network
@@ -25,6 +24,17 @@ services:
       retries: 5
 
   # ==============================
+  # Eureka Discovery Service
+  # ==============================
+  discovery-service:
+    build: ./discovery-service
+    container_name: discovery-service
+    ports:
+      - "8761:8761"
+    networks:
+      - backend-network
+
+  # ==============================
   # Department Service
   # ==============================
   department-service:
@@ -33,6 +43,8 @@ services:
     depends_on:
       postgres-db:
         condition: service_healthy
+      discovery-service:
+        condition: service_started
     ports:
       - "8081:8081"
     environment:
@@ -41,9 +53,37 @@ services:
       SPRING_DATASOURCE_PASSWORD: 1234
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
-
       SPRING_SQL_INIT_MODE: always
       SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
+      EUREKA_INSTANCE_HOSTNAME: department-service
+    networks:
+      - backend-network
+  # ==============================
+  # Resource Service
+  # ==============================
+  resource-service:
+    build: ./resource-service
+    container_name: resource-service
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      discovery-service:
+        condition: service_started
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/resource_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 1234
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_SQL_INIT_MODE: always
+      SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
+      EUREKA_INSTANCE_HOSTNAME: resource-service
     networks:
       - backend-network
     restart: on-failure
@@ -57,6 +97,8 @@ services:
     depends_on:
       postgres-db:
         condition: service_healthy
+      discovery-service:
+        condition: service_started
       department-service:
         condition: service_started
     ports:
@@ -67,9 +109,30 @@ services:
       SPRING_DATASOURCE_PASSWORD: 1234
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
-
       SPRING_SQL_INIT_MODE: always
       SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
+      EUREKA_INSTANCE_HOSTNAME: municipality-service
+    networks:
+      - backend-network
+    restart: on-failure
+
+  # ==============================
+  # API Gateway
+  # ==============================
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    depends_on:
+      discovery-service:
+        condition: service_started
+    ports:
+      - "8080:8080"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
+      EUREKA_INSTANCE_HOSTNAME: api-gateway
     networks:
       - backend-network
     restart: on-failure

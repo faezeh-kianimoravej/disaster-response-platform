@@ -19,7 +19,7 @@ import java.util.List;
 )
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/municipality")
+@RequestMapping("/api/municipalities")
 @CrossOrigin(origins = "*")
 public class MunicipalityController {
 
