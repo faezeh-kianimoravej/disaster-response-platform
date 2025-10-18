@@ -10,7 +10,7 @@ public record ResourceDto(
 
         String name,
         String description,
-        boolean available,
+        int available,
         int quantity,
         String resourceType,
 

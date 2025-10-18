@@ -43,7 +43,7 @@ public class Resource {
     @Positive(message = "Quantity must be greater than zero")
     private int quantity;
 
-    private boolean available;
+    private int available;
 
     @NotNull(message = "Resource resourceType must be specified")
     @Enumerated(EnumType.STRING)

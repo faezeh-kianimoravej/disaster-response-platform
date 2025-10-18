@@ -63,7 +63,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
         existing.setName(updatedResource.getName());
         existing.setDescription(updatedResource.getDescription());
         existing.setQuantity(updatedResource.getQuantity());
-        existing.setAvailable(updatedResource.isAvailable());
+        existing.setAvailable(updatedResource.getAvailable());
         existing.setResourceType(updatedResource.getResourceType());
         existing.setLatitude(updatedResource.getLatitude());
         existing.setLongitude(updatedResource.getLongitude());
