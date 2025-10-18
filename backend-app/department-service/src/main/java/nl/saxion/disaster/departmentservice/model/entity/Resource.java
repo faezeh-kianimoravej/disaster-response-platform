@@ -5,9 +5,15 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import nl.saxion.disaster.departmentservice.model.enums.ResourceType;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "resources")
@@ -19,6 +25,7 @@ public class Resource {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "resource_id")
     private Long resourceId;
 
     @NotNull(message = "Department must not be null")
@@ -42,11 +49,28 @@ public class Resource {
     @Enumerated(EnumType.STRING)
     private ResourceType resourceType;
 
-    private Double latitude;// Current position of the resource (for mobile assets)
-
+    private Double latitude;   // Current position (for mobile assets)
     private Double longitude;
 
     @Lob
+    @Column(name = "image", columnDefinition = "BYTEA")
+    @JdbcTypeCode(SqlTypes.BINARY)
     private byte[] image;
 
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

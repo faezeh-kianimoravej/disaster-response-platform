@@ -1,7 +1,9 @@
 package nl.saxion.disaster.departmentservice.department;
 
-import nl.saxion.disaster.departmentservice.model.dto.DepartmentDto;
-import nl.saxion.disaster.departmentservice.model.dto.ResourceDto;
+import nl.saxion.disaster.departmentservice.dto.DepartmentDto;
+import nl.saxion.disaster.departmentservice.dto.ResourceDto;
+import nl.saxion.disaster.departmentservice.mapper.DepartmentMapper;
+import nl.saxion.disaster.departmentservice.mapper.ResourceMapper;
 import nl.saxion.disaster.departmentservice.model.entity.Department;
 import nl.saxion.disaster.departmentservice.model.entity.Resource;
 import nl.saxion.disaster.departmentservice.model.enums.ResourceType;
@@ -29,11 +31,14 @@ class DepartmentServiceImplTest {
 
     private Department department;
     private Resource resource;
+    private DepartmentDto departmentDto;
+    private ResourceDto resourceDto;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
+        // ----- Mock Resource -----
         resource = new Resource();
         resource.setResourceId(1L);
         resource.setName("Ambulance");
@@ -44,22 +49,27 @@ class DepartmentServiceImplTest {
         resource.setLatitude(52.37);
         resource.setLongitude(4.89);
 
+        // ----- Mock Department -----
         department = new Department();
         department.setDepartmentId(10L);
         department.setMunicipalityId(100L);
         department.setName("Health Department");
         department.setResources(List.of(resource));
         resource.setDepartment(department);
+
+        // ----- Create equivalent DTOs -----
+        resourceDto = new ResourceMapper().toDto(resource);
+        departmentDto = new DepartmentMapper(new ResourceMapper()).toDto(department);
     }
 
     @Test
     void testGetAllDepartments() {
         when(departmentRepository.findAllDepartments()).thenReturn(List.of(department));
 
-        List<Department> result = departmentService.getAllDepartments();
+        List<DepartmentDto> result = departmentService.getAllDepartments();
 
         assertEquals(1, result.size());
-        assertEquals("Health Department", result.get(0).getName());
+        assertEquals("Health Department", result.get(0).departmentName());
         verify(departmentRepository, times(1)).findAllDepartments();
     }
 
@@ -67,33 +77,34 @@ class DepartmentServiceImplTest {
     void testGetDepartmentById() {
         when(departmentRepository.findDepartmentById(10L)).thenReturn(Optional.of(department));
 
-        Optional<Department> result = departmentService.getDepartmentById(10L);
+        Optional<DepartmentDto> result = departmentService.getDepartmentById(10L);
 
         assertTrue(result.isPresent());
-        assertEquals(10L, result.get().getDepartmentId());
+        assertEquals(10L, result.get().departmentId());
+        assertEquals("Health Department", result.get().departmentName());
         verify(departmentRepository, times(1)).findDepartmentById(10L);
     }
 
     @Test
     void testCreateDepartment() {
-        when(departmentRepository.createDepartment(department)).thenReturn(department);
+        when(departmentRepository.createDepartment(any(Department.class))).thenReturn(department);
 
-        Department created = departmentService.createDepartment(department);
+        DepartmentDto created = departmentService.createDepartment(departmentDto);
 
         assertNotNull(created);
-        assertEquals("Health Department", created.getName());
-        verify(departmentRepository, times(1)).createDepartment(department);
+        assertEquals("Health Department", created.departmentName());
+        verify(departmentRepository, times(1)).createDepartment(any(Department.class));
     }
 
     @Test
     void testUpdateDepartment() {
-        when(departmentRepository.updateDepartment(department)).thenReturn(department);
+        when(departmentRepository.updateDepartment(any(Department.class))).thenReturn(department);
 
-        Department updated = departmentService.updateDepartment(10L, department);
+        DepartmentDto updated = departmentService.updateDepartment(10L, departmentDto);
 
         assertNotNull(updated);
-        assertEquals("Health Department", updated.getName());
-        verify(departmentRepository, times(1)).updateDepartment(department);
+        assertEquals("Health Department", updated.departmentName());
+        verify(departmentRepository, times(1)).updateDepartment(any(Department.class));
     }
 
     @Test

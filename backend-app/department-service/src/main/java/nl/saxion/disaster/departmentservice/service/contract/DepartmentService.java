@@ -1,20 +1,19 @@
 package nl.saxion.disaster.departmentservice.service.contract;
 
-import nl.saxion.disaster.departmentservice.model.dto.DepartmentDto;
-import nl.saxion.disaster.departmentservice.model.entity.Department;
+import nl.saxion.disaster.departmentservice.dto.DepartmentDto;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface DepartmentService {
 
-    List<Department> getAllDepartments();
+    List<DepartmentDto> getAllDepartments();
 
-    Optional<Department> getDepartmentById(Long id);
+    Optional<DepartmentDto> getDepartmentById(Long id);
 
-    Department createDepartment(Department department);
+    DepartmentDto createDepartment(DepartmentDto departmentDto);
 
-    Department updateDepartment(Long id, Department departmentDetails);
+    DepartmentDto updateDepartment(Long id, DepartmentDto departmentDto);
 
     void deleteDepartment(Long id);
 

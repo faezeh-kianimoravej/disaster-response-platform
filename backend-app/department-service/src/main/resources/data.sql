@@ -1,19 +1,51 @@
+
+-- ============================
+-- Initial Data for Departments
+-- ============================
+
+-- 🔥 Fire Department Icon (shared Base64)
+-- 🚔 Police Department Icon (shared Base64)
+-- 🏥 Medical Department Icon (shared Base64)
+
+-- Fire
+-- iVBORw0KGgoAAAANSUhEUgAAAA8AAAAQCAYAAAAvf+5AAAAAAXNSR0IArs4c6QAAANBJREFUKFNjZICC////PwMYGBgYPwMDQyMjY1iYGJwBxMEZGJiAqP3///8/YIiA+zYGwRAxwLS2tnVhYGAQl6FhXgWSr2NqAADTAEJrMTEyMf1BhACxmpqaoRrBywNDA8Q8Rg4h0RyIDqZ2BgYMyAqgkEb+Ap7NwMDA8QNODCwCAOCCiYoG4mTAwMDw/RgAizxZgRAwAFoHBsC8UgBtAAAAAElFTkSuQmCC
+-- Police
+-- iVBORw0KGgoAAAANSUhEUgAAAA8AAAAQCAYAAAAvf+5AAAAAAXNSR0IArs4c6QAAANtJREFUKFNjZICC////PwMYGBgYPwMDQyMjY1iYGJwBxMEZGJiAqP3///8/YIiA+zYGwRAxwLS2tnVhYGAQl6FhXgWSr2NqAADTAEJrMTEyMf1BhACxmpqaoRrBywNDA8Q8Rg4h0RyIDqZ2BgYMyAqgkEb+Ap7NwMDA8QNODCwCAOCCiYoG4mTAwMDw/RgAizxZgRAwAFoHBsC8UgBtAAAAAElFTkSuQmCC
+-- Medical
+-- iVBORw0KGgoAAAANSUhEUgAAAA8AAAAQCAYAAAAvf+5AAAAAAXNSR0IArs4c6QAAAKdJREFUKFNjZICC////PwMYGBgYPwMDQyMjY1iYGJwBxMEZGJiAqP3///8/YIiA+zYGwRAxwLS2tnVhYGAQl6FhXgWSr2NqAADTAEJrMTEyMf1BhACxmpqaoRrBywNDA8Q8Rg4h0RyIDqZ2BgYMyAqgkEb+Ap7NwMDA8QNODCwCAOCCiYoG4mTAwMDw/RgAizxZgRAwAFoHBsC8UgBtAAAAAElFTkSuQmCC
+
 -- Deventer
-INSERT INTO departments (department_id, name, municipality_id) VALUES (1, 'Fire Department Deventer', 1);
-INSERT INTO departments (department_id, name, municipality_id) VALUES (2, 'Medical Response Deventer', 1);
-INSERT INTO departments (department_id, name, municipality_id) VALUES (3, 'Police Unit Deventer', 1);
+INSERT INTO department (municipality_id, name, image, created_at, updated_at) VALUES
+(1, 'Fire Department Deventer',
+ decode('iVBORw0KGgoAAAANSUhEUgAAAA8AAAAQCAYAAAAvf+5AAAAAAXNSR0IArs4c6QAAANBJREFUKFNjZICC////PwMYGBgYPwMDQyMjY1iYGJwBxMEZGJiAqP3///8/YIiA+zYGwRAxwLS2tnVhYGAQl6FhXgWSr2NqAADTAEJrMTEyMf1BhACxmpqaoRrBywNDA8Q8Rg4h0RyIDqZ2BgYMyAqgkEb+Ap7NwMDA8QNODCwCAOCCiYoG4mTAwMDw/RgAizxZgRAwAFoHBsC8UgBtAAAAAElFTkSuQmCC', 'base64'),
+ now(), now()),
+(1, 'Police Department Deventer',
+ decode('iVBORw0KGgoAAAANSUhEUgAAAA8AAAAQCAYAAAAvf+5AAAAAAXNSR0IArs4c6QAAANtJREFUKFNjZICC////PwMYGBgYPwMDQyMjY1iYGJwBxMEZGJiAqP3///8/YIiA+zYGwRAxwLS2tnVhYGAQl6FhXgWSr2NqAADTAEJrMTEyMf1BhACxmpqaoRrBywNDA8Q8Rg4h0RyIDqZ2BgYMyAqgkEb+Ap7NwMDA8QNODCwCAOCCiYoG4mTAwMDw/RgAizxZgRAwAFoHBsC8UgBtAAAAAElFTkSuQmCC', 'base64'),
+ now(), now()),
+(1, 'Medical Department Deventer',
+ decode('iVBORw0KGgoAAAANSUhEUgAAAA8AAAAQCAYAAAAvf+5AAAAAAXNSR0IArs4c6QAAAKdJREFUKFNjZICC////PwMYGBgYPwMDQyMjY1iYGJwBxMEZGJiAqP3///8/YIiA+zYGwRAxwLS2tnVhYGAQl6FhXgWSr2NqAADTAEJrMTEyMf1BhACxmpqaoRrBywNDA8Q8Rg4h0RyIDqZ2BgYMyAqgkEb+Ap7NwMDA8QNODCwCAOCCiYoG4mTAwMDw/RgAizxZgRAwAFoHBsC8UgBtAAAAAElFTkSuQmCC', 'base64'),
+ now(), now());
 
 -- Enschede
-INSERT INTO departments (department_id, name, municipality_id) VALUES (4, 'Fire Department Enschede', 2);
-INSERT INTO departments (department_id, name, municipality_id) VALUES (5, 'Medical Response Enschede', 2);
-INSERT INTO departments (department_id, name, municipality_id) VALUES (6, 'Police Unit Enschede', 2);
+INSERT INTO department (municipality_id, name, image, created_at, updated_at) VALUES
+(2, 'Fire Department Enschede',
+ decode('iVBORw0KGgoAAAANSUhEUgAAAA8AAAAQCAYAAAAvf+5AAAAAAXNSR0IArs4c6QAAANBJREFUKFNjZICC////PwMYGBgYPwMDQyMjY1iYGJwBxMEZGJiAqP3///8/YIiA+zYGwRAxwLS2tnVhYGAQl6FhXgWSr2NqAADTAEJrMTEyMf1BhACxmpqaoRrBywNDA8Q8Rg4h0RyIDqZ2BgYMyAqgkEb+Ap7NwMDA8QNODCwCAOCCiYoG4mTAwMDw/RgAizxZgRAwAFoHBsC8UgBtAAAAAElFTkSuQmCC', 'base64'),
+ now(), now()),
+(2, 'Police Department Enschede',
+ decode('iVBORw0KGgoAAAANSUhEUgAAAA8AAAAQCAYAAAAvf+5AAAAAAXNSR0IArs4c6QAAANtJREFUKFNjZICC////PwMYGBgYPwMDQyMjY1iYGJwBxMEZGJiAqP3///8/YIiA+zYGwRAxwLS2tnVhYGAQl6FhXgWSr2NqAADTAEJrMTEyMf1BhACxmpqaoRrBywNDA8Q8Rg4h0RyIDqZ2BgYMyAqgkEb+Ap7NwMDA8QNODCwCAOCCiYoG4mTAwMDw/RgAizxZgRAwAFoHBsC8UgBtAAAAAElFTkSuQmCC', 'base64'),
+ now(), now()),
+(2, 'Medical Department Enschede',
+ decode('iVBORw0KGgoAAAANSUhEUgAAAA8AAAAQCAYAAAAvf+5AAAAAAXNSR0IArs4c6QAAAKdJREFUKFNjZICC////PwMYGBgYPwMDQyMjY1iYGJwBxMEZGJiAqP3///8/YIiA+zYGwRAxwLS2tnVhYGAQl6FhXgWSr2NqAADTAEJrMTEyMf1BhACxmpqaoRrBywNDA8Q8Rg4h0RyIDqZ2BgYMyAqgkEb+Ap7NwMDA8QNODCwCAOCCiYoG4mTAwMDw/RgAizxZgRAwAFoHBsC8UgBtAAAAAElFTkSuQmCC', 'base64'),
+ now(), now());
 
--- Amsterdam
-INSERT INTO departments (department_id, name, municipality_id) VALUES (7, 'Fire Department Amsterdam', 3);
-INSERT INTO departments (department_id, name, municipality_id) VALUES (8, 'Medical Response Amsterdam', 3);
-INSERT INTO departments (department_id, name, municipality_id) VALUES (9, 'Police Unit Amsterdam', 3);
-
--- Rotterdam
-INSERT INTO departments (department_id, name, municipality_id) VALUES (10, 'Fire Department Rotterdam', 4);
-INSERT INTO departments (department_id, name, municipality_id) VALUES (11, 'Medical Response Rotterdam', 4);
-INSERT INTO departments (department_id, name, municipality_id) VALUES (12, 'Police Unit Rotterdam', 4);
+-- Zwolle
+INSERT INTO department (municipality_id, name, image, created_at, updated_at) VALUES
+(3, 'Fire Department Zwolle',
+ decode('iVBORw0KGgoAAAANSUhEUgAAAA8AAAAQCAYAAAAvf+5AAAAAAXNSR0IArs4c6QAAANBJREFUKFNjZICC////PwMYGBgYPwMDQyMjY1iYGJwBxMEZGJiAqP3///8/YIiA+zYGwRAxwLS2tnVhYGAQl6FhXgWSr2NqAADTAEJrMTEyMf1BhACxmpqaoRrBywNDA8Q8Rg4h0RyIDqZ2BgYMyAqgkEb+Ap7NwMDA8QNODCwCAOCCiYoG4mTAwMDw/RgAizxZgRAwAFoHBsC8UgBtAAAAAElFTkSuQmCC', 'base64'),
+ now(), now()),
+(3, 'Police Department Zwolle',
+ decode('iVBORw0KGgoAAAANSUhEUgAAAA8AAAAQCAYAAAAvf+5AAAAAAXNSR0IArs4c6QAAANtJREFUKFNjZICC////PwMYGBgYPwMDQyMjY1iYGJwBxMEZGJiAqP3///8/YIiA+zYGwRAxwLS2tnVhYGAQl6FhXgWSr2NqAADTAEJrMTEyMf1BhACxmpqaoRrBywNDA8Q8Rg4h0RyIDqZ2BgYMyAqgkEb+Ap7NwMDA8QNODCwCAOCCiYoG4mTAwMDw/RgAizxZgRAwAFoHBsC8UgBtAAAAAElFTkSuQmCC', 'base64'),
+ now(), now()),
+(3, 'Medical Department Zwolle',
+ decode('iVBORw0KGgoAAAANSUhEUgAAAA8AAAAQCAYAAAAvf+5AAAAAAXNSR0IArs4c6QAAAKdJREFUKFNjZICC////PwMYGBgYPwMDQyMjY1iYGJwBxMEZGJiAqP3///8/YIiA+zYGwRAxwLS2tnVhYGAQl6FhXgWSr2NqAADTAEJrMTEyMf1BhACxmpqaoRrBywNDA8Q8Rg4h0RyIDqZ2BgYMyAqgkEb+Ap7NwMDA8QNODCwCAOCCiYoG4mTAwMDw/RgAizxZgRAwAFoHBsC8UgBtAAAAAElFTkSuQmCC', 'base64'),
+ now(), now());

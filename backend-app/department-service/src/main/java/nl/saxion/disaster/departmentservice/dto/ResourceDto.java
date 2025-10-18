@@ -1,4 +1,4 @@
-package nl.saxion.disaster.municipality_service.model.dto;
+package nl.saxion.disaster.departmentservice.dto;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
@@ -19,6 +19,6 @@ public record ResourceDto(
 
         Double latitude,
         Double longitude,
-        byte[] image
+        String imageBase64
 ) {
 }

@@ -1,4 +1,9 @@
-INSERT INTO municipality (municipality_id, name, region_id) VALUES (1, 'Deventer', 1);
-INSERT INTO municipality (municipality_id, name, region_id) VALUES (2, 'Enschede', 1);
-INSERT INTO municipality (municipality_id, name, region_id) VALUES (3, 'Amsterdam', 2);
-INSERT INTO municipality (municipality_id, name, region_id) VALUES (4, 'Rotterdam', 2);
+-- ============================
+-- Initial Municipalities (3)
+-- ============================
+
+INSERT INTO municipality (name, region_id, image, created_at, updated_at)
+VALUES
+('Deventer', 1, decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==', 'base64'), now(), now()),
+('Enschede', 1, decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==', 'base64'), now(), now()),
+('Zwolle', 1, decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==', 'base64'), now(), now());

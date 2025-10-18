@@ -1,15 +1,13 @@
 package nl.saxion.disaster.departmentservice.service;
 
-import nl.saxion.disaster.departmentservice.model.dto.DepartmentDto;
-import nl.saxion.disaster.departmentservice.model.dto.ResourceDto;
+import nl.saxion.disaster.departmentservice.dto.DepartmentDto;
+import nl.saxion.disaster.departmentservice.mapper.DepartmentMapper;
+import nl.saxion.disaster.departmentservice.mapper.ResourceMapper;
 import nl.saxion.disaster.departmentservice.model.entity.Department;
-import nl.saxion.disaster.departmentservice.model.entity.Resource;
 import nl.saxion.disaster.departmentservice.repository.contract.DepartmentRepository;
 import nl.saxion.disaster.departmentservice.service.contract.DepartmentService;
-
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -18,28 +16,41 @@ import java.util.Optional;
 public class DepartmentServiceImpl implements DepartmentService {
 
     private final DepartmentRepository departmentRepository;
+    private final DepartmentMapper departmentMapper;
+    private final ResourceMapper resourceMapper;
 
     public DepartmentServiceImpl(DepartmentRepository departmentRepository) {
         this.departmentRepository = departmentRepository;
-    }
-
-    public List<Department> getAllDepartments() {
-        return departmentRepository.findAllDepartments();
-    }
-
-    @Override
-    public Optional<Department> getDepartmentById(Long id) {
-        return departmentRepository.findDepartmentById(id);
+        this.resourceMapper = new ResourceMapper();
+        this.departmentMapper = new DepartmentMapper(resourceMapper);
     }
 
     @Override
-    public Department createDepartment(Department department) {
-        return departmentRepository.createDepartment(department);
+    public List<DepartmentDto> getAllDepartments() {
+        return departmentRepository.findAllDepartments().stream()
+                .map(departmentMapper::toDto)
+                .filter(Objects::nonNull)
+                .toList();
     }
 
     @Override
-    public Department updateDepartment(Long id, Department departmentDetails) {
-        return departmentRepository.updateDepartment(departmentDetails);
+    public Optional<DepartmentDto> getDepartmentById(Long id) {
+        return departmentRepository.findDepartmentById(id)
+                .map(departmentMapper::toDto);
+    }
+
+    @Override
+    public DepartmentDto createDepartment(DepartmentDto departmentDto) {
+        Department department = departmentMapper.toEntity(departmentDto);
+        Department saved = departmentRepository.createDepartment(department);
+        return departmentMapper.toDto(saved);
+    }
+
+    @Override
+    public DepartmentDto updateDepartment(Long id, DepartmentDto departmentDto) {
+        Department department = departmentMapper.toEntity(departmentDto);
+        Department updated = departmentRepository.updateDepartment(department);
+        return departmentMapper.toDto(updated);
     }
 
     @Override
@@ -47,44 +58,11 @@ public class DepartmentServiceImpl implements DepartmentService {
         departmentRepository.deleteDepartment(id);
     }
 
+    @Override
     public List<DepartmentDto> getDepartmentsByMunicipality(Long municipalityId) {
         return departmentRepository.findDepartmentByMunicipalityId(municipalityId).stream()
-                .map(this::mapDepartmentToDto)
+                .map(departmentMapper::toDto)
+                .filter(Objects::nonNull)
                 .toList();
-    }
-
-    private DepartmentDto mapDepartmentToDto(Department department) {
-        if (department == null) return null;
-
-        List<ResourceDto> resourceDtos =
-                department.getResources() == null
-                        ? List.of()
-                        : department.getResources().stream()
-                        .filter(Objects::nonNull)
-                        .map(this::mapResourceToDto)
-                        .toList();
-
-        return new DepartmentDto(
-                department.getMunicipalityId(),
-                department.getDepartmentId(),
-                department.getMunicipalityId(),
-                department.getName(),
-                resourceDtos
-        );
-    }
-
-    private ResourceDto mapResourceToDto(Resource resource) {
-        return new ResourceDto(
-                resource.getResourceId(),
-                resource.getName(),
-                resource.getDescription(),
-                resource.isAvailable(),
-                resource.getQuantity(),
-                resource.getResourceType() != null ? resource.getResourceType().name() : null,
-                resource.getDepartment() != null ? resource.getDepartment().getDepartmentId() : null,
-                resource.getLatitude(),
-                resource.getLongitude(),
-                resource.getImage()
-        );
     }
 }

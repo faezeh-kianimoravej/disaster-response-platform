@@ -1,6 +1,6 @@
 package nl.saxion.disaster.municipality_service.client;
 
-import nl.saxion.disaster.municipality_service.model.dto.DepartmentDto;
+import nl.saxion.disaster.municipality_service.dto.DepartmentDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
