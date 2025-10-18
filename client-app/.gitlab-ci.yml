@@ -75,6 +75,10 @@ build:client-app:
       changes:
         - client-app/**/*
       when: always
+    - if: '$CI_COMMIT_BRANCH == "release"'
+      changes:
+        - client-app/**/*
+      when: always
     - when: never
   script:
     - npm run build
@@ -88,8 +92,8 @@ deploy:client-app:
   image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
   stage: deploy
   rules:
-    # Deploy only when client-app files change on main
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    # Deploy only when client-app files change on release branch
+    - if: '$CI_COMMIT_BRANCH == "release"'
       changes:
         - client-app/**/*
       when: always
@@ -118,8 +122,8 @@ smoke:client-app:
   image: curlimages/curl:8.5.0
   stage: smoke
   rules:
-    # Run smoke tests only when a client-app deploy occurred (same change condition)
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    # Run smoke tests only for release branch (same change condition)
+    - if: '$CI_COMMIT_BRANCH == "release"'
       changes:
         - client-app/**/*
       when: always
