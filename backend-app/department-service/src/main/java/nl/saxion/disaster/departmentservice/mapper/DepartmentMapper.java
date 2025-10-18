@@ -56,11 +56,11 @@ public class DepartmentMapper implements BaseMapper<Department, DepartmentDto> {
 
         department.setDepartmentId(dto.departmentId());
         department.setMunicipalityId(dto.municipalityId());
-        department.setName(dto.departmentName());
+        department.setName(dto.name());
 
-        if (dto.imageBase64() != null && !dto.imageBase64().isEmpty()) {
+        if (dto.image() != null && !dto.image().isEmpty()) {
             try {
-                department.setImage(Base64.getDecoder().decode(dto.imageBase64()));
+                department.setImage(Base64.getDecoder().decode(dto.image()));
             } catch (IllegalArgumentException e) {
                 department.setImage(null);
             }

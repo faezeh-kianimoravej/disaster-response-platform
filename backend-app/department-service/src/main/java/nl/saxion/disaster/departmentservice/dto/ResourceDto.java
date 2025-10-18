@@ -8,17 +8,17 @@ public record ResourceDto(
         @JsonSerialize(using = ToStringSerializer.class)
         Long resourceId,
 
-        String resourceName,
+        String name,
         String description,
         boolean available,
         int quantity,
-        String type,
+        String resourceType,
 
         @JsonSerialize(using = ToStringSerializer.class)
         Long departmentId,
 
         Double latitude,
         Double longitude,
-        String imageBase64
+        String image
 ) {
 }

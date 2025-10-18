@@ -34,7 +34,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
     @Override
     public List<Resource> findByType(ResourceType type) {
         return entityManager.createQuery(
-                        "SELECT r FROM Resource r WHERE r.resourceType = :type", Resource.class)
+                        "SELECT r FROM Resource r WHERE r.resourceType = :resourceType", Resource.class)
                 .setParameter("type", type)
                 .getResultList();
     }

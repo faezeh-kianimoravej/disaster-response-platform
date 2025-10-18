@@ -68,7 +68,7 @@ class ResourceServiceImplTest {
         Optional<ResourceDto> result = resourceService.getResourceById(1L);
 
         assertTrue(result.isPresent());
-        assertEquals("Fire Truck", result.get().resourceName());
+        assertEquals("Fire Truck", result.get().name());
         verify(resourceRepository, times(1)).findById(1L);
     }
 
@@ -92,7 +92,7 @@ class ResourceServiceImplTest {
         List<ResourceDto> result = resourceService.getResourcesByType(ResourceType.FIRE_TRUCK);
 
         assertEquals(1, result.size());
-        assertEquals("FIRE_TRUCK", result.get(0).type());
+        assertEquals("FIRE_TRUCK", result.get(0).resourceType());
         verify(resourceRepository, times(1)).findByType(ResourceType.FIRE_TRUCK);
     }
 
@@ -116,7 +116,7 @@ class ResourceServiceImplTest {
         ResourceDto created = resourceService.createResource(resourceDto);
 
         assertNotNull(created);
-        assertEquals("Fire Truck", created.resourceName());
+        assertEquals("Fire Truck", created.name());
         verify(resourceRepository, times(1)).save(resource);
     }
 

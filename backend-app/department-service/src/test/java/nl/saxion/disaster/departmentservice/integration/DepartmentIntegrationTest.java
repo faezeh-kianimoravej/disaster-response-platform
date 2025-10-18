@@ -32,7 +32,7 @@ class DepartmentIntegrationTest {
     void testCreateDepartment() throws Exception {
         String json = """
                 {
-                    "departmentName": "Fire Department Deventer",
+                    "name": "Fire Department Deventer",
                     "municipalityId": 1
                 }
                 """;
@@ -42,7 +42,7 @@ class DepartmentIntegrationTest {
                         .content(json))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.departmentId").exists())
-                .andExpect(jsonPath("$.departmentName").value("Fire Department Deventer"))
+                .andExpect(jsonPath("$.name").value("Fire Department Deventer"))
                 .andExpect(jsonPath("$.municipalityId").value(1));
     }
 
@@ -50,7 +50,7 @@ class DepartmentIntegrationTest {
     void testGetAllDepartments() throws Exception {
         String json = """
                 {
-                    "departmentName": "Health Department",
+                    "name": "Health Department",
                     "municipalityId": 2
                 }
                 """;
@@ -76,7 +76,7 @@ class DepartmentIntegrationTest {
         // --- Create department ---
         String createJson = """
                 {
-                    "departmentName": "Old Department",
+                    "name": "Old Department",
                     "municipalityId": 3
                 }
                 """;
@@ -93,7 +93,7 @@ class DepartmentIntegrationTest {
         // --- Update department ---
         String updateJson = """
                 {
-                    "departmentName": "Updated Department",
+                    "name": "Updated Department",
                     "municipalityId": 3
                 }
                 """;
@@ -102,7 +102,7 @@ class DepartmentIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updateJson))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.departmentName").value("Updated Department"))
+                .andExpect(jsonPath("$.name").value("Updated Department"))
                 .andExpect(jsonPath("$.municipalityId").value(3))
                 .andExpect(jsonPath("$.departmentId").exists()) // فقط وجود id مهم است
                 .andReturn();
@@ -117,7 +117,7 @@ class DepartmentIntegrationTest {
         // Create
         String createJson = """
                 {
-                    "departmentName": "Temp Department",
+                    "name": "Temp Department",
                     "municipalityId": 4
                 }
                 """;
@@ -146,13 +146,13 @@ class DepartmentIntegrationTest {
     void testGetDepartmentsByMunicipality() throws Exception {
         String dep1 = """
                 {
-                    "departmentName": "Police Department",
+                    "name": "Police Department",
                     "municipalityId": 10
                 }
                 """;
         String dep2 = """
                 {
-                    "departmentName": "Fire Department",
+                    "name": "Fire Department",
                     "municipalityId": 10
                 }
                 """;
