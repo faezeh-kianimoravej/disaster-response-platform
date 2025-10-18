@@ -3,7 +3,7 @@ import type { Department, DepartmentFormData } from '@/types/department';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-const departmentApi = new BaseApi(`${API_BASE_URL}/department`);
+const departmentApi = new BaseApi(`${API_BASE_URL}/departments`);
 
 export async function getDepartments(): Promise<Department[]> {
 	return await departmentApi.get<Department[]>('/all_departments');

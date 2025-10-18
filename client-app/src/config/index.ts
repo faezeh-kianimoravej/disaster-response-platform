@@ -5,8 +5,8 @@ export const config = {
 		environment: import.meta.env.VITE_ENVIRONMENT || 'development',
 	},
 	api: {
-		baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api',
-		wsURL: import.meta.env.VITE_WS_URL || 'ws://localhost:3001',
+		baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api',
+		wsURL: import.meta.env.VITE_WS_URL || 'ws://localhost:8080',
 	},
 	logging: {
 		level: import.meta.env.VITE_LOG_LEVEL || 'info',
