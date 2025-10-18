@@ -1,4 +1,4 @@
-package nl.saxion.disaster.departmentservice.model.dto;
+package nl.saxion.disaster.departmentservice.dto;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
@@ -17,6 +17,8 @@ public record DepartmentDto(
         Long municipalityId,
 
         String departmentName,
+
+        String imageBase64,
 
         List<ResourceDto> resourceDtoList
 ) {

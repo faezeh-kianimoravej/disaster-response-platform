@@ -1,5 +1,7 @@
 package nl.saxion.disaster.departmentservice.resource;
 
+import nl.saxion.disaster.departmentservice.dto.ResourceDto;
+import nl.saxion.disaster.departmentservice.mapper.ResourceMapper;
 import nl.saxion.disaster.departmentservice.model.entity.Resource;
 import nl.saxion.disaster.departmentservice.model.enums.ResourceType;
 import nl.saxion.disaster.departmentservice.repository.contract.ResourceRepository;
@@ -21,10 +23,14 @@ class ResourceServiceImplTest {
     @Mock
     private ResourceRepository resourceRepository;
 
+    @Mock
+    private ResourceMapper resourceMapper;
+
     @InjectMocks
     private ResourceServiceImpl resourceService;
 
     private Resource resource;
+    private ResourceDto resourceDto;
 
     @BeforeEach
     void setUp() {
@@ -39,46 +45,63 @@ class ResourceServiceImplTest {
         resource.setResourceType(ResourceType.FIRE_TRUCK);
         resource.setLatitude(52.37);
         resource.setLongitude(4.89);
+
+        resourceDto = new ResourceDto(
+                1L,
+                "Fire Truck",
+                "Used for firefighting operations",
+                true,
+                2,
+                "FIRE_TRUCK",
+                5L,  // departmentId
+                52.37,
+                4.89,
+                null
+        );
     }
 
     @Test
     void testGetResourceById() {
         when(resourceRepository.findById(1L)).thenReturn(Optional.of(resource));
+        when(resourceMapper.toDto(resource)).thenReturn(resourceDto);
 
-        Optional<Resource> result = resourceService.getResourceById(1L);
+        Optional<ResourceDto> result = resourceService.getResourceById(1L);
 
         assertTrue(result.isPresent());
-        assertEquals("Fire Truck", result.get().getName());
+        assertEquals("Fire Truck", result.get().resourceName());
         verify(resourceRepository, times(1)).findById(1L);
     }
 
     @Test
     void testGetAvailableResources() {
         when(resourceRepository.findAvailable()).thenReturn(List.of(resource));
+        when(resourceMapper.toDto(resource)).thenReturn(resourceDto);
 
-        List<Resource> result = resourceService.getAvailableResources();
+        List<ResourceDto> result = resourceService.getAvailableResources();
 
         assertEquals(1, result.size());
-        assertTrue(result.get(0).isAvailable());
+        assertTrue(result.get(0).available());
         verify(resourceRepository, times(1)).findAvailable();
     }
 
     @Test
     void testGetResourcesByType() {
         when(resourceRepository.findByType(ResourceType.FIRE_TRUCK)).thenReturn(List.of(resource));
+        when(resourceMapper.toDto(resource)).thenReturn(resourceDto);
 
-        List<Resource> result = resourceService.getResourcesByType(ResourceType.FIRE_TRUCK);
+        List<ResourceDto> result = resourceService.getResourcesByType(ResourceType.FIRE_TRUCK);
 
         assertEquals(1, result.size());
-        assertEquals(ResourceType.FIRE_TRUCK, result.get(0).getResourceType());
+        assertEquals("FIRE_TRUCK", result.get(0).type());
         verify(resourceRepository, times(1)).findByType(ResourceType.FIRE_TRUCK);
     }
 
     @Test
     void testGetResourcesByDepartment() {
         when(resourceRepository.findByDepartment(10L)).thenReturn(List.of(resource));
+        when(resourceMapper.toDto(resource)).thenReturn(resourceDto);
 
-        List<Resource> result = resourceService.getResourcesByDepartment(10L);
+        List<ResourceDto> result = resourceService.getResourcesByDepartment(10L);
 
         assertEquals(1, result.size());
         verify(resourceRepository, times(1)).findByDepartment(10L);
@@ -86,23 +109,27 @@ class ResourceServiceImplTest {
 
     @Test
     void testCreateResource() {
+        when(resourceMapper.toEntity(resourceDto)).thenReturn(resource);
         when(resourceRepository.save(resource)).thenReturn(resource);
+        when(resourceMapper.toDto(resource)).thenReturn(resourceDto);
 
-        Resource created = resourceService.createResource(resource);
+        ResourceDto created = resourceService.createResource(resourceDto);
 
         assertNotNull(created);
-        assertEquals("Fire Truck", created.getName());
+        assertEquals("Fire Truck", created.resourceName());
         verify(resourceRepository, times(1)).save(resource);
     }
 
     @Test
     void testEditResource() {
+        when(resourceMapper.toEntity(resourceDto)).thenReturn(resource);
         when(resourceRepository.edit(1L, resource)).thenReturn(resource);
+        when(resourceMapper.toDto(resource)).thenReturn(resourceDto);
 
-        Resource edited = resourceService.editResource(1L, resource);
+        ResourceDto edited = resourceService.editResource(1L, resourceDto);
 
         assertNotNull(edited);
-        assertEquals(2, edited.getQuantity());
+        assertEquals(2, edited.quantity());
         verify(resourceRepository, times(1)).edit(1L, resource);
     }
 
