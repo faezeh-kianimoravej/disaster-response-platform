@@ -10,6 +10,8 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>discovery-service</module>
+        <module>api-gateway</module>
         <module>department-service</module>
         <module>incident-service</module>
         <module>location-service</module>
