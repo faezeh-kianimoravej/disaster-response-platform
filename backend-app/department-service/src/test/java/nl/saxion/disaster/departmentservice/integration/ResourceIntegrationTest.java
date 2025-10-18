@@ -51,7 +51,7 @@ class ResourceIntegrationTest {
     void testCreateResource() throws Exception {
         String resourceJson = String.format("""
                 {
-                  "resourceName": "Ambulance A1",
+                  "name": "Ambulance A1",
                   "description": "Main ambulance of Deventer",
                   "quantity": 2,
                   "available": true,
@@ -66,7 +66,7 @@ class ResourceIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(resourceJson))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.resourceName").value("Ambulance A1"))
+                .andExpect(jsonPath("$.name").value("Ambulance A1"))
                 .andExpect(jsonPath("$.departmentId").value(department.getDepartmentId()));
     }
 
@@ -75,7 +75,7 @@ class ResourceIntegrationTest {
         // Create resource first
         String createJson = String.format("""
                 {
-                  "resourceName": "Old Vehicle",
+                  "name": "Old Vehicle",
                   "description": "To be updated",
                   "quantity": 1,
                   "available": true,
@@ -88,7 +88,7 @@ class ResourceIntegrationTest {
 
         String updateJson = String.format("""
                 {
-                  "resourceName": "Updated Vehicle",
+                  "name": "Updated Vehicle",
                   "description": "Updated description",
                   "quantity": 5,
                   "available": false,
@@ -114,7 +114,7 @@ class ResourceIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updateJson))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.resourceName").value("Updated Vehicle"))
+                .andExpect(jsonPath("$.name").value("Updated Vehicle"))
                 .andExpect(jsonPath("$.quantity").value(5));
     }
 
@@ -122,7 +122,7 @@ class ResourceIntegrationTest {
     void testDeleteResource() throws Exception {
         String createJson = String.format("""
                 {
-                  "resourceName": "Temp Resource",
+                  "name": "Temp Resource",
                   "description": "Will be deleted",
                   "quantity": 1,
                   "available": true,

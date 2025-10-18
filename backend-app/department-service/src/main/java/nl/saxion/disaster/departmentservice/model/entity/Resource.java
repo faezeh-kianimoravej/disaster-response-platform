@@ -45,7 +45,7 @@ public class Resource {
 
     private boolean available;
 
-    @NotNull(message = "Resource type must be specified")
+    @NotNull(message = "Resource resourceType must be specified")
     @Enumerated(EnumType.STRING)
     private ResourceType resourceType;
 

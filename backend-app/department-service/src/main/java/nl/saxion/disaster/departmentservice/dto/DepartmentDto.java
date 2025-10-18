@@ -16,9 +16,9 @@ public record DepartmentDto(
         @JsonSerialize(using = ToStringSerializer.class)
         Long municipalityId,
 
-        String departmentName,
+        String name,
 
-        String imageBase64,
+        String image,
 
         List<ResourceDto> resourceDtoList
 ) {

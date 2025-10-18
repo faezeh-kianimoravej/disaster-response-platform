@@ -45,7 +45,7 @@ public class ResourceMapper implements BaseMapper<Resource, ResourceDto> {
     public Resource toEntity(ResourceDto resourceDto) {
         if (resourceDto == null) return null;
         byte[] imageBytes = null;
-        String img = resourceDto.imageBase64();
+        String img = resourceDto.image();
         if (img != null && !img.isBlank()) {
             String raw = img.startsWith("data:") ? img.substring(img.indexOf(',') + 1) : img;
             try {
@@ -56,7 +56,7 @@ public class ResourceMapper implements BaseMapper<Resource, ResourceDto> {
         }
         Resource resource = new Resource();
         resource.setResourceId(resourceDto.resourceId());
-        resource.setName(resourceDto.resourceName());
+        resource.setName(resourceDto.name());
         resource.setDescription(resourceDto.description());
         resource.setAvailable(Boolean.TRUE.equals(resourceDto.available()));
         resource.setQuantity(Optional.ofNullable(resourceDto.quantity()).orElse(1)
@@ -75,13 +75,13 @@ public class ResourceMapper implements BaseMapper<Resource, ResourceDto> {
     }
 
     private static void mapResourceType(ResourceDto resourceDto, Resource resource) {
-        String typeStr = resourceDto.type();
+        String typeStr = resourceDto.resourceType();
         if (typeStr != null && !typeStr.isBlank()) {
             try {
                 String normalized = typeStr.trim().replace(' ', '_').toUpperCase(Locale.ROOT);
                 resource.setResourceType(ResourceType.valueOf(normalized));
             } catch (IllegalArgumentException ex) {
-                System.err.println("⚠ Invalid resource type: " + typeStr);
+                System.err.println("⚠ Invalid resource resourceType: " + typeStr);
                 resource.setResourceType(null);
             }
         } else {

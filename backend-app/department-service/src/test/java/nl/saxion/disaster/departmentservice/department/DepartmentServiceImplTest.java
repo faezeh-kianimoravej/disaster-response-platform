@@ -69,7 +69,7 @@ class DepartmentServiceImplTest {
         List<DepartmentDto> result = departmentService.getAllDepartments();
 
         assertEquals(1, result.size());
-        assertEquals("Health Department", result.get(0).departmentName());
+        assertEquals("Health Department", result.get(0).name());
         verify(departmentRepository, times(1)).findAllDepartments();
     }
 
@@ -81,7 +81,7 @@ class DepartmentServiceImplTest {
 
         assertTrue(result.isPresent());
         assertEquals(10L, result.get().departmentId());
-        assertEquals("Health Department", result.get().departmentName());
+        assertEquals("Health Department", result.get().name());
         verify(departmentRepository, times(1)).findDepartmentById(10L);
     }
 
@@ -92,7 +92,7 @@ class DepartmentServiceImplTest {
         DepartmentDto created = departmentService.createDepartment(departmentDto);
 
         assertNotNull(created);
-        assertEquals("Health Department", created.departmentName());
+        assertEquals("Health Department", created.name());
         verify(departmentRepository, times(1)).createDepartment(any(Department.class));
     }
 
@@ -103,7 +103,7 @@ class DepartmentServiceImplTest {
         DepartmentDto updated = departmentService.updateDepartment(10L, departmentDto);
 
         assertNotNull(updated);
-        assertEquals("Health Department", updated.departmentName());
+        assertEquals("Health Department", updated.name());
         verify(departmentRepository, times(1)).updateDepartment(any(Department.class));
     }
 
@@ -124,11 +124,11 @@ class DepartmentServiceImplTest {
 
         assertEquals(1, result.size());
         DepartmentDto dto = result.get(0);
-        assertEquals("Health Department", dto.departmentName());
+        assertEquals("Health Department", dto.name());
         assertEquals(1, dto.resourceDtoList().size());
 
         ResourceDto resourceDto = dto.resourceDtoList().get(0);
-        assertEquals("Ambulance", resourceDto.resourceName());
+        assertEquals("Ambulance", resourceDto.name());
         assertEquals("Medical vehicle", resourceDto.description());
 
         verify(departmentRepository, times(1)).findDepartmentByMunicipalityId(100L);

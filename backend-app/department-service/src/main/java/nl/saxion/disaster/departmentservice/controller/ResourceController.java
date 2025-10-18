@@ -16,7 +16,7 @@ import java.util.Map;
 
 @Tag(
         name = "Resource Management",
-        description = "Endpoints for managing resources, filtering them by type or department, and retrieving resource categories."
+        description = "Endpoints for managing resources, filtering them by resourceType or department, and retrieving resource categories."
 )
 @RestController
 @RequestMapping("/api/resources")
@@ -59,10 +59,10 @@ public class ResourceController {
     }
 
     @Operation(
-            summary = "Get resources by type",
-            description = "Retrieve all resources filtered by their type (e.g., AMBULANCE, FIELD_OPERATOR, FIRE_TRUCK, etc.)."
+            summary = "Get resources by resourceType",
+            description = "Retrieve all resources filtered by their resourceType (e.g., AMBULANCE, FIELD_OPERATOR, FIRE_TRUCK, etc.)."
     )
-    @GetMapping("/type/{type}")
+    @GetMapping("/resourceType/{resourceType}")
     public ResponseEntity<List<ResourceDto>> getResourcesByType(@PathVariable ResourceType type) {
         return ResponseEntity.ok(resourceService.getResourcesByType(type));
     }
@@ -78,7 +78,7 @@ public class ResourceController {
 
     @Operation(
             summary = "Create a new resource",
-            description = "Add a new resource to the system by providing its name, type, quantity, and department."
+            description = "Add a new resource to the system by providing its name, resourceType, quantity, and department."
     )
     @PostMapping
     public ResponseEntity<ResourceDto> createResource(@RequestBody ResourceDto resourceDto) {
