@@ -28,9 +28,10 @@ export default function ResourceForm({
 		description: initialData?.description || '',
 		quantity: initialData?.quantity || 0,
 		available: initialData?.available || 0,
-		resourceType: initialData?.resourceType || 'Medical',
+		resourceType: initialData?.resourceType || 'FIELD_OPERATOR',
 		departmentId: initialData?.departmentId || 101,
-		image: initialData?.image || getImageForResourceType(initialData?.resourceType || 'Medical'),
+		image:
+			initialData?.image || getImageForResourceType(initialData?.resourceType || 'FIELD_OPERATOR'),
 	});
 
 	const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
@@ -50,7 +51,9 @@ export default function ResourceForm({
 				available: initialData.available || 0,
 				resourceType: initialData.resourceType || 'Medical',
 				departmentId: initialData.departmentId || 101,
-				image: initialData.image || getImageForResourceType(initialData.resourceType || 'Medical'),
+				image:
+					initialData.image ||
+					getImageForResourceType(initialData.resourceType || 'FIELD_OPERATOR'),
 			};
 			setForm(newForm);
 			onImageChange?.(newForm.image);

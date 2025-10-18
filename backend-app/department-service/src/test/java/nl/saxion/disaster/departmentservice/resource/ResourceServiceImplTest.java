@@ -40,7 +40,7 @@ class ResourceServiceImplTest {
         resource.setResourceId(1L);
         resource.setName("Fire Truck");
         resource.setDescription("Used for firefighting operations");
-        resource.setAvailable(true);
+        resource.setAvailable(5);
         resource.setQuantity(2);
         resource.setResourceType(ResourceType.FIRE_TRUCK);
         resource.setLatitude(52.37);
@@ -50,7 +50,7 @@ class ResourceServiceImplTest {
                 1L,
                 "Fire Truck",
                 "Used for firefighting operations",
-                true,
+                1,
                 2,
                 "FIRE_TRUCK",
                 5L,  // departmentId
@@ -77,10 +77,12 @@ class ResourceServiceImplTest {
         when(resourceRepository.findAvailable()).thenReturn(List.of(resource));
         when(resourceMapper.toDto(resource)).thenReturn(resourceDto);
 
+        // Act
         List<ResourceDto> result = resourceService.getAvailableResources();
 
+        // Assert
         assertEquals(1, result.size());
-        assertTrue(result.get(0).available());
+        assertEquals(1, result.get(0).available());
         verify(resourceRepository, times(1)).findAvailable();
     }
 

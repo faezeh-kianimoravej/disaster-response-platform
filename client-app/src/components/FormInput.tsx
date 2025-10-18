@@ -134,8 +134,8 @@ export default function FormInput({
 export function createOptionsFromObject(
 	obj: Record<string, string>
 ): Array<{ value: string; label: string }> {
-	return Object.entries(obj).map(([, value]) => ({
-		value: value,
+	return Object.entries(obj).map(([key, value]) => ({
+		value: key,
 		label: value,
 	}));
 }

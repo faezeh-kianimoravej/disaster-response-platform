@@ -1,6 +1,7 @@
 // re-export ResourceView from its current location
 import Button from '@/components/Button';
 import type { Resource } from '@/types/resource';
+import { RESOURCE_TYPES } from '@/utils/resourceUtils';
 
 interface ResourceViewProps {
 	resource: Resource;
@@ -22,7 +23,8 @@ export default function ResourceView({ resource, onEdit, onDelete, onBack }: Res
 					<strong>Available:</strong> {resource.available}
 				</p>
 				<p>
-					<strong>Type:</strong> {resource.resourceType}
+					<strong>Type:</strong>{' '}
+					{RESOURCE_TYPES[resource.resourceType as keyof typeof RESOURCE_TYPES]}
 				</p>
 			</div>
 

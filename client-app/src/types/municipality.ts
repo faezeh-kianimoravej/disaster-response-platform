@@ -1,6 +1,6 @@
 export interface Municipality {
-	MunicipalityId: number;
-	RegionId: number;
-	Name: string;
-	Image: string;
+	municipalityId: number;
+	regionId: number;
+	name: string;
+	image: string;
 }

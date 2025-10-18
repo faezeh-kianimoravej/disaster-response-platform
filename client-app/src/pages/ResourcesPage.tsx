@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
-import { getResources } from '@/api/resource';
+import { getResourcesByDepartmentId } from '@/api/resource';
 import Button from '@/components/Button';
 import type { Resource } from '@/types/resource';
+import { getImageForResourceType, RESOURCE_TYPES } from '@/utils/resourceUtils';
 
 export default function ResourcesPage() {
 	const [resources, setResources] = useState<Resource[]>([]);
@@ -26,11 +27,8 @@ export default function ResourcesPage() {
 	useEffect(() => {
 		async function fetchResources() {
 			try {
-				const data = await getResources();
 				if (departmentId) {
-					const filtered = data.filter((r: Resource) => r.departmentId === Number(departmentId));
-					setResources(filtered);
-				} else {
+					const data = await getResourcesByDepartmentId(Number(departmentId));
 					setResources(data);
 				}
 			} catch (err) {
@@ -95,7 +93,11 @@ export default function ResourcesPage() {
 								state={{ municipalityId }}
 								className="block bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition"
 							>
-								<img src={r.image} alt={r.name} className="h-24 w-24 object-contain mx-auto mb-4" />
+								<img
+									src={getImageForResourceType(r.resourceType)}
+									alt={r.name}
+									className="h-24 w-24 object-contain mx-auto mb-4"
+								/>
 								<h3 className="text-lg font-semibold text-gray-800 mb-2">{r.name}</h3>
 								<p className="text-sm text-gray-500 mb-2">{r.description}</p>
 								<p className="text-gray-700">
@@ -105,7 +107,8 @@ export default function ResourcesPage() {
 									<strong>Available:</strong> {r.available}
 								</p>
 								<p className="text-gray-700">
-									<strong>Type:</strong> {r.resourceType}
+									<strong>Type:</strong>{' '}
+									{RESOURCE_TYPES[r.resourceType as keyof typeof RESOURCE_TYPES]}
 								</p>
 							</Link>
 						))}
