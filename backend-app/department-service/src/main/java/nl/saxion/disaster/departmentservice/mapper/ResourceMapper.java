@@ -25,7 +25,7 @@ public class ResourceMapper implements BaseMapper<Resource, ResourceDto> {
                             res.getResourceId(),
                             res.getName(),
                             res.getDescription(),
-                            res.isAvailable(),
+                            res.getAvailable(),
                             res.getQuantity(),
                             Optional.ofNullable(res.getResourceType())
                                     .map(Enum::name)
@@ -58,7 +58,7 @@ public class ResourceMapper implements BaseMapper<Resource, ResourceDto> {
         resource.setResourceId(resourceDto.resourceId());
         resource.setName(resourceDto.name());
         resource.setDescription(resourceDto.description());
-        resource.setAvailable(Boolean.TRUE.equals(resourceDto.available()));
+        resource.setAvailable(resourceDto.available());
         resource.setQuantity(Optional.ofNullable(resourceDto.quantity()).orElse(1)
         );
         resource.setLatitude(resourceDto.latitude());

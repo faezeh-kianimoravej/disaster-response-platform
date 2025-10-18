@@ -43,7 +43,7 @@ class DepartmentServiceImplTest {
         resource.setResourceId(1L);
         resource.setName("Ambulance");
         resource.setDescription("Medical vehicle");
-        resource.setAvailable(true);
+        resource.setAvailable(2);
         resource.setQuantity(3);
         resource.setResourceType(ResourceType.AMBULANCE);
         resource.setLatitude(52.37);
