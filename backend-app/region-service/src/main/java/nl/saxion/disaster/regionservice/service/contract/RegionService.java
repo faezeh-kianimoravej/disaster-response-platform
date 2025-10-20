@@ -32,9 +32,26 @@ public interface RegionService {
     RegionDto createRegion(RegionDto regionDto);
 
     /**
+     * Updates an existing region.
      *
-     * @param regionId
-     * @return all municipality of a region
+     * @param regionId ID of the region to update
+     * @param regionDto updated region data
+     * @return updated RegionDto
+     */
+    RegionDto updateRegion(Long regionId, RegionDto regionDto);
+
+    /**
+     * Deletes a region by its ID.
+     *
+     * @param regionId ID of the region to delete
+     */
+    void deleteRegion(Long regionId);
+
+    /**
+     * Retrieves all municipalities of a specific region.
+     *
+     * @param regionId ID of the region
+     * @return all municipalities of a region
      */
     List<MunicipalityDto> getAllMunicipalitiesOfRegion(Long regionId);
 }

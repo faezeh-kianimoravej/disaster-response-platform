@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,13 +20,15 @@ public class Region {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "region_id")
     private Long regionId;
 
     @Column(nullable = false, length = 100)
     private String name;
 
     @Lob
-    @Column(columnDefinition = "bytea")
+    @Column(name = "image", columnDefinition = "BYTEA")
+    @JdbcTypeCode(SqlTypes.BINARY)
     private byte[] image;
 
     @Schema(hidden = true)

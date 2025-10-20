@@ -57,6 +57,28 @@ public class RegionServiceImpl implements RegionService {
     }
 
     @Override
+    public RegionDto updateRegion(Long regionId, RegionDto regionDto) {
+        Optional<Region> existingRegion = regionRepository.findRegionById(regionId);
+        if (existingRegion.isEmpty()) {
+            throw new RuntimeException("Region not found with id: " + regionId);
+        }
+
+        Region entity = regionMapper.toEntity(regionDto);
+        entity.setRegionId(regionId); // Ensure we're updating the correct region
+        Region updatedRegion = regionRepository.updateRegion(entity);
+        return regionMapper.toDto(updatedRegion);
+    }
+
+    @Override
+    public void deleteRegion(Long regionId) {
+        Optional<Region> existingRegion = regionRepository.findRegionById(regionId);
+        if (existingRegion.isEmpty()) {
+            throw new RuntimeException("Region not found with id: " + regionId);
+        }
+        regionRepository.deleteRegionById(regionId);
+    }
+
+    @Override
     public List<MunicipalityDto> getAllMunicipalitiesOfRegion(Long regionId) {
         List<MunicipalityDto> municipalities = municipalityClient.getMunicipalitiesByRegion(regionId);
         return municipalities != null ? municipalities : Collections.emptyList();
