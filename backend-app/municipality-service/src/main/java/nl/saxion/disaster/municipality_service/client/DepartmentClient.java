@@ -7,12 +7,21 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 
-@FeignClient(
-        name = "department-service",
-        url = "http://department-service:8081/api/department"
-)
+/**
+ * Feign client for communicating with the Department Service.
+ * This client retrieves department information for a specific municipality.
+ */
+@FeignClient(name = "department-service")
 public interface DepartmentClient {
 
-    @GetMapping("/by-municipality/{municipalityId}")
-    List<DepartmentDto> getDepartmentsByMunicipality(@PathVariable Long municipalityId);
+    /**
+     * Retrieves all departments belonging to a specific municipality.
+     * <p>
+     * Example: GET /api/departments/by-municipality/{municipalityId}
+     *
+     * @param municipalityId the ID of the municipality
+     * @return list of DepartmentDto objects
+     */
+    @GetMapping("/api/departments/by-municipality/{municipalityId}")
+    List<DepartmentDto> getDepartmentsByMunicipality(@PathVariable("municipalityId") Long municipalityId);
 }

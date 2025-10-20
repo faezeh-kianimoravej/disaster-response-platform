@@ -12,6 +12,8 @@ public interface MunicipalityService {
 
     MunicipalityDto getMunicipalityById(Long id);
 
+    List<MunicipalityDto> getMunicipalityDtoListByRegionId(Long regionId);
+
     MunicipalityDto createMunicipality(Municipality municipality);
 
     MunicipalityDto updateMunicipality(Long id, Municipality updatedMunicipality);

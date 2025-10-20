@@ -1,17 +1,17 @@
-package nl.saxion.disaster.municipality_service;
+package nl.saxion.disaster.regionservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
-@SpringBootApplication
-@EnableFeignClients(basePackages = "nl.saxion.disaster.municipality_service.client")
+@SpringBootApplication(scanBasePackages = "nl.saxion.disaster.regionservice")
+@EnableFeignClients(basePackages = "nl.saxion.disaster.regionservice.client")
 @EnableDiscoveryClient
-public class MunicipalityServiceApplication {
+public class RegionServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(MunicipalityServiceApplication.class, args);
+        SpringApplication.run(RegionServiceApplication.class, args);
     }
 
 }

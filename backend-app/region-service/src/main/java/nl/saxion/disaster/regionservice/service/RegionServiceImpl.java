@@ -1,0 +1,64 @@
+package nl.saxion.disaster.regionservice.service;
+
+import lombok.RequiredArgsConstructor;
+import nl.saxion.disaster.regionservice.client.MunicipalityClient;
+import nl.saxion.disaster.regionservice.dto.MunicipalityDto;
+import nl.saxion.disaster.regionservice.dto.RegionDto;
+import nl.saxion.disaster.regionservice.mapper.RegionMapper;
+import nl.saxion.disaster.regionservice.model.Region;
+import nl.saxion.disaster.regionservice.repository.contract.RegionRepository;
+import nl.saxion.disaster.regionservice.service.contract.RegionService;
+import org.springframework.stereotype.Service;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class RegionServiceImpl implements RegionService {
+
+    private final RegionRepository regionRepository;
+    private final RegionMapper regionMapper;
+    private final MunicipalityClient municipalityClient;
+
+    @Override
+    public List<RegionDto> getAllRegions() {
+        return regionRepository.findAllRegions()
+                .stream()
+                .map(region -> {
+                    RegionDto dto = regionMapper.toDto(region);
+                    List<MunicipalityDto> municipalities = municipalityClient.getMunicipalitiesByRegion(region.getRegionId());
+                    return new RegionDto(dto.regionId(), dto.name(), dto.image(), municipalities);
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public RegionDto getRegionById(Long regionId) {
+        Optional<Region> regionOptional = regionRepository.findRegionById(regionId);
+        if (regionOptional.isEmpty()) {
+            return new RegionDto(0L, "", "", Collections.emptyList());
+        }
+
+        Region region = regionOptional.get();
+        RegionDto dto = regionMapper.toDto(region);
+        List<MunicipalityDto> municipalites = municipalityClient.getMunicipalitiesByRegion(regionId);
+
+        return new RegionDto(dto.regionId(), dto.name(), dto.image(), municipalites);
+    }
+
+    @Override
+    public RegionDto createRegion(RegionDto regionDto) {
+        Region entity = regionMapper.toEntity(regionDto);
+        Region savedRegion = regionRepository.createRegion(entity);
+        return regionMapper.toDto(savedRegion);
+    }
+
+    @Override
+    public List<MunicipalityDto> getAllMunicipalitiesOfRegion(Long regionId) {
+        List<MunicipalityDto> municipalities = municipalityClient.getMunicipalitiesByRegion(regionId);
+        return municipalities != null ? municipalities : Collections.emptyList();
+    }
+}

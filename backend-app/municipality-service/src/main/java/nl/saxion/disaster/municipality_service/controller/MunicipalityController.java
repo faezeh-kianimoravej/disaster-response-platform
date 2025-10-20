@@ -85,4 +85,19 @@ public class MunicipalityController {
         List<DepartmentDto> departments = municipalityService.getDepartmentsOfMunicipality(municipalityId);
         return ResponseEntity.ok(departments);
     }
+
+    /**
+     * Retrieves all municipalities belonging to a specific region.
+     * <p>
+     * Example:
+     * GET /api/municipalities/region/5
+     *
+     * @param regionId the ID of the region
+     * @return list of MunicipalityDto
+     */
+    @GetMapping("/region/{regionId}")
+    public ResponseEntity<List<MunicipalityDto>> getMunicipalitiesByRegion(@PathVariable Long regionId) {
+        List<MunicipalityDto> municipalities = municipalityService.getMunicipalityDtoListByRegionId(regionId);
+        return ResponseEntity.ok(municipalities);
+    }
 }

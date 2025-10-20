@@ -12,6 +12,7 @@ import nl.saxion.disaster.municipality_service.service.contract.MunicipalityServ
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,6 +42,23 @@ public class MunicipalityServiceImpl implements MunicipalityService {
                 .orElseThrow(() -> new MunicipalityNotFoundException("Municipality not found with id: " + id));
 
         return mapper.toDto(municipality);
+    }
+
+    /**
+     * Retrieves a list of MunicipalityDto objects for a given region.
+     *
+     * @param regionId the ID of the region
+     * @return list of MunicipalityDto (never null)
+     */
+    public List<MunicipalityDto> getMunicipalityDtoListByRegionId(Long regionId) {
+        List<Municipality> municipalities = repository.findMunicipalitiesByRegionId(regionId);
+
+        if (municipalities == null || municipalities.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return municipalities.stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toList());
     }
 
     @Override

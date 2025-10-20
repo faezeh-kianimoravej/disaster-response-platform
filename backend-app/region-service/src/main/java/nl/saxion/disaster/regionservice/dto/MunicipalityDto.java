@@ -1,4 +1,5 @@
-package nl.saxion.disaster.municipality_service.dto;
+package nl.saxion.disaster.regionservice.dto;
+
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
