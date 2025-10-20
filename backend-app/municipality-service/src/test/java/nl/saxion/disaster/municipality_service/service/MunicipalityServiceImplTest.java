@@ -136,7 +136,6 @@ class MunicipalityServiceImplTest {
         when(repository.findMunicipalityById(1L)).thenReturn(Optional.of(sampleMunicipality));
         when(repository.createMunicipality(any())).thenReturn(updatedEntity);
         when(mapper.toDto(updatedEntity)).thenReturn(baseDto);
-        when(departmentClient.getDepartmentsByMunicipality(1L)).thenReturn(Collections.emptyList());
 
         MunicipalityDto result = service.updateMunicipality(1L, updated);
 

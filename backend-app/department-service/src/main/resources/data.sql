@@ -3,10 +3,6 @@
 -- Initial Data for Departments
 -- ============================
 
--- Clear existing data
-DELETE FROM department WHERE municipality_id IN (1, 2, 3);
-
-
 -- Insert departments
 -- Deventer
 INSERT INTO department (municipality_id, name, image, created_at, updated_at) VALUES

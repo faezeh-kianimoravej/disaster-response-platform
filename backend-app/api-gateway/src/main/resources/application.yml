@@ -39,6 +39,17 @@ spring:
       
       # Explicit routes with path rewrites for clean API surface
       routes:
+        # Region service: /api/regions/** -> region-service/api/regions/**
+        - id: region
+          uri: lb://region-service
+          predicates:
+            - Path=/api/regions/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: regionServiceCircuitBreaker
+                fallbackUri: forward:/fallback
+
         # Department service: /api/departments/** -> department-service/api/departments/**
         - id: department-departments
           uri: lb://department-service

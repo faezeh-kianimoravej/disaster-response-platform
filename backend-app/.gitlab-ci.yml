@@ -1,0 +1,46 @@
+# Backend App CI/CD Pipeline Configuration
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+
+# Cache configuration for faster builds
+.backend-app-cache: &backend-app-cache
+  cache:
+    key:
+      files:
+        - backend-app/pom.xml
+    paths:
+      - .m2/repository/
+
+# Base job template for backend-app jobs
+.backend-app-base:
+  image: maven:3.9-eclipse-temurin-21
+  <<: *backend-app-cache
+  before_script:
+    - cd backend-app
+
+# Test job
+test:backend-app:
+  extends: .backend-app-base
+  stage: test
+  rules:
+    # Run tests only when backend-app files change
+    - changes:
+        - backend-app/**/*
+      when: always
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: always
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: always
+    - when: never
+  script:
+    - mvn clean test
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - backend-app/*/target/surefire-reports/TEST-*.xml
+    paths:
+      - backend-app/*/target/surefire-reports/
+    expire_in: 30 days
+  coverage: '/Total.*?([0-9]{1,3})%/'
