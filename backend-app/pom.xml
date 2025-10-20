@@ -16,6 +16,7 @@
         <module>incident-service</module>
         <module>location-service</module>
         <module>municipality-service</module>
+        <module>region-service</module>
     </modules>
 
     <properties>

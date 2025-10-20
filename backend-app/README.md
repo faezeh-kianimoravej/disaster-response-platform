@@ -203,7 +203,8 @@ docker-compose up -d --build department-service
 # Or rebuild everything
 docker-compose down
 # ... rebuild all jars ...
-docker-compose up --build
+mvn clean package
+docker-compose up -d --build
 ```
 
 ---
