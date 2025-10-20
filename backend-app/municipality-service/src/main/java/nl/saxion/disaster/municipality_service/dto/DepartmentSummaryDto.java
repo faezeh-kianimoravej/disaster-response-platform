@@ -3,9 +3,14 @@ package nl.saxion.disaster.municipality_service.dto;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 
-import java.util.List;
+/**
+ * Simplified Department DTO for municipality-service.
+ * Does not include resources to limit nesting to one level.
+ */
+public record DepartmentSummaryDto(
 
-public record MunicipalityDto(
+        @JsonSerialize(using = ToStringSerializer.class)
+        Long departmentId,
 
         @JsonSerialize(using = ToStringSerializer.class)
         Long municipalityId,
@@ -15,9 +20,6 @@ public record MunicipalityDto(
 
         String name,
 
-        // Base64-encoded image as a string (nullable)
-        String image,
-
-        List<DepartmentSummaryDto> departments
+        String image
 ) {
 }

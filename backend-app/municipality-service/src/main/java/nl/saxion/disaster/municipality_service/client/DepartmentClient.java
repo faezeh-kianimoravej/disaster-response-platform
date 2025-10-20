@@ -1,6 +1,6 @@
 package nl.saxion.disaster.municipality_service.client;
 
-import nl.saxion.disaster.municipality_service.dto.DepartmentDto;
+import nl.saxion.disaster.municipality_service.dto.DepartmentSummaryDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,12 +16,13 @@ public interface DepartmentClient {
 
     /**
      * Retrieves all departments belonging to a specific municipality.
+     * Returns simplified DTOs without resources to limit nesting to one level.
      * <p>
-     * Example: GET /api/departments/by-municipality/{municipalityId}
+     * Example: GET /api/departments/municipality/{municipalityId}
      *
      * @param municipalityId the ID of the municipality
-     * @return list of DepartmentDto objects
+     * @return list of DepartmentSummaryDto objects (without resources)
      */
-    @GetMapping("/api/departments/by-municipality/{municipalityId}")
-    List<DepartmentDto> getDepartmentsByMunicipality(@PathVariable("municipalityId") Long municipalityId);
+    @GetMapping("/api/departments/municipality/{municipalityId}")
+    List<DepartmentSummaryDto> getDepartmentsByMunicipality(@PathVariable("municipalityId") Long municipalityId);
 }

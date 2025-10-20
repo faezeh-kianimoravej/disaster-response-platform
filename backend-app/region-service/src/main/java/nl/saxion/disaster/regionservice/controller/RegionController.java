@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import nl.saxion.disaster.regionservice.dto.MunicipalityDto;
 import nl.saxion.disaster.regionservice.dto.RegionDto;
+import nl.saxion.disaster.regionservice.dto.RegionSummaryDto;
 import nl.saxion.disaster.regionservice.service.contract.RegionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,15 +24,15 @@ public class RegionController {
     private final RegionService regionService;
 
     @Operation(summary = "Get all regions",
-            description = "Retrieve a list of all regions with their municipality IDs.")
+            description = "Retrieve a simplified list of all regions without nested municipalities to avoid deep nesting.")
     @GetMapping
-    public ResponseEntity<List<RegionDto>> getAllRegions() {
-        List<RegionDto> regions = regionService.getAllRegions();
+    public ResponseEntity<List<RegionSummaryDto>> getAllRegions() {
+        List<RegionSummaryDto> regions = regionService.getAllRegions();
         return ResponseEntity.ok(regions);
     }
 
     @Operation(summary = "Get region by ID",
-            description = "Retrieve detailed information about a specific region by providing its unique ID.")
+            description = "Retrieve detailed information about a specific region with full nested municipality details.")
     @GetMapping("/{regionId}")
     public ResponseEntity<RegionDto> getRegionById(@PathVariable Long regionId) {
         RegionDto region = regionService.getRegionById(regionId);

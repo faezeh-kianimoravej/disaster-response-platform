@@ -1,6 +1,7 @@
 package nl.saxion.disaster.departmentservice.mapper;
 
 import nl.saxion.disaster.departmentservice.dto.DepartmentDto;
+import nl.saxion.disaster.departmentservice.dto.DepartmentSummaryDto;
 import nl.saxion.disaster.departmentservice.dto.ResourceDto;
 import nl.saxion.disaster.departmentservice.model.entity.Department;
 import nl.saxion.disaster.departmentservice.model.entity.Resource;
@@ -42,6 +43,28 @@ public class DepartmentMapper implements BaseMapper<Department, DepartmentDto> {
                 department.getName(),
                 imageBase64,
                 resourceDtos
+        );
+    }
+
+    /**
+     * Convert Department entity to simplified summary DTO (for collection endpoints).
+     * Does not include resources to avoid deep nesting.
+     */
+    public DepartmentSummaryDto toSummaryDto(Department department) {
+        if (department == null) {
+            throw new IllegalArgumentException("Department cannot be null");
+        }
+        String imageBase64 = null;
+        if (department.getImage() != null && department.getImage().length > 0) {
+            String base64 = Base64.getEncoder().encodeToString(department.getImage());
+            imageBase64 = "data:image/png;base64," + base64;
+        }
+        return new DepartmentSummaryDto(
+                null,
+                department.getDepartmentId(),
+                department.getMunicipalityId(),
+                department.getName(),
+                imageBase64
         );
     }
 

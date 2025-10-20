@@ -2,7 +2,7 @@ package nl.saxion.disaster.municipality_service.integration;
 
 import jakarta.persistence.EntityManager;
 import nl.saxion.disaster.municipality_service.client.DepartmentClient;
-import nl.saxion.disaster.municipality_service.dto.DepartmentDto;
+import nl.saxion.disaster.municipality_service.dto.DepartmentSummaryDto;
 import nl.saxion.disaster.municipality_service.dto.MunicipalityDto;
 import nl.saxion.disaster.municipality_service.mapper.MunicipalityMapper;
 import nl.saxion.disaster.municipality_service.model.entity.Municipality;
@@ -110,19 +110,19 @@ class MunicipalityServiceIntegrationTest {
         MunicipalityDto dto = service.getMunicipalityById(deventer.getMunicipalityId());
 
         assertThat(dto.name()).isEqualTo("Deventer");
-        assertThat(dto.departmentIds()).containsExactly(10L, 11L);
+        assertThat(dto.departments()).hasSize(2);
     }
 
     @Test
     void whenGetDepartmentsOfMunicipality_thenFeignClientIsCalled() {
         when(departmentClient.getDepartmentsByMunicipality(deventer.getMunicipalityId()))
                 .thenReturn(List.of(
-                        new DepartmentDto(1L, 1L, 1L, "Fire Department", List.of())
+                        new DepartmentSummaryDto(1L, deventer.getMunicipalityId(), 1L, "Fire Department", null)
                 ));
 
-        List<DepartmentDto> departments = service.getDepartmentsOfMunicipality(deventer.getMunicipalityId());
+        List<DepartmentSummaryDto> departments = service.getDepartmentsOfMunicipality(deventer.getMunicipalityId());
 
         assertThat(departments).hasSize(1);
-        assertThat(departments.get(0).departmentName()).isEqualTo("Fire Department");
+        assertThat(departments.get(0).name()).isEqualTo("Fire Department");
     }
 }

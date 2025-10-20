@@ -1,6 +1,7 @@
 package nl.saxion.disaster.departmentservice.service;
 
 import nl.saxion.disaster.departmentservice.dto.DepartmentDto;
+import nl.saxion.disaster.departmentservice.dto.DepartmentSummaryDto;
 import nl.saxion.disaster.departmentservice.mapper.DepartmentMapper;
 import nl.saxion.disaster.departmentservice.mapper.ResourceMapper;
 import nl.saxion.disaster.departmentservice.model.entity.Department;
@@ -25,14 +26,22 @@ public class DepartmentServiceImpl implements DepartmentService {
         this.departmentMapper = new DepartmentMapper(resourceMapper);
     }
 
+    /**
+     * Get all departments - returns simplified DTO without nested resources.
+     * This prevents deep nesting in collection responses.
+     */
     @Override
-    public List<DepartmentDto> getAllDepartments() {
+    public List<DepartmentSummaryDto> getAllDepartments() {
         return departmentRepository.findAllDepartments().stream()
-                .map(departmentMapper::toDto)
+                .map(departmentMapper::toSummaryDto)
                 .filter(Objects::nonNull)
                 .toList();
     }
 
+    /**
+     * Get single department by ID - returns full DTO with nested resource details.
+     * This provides complete details for individual resource requests.
+     */
     @Override
     public Optional<DepartmentDto> getDepartmentById(Long id) {
         return departmentRepository.findDepartmentById(id)
@@ -58,10 +67,14 @@ public class DepartmentServiceImpl implements DepartmentService {
         departmentRepository.deleteDepartment(id);
     }
 
+    /**
+     * Get departments by municipality ID - returns simplified DTO.
+     * Used by municipality-service to populate nested departments.
+     */
     @Override
-    public List<DepartmentDto> getDepartmentsByMunicipality(Long municipalityId) {
+    public List<DepartmentSummaryDto> getDepartmentsByMunicipality(Long municipalityId) {
         return departmentRepository.findDepartmentByMunicipalityId(municipalityId).stream()
-                .map(departmentMapper::toDto)
+                .map(departmentMapper::toSummaryDto)
                 .filter(Objects::nonNull)
                 .toList();
     }

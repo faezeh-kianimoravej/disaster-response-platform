@@ -1,6 +1,7 @@
 package nl.saxion.disaster.regionservice.mapper;
 
 import nl.saxion.disaster.regionservice.dto.RegionDto;
+import nl.saxion.disaster.regionservice.dto.RegionSummaryDto;
 import nl.saxion.disaster.regionservice.model.Region;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +27,27 @@ public class RegionMapper implements BaseMapper<Region, RegionDto> {
                 entity.getName() != null ? entity.getName() : "",
                 base64Image,
                 Collections.emptyList() // چون در entity نداریم
+        );
+    }
+
+    /**
+     * Convert Region entity to simplified summary DTO (for collection endpoints).
+     * Does not include municipalities to avoid deep nesting.
+     */
+    public RegionSummaryDto toSummaryDto(Region entity) {
+        if (entity == null) {
+            return new RegionSummaryDto(0L, "", "");
+        }
+
+        String base64Image = "";
+        if (entity.getImage() != null && entity.getImage().length > 0) {
+            base64Image = Base64.getEncoder().encodeToString(entity.getImage());
+        }
+
+        return new RegionSummaryDto(
+                entity.getRegionId() != null ? entity.getRegionId() : 0L,
+                entity.getName() != null ? entity.getName() : "",
+                base64Image
         );
     }
 

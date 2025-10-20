@@ -1,6 +1,7 @@
 package nl.saxion.disaster.departmentservice.department;
 
 import nl.saxion.disaster.departmentservice.dto.DepartmentDto;
+import nl.saxion.disaster.departmentservice.dto.DepartmentSummaryDto;
 import nl.saxion.disaster.departmentservice.dto.ResourceDto;
 import nl.saxion.disaster.departmentservice.mapper.DepartmentMapper;
 import nl.saxion.disaster.departmentservice.mapper.ResourceMapper;
@@ -66,7 +67,7 @@ class DepartmentServiceImplTest {
     void testGetAllDepartments() {
         when(departmentRepository.findAllDepartments()).thenReturn(List.of(department));
 
-        List<DepartmentDto> result = departmentService.getAllDepartments();
+        List<DepartmentSummaryDto> result = departmentService.getAllDepartments();
 
         assertEquals(1, result.size());
         assertEquals("Health Department", result.get(0).name());
@@ -120,16 +121,11 @@ class DepartmentServiceImplTest {
     void testGetDepartmentsByMunicipality() {
         when(departmentRepository.findDepartmentByMunicipalityId(100L)).thenReturn(List.of(department));
 
-        List<DepartmentDto> result = departmentService.getDepartmentsByMunicipality(100L);
+        List<DepartmentSummaryDto> result = departmentService.getDepartmentsByMunicipality(100L);
 
         assertEquals(1, result.size());
-        DepartmentDto dto = result.get(0);
+        DepartmentSummaryDto dto = result.get(0);
         assertEquals("Health Department", dto.name());
-        assertEquals(1, dto.resourceDtoList().size());
-
-        ResourceDto resourceDto = dto.resourceDtoList().get(0);
-        assertEquals("Ambulance", resourceDto.name());
-        assertEquals("Medical vehicle", resourceDto.description());
 
         verify(departmentRepository, times(1)).findDepartmentByMunicipalityId(100L);
     }

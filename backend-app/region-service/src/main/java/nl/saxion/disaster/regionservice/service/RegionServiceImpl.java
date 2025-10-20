@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import nl.saxion.disaster.regionservice.client.MunicipalityClient;
 import nl.saxion.disaster.regionservice.dto.MunicipalityDto;
 import nl.saxion.disaster.regionservice.dto.RegionDto;
+import nl.saxion.disaster.regionservice.dto.RegionSummaryDto;
 import nl.saxion.disaster.regionservice.mapper.RegionMapper;
 import nl.saxion.disaster.regionservice.model.Region;
 import nl.saxion.disaster.regionservice.repository.contract.RegionRepository;
@@ -23,18 +24,22 @@ public class RegionServiceImpl implements RegionService {
     private final RegionMapper regionMapper;
     private final MunicipalityClient municipalityClient;
 
+    /**
+     * Get all regions - returns simplified DTO without nested municipalities.
+     * This prevents deep nesting in collection responses.
+     */
     @Override
-    public List<RegionDto> getAllRegions() {
+    public List<RegionSummaryDto> getAllRegions() {
         return regionRepository.findAllRegions()
                 .stream()
-                .map(region -> {
-                    RegionDto dto = regionMapper.toDto(region);
-                    List<MunicipalityDto> municipalities = municipalityClient.getMunicipalitiesByRegion(region.getRegionId());
-                    return new RegionDto(dto.regionId(), dto.name(), dto.image(), municipalities);
-                })
+                .map(regionMapper::toSummaryDto)
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Get single region by ID - returns full DTO with nested municipalities.
+     * This provides complete details for individual resource requests.
+     */
     @Override
     public RegionDto getRegionById(Long regionId) {
         Optional<Region> regionOptional = regionRepository.findRegionById(regionId);

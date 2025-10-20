@@ -2,24 +2,25 @@ package nl.saxion.disaster.regionservice.service.contract;
 
 import nl.saxion.disaster.regionservice.dto.MunicipalityDto;
 import nl.saxion.disaster.regionservice.dto.RegionDto;
+import nl.saxion.disaster.regionservice.dto.RegionSummaryDto;
 
 import java.util.List;
 
 public interface RegionService {
 
     /**
-     * Retrieves all regions with their related municipality IDs
-     * (fetched from municipality-service via Feign client).
+     * Retrieves all regions without nested municipalities.
+     * Returns simplified RegionSummaryDto to avoid deep nesting in collection responses.
      *
-     * @return List of RegionDto objects
+     * @return List of RegionSummaryDto objects
      */
-    List<RegionDto> getAllRegions();
+    List<RegionSummaryDto> getAllRegions();
 
     /**
-     * Retrieves a single region by its ID, including its municipality IDs.
+     * Retrieves a single region by its ID, including full nested municipality details.
      *
      * @param regionId ID of the region
-     * @return RegionDto object
+     * @return RegionDto object with nested municipalities
      */
     RegionDto getRegionById(Long regionId);
 

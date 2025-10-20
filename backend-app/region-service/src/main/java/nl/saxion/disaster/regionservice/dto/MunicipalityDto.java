@@ -4,8 +4,10 @@ package nl.saxion.disaster.regionservice.dto;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 
-import java.util.List;
-
+/**
+ * Simplified Municipality DTO for region-service.
+ * Does not include departmentIds to limit nesting to one level.
+ */
 public record MunicipalityDto(
 
         @JsonSerialize(using = ToStringSerializer.class)
@@ -17,8 +19,6 @@ public record MunicipalityDto(
         String name,
 
         // Base64-encoded image as a string (nullable)
-        String image,
-
-        List<Long> departmentIds
+        String image
 ) {
 }
