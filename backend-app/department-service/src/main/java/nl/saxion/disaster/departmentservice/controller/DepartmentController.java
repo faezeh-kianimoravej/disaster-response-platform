@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import nl.saxion.disaster.departmentservice.dto.DepartmentDto;
+import nl.saxion.disaster.departmentservice.dto.DepartmentSummaryDto;
 import nl.saxion.disaster.departmentservice.dto.ResourceDto;
 import nl.saxion.disaster.departmentservice.service.contract.DepartmentService;
 import org.springframework.http.HttpStatus;
@@ -23,15 +24,15 @@ public class DepartmentController {
     private final DepartmentService departmentService;
 
     @Operation(summary = "Get all departments",
-            description = "Retrieve a list of all departments currently available in the system.")
-    @GetMapping("/all_departments")
-    public ResponseEntity<List<DepartmentDto>> getAllDepartments() {
-        List<DepartmentDto> departments = departmentService.getAllDepartments();
+            description = "Retrieve a simplified list of all departments without nested resources to avoid deep nesting.")
+    @GetMapping
+    public ResponseEntity<List<DepartmentSummaryDto>> getAllDepartments() {
+        List<DepartmentSummaryDto> departments = departmentService.getAllDepartments();
         return ResponseEntity.ok(departments);
     }
 
     @Operation(summary = "Get department by ID",
-            description = "Retrieve detailed information about a specific department by providing its unique ID.")
+            description = "Retrieve detailed information about a specific department with full nested resource details.")
     @GetMapping("/{id}")
     public ResponseEntity<DepartmentDto> getDepartmentById(@PathVariable Long id) {
         return departmentService.getDepartmentById(id).map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
@@ -70,9 +71,9 @@ public class DepartmentController {
     }
 
     @Operation(summary = "Get departments by municipality ID",
-            description = "Retrieve all departments that belong to a specific municipality by its unique ID.")
-    @GetMapping("/by-municipality/{municipalityId}")
-    public List<DepartmentDto> getDepartmentsByMunicipality(@PathVariable Long municipalityId) {
+            description = "Retrieve all departments that belong to a specific municipality (simplified DTO without resources).")
+    @GetMapping("/municipality/{municipalityId}")
+    public List<DepartmentSummaryDto> getDepartmentsByMunicipality(@PathVariable Long municipalityId) {
         return departmentService.getDepartmentsByMunicipality(municipalityId);
     }
 }

@@ -3,7 +3,9 @@ package nl.saxion.disaster.municipality_service.service;
 import lombok.RequiredArgsConstructor;
 import nl.saxion.disaster.municipality_service.client.DepartmentClient;
 import nl.saxion.disaster.municipality_service.dto.DepartmentDto;
+import nl.saxion.disaster.municipality_service.dto.DepartmentSummaryDto;
 import nl.saxion.disaster.municipality_service.dto.MunicipalityDto;
+import nl.saxion.disaster.municipality_service.dto.MunicipalitySummaryDto;
 import nl.saxion.disaster.municipality_service.exception.MunicipalityNotFoundException;
 import nl.saxion.disaster.municipality_service.mapper.MunicipalityMapper;
 import nl.saxion.disaster.municipality_service.model.entity.Municipality;
@@ -12,6 +14,7 @@ import nl.saxion.disaster.municipality_service.service.contract.MunicipalityServ
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,14 +26,22 @@ public class MunicipalityServiceImpl implements MunicipalityService {
     private final DepartmentClient departmentClient;
     private final MunicipalityMapper mapper;
 
+    /**
+     * Get all municipalities - returns simplified DTO without nested departments.
+     * This prevents deep nesting in collection responses.
+     */
     @Override
-    public List<MunicipalityDto> getAllMunicipalities() {
+    public List<MunicipalitySummaryDto> getAllMunicipalities() {
         return repository.findAllMunicipality()
                 .stream()
-                .map(mapper::toDto)
+                .map(mapper::toSummaryDto)
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Get single municipality by ID - returns full DTO with nested department details.
+     * This provides complete details for individual resource requests.
+     */
     @Override
     public MunicipalityDto getMunicipalityById(Long id) {
         if (id <= 0) {
@@ -40,7 +51,53 @@ public class MunicipalityServiceImpl implements MunicipalityService {
         Municipality municipality = repository.findMunicipalityById(id)
                 .orElseThrow(() -> new MunicipalityNotFoundException("Municipality not found with id: " + id));
 
-        return mapper.toDto(municipality);
+        MunicipalityDto dto = mapper.toDto(municipality);
+        
+        // Fetch department summaries from department-service
+        List<DepartmentSummaryDto> departments = departmentClient.getDepartmentsByMunicipality(id);
+        
+        return new MunicipalityDto(
+                dto.municipalityId(),
+                dto.regionId(),
+                dto.name(),
+                dto.image(),
+                departments != null ? departments : Collections.emptyList()
+        );
+    }
+
+    /**
+     * Retrieves a list of MunicipalitySummaryDto objects for a given region.
+     * Returns simplified DTOs without departmentIds to limit nesting to one level.
+     *
+     * @param regionId the ID of the region
+     * @return list of MunicipalitySummaryDto (never null)
+     */
+    @Override
+    public List<MunicipalitySummaryDto> getMunicipalitySummaryListByRegionId(Long regionId) {
+        List<Municipality> municipalities = repository.findMunicipalitiesByRegionId(regionId);
+
+        if (municipalities == null || municipalities.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return municipalities.stream()
+                .map(mapper::toSummaryDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * @deprecated Use getMunicipalitySummaryListByRegionId instead
+     */
+    @Deprecated
+    @Override
+    public List<MunicipalityDto> getMunicipalityDtoListByRegionId(Long regionId) {
+        List<Municipality> municipalities = repository.findMunicipalitiesByRegionId(regionId);
+
+        if (municipalities == null || municipalities.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return municipalities.stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -80,7 +137,7 @@ public class MunicipalityServiceImpl implements MunicipalityService {
     }
 
     @Override
-    public List<DepartmentDto> getDepartmentsOfMunicipality(Long municipalityId) {
+    public List<DepartmentSummaryDto> getDepartmentsOfMunicipality(Long municipalityId) {
         Municipality municipality = repository.findMunicipalityById(municipalityId)
                 .orElseThrow(() -> new MunicipalityNotFoundException(municipalityId));
 

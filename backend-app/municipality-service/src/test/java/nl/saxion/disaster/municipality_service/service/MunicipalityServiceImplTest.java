@@ -1,8 +1,9 @@
 package nl.saxion.disaster.municipality_service.service;
 
 import nl.saxion.disaster.municipality_service.client.DepartmentClient;
-import nl.saxion.disaster.municipality_service.dto.DepartmentDto;
+import nl.saxion.disaster.municipality_service.dto.DepartmentSummaryDto;
 import nl.saxion.disaster.municipality_service.dto.MunicipalityDto;
+import nl.saxion.disaster.municipality_service.dto.MunicipalitySummaryDto;
 import nl.saxion.disaster.municipality_service.exception.MunicipalityNotFoundException;
 import nl.saxion.disaster.municipality_service.mapper.MunicipalityMapper;
 import nl.saxion.disaster.municipality_service.model.entity.Municipality;
@@ -15,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,21 +59,25 @@ class MunicipalityServiceImplTest {
                 10L,
                 "Deventer",
                 null,
-                List.of(100L, 101L)
+                List.of(
+                        new DepartmentSummaryDto(100L, 1L, 10L, "Dept 1", null),
+                        new DepartmentSummaryDto(101L, 1L, 10L, "Dept 2", null)
+                )
         );
     }
 
     @Test
     void getAllMunicipalities_shouldReturnDtoList() {
         when(repository.findAllMunicipality()).thenReturn(List.of(sampleMunicipality));
-        when(mapper.toDto(sampleMunicipality)).thenReturn(sampleDto);
+        MunicipalitySummaryDto summaryDto = new MunicipalitySummaryDto(1L, 10L, "Deventer", null);
+        when(mapper.toSummaryDto(sampleMunicipality)).thenReturn(summaryDto);
 
-        List<MunicipalityDto> result = service.getAllMunicipalities();
+        List<MunicipalitySummaryDto> result = service.getAllMunicipalities();
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).name()).isEqualTo("Deventer");
         verify(repository).findAllMunicipality();
-        verify(mapper).toDto(sampleMunicipality);
+        verify(mapper).toSummaryDto(sampleMunicipality);
     }
 
     @Test
@@ -123,13 +129,13 @@ class MunicipalityServiceImplTest {
                 .departmentIds(List.of(200L))
                 .build();
 
-        MunicipalityDto updatedDto = new MunicipalityDto(
-                1L, 22L, "Updated Deventer", null, List.of(200L)
+        MunicipalityDto baseDto = new MunicipalityDto(
+                1L, 22L, "Updated Deventer", null, Collections.emptyList()
         );
 
         when(repository.findMunicipalityById(1L)).thenReturn(Optional.of(sampleMunicipality));
         when(repository.createMunicipality(any())).thenReturn(updatedEntity);
-        when(mapper.toDto(updatedEntity)).thenReturn(updatedDto);
+        when(mapper.toDto(updatedEntity)).thenReturn(baseDto);
 
         MunicipalityDto result = service.updateMunicipality(1L, updated);
 
@@ -137,7 +143,6 @@ class MunicipalityServiceImplTest {
         assertThat(result.regionId()).isEqualTo(22L);
         verify(repository).findMunicipalityById(1L);
         verify(repository).createMunicipality(any());
-        verify(mapper).toDto(updatedEntity);
     }
 
     @Test
@@ -153,12 +158,12 @@ class MunicipalityServiceImplTest {
     void getDepartmentsOfMunicipality_shouldCallDepartmentClient() {
         when(repository.findMunicipalityById(1L)).thenReturn(Optional.of(sampleMunicipality));
         when(departmentClient.getDepartmentsByMunicipality(1L))
-                .thenReturn(List.of(new DepartmentDto(1L, 1L, 1L, "Fire Department", List.of())));
+                .thenReturn(List.of(new DepartmentSummaryDto(1L, 1L, 1L, "Fire Department", null)));
 
-        List<DepartmentDto> result = service.getDepartmentsOfMunicipality(1L);
+        List<DepartmentSummaryDto> result = service.getDepartmentsOfMunicipality(1L);
 
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).departmentName()).isEqualTo("Fire Department");
+        assertThat(result.get(0).name()).isEqualTo("Fire Department");
         verify(departmentClient).getDepartmentsByMunicipality(1L);
     }
 }

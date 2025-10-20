@@ -30,6 +30,14 @@ public class MunicipalityRepositoryImpl implements MunicipalityRepository {
     }
 
     @Override
+    public List<Municipality> findMunicipalitiesByRegionId(Long regionId) {
+        return entityManager.createQuery(
+                        "SELECT municipality FROM Municipality municipality WHERE municipality.regionId = :regionId", Municipality.class)
+                .setParameter("regionId", regionId)
+                .getResultList();
+    }
+
+    @Override
     public Municipality createMunicipality(Municipality municipality) {
         if (municipality.getMunicipalityId() == null) {
             entityManager.persist(municipality); // create

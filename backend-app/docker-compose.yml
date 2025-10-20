@@ -1,3 +1,5 @@
+version: '3.9'
+
 services:
   # ==============================
   # PostgreSQL Database (shared)
@@ -19,9 +21,10 @@ services:
       - backend-network
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
-      interval: 5s
-      timeout: 3s
-      retries: 5
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
 
   # ==============================
   # Eureka Discovery Service
@@ -33,6 +36,29 @@ services:
       - "8761:8761"
     networks:
       - backend-network
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    restart: on-failure
+
+  # ==============================
+  # API Gateway
+  # ==============================
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    depends_on:
+      discovery-service:
+        condition: service_started
+    ports:
+      - "8080:8080"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+      EUREKA_INSTANCE_HOSTNAME: api-gateway
+    networks:
+      - backend-network
+    restart: on-failure
 
   # ==============================
   # Department Service
@@ -56,10 +82,11 @@ services:
       SPRING_SQL_INIT_MODE: always
       SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION: "true"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
-      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
       EUREKA_INSTANCE_HOSTNAME: department-service
     networks:
       - backend-network
+    restart: on-failure
 
   # ==============================
   # Municipality Service
@@ -85,27 +112,38 @@ services:
       SPRING_SQL_INIT_MODE: always
       SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION: "true"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
-      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
       EUREKA_INSTANCE_HOSTNAME: municipality-service
     networks:
       - backend-network
     restart: on-failure
 
   # ==============================
-  # API Gateway
+  # Region Service
   # ==============================
-  api-gateway:
-    build: ./api-gateway
-    container_name: api-gateway
+  region-service:
+    build: ./region-service
+    container_name: region-service
     depends_on:
+      postgres-db:
+        condition: service_healthy
       discovery-service:
         condition: service_started
+      municipality-service:
+        condition: service_started
     ports:
-      - "8080:8080"
+      - "8083:8083"
     environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/region_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 1234
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_SQL_INIT_MODE: always
+      SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION: "true"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
-      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
-      EUREKA_INSTANCE_HOSTNAME: api-gateway
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+      EUREKA_INSTANCE_HOSTNAME: region-service
     networks:
       - backend-network
     restart: on-failure

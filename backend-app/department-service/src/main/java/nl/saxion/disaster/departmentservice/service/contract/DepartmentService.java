@@ -1,14 +1,21 @@
 package nl.saxion.disaster.departmentservice.service.contract;
 
 import nl.saxion.disaster.departmentservice.dto.DepartmentDto;
+import nl.saxion.disaster.departmentservice.dto.DepartmentSummaryDto;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface DepartmentService {
 
-    List<DepartmentDto> getAllDepartments();
+    /**
+     * Get all departments - returns simplified DTO without nested resources.
+     */
+    List<DepartmentSummaryDto> getAllDepartments();
 
+    /**
+     * Get single department by ID - returns full DTO with nested resource details.
+     */
     Optional<DepartmentDto> getDepartmentById(Long id);
 
     DepartmentDto createDepartment(DepartmentDto departmentDto);
@@ -17,5 +24,8 @@ public interface DepartmentService {
 
     void deleteDepartment(Long id);
 
-    List<DepartmentDto> getDepartmentsByMunicipality(Long municipalityId);
+    /**
+     * Get departments by municipality ID - returns simplified DTO for the municipality-service.
+     */
+    List<DepartmentSummaryDto> getDepartmentsByMunicipality(Long municipalityId);
 }

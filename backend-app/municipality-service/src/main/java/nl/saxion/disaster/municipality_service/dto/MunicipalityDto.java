@@ -2,7 +2,6 @@ package nl.saxion.disaster.municipality_service.dto;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import nl.saxion.disaster.municipality_service.serializer.LongListToStringListSerializer;
 
 import java.util.List;
 
@@ -19,7 +18,6 @@ public record MunicipalityDto(
         // Base64-encoded image as a string (nullable)
         String image,
 
-        @JsonSerialize(using = LongListToStringListSerializer.class)
-        List<Long> departmentIds
+        List<DepartmentSummaryDto> departments
 ) {
 }

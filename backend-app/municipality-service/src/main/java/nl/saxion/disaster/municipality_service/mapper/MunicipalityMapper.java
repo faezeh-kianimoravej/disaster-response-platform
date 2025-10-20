@@ -1,10 +1,12 @@
 package nl.saxion.disaster.municipality_service.mapper;
 
 import nl.saxion.disaster.municipality_service.dto.MunicipalityDto;
+import nl.saxion.disaster.municipality_service.dto.MunicipalitySummaryDto;
 import nl.saxion.disaster.municipality_service.model.entity.Municipality;
 import org.springframework.stereotype.Component;
 
 import java.util.Base64;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -21,12 +23,35 @@ public class MunicipalityMapper implements BaseMapper<Municipality, Municipality
             base64Image = Base64.getEncoder().encodeToString(entity.getImage());
         }
 
+        // Departments will be populated by the service layer via Feign client
         return new MunicipalityDto(
                 entity.getMunicipalityId(),
                 entity.getRegionId(),
                 entity.getName(),
                 base64Image,
-                entity.getDepartmentIds() != null ? List.copyOf(entity.getDepartmentIds()) : List.of()
+                Collections.emptyList() // Will be populated by service
+        );
+    }
+
+    /**
+     * Convert Municipality entity to simplified summary DTO (for collection endpoints).
+     * Does not include department IDs to avoid deep nesting.
+     */
+    public MunicipalitySummaryDto toSummaryDto(Municipality entity) {
+        if (entity == null) {
+            return null;
+        }
+
+        String base64Image = null;
+        if (entity.getImage() != null && entity.getImage().length > 0) {
+            base64Image = Base64.getEncoder().encodeToString(entity.getImage());
+        }
+
+        return new MunicipalitySummaryDto(
+                entity.getMunicipalityId(),
+                entity.getRegionId(),
+                entity.getName(),
+                base64Image
         );
     }
 
@@ -45,12 +70,20 @@ public class MunicipalityMapper implements BaseMapper<Municipality, Municipality
             }
         }
 
+        // Extract department IDs from department summaries
+        List<Long> departmentIds = Collections.emptyList();
+        if (dto.departments() != null) {
+            departmentIds = dto.departments().stream()
+                    .map(dept -> dept.departmentId())
+                    .toList();
+        }
+
         return Municipality.builder()
                 .municipalityId(dto.municipalityId())
                 .regionId(dto.regionId())
                 .name(dto.name())
                 .image(imageBytes)
-                .departmentIds(dto.departmentIds() != null ? List.copyOf(dto.departmentIds()) : List.of())
+                .departmentIds(departmentIds)
                 .build();
     }
 }

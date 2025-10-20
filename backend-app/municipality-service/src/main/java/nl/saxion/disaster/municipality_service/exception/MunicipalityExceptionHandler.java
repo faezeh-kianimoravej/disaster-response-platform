@@ -47,10 +47,12 @@ public class MunicipalityExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleGeneralException(Exception ex, WebRequest request) {
+        ex.printStackTrace(); // Print stack trace for debugging
         Map<String, Object> response = new HashMap<>();
         response.put("timestamp", LocalDateTime.now());
         response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
         response.put("error", "Unexpected error occurred: " + ex.getMessage());
+        response.put("exceptionType", ex.getClass().getName());
         response.put("path", request.getDescription(false));
 
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);

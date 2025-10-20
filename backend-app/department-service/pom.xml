@@ -101,7 +101,11 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.4</version>
                 <configuration>
-                    <skipTests>true</skipTests>
+                    <excludes>
+                        <exclude>**/*IntegrationTest.java</exclude>
+                        <exclude>**/integration/**/*.java</exclude>
+                        <exclude>**/*ApplicationTests.java</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
             <plugin>
