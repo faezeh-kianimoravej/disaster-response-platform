@@ -54,7 +54,7 @@ services:
       discovery-service:
         condition: service_started
     ports:
-      - "8083:8083"
+      - "8084:8084"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/incident_db
       SPRING_DATASOURCE_USERNAME: postgres
