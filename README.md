@@ -20,31 +20,45 @@ The web portal is live!
 - **Frontend:** React + TypeScript (Vite) in `client-app/`
 - **CI/CD:** GitLab CI placeholders (configure pipelines in your GitLab)
 - **Known work remaining:**  
-    🔗 Integration between services  
     🧪 End‑to‑end tests  
-    🚀 Production deployment scripts  
-    📄 Full API documentation
-
+    
 ---
 
 ## ⚡ Quick Start — Local Development
 
-**Prerequisites:**  
-☕ Java 11+ & Maven (backend)  
-🟩 Node.js 16+ & npm/yarn (frontend)  
-🐳 Docker (optional)
+### Prerequisites
+- ☕ **Java 21** (for backend builds)
+- 🐳 **Docker Desktop** (must be running)
+- 🟩 **Node.js 16+** (for frontend)
 
-**Backend:**  
-- Build (service folder):  
-    - Windows: `mvnw.cmd clean package`  
-    - Unix: `./mvnw clean package`
-- Run:  
-    `java -jar target/<artifact>.jar`
+### Backend (with Docker)
 
-**Frontend:**  
-- In `client-app/`:  
-    `npm install`  
-    `npm run dev`
+**Normal start:**
+```powershell
+cd backend-app
+docker-compose up -d
+```
+
+**Fresh rebuild** (first time / after changes):
+```powershell
+cd backend-app
+mvn clean package -DskipTests
+docker-compose down -v; docker-compose build --no-cache; docker-compose up -d
+```
+
+Access services:
+- **Eureka Dashboard**: http://localhost:8761
+- **API Gateway**: http://localhost:8080
+- See `backend-app/README.md` for all service URLs
+
+### Frontend
+```powershell
+cd client-app
+npm install
+npm run dev
+```
+
+📖 **Full details:** See `backend-app/README.md` and `client-app/README.md`
 
 ---
 
