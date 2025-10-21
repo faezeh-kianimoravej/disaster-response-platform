@@ -18,6 +18,7 @@ export interface FormInputProps {
 	className?: string;
 	disabled?: boolean;
 	helpText?: string;
+	isActive?: boolean;
 }
 
 export default function FormInput({
@@ -36,6 +37,7 @@ export default function FormInput({
 	className = '',
 	disabled = false,
 	helpText,
+	isActive = false,
 }: FormInputProps) {
 	const hasError = showValidation && validation && !validation.isValid;
 	const inputId = `${name}-input`;
@@ -43,7 +45,9 @@ export default function FormInput({
 	const baseClasses = `mt-1 block w-full border rounded p-2 ${
 		hasError
 			? 'border-red-500 bg-red-50 focus:border-red-500 focus:ring-red-500'
-			: 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+			: isActive
+				? 'border-blue-500 border-2 focus:border-blue-600 focus:ring-blue-500'
+				: 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
 	} ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''} ${className}`;
 
 	const renderInput = () => {

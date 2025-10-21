@@ -38,7 +38,7 @@ describe('DepartmentForm component', () => {
 		it('renders all form fields', () => {
 			renderWithToast(<DepartmentForm {...defaultProps} />);
 			expect(screen.getByLabelText(/Department Name/i)).toBeInTheDocument();
-			expect(screen.getByLabelText(/Image URL/i)).toBeInTheDocument();
+			expect(screen.getByLabelText(/Image Upload/i)).toBeInTheDocument();
 		});
 
 		it('shows Create button for new department', () => {
