@@ -64,9 +64,14 @@ public class MunicipalityMapper implements BaseMapper<Municipality, Municipality
         byte[] imageBytes = null;
         if (dto.image() != null && !dto.image().isEmpty()) {
             try {
-                imageBytes = Base64.getDecoder().decode(dto.image());
+                // Remove data URL prefix if present (e.g., "data:image/png;base64,")
+                String base64Data = dto.image();
+                if (base64Data.contains(",")) {
+                    base64Data = base64Data.substring(base64Data.indexOf(",") + 1);
+                }
+                imageBytes = Base64.getDecoder().decode(base64Data);
             } catch (IllegalArgumentException e) {
-                throw new RuntimeException("Invalid Base64 image data in MunicipalityDto");
+                throw new RuntimeException("Invalid Base64 image data in MunicipalityDto: " + e.getMessage());
             }
         }
 

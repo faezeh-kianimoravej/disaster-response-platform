@@ -6,6 +6,8 @@ import { validateDepartment } from '@/validation/departmentValidation';
 import { isFormValid } from '@/utils/validation';
 import { useToast } from '@/components/toast/ToastProvider';
 
+const DEFAULT_DEPARTMENT_IMAGE = '/images/default.png';
+
 interface DepartmentFormProps {
 	initialData?: Partial<Department>;
 	isNewDepartment: boolean;
@@ -21,27 +23,30 @@ export default function DepartmentForm({
 	onSave,
 	onCancel,
 	onImageChange,
-	municipalityId, //
+	municipalityId,
 }: DepartmentFormProps) {
 	const { showError } = useToast();
 
+	const defaultImage = initialData?.image || DEFAULT_DEPARTMENT_IMAGE;
+
 	const [form, setForm] = useState<DepartmentFormData>({
 		name: initialData?.name || '',
-		image: initialData?.image || '',
-		municipalityId: initialData?.municipalityId || municipalityId, // 👈 use dynamic id
+		image: defaultImage,
+		municipalityId: initialData?.municipalityId || municipalityId,
 	});
 
-	const [preview, setPreview] = useState<string>(form.image);
+	const [preview, setPreview] = useState<string>(defaultImage);
 	const [touched, setTouched] = useState<Record<string, boolean>>({});
 
 	useEffect(() => {
 		if (initialData) {
+			const img = initialData.image || DEFAULT_DEPARTMENT_IMAGE;
 			setForm({
 				name: initialData.name || '',
-				image: initialData.image || '',
-				municipalityId: initialData.municipalityId || municipalityId, // 👈 updated here too
+				image: img,
+				municipalityId: initialData.municipalityId || municipalityId,
 			});
-			setPreview(initialData.image || '');
+			setPreview(img);
 		}
 	}, [initialData, municipalityId]);
 
@@ -108,7 +113,7 @@ export default function DepartmentForm({
 				{/* Image Upload Section */}
 				<div>
 					<label htmlFor="image-url-input" className="block text-gray-700 font-medium mb-1">
-						Image URL
+						Image Upload <span className="text-red-500">*</span>
 					</label>
 					<input
 						id="image-url-input"
@@ -117,15 +122,12 @@ export default function DepartmentForm({
 						onChange={handleImageChange}
 						className="block w-full text-gray-700 border border-gray-300 rounded-md p-2"
 					/>
-					{preview && (
-						<div className="mt-3">
-							<img
-								src={preview}
-								alt="Preview"
-								className="h-32 w-32 object-cover border rounded-md"
-							/>
-						</div>
+					{showValidation('image') && (
+						<p className="text-red-500 text-sm mt-1">{validation.image.message}</p>
 					)}
+					<div className="mt-3">
+						<img src={preview} alt="Preview" className="h-32 w-32 object-cover border rounded-md" />
+					</div>
 				</div>
 			</div>
 

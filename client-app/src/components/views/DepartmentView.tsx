@@ -34,7 +34,7 @@ export default function DepartmentView({
 			</div>
 
 			<div className="flex justify-end space-x-3">
-				<Button variant="secondary" onClick={onBack}>
+				<Button variant="outline" onClick={onBack}>
 					Back
 				</Button>
 				<Button variant="primary" onClick={onEdit}>

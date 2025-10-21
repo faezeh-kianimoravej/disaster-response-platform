@@ -1,3 +1,8 @@
+/**
+ * Note: The backend API returns resourceId and departmentId as strings
+ * (due to ToStringSerializer for JavaScript safety with large numbers).
+ * Convert to numbers when comparing: Number(resource.departmentId) === Number(urlParam)
+ */
 export interface Resource {
 	resourceId: number;
 	departmentId: number;
