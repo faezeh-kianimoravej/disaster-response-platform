@@ -36,9 +36,9 @@ public class IncidentController {
     }
 
     @GetMapping
-    @Operation(summary = "List all incidents", description = "Fetch all existing incidents or filter by department.")
-    public ResponseEntity<List<IncidentResponse>> list(@RequestParam Optional<String> departmentName) {
-        return ResponseEntity.ok(service.list(departmentName));
+    @Operation(summary = "List all incidents", description = "Fetch all existing incidents or filter by reporter.")
+    public ResponseEntity<List<IncidentResponse>> list(@RequestParam Optional<String> reportedBy) {
+        return ResponseEntity.ok(service.list(reportedBy));
     }
 
     @PutMapping("/{id}")

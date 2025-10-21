@@ -21,7 +21,7 @@ public class IncidentServiceImp implements IncidentService{
 
     public IncidentResponse createIncident(IncidentRequest req) {
         Incident incident = Incident.builder()
-                .departmentName(req.departmentId())
+                .reportedBy(req.reportedBy())
                 .title(req.title())
                 .description(req.description())
                 .severity(req.severity())
@@ -42,17 +42,19 @@ public class IncidentServiceImp implements IncidentService{
         return toResponse(inc);
     }
 
-    public List<IncidentResponse> list(Optional<String> departmentId) {
-        List<Incident> list = departmentId.map(repository::findByDepartmentName)
+    public List<IncidentResponse> list(Optional<String> reportedBy) {
+        List<Incident> list = reportedBy.map(repository::findByReportedBy)
                 .orElseGet(repository::findAll);
-        return list.stream().map(this::toResponse).collect(Collectors.toList());
+        return list.stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 
     public IncidentResponse update(Long id, IncidentRequest req) {
         Incident inc = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Incident not found: " + id));
 
-        inc.setDepartmentName(req.departmentId());
+        inc.setReportedBy(req.reportedBy());
         inc.setTitle(req.title());
         inc.setDescription(req.description());
         inc.setSeverity(req.severity());
@@ -74,7 +76,7 @@ public class IncidentServiceImp implements IncidentService{
 
     private IncidentResponse toResponse(Incident inc) {
         return new IncidentResponse(
-                inc.getIncidentId(), inc.getDepartmentName(), inc.getTitle(),
+                inc.getIncidentId(), inc.getReportedBy(), inc.getTitle(),
                 inc.getDescription(), inc.getSeverity(), inc.getGripLevel(),
                 inc.getStatus(), inc.getReportedAt(), inc.getLocation(),
                 inc.getLatitude(), inc.getLongitude(),

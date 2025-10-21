@@ -1,5 +1,5 @@
 INSERT INTO incidents (
-    department_name,
+    reported_by,
     title,
     description,
     severity,

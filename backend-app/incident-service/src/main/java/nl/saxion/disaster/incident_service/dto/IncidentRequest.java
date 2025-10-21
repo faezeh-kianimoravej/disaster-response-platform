@@ -9,7 +9,7 @@ import nl.saxion.disaster.incident_service.model.enums.Status;
 import java.time.OffsetDateTime;
 
 public record IncidentRequest(
-        @NotBlank String departmentId,
+        @NotBlank String reportedBy,
         @NotBlank @Size(max = 255) String title,
         @Size(max = 4000) String description,
         @NotNull Severity severity,

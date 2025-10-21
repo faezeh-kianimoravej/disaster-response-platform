@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface IncidentService {
     IncidentResponse createIncident(IncidentRequest request);
     IncidentResponse getById(Long id);
-    List<IncidentResponse> list(Optional<String> departmentId);
+    List<IncidentResponse> list(Optional<String> departmentName);
     IncidentResponse update(Long id, IncidentRequest request);
     void delete(Long id);
 }

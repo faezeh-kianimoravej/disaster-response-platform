@@ -21,7 +21,7 @@ public class Incident {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long incidentId;
 
-    private String departmentName;
+    private String reportedBy;
     private String title;
     private String description;
 

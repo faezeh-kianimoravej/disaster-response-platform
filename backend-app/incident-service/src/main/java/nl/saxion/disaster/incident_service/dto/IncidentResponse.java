@@ -8,7 +8,7 @@ import java.time.OffsetDateTime;
 
 public record IncidentResponse(
         Long incidentId,
-        String departmentId,
+        String reportedBy,
         String title,
         String description,
         Severity severity,
