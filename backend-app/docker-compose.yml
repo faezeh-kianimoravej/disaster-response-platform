@@ -42,6 +42,35 @@ services:
     restart: on-failure
 
   # ==============================
+  # Incident Service
+  # ==============================
+
+  incident-service:
+    build: ./incident-service
+    container_name: incident-service
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      discovery-service:
+        condition: service_started
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/incident_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 1234
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_SQL_INIT_MODE: always
+      SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION: "true"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
+      EUREKA_INSTANCE_HOSTNAME: incident-service
+    networks:
+      - backend-network
+#    restart: on-failure
+
+  # ==============================
   # API Gateway
   # ==============================
   api-gateway:
