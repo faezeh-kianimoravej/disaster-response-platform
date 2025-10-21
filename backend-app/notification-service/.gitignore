@@ -1,0 +1,62 @@
+# ===============================
+# Java & Maven build files
+# ===============================
+target/
+*.class
+*.jar
+*.war
+*.ear
+
+# ===============================
+# Maven specific files
+# ===============================
+.mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/maven-wrapper.properties
+dependency-reduced-pom.xml
+
+# ===============================
+# Spring Boot specific
+# ===============================
+application-*.yml
+application-*.yaml
+application-*.properties
+!.gitignore
+!application.properties
+!application.yml
+
+# ===============================
+# Logs & temp files
+# ===============================
+*.log
+logs/
+*.tmp
+*.out
+hs_err_pid*
+replay_pid*
+
+# ===============================
+# IntelliJ IDEA / Eclipse / VSCode
+# ===============================
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.classpath
+.project
+.settings/
+
+# ===============================
+# OS generated files
+# ===============================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ===============================
+# Docker & environment
+# ===============================
+.docker/
+docker-compose.override.yml
+.env
