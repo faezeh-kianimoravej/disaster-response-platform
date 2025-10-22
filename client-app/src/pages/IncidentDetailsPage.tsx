@@ -33,9 +33,9 @@ export default function IncidentDetailsPage() {
 
     if (!incident) {
         return (
-            <div className="max-w-4xl mx-auto p-8">
+                <div className="max-w-4xl mx-auto p-8">
                 <h2 className="text-2xl font-semibold mb-4">Incident not found</h2>
-                <Button variant="outline" onClick={() => navigate(-1)}>Back</Button>
+                <Button variant="outline" onClick={() => navigate('/')}>Back</Button>
             </div>
         );
     }
@@ -52,7 +52,7 @@ export default function IncidentDetailsPage() {
                         </nav>
                         <h1 className="text-2xl font-bold">Incident details</h1>
                     </div>
-                    <Button variant="outline" onClick={() => navigate(-1)}>Back</Button>
+                    <Button variant="outline" onClick={() => navigate('/')}>Back</Button>
                 </div>
 
                 {/* Top action pills (moved below header) */}
@@ -69,7 +69,7 @@ export default function IncidentDetailsPage() {
 
                     <div className="flex items-center">
                         <nav className="text-sm text-blue-600">
-                            <a href="#" className="hover:text-blue-800 hover:underline">Prioritize</a>
+                            <Link to={`/incidents/${incident.incidentId}/prioritize`} className="hover:text-blue-800 hover:underline">Prioritize</Link>
                             <span className="mx-2 text-gray-300">|</span>
                             <a href="#" className="hover:text-blue-800 hover:underline">Instructions</a>
                             <span className="mx-2 text-gray-300">|</span>
