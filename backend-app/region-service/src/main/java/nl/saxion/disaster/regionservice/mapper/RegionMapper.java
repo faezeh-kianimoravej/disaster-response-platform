@@ -59,7 +59,17 @@ public class RegionMapper implements BaseMapper<Region, RegionDto> {
         region.setName(dto != null && dto.name() != null ? dto.name() : "");
 
         if (dto != null && dto.image() != null && !dto.image().isEmpty()) {
-            region.setImage(Base64.getDecoder().decode(dto.image()));
+            try {
+                // Remove data URL prefix if present (e.g., "data:image/png;base64,")
+                String base64Data = dto.image();
+                if (base64Data.contains(",")) {
+                    base64Data = base64Data.substring(base64Data.indexOf(",") + 1);
+                }
+                region.setImage(Base64.getDecoder().decode(base64Data));
+            } catch (IllegalArgumentException e) {
+                System.err.println("Failed to decode region image: " + e.getMessage());
+                region.setImage(new byte[0]);
+            }
         } else {
             region.setImage(new byte[0]);
         }

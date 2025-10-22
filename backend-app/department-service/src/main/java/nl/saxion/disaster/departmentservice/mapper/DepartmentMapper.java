@@ -83,8 +83,14 @@ public class DepartmentMapper implements BaseMapper<Department, DepartmentDto> {
 
         if (dto.image() != null && !dto.image().isEmpty()) {
             try {
-                department.setImage(Base64.getDecoder().decode(dto.image()));
+                // Remove data URL prefix if present (e.g., "data:image/png;base64,")
+                String base64Data = dto.image();
+                if (base64Data.contains(",")) {
+                    base64Data = base64Data.substring(base64Data.indexOf(",") + 1);
+                }
+                department.setImage(Base64.getDecoder().decode(base64Data));
             } catch (IllegalArgumentException e) {
+                System.err.println("Failed to decode image: " + e.getMessage());
                 department.setImage(null);
             }
         } else {
