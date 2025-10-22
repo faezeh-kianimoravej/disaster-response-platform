@@ -2,6 +2,7 @@
 import { getIncidents } from '@/api/incident';
 import type { Incident } from '@/types/incident';
 import IncidentCard from '@/components/IncidentCard';
+import { useNavigate } from 'react-router-dom';
 import IncidentFilters from '@/components/IncidentFilters';
 import { useIncidentFilters } from '@/hooks/useIncidentFilters';
 
@@ -29,9 +30,11 @@ export default function HomePage() {
 		}
 	};
 
+	const navigate = useNavigate();
+
 	const handleDetailsClick = (incident: Incident) => {
-		console.log('Details clicked for incident:', incident.incidentId);
-		// TODO: Navigate to incident details page or open modal
+		// Navigate to incident details page
+		navigate(`/incidents/${incident.incidentId}`);
 	};
 
 	const handleChatClick = (incident: Incident) => {

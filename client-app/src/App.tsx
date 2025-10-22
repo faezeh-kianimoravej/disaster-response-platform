@@ -7,6 +7,7 @@ import ResourcePage from './pages/ResourcePage';
 import DepartmentPage from './pages/DepartmentPage';
 import DepartmentsPage from './pages/DepartmentsPage';
 import MunicipalitiesPage from './pages/MunicipalitiesPage';
+import IncidentDetailsPage from './pages/IncidentDetailsPage';
 import { ToastProvider } from './components/toast/ToastProvider';
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
 					<Navigation />
 					<Routes>
 						<Route path="/" element={<HomePage />} />
+						<Route path="/incidents/:incidentId" element={<IncidentDetailsPage />} />
 						<Route path="/alerts" element={<AlertsPage />} />
 						<Route path="/resources/:departmentId" element={<ResourcesPage />} />
 						<Route path="/resources/:departmentId/:resourceId" element={<ResourcePage />} />
