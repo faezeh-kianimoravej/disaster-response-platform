@@ -31,7 +31,10 @@ export function useDepartment(
 		const fetchDepartment = async () => {
 			try {
 				const d = await getDepartmentById(id);
-				if (d && d.municipalityId === municipalityId) {
+				// Convert both to numbers for comparison to handle string/number mismatch from API
+				const deptMunicipalityId = Number(d?.municipalityId);
+				const urlMunicipalityId = Number(municipalityId);
+				if (d && deptMunicipalityId === urlMunicipalityId) {
 					setDepartment(d);
 				} else {
 					setDepartment(null);

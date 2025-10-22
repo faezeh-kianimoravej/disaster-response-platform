@@ -21,12 +21,6 @@ export default function DepartmentsPage() {
 		loadDepartments();
 	}, [municipalityId]);
 
-	// const handleAddNew = () => {
-	// 	if (municipalityId) {
-	// 		navigate(`/departments/${municipalityId}/new`);
-	// 	}
-	// };
-
 	const handleDepartmentClick = (departmentId: number) => {
 		navigate(`/resources/${departmentId}`, { state: { municipalityId } });
 	};
@@ -42,12 +36,9 @@ export default function DepartmentsPage() {
 				<div className="flex justify-between items-center mb-8">
 					<h1 className="text-3xl font-bold text-gray-900">Departments</h1>
 					<div className="flex space-x-3">
-						<Button onClick={() => navigate('/municipalities')} variant="secondary">
+						<Button onClick={() => navigate('/municipalities')} variant="outline">
 							Back
 						</Button>
-						{/* <Button onClick={handleAddNew} variant="primary">
-							Add New Department
-						</Button> */}
 					</div>
 				</div>
 
@@ -69,7 +60,9 @@ export default function DepartmentsPage() {
 								</button>
 
 								<img
-									src={d.image.startsWith('data:') ? d.image : `/images/${d.image}`}
+									src={
+										d.image?.startsWith('data:') ? d.image : `/images/${d.image || 'default.png'}`
+									}
 									alt={d.name}
 									className="h-24 w-24 object-contain mx-auto mb-4"
 								/>
