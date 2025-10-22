@@ -12,8 +12,8 @@ const variantClasses: Record<Variant, string> = {
 	danger: 'bg-red-600 text-white',
 	success: 'bg-green-600 text-white',
 
-	
-	outline: 'border text-gray-700 bg-white hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200',
+	outline:
+		'border text-gray-700 bg-white hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200',
 	ghost: 'bg-transparent text-gray-700',
 	disabled: 'bg-gray-300 text-gray-500 cursor-not-allowed',
 	secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300',
