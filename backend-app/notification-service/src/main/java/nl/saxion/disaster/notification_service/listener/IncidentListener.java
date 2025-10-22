@@ -4,19 +4,22 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.saxion.disaster.notification_service.client.RegionClient;
 import nl.saxion.disaster.notification_service.dto.IncidentNotificationDto;
-import nl.saxion.disaster.notification_service.event.IncidentEvent;
 import nl.saxion.disaster.notification_service.model.entity.Notification;
 import nl.saxion.disaster.notification_service.model.enums.NotificationStatus;
 import nl.saxion.disaster.notification_service.model.enums.NotificationType;
 import nl.saxion.disaster.notification_service.repository.contract.NotificationRepository;
+import nl.saxion.disaster.shared.event.IncidentEvent;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
- * Listens to incident events from Kafka, creates notifications,
- * stores them in the database, and sends them to region-service via Feign.
+ * Listens to "incidents" topic in Kafka.
+ * When a new incident event arrives, it:
+ * 1. Saves a notification in DB.
+ * 2. Sends it to region-service via Feign client.
+ * 3. Updates delivery status accordingly.
  */
 @Slf4j
 @Service
@@ -27,73 +30,65 @@ public class IncidentListener {
     private final NotificationRepository notificationRepository;
 
     @KafkaListener(topics = "incidents", groupId = "notification-group")
-    public void handleIncident(IncidentEvent event) {
-        log.info(" Received Incident Event from Kafka: {}", event.incidentId());
+    public void handleIncidentEvent(IncidentEvent event) {
+        log.info("Received IncidentEvent from Kafka: incidentId={}, type={}", event.incidentId(), event.type());
 
-        Notification notification = new Notification();
+        //Create Notification entity
+        Notification notification = Notification.builder()
+                .incidentId(event.incidentId())
+                .regionId(0L) // Region will be determined later if needed
+                .incidentType(event.type())
+                .notificationType(NotificationType.NEW_INCIDENT)
+                .notificationStatus(NotificationStatus.CREATED)
+                .message(event.message())
+                .severity(event.Severity())
+                .location(event.location())
+                .createdBy(event.createdBy())
+                .createdAt(event.createdAt())
+                .reportedAt(event.sendTime())
+                .build();
+
         try {
-
-            notification.setIncidentId(event.incidentId());
-            notification.setRegionId(event.regionId());
-            notification.setIncidentType(event.incidentType());
-            notification.setNotificationType(NotificationType.NEW_INCIDENT);
-            notification.setMessage("New " + event.incidentType() + " incident reported: " + event.description());
-            notification.setSeverity(event.severity());
-            notification.setLocation(event.location());
-            notification.setNotificationStatus(NotificationStatus.CREATED);
-            notification.setCreatedBy(event.createdBy());
-            notification.setCreatedAt(event.createdAt());
-            notification.setReportedAt(event.reportTime());
-
+            //Save notification in DB
             notificationRepository.createNotification(notification);
-            log.info("Notification saved for incident ID: {}", event.incidentId());
-
-            sendNewIncidentNotificationToRegion(event, notification);
-
+            log.info("Notification saved successfully for incidentId={}", event.incidentId());
         } catch (Exception e) {
-            log.error("Failed to process incident event {}: {}", event.incidentId(), e.getMessage(), e);
+            log.error("Failed to save notification in DB: {}", e.getMessage(), e);
+            return;
         }
-    }
 
-    /**
-     * Sends notification to region-service via Feign client
-     * and updates delivery status.
-     */
-    private void sendNewIncidentNotificationToRegion(IncidentEvent event, Notification notification) {
+        //Send notification to region-service
         try {
             IncidentNotificationDto dto = new IncidentNotificationDto(
                     notification.getId(),
-                    event.incidentId(),
+                    notification.getIncidentId(),
                     notification.getRegionId(),
-                    event.incidentType(),
-                    NotificationType.NEW_INCIDENT,
+                    notification.getIncidentType(),
+                    notification.getNotificationType(),
                     notification.getNotificationStatus(),
                     notification.getMessage(),
-                    event.severity(),
-                    event.location(),
-                    event.createdBy(),
-                    event.createdAt(),
-                    event.reportTime(),
+                    notification.getSeverity(),
+                    notification.getLocation(),
+                    notification.getCreatedBy(),
+                    notification.getCreatedAt(),
+                    notification.getReportedAt(),
                     notification.getDeliveredAt()
             );
 
             regionClient.sendIncidentNotification(dto);
-            log.info("Notification sent to region-service for regionId={}", event.regionId());
+            log.info("ent notification to region-service for incidentId={}", event.incidentId());
 
+            //Update status to DELIVERED
             notification.setNotificationStatus(NotificationStatus.DELIVERED);
-            notification.setDeliveredAt(LocalDateTime.now());
+            notification.setDeliveredAt(OffsetDateTime.now());
             notificationRepository.updateNotificationStatus(notification);
-
-            log.info("Notification {} delivered successfully at {}",
-                    notification.getId(), notification.getDeliveredAt());
+            log.info("Notification {} marked as DELIVERED", notification.getId());
 
         } catch (Exception e) {
+            //Update status to FAILED
             notification.setNotificationStatus(NotificationStatus.FAILED);
-            notification.setDeliveredAt(null);
             notificationRepository.updateNotificationStatus(notification);
-
-            log.warn("Failed to deliver notification {} to region {} → {}",
-                    notification.getId(), notification.getRegionId(), e.getMessage());
+            log.error("Failed to send notification to region-service for incidentId={} → {}", event.incidentId(), e.getMessage());
         }
     }
 }

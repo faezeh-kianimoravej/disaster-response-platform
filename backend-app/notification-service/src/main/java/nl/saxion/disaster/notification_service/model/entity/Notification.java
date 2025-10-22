@@ -1,17 +1,23 @@
 package nl.saxion.disaster.notification_service.model.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import nl.saxion.disaster.notification_service.model.enums.NotificationStatus;
 import nl.saxion.disaster.notification_service.model.enums.NotificationType;
-import org.springframework.data.annotation.Id;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "notifications")
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Notification {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,8 +32,8 @@ public class Notification {
     private String severity;
     private String location;
     private String createdBy;
-    private LocalDateTime createdAt;
-    private LocalDateTime reportedAt;
-    private LocalDateTime deliveredAt;
+    private OffsetDateTime createdAt;
+    private OffsetDateTime reportedAt;
+    private OffsetDateTime deliveredAt;
 }
 

@@ -7,7 +7,8 @@ import nl.saxion.disaster.notification_service.model.enums.NotificationType;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,6 +20,8 @@ import java.util.stream.Collectors;
 @Component
 @Qualifier("incidentNotificationMapper")
 public class IncidentNotificationMapper implements BaseMapper<Notification, IncidentNotificationDto> {
+
+    public static final OffsetDateTime NOW = OffsetDateTime.now(ZoneOffset.UTC);
 
     @Override
     public IncidentNotificationDto toDto(Notification entity) {
@@ -101,8 +104,8 @@ public class IncidentNotificationMapper implements BaseMapper<Notification, Inci
                 NotificationType.NEW_INCIDENT,
                 NotificationStatus.CREATED,
                 "", "", "", "",  // message, severity, location, createdBy
-                LocalDateTime.now(),
-                LocalDateTime.now(),
+                OffsetDateTime.now(ZoneOffset.UTC),
+                OffsetDateTime.now(ZoneOffset.UTC),
                 null
         );
     }
@@ -119,8 +122,8 @@ public class IncidentNotificationMapper implements BaseMapper<Notification, Inci
         notification.setSeverity("");
         notification.setLocation("");
         notification.setCreatedBy("");
-        notification.setCreatedAt(LocalDateTime.now());
-        notification.setReportedAt(LocalDateTime.now());
+        notification.setCreatedAt(OffsetDateTime.now(ZoneOffset.UTC));
+        notification.setReportedAt(OffsetDateTime.now(ZoneOffset.UTC));
         notification.setDeliveredAt(null);
         return notification;
     }
