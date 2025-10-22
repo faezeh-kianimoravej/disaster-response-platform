@@ -17,6 +17,7 @@
         <module>location-service</module>
         <module>municipality-service</module>
         <module>region-service</module>
+        <module>notification-service</module>
     </modules>
 
     <properties>
