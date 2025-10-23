@@ -31,22 +31,18 @@ public class IncidentListener {
 
     @KafkaListener(topics = "incidents", groupId = "notification-group")
     public void handleIncidentEvent(IncidentEvent event) {
-        log.info("Received IncidentEvent from Kafka: incidentId={}, type={}", event.incidentId(), event.type());
+        log.info("Received IncidentEvent from Kafka: incidentId={}", event.incidentId());
 
         //Create Notification entity
         Notification notification = Notification.builder()
-                .incidentId(event.incidentId())
-                .regionId(0L) // Region will be determined later if needed
-                .incidentType(event.type())
-                .notificationType(NotificationType.NEW_INCIDENT)
-                .notificationStatus(NotificationStatus.CREATED)
-                .message(event.message())
-                .severity(event.severity())
-                .location(event.location())
-                .createdBy(event.createdBy())
-                .createdAt(event.createdAt())
-                .reportedAt(event.sendTime())
-                .build();
+            .incidentId(event.incidentId())
+            .regionId(event.regionId())
+            .notificationType(NotificationType.NEW_INCIDENT)
+            .title(event.incidentTitle())
+            .description(event.incidentDescription())
+            .createdAt(java.time.OffsetDateTime.now())
+            .read(false)
+            .build();
 
         try {
             //Save notification in DB
@@ -60,34 +56,18 @@ public class IncidentListener {
         //Send notification to region-service
         try {
             IncidentNotificationDto dto = new IncidentNotificationDto(
-                    notification.getId(),
-                    notification.getIncidentId(),
-                    notification.getRegionId(),
-                    notification.getIncidentType(),
-                    notification.getNotificationType(),
-                    notification.getNotificationStatus(),
-                    notification.getMessage(),
-                    notification.getSeverity(),
-                    notification.getLocation(),
-                    notification.getCreatedBy(),
-                    notification.getCreatedAt(),
-                    notification.getReportedAt(),
-                    notification.getDeliveredAt()
+                notification.getId(), // notificationId
+                notification.getIncidentId(),
+                notification.getRegionId(),
+                "New Incident - " + notification.getTitle(), // title
+                notification.getDescription(), // description
+                notification.getNotificationType(),
+                notification.getCreatedAt(),
+                notification.isRead()
             );
-
             regionClient.sendIncidentNotification(dto);
             log.info("sent notification to region-service for incidentId={}", event.incidentId());
-
-            //Update status to DELIVERED
-            notification.setNotificationStatus(NotificationStatus.DELIVERED);
-            notification.setDeliveredAt(OffsetDateTime.now());
-            notificationRepository.updateNotificationStatus(notification);
-            log.info("Notification {} marked as DELIVERED", notification.getId());
-
         } catch (Exception e) {
-            //Update status to FAILED
-            notification.setNotificationStatus(NotificationStatus.FAILED);
-            notificationRepository.updateNotificationStatus(notification);
             log.error("Failed to send notification to region-service for incidentId={} → {}", event.incidentId(), e.getMessage());
         }
     }

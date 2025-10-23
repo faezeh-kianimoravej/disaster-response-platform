@@ -40,6 +40,9 @@ public class Incident {
     private Double latitude;
     private Double longitude;
 
+    @Column(name = "region_id", nullable = false)
+    private Long regionId;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 

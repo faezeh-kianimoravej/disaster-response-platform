@@ -10,26 +10,32 @@ import MunicipalitiesPage from './pages/MunicipalitiesPage';
 import IncidentDetailsPage from './pages/IncidentDetailsPage';
 import IncidentPriorityPage from './pages/IncidentPriorityPage';
 import { ToastProvider } from './components/toast/ToastProvider';
+import { UserContext } from './context/UserContext';
 
 function App() {
 	return (
 		<ToastProvider>
-			<Router>
-				<div className="App">
-					<Navigation />
-					<Routes>
-						<Route path="/" element={<HomePage />} />
-						<Route path="/incidents/:incidentId" element={<IncidentDetailsPage />} />
-						<Route path="/alerts" element={<AlertsPage />} />
-						<Route path="/incidents/:incidentId/prioritize" element={<IncidentPriorityPage />} />
-						<Route path="/resources/:departmentId" element={<ResourcesPage />} />
-						<Route path="/resources/:departmentId/:resourceId" element={<ResourcePage />} />
-						<Route path="/departments/:municipalityId" element={<DepartmentsPage />} />
-						<Route path="/departments/:municipalityId/:departmentId" element={<DepartmentPage />} />
-						<Route path="/municipalities" element={<MunicipalitiesPage />} />
-					</Routes>
-				</div>
-			</Router>
+			<UserContext.Provider value={{ isLoggedIn: true, regionId: 1 }}>
+				<Router>
+					<div className="App">
+						<Navigation />
+						<Routes>
+							<Route path="/" element={<HomePage />} />
+							<Route path="/incidents/:incidentId" element={<IncidentDetailsPage />} />
+							<Route path="/alerts" element={<AlertsPage />} />
+							<Route path="/incidents/:incidentId/prioritize" element={<IncidentPriorityPage />} />
+							<Route path="/resources/:departmentId" element={<ResourcesPage />} />
+							<Route path="/resources/:departmentId/:resourceId" element={<ResourcePage />} />
+							<Route path="/departments/:municipalityId" element={<DepartmentsPage />} />
+							<Route
+								path="/departments/:municipalityId/:departmentId"
+								element={<DepartmentPage />}
+							/>
+							<Route path="/municipalities" element={<MunicipalitiesPage />} />
+						</Routes>
+					</div>
+				</Router>
+			</UserContext.Provider>
 		</ToastProvider>
 	);
 }

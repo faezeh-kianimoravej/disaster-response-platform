@@ -1,21 +1,14 @@
 package nl.saxion.disaster.regionservice.dto;
 
 import nl.saxion.disaster.regionservice.model.enums.NotificationType;
-
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 public record IncidentNotificationDto(
-
-        Long notificationID,
-        Long incidentID,
-        String incidentType,
+        Long notificationId,
+        Long incidentId,
+        String title,
+        String description,
         NotificationType notificationType,
-        String message,
-        String Severity,
-        String Location,
-        String Status,
-        String createdBy,
-        LocalDateTime createdAt,
-        LocalDateTime reportedAt
-) {
-}
+        OffsetDateTime createdAt,
+        boolean read
+) {}

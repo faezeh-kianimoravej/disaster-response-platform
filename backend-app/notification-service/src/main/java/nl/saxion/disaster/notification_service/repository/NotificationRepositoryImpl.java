@@ -26,6 +26,12 @@ public class NotificationRepositoryImpl implements NotificationRepository {
         String jpql = "SELECT notification FROM Notification notification ORDER BY notification.createdAt DESC";
         return entityManager.createQuery(jpql, Notification.class).getResultList();
     }
+    public List<Notification> findNotificationsByRegionId(Long regionId) {
+        String jpql = "SELECT notification FROM Notification notification WHERE notification.regionId = :regionId ORDER BY notification.createdAt DESC";
+        return entityManager.createQuery(jpql, Notification.class)
+                .setParameter("regionId", regionId)
+                .getResultList();
+    }
 
     @Override
     public Notification findNotificationById(Long id) {
@@ -43,5 +49,13 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     @Override
     public void updateNotificationStatus(Notification notification) {
         entityManager.merge(notification);
+    }
+
+    @Override
+    public List<Notification> findNotificationsAfterId(Long afterId) {
+        String jpql = "SELECT notification FROM Notification notification WHERE notification.id > :afterId ORDER BY notification.id ASC";
+        return entityManager.createQuery(jpql, Notification.class)
+                .setParameter("afterId", afterId)
+                .getResultList();
     }
 }
