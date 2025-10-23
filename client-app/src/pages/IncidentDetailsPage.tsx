@@ -47,13 +47,6 @@ export default function IncidentDetailsPage() {
 			<div className="max-w-4xl mx-auto px-4">
 				<div className="flex items-center justify-between mb-6">
 					<div>
-						<nav className="text-sm text-gray-500 mb-1">
-							<Link to="/" className="hover:underline">
-								Home
-							</Link>
-							<span className="mx-2">/</span>
-							<span className="text-gray-700">Incident</span>
-						</nav>
 						<h1 className="text-2xl font-bold">Incident details</h1>
 					</div>
 					<Button variant="outline" onClick={() => navigate('/')}>
@@ -61,10 +54,8 @@ export default function IncidentDetailsPage() {
 					</Button>
 				</div>
 
-				{/* Top action pills (moved below header) */}
 				<div className="flex items-center justify-between mb-4">
 					<div className="flex gap-3 items-center">
-						{/* Priority then GRIP to match IncidentCard */}
 						<Badge
 							variant={
 								incident.severity === 'Critical'
@@ -110,11 +101,6 @@ export default function IncidentDetailsPage() {
 
 				<div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
 					<h3 className="text-lg font-semibold text-gray-900 mb-3">{incident.title}</h3>
-
-					<div className="flex gap-2 mb-4">
-						<div className="text-sm text-gray-600">Priority: {incident.severity}</div>
-						<div className="text-sm text-gray-600">GRIP: {incident.gripLevel}</div>
-					</div>
 
 					<p className="text-sm text-gray-600 mb-4">
 						{incident.location} • {incident.status}

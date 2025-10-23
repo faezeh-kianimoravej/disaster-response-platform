@@ -74,21 +74,12 @@ export default function IncidentPriorityPage() {
 
 	return (
 		<div className="min-h-screen bg-gray-50 py-8">
-			<div className="max-w-3xl mx-auto px-4">
+			<div className="max-w-4xl mx-auto px-4">
 				<h1 className="text-2xl font-bold mb-4">Prioritize Incident</h1>
 
 				<div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 mb-6">
 					<h3 className="text-lg font-semibold text-gray-900 mb-2">{incident.title}</h3>
-					<div className="text-sm text-gray-700 mb-2">
-						{incident.description ? (
-							<div className="text-sm text-gray-700 line-clamp-3 whitespace-pre-wrap">
-								{incident.description}
-							</div>
-						) : (
-							<span className="text-gray-500">No description provided.</span>
-						)}
-					</div>
-					<div className="flex gap-3 items-center">
+					<div className="flex gap-3 items-center mb-3">
 						<Badge
 							variant={
 								incident.severity === 'Critical'
@@ -106,6 +97,15 @@ export default function IncidentPriorityPage() {
 						<Badge variant="default" className="text-sm">
 							GRIP: {incident.gripLevel}
 						</Badge>
+					</div>
+					<div className="text-sm text-gray-700 mb-2">
+						{incident.description ? (
+							<div className="text-sm text-gray-700 line-clamp-3 whitespace-pre-wrap">
+								{incident.description}
+							</div>
+						) : (
+							<span className="text-gray-500">No description provided.</span>
+						)}
 					</div>
 				</div>
 
