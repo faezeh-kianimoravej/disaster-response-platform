@@ -81,6 +81,6 @@ describe('IncidentDetailsPage', () => {
 		expect(screen.getByText(/main bridge partially collapsed/i)).toBeInTheDocument();
 
 		expect(screen.getByText(/prioritize/i)).toBeInTheDocument();
-		expect(screen.getByText('Home')).toBeInTheDocument();
+		expect(screen.getByText('Back')).toBeInTheDocument();
 	});
 });
