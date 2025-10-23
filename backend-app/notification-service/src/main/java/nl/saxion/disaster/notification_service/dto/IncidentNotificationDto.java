@@ -3,7 +3,7 @@ package nl.saxion.disaster.notification_service.dto;
 import nl.saxion.disaster.notification_service.model.enums.NotificationStatus;
 import nl.saxion.disaster.notification_service.model.enums.NotificationType;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 public record IncidentNotificationDto(
 
@@ -17,8 +17,8 @@ public record IncidentNotificationDto(
         String Severity,
         String Location,
         String createdBy,
-        LocalDateTime createdAt,
-        LocalDateTime reportedAt,
-        LocalDateTime deliveredAt
+        OffsetDateTime createdAt,
+        OffsetDateTime reportedAt,
+        OffsetDateTime deliveredAt
 ) {
 }
