@@ -39,15 +39,6 @@ spring:
       
       # Explicit routes with path rewrites for clean API surface
       routes:
-        # Region service SSE: /api/regions/incidents/stream -> region-service/api/regions/incidents/stream (no circuit breaker)
-        - id: region-sse
-          uri: lb://region-service
-          predicates:
-            - Path=/api/regions/incidents/stream
-          filters:
-            - SetResponseHeader=Cache-Control, no-store
-            - RemoveResponseHeader=Transfer-Encoding
-
         # Region service: /api/regions/** (all other endpoints) -> region-service/api/regions/**
         - id: region
           uri: lb://region-service
@@ -114,6 +105,15 @@ spring:
                 name: locationServiceCircuitBreaker
                 fallbackUri: forward:/fallback
 
+        # Notification service SSE: /api/notifications/incidents/stream/** -> notification-service/api/notifications/incidents/stream/** (no circuit breaker)
+        - id: notification-sse
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/notifications/incidents/stream/**
+          filters:
+            - SetResponseHeader=Cache-Control, no-store
+            - RemoveResponseHeader=Transfer-Encoding
+            
         # Notification service: /api/notifications/** -> notification-service/api/notifications/**
         - id: notification
           uri: lb://notification-service

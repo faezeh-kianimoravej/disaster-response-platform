@@ -48,13 +48,13 @@ public class IncidentServiceImp implements IncidentService {
         log.info("Incident saved successfully: {}", savedIncident.getIncidentId());
 
         // Build the event object for Kafka
-    IncidentEvent event = IncidentEvent.builder()
-        .notificationId(0L)
-        .incidentId(savedIncident.getIncidentId())
-        .regionId(savedIncident.getRegionId())
-        .incidentTitle(savedIncident.getTitle())
-        .incidentDescription(savedIncident.getDescription())
-        .build();
+        IncidentEvent event = IncidentEvent.builder()
+            .notificationId(0L)
+            .incidentId(savedIncident.getIncidentId())
+            .regionId(savedIncident.getRegionId())
+            .incidentTitle(savedIncident.getTitle())
+            .incidentDescription(savedIncident.getDescription())
+            .build();
 
         //Send event to Kafka topic
         incidentEventProducer.sendIncidentEvent(event);
@@ -105,11 +105,11 @@ public class IncidentServiceImp implements IncidentService {
 
     private IncidentResponse toResponse(Incident inc) {
         return new IncidentResponse(
-                inc.getIncidentId(), inc.getReportedBy(), inc.getTitle(),
-                inc.getDescription(), inc.getSeverity(), inc.getGripLevel(),
-                inc.getStatus(), inc.getReportedAt(), inc.getLocation(),
-                inc.getLatitude(), inc.getLongitude(),
-                inc.getCreatedAt(), inc.getUpdatedAt()
+            inc.getIncidentId(), inc.getReportedBy(), inc.getTitle(),
+            inc.getDescription(), inc.getSeverity(), inc.getGripLevel(),
+            inc.getStatus(), inc.getReportedAt(), inc.getLocation(),
+            inc.getLatitude(), inc.getLongitude(),
+            inc.getCreatedAt(), inc.getUpdatedAt()
         );
     }
 }
