@@ -52,7 +52,7 @@ public class IncidentServiceImp implements IncidentService {
                 .incidentId(savedIncident.getIncidentId())
                 .type("")
                 .message(savedIncident.getDescription())
-                .Severity(savedIncident.getSeverity().name())
+                .severity(savedIncident.getSeverity().name())
                 .location(savedIncident.getLocation())
                 .status(savedIncident.getStatus().name())
                 .createdBy("112")
