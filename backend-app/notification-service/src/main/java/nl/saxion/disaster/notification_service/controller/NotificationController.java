@@ -45,26 +45,9 @@ public class NotificationController {
         tags = {"Notifications"}
     )
     @GetMapping
-    public ResponseEntity<List<IncidentNotificationDto>> getAllNotifications(@RequestParam(value = "regionId", required = false) Long regionId) {
-        log.info("Get Request to fetch all notifications{}", regionId != null ? " for regionId=" + regionId : "");
-        List<IncidentNotificationDto> notifications;
-        if (regionId != null) {
-            notifications = notificationService.getNotificationsByRegionId(regionId);
-        } else {
-            notifications = notificationService.getAllNotifications();
-        }
-        return ResponseEntity.ok(notifications);
-    }
-
-    @Operation(
-        summary = "Get notifications after a given ID",
-        description = "Returns all notifications with an ID greater than the specified afterId. Useful for missed-event recovery in SSE clients.",
-        tags = {"Notifications"}
-    )
-    @GetMapping("/after")
-    public ResponseEntity<List<IncidentNotificationDto>> getNotificationsAfter(@RequestParam("afterId") Long afterId) {
-        log.info("Get Request to fetch notifications after ID {}", afterId);
-        List<IncidentNotificationDto> notifications = notificationService.getNotificationsAfterId(afterId);
+    public ResponseEntity<List<IncidentNotificationDto>> getAllNotifications(@RequestParam(value = "regionId") Long regionId) {
+        log.info("Get Request to fetch all notifications for regionId={}", regionId);
+        List<IncidentNotificationDto> notifications = notificationService.getNotificationsByRegionId(regionId);
         return ResponseEntity.ok(notifications);
     }
 

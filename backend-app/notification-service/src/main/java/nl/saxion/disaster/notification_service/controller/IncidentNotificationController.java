@@ -33,10 +33,12 @@ public class IncidentNotificationController {
             description = "Opens a Server-Sent Events connection for live incident notifications for all incidents."
     )
     @GetMapping("/stream/{regionId}")
-    public SseEmitter streamNotifications(@PathVariable String regionId, HttpServletRequest request) {
+    public SseEmitter streamNotifications(
+            @PathVariable String regionId,
+            @RequestParam(value = "lastNotificationId", required = false) Long lastNotificationId
+    ) {
         SseEmitter emitter = incidentNotificationService.addEmitter(regionId);
-        String lastEventIdHeader = request.getHeader("Last-Event-ID");
-        incidentNotificationService.sendMissedNotifications(emitter, regionId, lastEventIdHeader);
+        incidentNotificationService.sendMissedNotifications(emitter, regionId, lastNotificationId);
         return emitter;
     }
 }

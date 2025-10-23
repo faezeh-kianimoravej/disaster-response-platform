@@ -5,6 +5,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 public interface IncidentNotificationService {
     SseEmitter addEmitter(String regionId);
-    void sendMissedNotifications(SseEmitter emitter, String regionId, String lastEventIdHeader);
+    void sendMissedNotifications(SseEmitter emitter, String regionId, Long lastNotificationId);
     void broadcastIncidentNotification(IncidentNotificationDto dto);
 }

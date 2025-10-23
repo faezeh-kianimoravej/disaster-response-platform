@@ -35,11 +35,10 @@ public class IncidentNotificationServiceImpl implements IncidentNotificationServ
     }
 
     @Override
-    public void sendMissedNotifications(SseEmitter emitter, String regionId, String lastEventIdHeader) {
-        if (lastEventIdHeader != null) {
+    public void sendMissedNotifications(SseEmitter emitter, String regionId, Long lastNotificationId) {
+        if (lastNotificationId != null) {
             try {
-                Long lastEventId = Long.parseLong(lastEventIdHeader);
-                List<IncidentNotificationDto> missed = notificationService.getNotificationsAfterId(lastEventId);
+                List<IncidentNotificationDto> missed = notificationService.getNotificationsAfterId(lastNotificationId);
                 for (IncidentNotificationDto dto : missed) {
                     if (regionId.equals(dto.regionId() != null ? dto.regionId().toString() : null)) {
                         emitter.send(SseEmitter.event()

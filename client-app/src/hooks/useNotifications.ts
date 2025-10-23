@@ -1,14 +1,14 @@
 import { useEffect, useState, useCallback } from 'react';
 import type { Notification } from '@/types/notification';
 import { config } from '@/config';
-import {
-	fetchNotifications as fetchNotificationsApi,
-	markNotificationAsRead,
-} from '@/api/notification';
+import { fetchNotifications, markNotificationAsRead } from '@/api/notification';
+
 import { useUser } from '@/context/UserContext';
+import { useNotificationContext } from '@/context/NotificationContext';
 
 export function useNotifications() {
 	const { regionId } = useUser();
+	const { lastNotificationId, setLastNotificationId } = useNotificationContext();
 	const [notifications, setNotifications] = useState<Notification[]>([]);
 	const [unreadCount, setUnreadCount] = useState(0);
 	const [isConnected, setIsConnected] = useState(false);
@@ -16,11 +16,10 @@ export function useNotifications() {
 	const [error, setError] = useState<string | null>(null);
 
 	// Fetch initial notifications
-	const fetchNotifications = useCallback(async () => {
+	const fetchNotificationsCallback = useCallback(async () => {
 		setLoading(true);
 		try {
-			const data = await fetchNotificationsApi(regionId);
-			// data is an array of notifications
+			const data = await fetchNotifications(regionId);
 			setNotifications(Array.isArray(data) ? data : []);
 			setUnreadCount(Array.isArray(data) ? data.filter(n => !n.read).length : 0);
 			setError(null);
@@ -33,11 +32,12 @@ export function useNotifications() {
 
 	// Subscribe to SSE endpoint for real-time notifications
 	useEffect(() => {
-		fetchNotifications();
+		fetchNotificationsCallback();
 
-		const eventSource = new EventSource(
-			`${config.api.baseURL}/notifications/incidents/stream/${regionId}`
-		);
+		// Pass lastNotificationId as a query param if present
+		const streamUrl = `${config.api.baseURL}/notifications/incidents/stream/${regionId}${lastNotificationId ? `?lastNotificationId=${lastNotificationId}` : ''}`;
+
+		const eventSource = new EventSource(streamUrl);
 
 		eventSource.onopen = () => {
 			setIsConnected(true);
@@ -54,6 +54,11 @@ export function useNotifications() {
 					return [notification, ...prev];
 				});
 				setUnreadCount(prev => prev + 1);
+				// Update lastNotificationId in context if this notification is newer
+				const notifIdNum = Number(notification.notificationId);
+				if (!lastNotificationId || (!isNaN(notifIdNum) && notifIdNum > lastNotificationId)) {
+					setLastNotificationId(notifIdNum);
+				}
 			} catch (error) {
 				console.error('Failed to parse notification:', error);
 			}
@@ -71,7 +76,7 @@ export function useNotifications() {
 			eventSource.close();
 			setIsConnected(false);
 		};
-	}, [fetchNotifications]);
+	}, [fetchNotificationsCallback, lastNotificationId, setLastNotificationId, regionId]);
 
 	const markAsRead = useCallback(async (id: string) => {
 		try {
@@ -106,6 +111,6 @@ export function useNotifications() {
 		error,
 		markAsRead,
 		markAllAsRead,
-		refresh: fetchNotifications,
+		refresh: fetchNotificationsCallback,
 	};
 }
