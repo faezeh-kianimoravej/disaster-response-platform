@@ -41,7 +41,7 @@ public class IncidentListener {
                 .notificationType(NotificationType.NEW_INCIDENT)
                 .notificationStatus(NotificationStatus.CREATED)
                 .message(event.message())
-                .severity(event.Severity())
+                .severity(event.severity())
                 .location(event.location())
                 .createdBy(event.createdBy())
                 .createdAt(event.createdAt())
@@ -76,7 +76,7 @@ public class IncidentListener {
             );
 
             regionClient.sendIncidentNotification(dto);
-            log.info("ent notification to region-service for incidentId={}", event.incidentId());
+            log.info("sent notification to region-service for incidentId={}", event.incidentId());
 
             //Update status to DELIVERED
             notification.setNotificationStatus(NotificationStatus.DELIVERED);

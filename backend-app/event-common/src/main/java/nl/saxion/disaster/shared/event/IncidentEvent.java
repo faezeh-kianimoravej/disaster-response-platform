@@ -11,7 +11,7 @@ public record IncidentEvent(
         Long incidentId,
         String type,
         String message,
-        String Severity,
+        String severity,
         String location,
         String status,
         String createdBy,
