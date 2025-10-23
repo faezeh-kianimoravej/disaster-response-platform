@@ -35,7 +35,9 @@ export function useNotifications() {
 	useEffect(() => {
 		fetchNotifications();
 
-		const eventSource = new EventSource(`${config.api.baseURL}/regions/incidents/stream`);
+		const eventSource = new EventSource(
+			`${config.api.baseURL}/notifications/incidents/stream/${regionId}`
+		);
 
 		eventSource.onopen = () => {
 			setIsConnected(true);

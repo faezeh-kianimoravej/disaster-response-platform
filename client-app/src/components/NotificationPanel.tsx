@@ -1,5 +1,17 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bell, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { NOTIFICATION_UI_MAP } from '@/types/notification-ui-map';
+import {
+	Bell,
+	X,
+	AlertCircle,
+	CheckCircle2,
+	Info,
+	Megaphone,
+	Truck,
+	CloudSun,
+	BellRing,
+} from 'lucide-react';
 import { useNotifications } from '@/hooks/useNotifications';
 
 function formatTimeAgo(dateString: string): string {
@@ -16,14 +28,28 @@ function formatTimeAgo(dateString: string): string {
 	if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
 	return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
-
 export default function NotificationPanel() {
+	const navigate = useNavigate();
 	const [isOpen, setIsOpen] = useState(false);
 	const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all');
+
+	const [soundEnabled, setSoundEnabled] = useState(true);
 	const panelRef = useRef<HTMLDivElement>(null);
+	const audioRef = useRef<HTMLAudioElement | null>(null);
+	const prevNotificationsLength = useRef<number>(0);
 	const { notifications, unreadCount, markAsRead, markAllAsRead, loading, error } =
 		useNotifications();
 	console.log('Notifications:', notifications);
+	// Play sound when a new notification arrives
+	useEffect(() => {
+		if (soundEnabled && notifications.length > prevNotificationsLength.current) {
+			if (audioRef.current) {
+				audioRef.current.currentTime = 0;
+				audioRef.current.play();
+			}
+		}
+		prevNotificationsLength.current = notifications.length;
+	}, [notifications, soundEnabled]);
 
 	// Close panel when clicking outside
 	useEffect(() => {
@@ -69,6 +95,10 @@ export default function NotificationPanel() {
 
 	return (
 		<div className="relative" ref={panelRef}>
+			{/* Notification sound audio element */}
+			<audio ref={audioRef} preload="auto" style={{ display: 'none' }}>
+				<source src="/audio/notification.ogg" type="audio/ogg" />
+			</audio>{' '}
 			{/* Bell Icon Button */}
 			<button
 				onClick={() => setIsOpen(!isOpen)}
@@ -82,7 +112,6 @@ export default function NotificationPanel() {
 					</span>
 				)}
 			</button>
-
 			{/* Notification Panel */}
 			{isOpen && (
 				<div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
@@ -142,46 +171,73 @@ export default function NotificationPanel() {
 									<div className="px-4 py-2 bg-gray-50">
 										<h3 className="text-xs font-semibold text-gray-600 uppercase">{date}</h3>
 									</div>
-									{items.map(notification => (
-										<div
-											key={notification.notificationId}
-											className={`p-4 border-b border-gray-100 hover:bg-gray-50 ${
-												!notification.read ? 'bg-blue-50' : ''
-											}`}
-										>
-											<div className="flex items-start gap-3">
-												{/* Unread indicator */}
-												{!notification.read && (
-													<div className="mt-2 w-2 h-2 bg-blue-600 rounded-full flex-shrink-0" />
-												)}
-												{/* Icon placeholder */}
-												<div className="mt-1 w-8 h-8 bg-gray-200 rounded flex-shrink-0 flex items-center justify-center">
-													<Bell size={16} className="text-gray-600" />
-												</div>
-												{/* Content */}
-												<div className="flex-1 min-w-0">
-													<h4 className="text-sm font-semibold text-gray-900">
-														{notification.title}
-													</h4>
-													<p className="text-sm text-gray-600 mt-1">{notification.description}</p>
-													<p className="text-xs text-gray-400 mt-1">
-														{formatTimeAgo(notification.createdAt)}
-													</p>
-													{/* Action Buttons */}
-													<div className="flex gap-2 mt-2">
-														{!notification.read && (
-															<button
-																onClick={() => markAsRead(notification.notificationId)}
-																className="px-3 py-1 text-xs font-medium text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
-															>
-																Mark As Read
-															</button>
-														)}
+									{items.map(notification => {
+										const config = NOTIFICATION_UI_MAP[notification.notificationType];
+										const url = config?.actionUrl?.(notification);
+										// Map icon string to Lucide icon component
+										const iconMap: Record<string, JSX.Element> = {
+											report: <AlertCircle size={16} className="text-gray-600" />,
+											notifications: <BellRing size={16} className="text-gray-600" />,
+											info: <Info size={16} className="text-gray-600" />,
+											resolved: <CheckCircle2 size={16} className="text-gray-600" />,
+											megaphone: <Megaphone size={16} className="text-gray-600" />,
+											truck: <Truck size={16} className="text-gray-600" />,
+											weather: <CloudSun size={16} className="text-gray-600" />,
+										};
+										const icon = iconMap[config?.icon || 'notifications'] || (
+											<Bell size={16} className="text-gray-600" />
+										);
+										return (
+											<div
+												key={notification.notificationId}
+												className={`p-4 border-b border-gray-100 hover:bg-gray-50 ${!notification.read ? 'bg-blue-50' : ''} ${url ? 'cursor-pointer' : ''}`}
+												onClick={() => {
+													if (!notification.read) {
+														markAsRead(notification.notificationId);
+													}
+													if (url) {
+														setIsOpen(false);
+														navigate(url);
+													}
+												}}
+											>
+												<div className="flex items-start gap-3">
+													{/* Unread indicator */}
+													{!notification.read && (
+														<div className="mt-2 w-2 h-2 bg-blue-600 rounded-full flex-shrink-0" />
+													)}
+													{/* Icon placeholder */}
+													<div className="mt-1 w-8 h-8 flex-shrink-0 flex items-center justify-center">
+														{icon}
+													</div>
+													{/* Content */}
+													<div className="flex-1 min-w-0">
+														<h4 className="text-sm font-semibold text-gray-900">
+															{notification.title}
+														</h4>
+														<p className="text-sm text-gray-600 mt-1">{notification.description}</p>
+														<p className="text-xs text-gray-400 mt-1">
+															{formatTimeAgo(notification.createdAt)}
+														</p>
+														{/* Action Buttons */}
+														<div className="flex gap-2 mt-2">
+															{!notification.read && (
+																<button
+																	onClick={e => {
+																		e.stopPropagation();
+																		markAsRead(notification.notificationId);
+																	}}
+																	className="px-3 py-1 text-xs font-medium text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
+																>
+																	Mark As Read
+																</button>
+															)}
+														</div>
 													</div>
 												</div>
 											</div>
-										</div>
-									))}
+										);
+									})}
 								</div>
 							))
 						)}
@@ -189,8 +245,18 @@ export default function NotificationPanel() {
 
 					{/* Footer */}
 					{filteredNotifications.length > 0 && (
-						<div className="flex items-center justify-between p-4 border-t border-gray-200">
-							<button className="text-sm text-gray-600 hover:text-gray-900">Go To Settings</button>
+						<div className="flex items-center justify-between p-4 border-t border-gray-200 gap-2">
+							<div className="flex items-center gap-2">
+								<button
+									onClick={() => setSoundEnabled(prev => !prev)}
+									className={`text-sm ${soundEnabled ? 'text-blue-600' : 'text-gray-400'} hover:text-blue-800`}
+									aria-label={
+										soundEnabled ? 'Disable notification sound' : 'Enable notification sound'
+									}
+								>
+									{soundEnabled ? '🔊 Sound On' : '🔇 Sound Off'}
+								</button>
+							</div>
 							<button
 								onClick={markAllAsRead}
 								className="text-sm font-medium text-blue-600 hover:text-blue-800"
