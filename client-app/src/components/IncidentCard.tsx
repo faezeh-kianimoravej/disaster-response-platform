@@ -1,6 +1,7 @@
 import type { Incident, IncidentSeverity } from '@/types/incident';
 import Button from '@/components/Button';
 import Badge from '@/components/Badge';
+import { Link } from 'react-router-dom';
 
 interface IncidentCardProps {
 	incident: Incident;
@@ -73,7 +74,11 @@ const formatTime = (date: Date): string => {
 export default function IncidentCard({ incident, onDetailsClick, onChatClick }: IncidentCardProps) {
 	return (
 		<div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-			<h3 className="text-lg font-semibold text-gray-900 mb-3">{incident.title}</h3>
+			<h3 className="text-lg font-semibold text-gray-900 mb-3">
+				<Link to={`/incidents/${incident.incidentId}`} className="hover:underline">
+					{incident.title}
+				</Link>
+			</h3>
 
 			<div className="flex gap-2 mb-4">
 				<Badge variant={getSeverityVariant(incident.severity)}>Priority: {incident.severity}</Badge>
