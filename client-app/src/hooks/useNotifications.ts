@@ -6,7 +6,7 @@ import { fetchNotifications, markNotificationAsRead } from '@/api/notification';
 import { useUser } from '@/context/UserContext';
 import { useNotificationContext } from '@/context/NotificationContext';
 
-export function useNotifications() {
+export default function useNotifications() {
 	const { regionId } = useUser();
 	const { lastNotificationId, setLastNotificationId } = useNotificationContext();
 	const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -59,9 +59,7 @@ export function useNotifications() {
 				if (!lastNotificationId || (!isNaN(notifIdNum) && notifIdNum > lastNotificationId)) {
 					setLastNotificationId(notifIdNum);
 				}
-			} catch (error) {
-				console.error('Failed to parse notification:', error);
-			}
+			} catch {}
 		};
 
 		eventSource.addEventListener('notification', handleNotificationEvent);

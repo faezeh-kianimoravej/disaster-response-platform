@@ -2,7 +2,6 @@ package nl.saxion.disaster.municipality_service.service;
 
 import lombok.RequiredArgsConstructor;
 import nl.saxion.disaster.municipality_service.client.DepartmentClient;
-import nl.saxion.disaster.municipality_service.dto.DepartmentDto;
 import nl.saxion.disaster.municipality_service.dto.DepartmentSummaryDto;
 import nl.saxion.disaster.municipality_service.dto.MunicipalityDto;
 import nl.saxion.disaster.municipality_service.dto.MunicipalitySummaryDto;

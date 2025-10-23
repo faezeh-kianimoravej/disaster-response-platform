@@ -12,7 +12,7 @@ import {
 	CloudSun,
 	BellRing,
 } from 'lucide-react';
-import { useNotifications } from '@/hooks/useNotifications';
+import useNotifications from '@/hooks/useNotifications';
 
 function formatTimeAgo(dateString: string): string {
 	const date = new Date(dateString);
@@ -39,7 +39,6 @@ export default function NotificationPanel() {
 	const prevNotificationsLength = useRef<number>(0);
 	const { notifications, unreadCount, markAsRead, markAllAsRead, loading, error } =
 		useNotifications();
-	console.log('Notifications:', notifications);
 	// Play sound when a new notification arrives
 	useEffect(() => {
 		if (soundEnabled && notifications.length > prevNotificationsLength.current) {
@@ -66,10 +65,15 @@ export default function NotificationPanel() {
 	}, [isOpen]);
 
 	const filteredNotifications =
-		activeTab === 'unread' ? notifications.filter(n => !n.read) : notifications;
+		activeTab === 'unread'
+			? notifications.filter((n: (typeof notifications)[number]) => !n.read)
+			: notifications;
 
 	const groupedNotifications = filteredNotifications.reduce(
-		(groups, notification) => {
+		(
+			groups: Record<string, typeof notifications>,
+			notification: (typeof notifications)[number]
+		) => {
 			const date = new Date(notification.createdAt);
 			const today = new Date();
 			const yesterday = new Date(today);
@@ -171,7 +175,7 @@ export default function NotificationPanel() {
 									<div className="px-4 py-2 bg-gray-50">
 										<h3 className="text-xs font-semibold text-gray-600 uppercase">{date}</h3>
 									</div>
-									{items.map(notification => {
+									{items.map((notification: (typeof notifications)[number]) => {
 										const config = NOTIFICATION_UI_MAP[notification.notificationType];
 										const url = config?.actionUrl?.(notification);
 										// Map icon string to Lucide icon component

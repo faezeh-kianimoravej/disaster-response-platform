@@ -4,7 +4,6 @@ import jakarta.persistence.EntityManager;
 import nl.saxion.disaster.municipality_service.client.DepartmentClient;
 import nl.saxion.disaster.municipality_service.dto.DepartmentSummaryDto;
 import nl.saxion.disaster.municipality_service.dto.MunicipalityDto;
-import nl.saxion.disaster.municipality_service.mapper.MunicipalityMapper;
 import nl.saxion.disaster.municipality_service.model.entity.Municipality;
 import nl.saxion.disaster.municipality_service.repository.contract.MunicipalityRepository;
 import nl.saxion.disaster.municipality_service.service.MunicipalityServiceImpl;
@@ -41,7 +40,6 @@ class MunicipalityServiceIntegrationTest {
     private MunicipalityServiceImpl service;
 
     @Autowired
-    private MunicipalityMapper mapper;
 
     @MockBean
     private DepartmentClient departmentClient;
@@ -59,12 +57,9 @@ class MunicipalityServiceIntegrationTest {
 
             if (seqName != null) {
                 entityManager.createNativeQuery("ALTER SEQUENCE " + seqName + " RESTART WITH 1").executeUpdate();
-                System.out.println("✅ Sequence " + seqName + " restarted successfully.");
             } else {
-                System.out.println("⚠️ No sequence found for municipality_id — maybe using IDENTITY strategy.");
             }
         } catch (Exception e) {
-            System.out.println("⚠️ Could not reset sequence: " + e.getMessage());
         }
 
         deventer = Municipality.builder()

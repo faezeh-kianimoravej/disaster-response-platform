@@ -1,6 +1,5 @@
 package nl.saxion.disaster.municipality_service.service.contract;
 
-import nl.saxion.disaster.municipality_service.dto.DepartmentDto;
 import nl.saxion.disaster.municipality_service.dto.DepartmentSummaryDto;
 import nl.saxion.disaster.municipality_service.dto.MunicipalityDto;
 import nl.saxion.disaster.municipality_service.dto.MunicipalitySummaryDto;

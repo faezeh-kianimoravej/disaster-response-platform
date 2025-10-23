@@ -64,9 +64,8 @@ export default function ResourcePage() {
 			} else {
 				showError('Failed to save resource. Please try again.');
 			}
-		} catch (err) {
+		} catch {
 			showError('An unexpected error occurred while saving.');
-			console.error(err);
 		}
 	};
 
@@ -81,9 +80,8 @@ export default function ResourcePage() {
 			await removeResource();
 			showSuccess(`Resource "${resource.name}" has been deleted successfully.`);
 			navigate(`/resources/${departmentId}`, { state: { municipalityId } });
-		} catch (err) {
+		} catch {
 			showError('An unexpected error occurred while deleting.');
-			console.error(err);
 		}
 		setShowDeleteModal(false);
 	};

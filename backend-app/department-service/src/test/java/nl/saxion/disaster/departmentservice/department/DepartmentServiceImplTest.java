@@ -2,7 +2,6 @@ package nl.saxion.disaster.departmentservice.department;
 
 import nl.saxion.disaster.departmentservice.dto.DepartmentDto;
 import nl.saxion.disaster.departmentservice.dto.DepartmentSummaryDto;
-import nl.saxion.disaster.departmentservice.dto.ResourceDto;
 import nl.saxion.disaster.departmentservice.mapper.DepartmentMapper;
 import nl.saxion.disaster.departmentservice.mapper.ResourceMapper;
 import nl.saxion.disaster.departmentservice.model.entity.Department;
@@ -33,7 +32,6 @@ class DepartmentServiceImplTest {
     private Department department;
     private Resource resource;
     private DepartmentDto departmentDto;
-    private ResourceDto resourceDto;
 
     @BeforeEach
     void setUp() {
@@ -59,7 +57,6 @@ class DepartmentServiceImplTest {
         resource.setDepartment(department);
 
         // ----- Create equivalent DTOs -----
-        resourceDto = new ResourceMapper().toDto(resource);
         departmentDto = new DepartmentMapper(new ResourceMapper()).toDto(department);
     }
 
