@@ -1,32 +1,38 @@
 package nl.saxion.disaster.incident_service.incident;
 
-import nl.saxion.disaster.incident_service.dto.*;
+import nl.saxion.disaster.incident_service.dto.IncidentRequest;
+import nl.saxion.disaster.incident_service.dto.IncidentResponse;
 import nl.saxion.disaster.incident_service.exception.ResourceNotFoundException;
-import nl.saxion.disaster.incident_service.model.entity.*;
+import nl.saxion.disaster.incident_service.model.entity.Incident;
 import nl.saxion.disaster.incident_service.model.enums.GripLevel;
 import nl.saxion.disaster.incident_service.model.enums.Severity;
 import nl.saxion.disaster.incident_service.model.enums.Status;
 import nl.saxion.disaster.incident_service.repository.IncidentRepository;
 import nl.saxion.disaster.incident_service.service.IncidentServiceImp;
+import nl.saxion.disaster.incident_service.service.messaging.IncidentEventProducer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 class IncidentServiceImpTest {
 
     private IncidentRepository repository;
+    private IncidentEventProducer eventProducer;
     private IncidentServiceImp service;
 
     @BeforeEach
     void setup() {
         repository = mock(IncidentRepository.class);
-        service = new IncidentServiceImp(repository);
+        eventProducer = mock(IncidentEventProducer.class);
+        service = new IncidentServiceImp(repository, eventProducer);
     }
 
     private Incident sampleIncident(Long id) {
@@ -80,6 +86,9 @@ class IncidentServiceImpTest {
         verify(repository).save(captor.capture());
         Incident savedEntity = captor.getValue();
         assertThat(savedEntity.getReportedBy()).isEqualTo(req.reportedBy());
+
+        // Verify event producer called
+        verify(eventProducer, times(1)).sendIncidentEvent(any());
     }
 
     @Test
@@ -175,4 +184,3 @@ class IncidentServiceImpTest {
                 .hasMessageContaining("99");
     }
 }
-
