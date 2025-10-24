@@ -13,6 +13,8 @@ import {
 	BellRing,
 } from 'lucide-react';
 import useNotifications from '@/hooks/useNotifications';
+import type { Notification } from '../types/notification';
+import { showBrowserNotification } from '@/utils/notificationUtils';
 
 function formatTimeAgo(dateString: string): string {
 	const date = new Date(dateString);
@@ -28,27 +30,59 @@ function formatTimeAgo(dateString: string): string {
 	if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
 	return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
+
+function groupNotificationsByDate(notifications: Notification[]) {
+	return notifications.reduce(
+		(groups: Record<string, typeof notifications>, notification) => {
+			const date = new Date(notification.createdAt);
+			const today = new Date();
+			const yesterday = new Date(today);
+			yesterday.setDate(yesterday.getDate() - 1);
+			let key =
+				date.toDateString() === today.toDateString()
+					? 'Today'
+					: date.toDateString() === yesterday.toDateString()
+						? 'Yesterday'
+						: date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+			if (!groups[key]) groups[key] = [];
+			groups[key].push(notification);
+			return groups;
+		},
+		{} as Record<string, typeof notifications>
+	);
+}
+
 export default function NotificationPanel() {
 	const navigate = useNavigate();
 	const [isOpen, setIsOpen] = useState(false);
 	const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all');
-
-	const [soundEnabled, setSoundEnabled] = useState(true);
 	const panelRef = useRef<HTMLDivElement>(null);
-	const audioRef = useRef<HTMLAudioElement | null>(null);
-	const prevNotificationsLength = useRef<number>(0);
+	const pendingNotificationRef = useRef<null | { title: string; description: string }>(null);
+	const [, forceUpdate] = useState(0); // for triggering effect
+
 	const { notifications, unreadCount, markAsRead, markAllAsRead, loading, error } =
-		useNotifications();
-	// Play sound when a new notification arrives
+		useNotifications(n => {
+			pendingNotificationRef.current = { title: n.title, description: n.description };
+			forceUpdate(x => x + 1); // trigger effect
+		});
+
+	// Request browser notification permission on mount
 	useEffect(() => {
-		if (soundEnabled && notifications.length > prevNotificationsLength.current) {
-			if (audioRef.current) {
-				audioRef.current.currentTime = 0;
-				audioRef.current.play();
-			}
+		if (window.Notification && Notification.permission === 'default') {
+			Notification.requestPermission();
 		}
-		prevNotificationsLength.current = notifications.length;
-	}, [notifications, soundEnabled]);
+	}, []);
+
+	// Show browser notification for new notifications from SSE
+	useEffect(() => {
+		const pending = pendingNotificationRef.current;
+		if (pending) {
+			showBrowserNotification(pending.title, {
+				body: pending.description,
+			});
+			pendingNotificationRef.current = null;
+		}
+	}, [pendingNotificationRef.current]);
 
 	// Close panel when clicking outside
 	useEffect(() => {
@@ -64,45 +98,13 @@ export default function NotificationPanel() {
 		return undefined;
 	}, [isOpen]);
 
+	// Filter and group notifications by date
 	const filteredNotifications =
-		activeTab === 'unread'
-			? notifications.filter((n: (typeof notifications)[number]) => !n.read)
-			: notifications;
-
-	const groupedNotifications = filteredNotifications.reduce(
-		(
-			groups: Record<string, typeof notifications>,
-			notification: (typeof notifications)[number]
-		) => {
-			const date = new Date(notification.createdAt);
-			const today = new Date();
-			const yesterday = new Date(today);
-			yesterday.setDate(yesterday.getDate() - 1);
-
-			let key = 'Older';
-			if (date.toDateString() === today.toDateString()) {
-				key = 'Today';
-			} else if (date.toDateString() === yesterday.toDateString()) {
-				key = 'Yesterday';
-			} else {
-				key = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-			}
-
-			if (!groups[key]) {
-				groups[key] = [];
-			}
-			groups[key]!.push(notification);
-			return groups;
-		},
-		{} as Record<string, typeof notifications>
-	);
+		activeTab === 'unread' ? notifications.filter(n => !n.read) : notifications;
+	const groupedNotifications = groupNotificationsByDate(filteredNotifications);
 
 	return (
 		<div className="relative" ref={panelRef}>
-			{/* Notification sound audio element */}
-			<audio ref={audioRef} preload="auto" style={{ display: 'none' }}>
-				<source src="/audio/notification.ogg" type="audio/ogg" />
-			</audio>{' '}
 			{/* Bell Icon Button */}
 			<button
 				onClick={() => setIsOpen(!isOpen)}
@@ -250,17 +252,6 @@ export default function NotificationPanel() {
 					{/* Footer */}
 					{filteredNotifications.length > 0 && (
 						<div className="flex items-center justify-between p-4 border-t border-gray-200 gap-2">
-							<div className="flex items-center gap-2">
-								<button
-									onClick={() => setSoundEnabled(prev => !prev)}
-									className={`text-sm ${soundEnabled ? 'text-blue-600' : 'text-gray-400'} hover:text-blue-800`}
-									aria-label={
-										soundEnabled ? 'Disable notification sound' : 'Enable notification sound'
-									}
-								>
-									{soundEnabled ? '🔊 Sound On' : '🔇 Sound Off'}
-								</button>
-							</div>
 							<button
 								onClick={markAllAsRead}
 								className="text-sm font-medium text-blue-600 hover:text-blue-800"

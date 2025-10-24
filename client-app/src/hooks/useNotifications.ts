@@ -2,11 +2,16 @@ import { useEffect, useState, useCallback } from 'react';
 import type { Notification } from '@/types/notification';
 import { config } from '@/config';
 import { fetchNotifications, markNotificationAsRead } from '@/api/notification';
-
 import { useUser } from '@/context/UserContext';
 import { useNotificationContext } from '@/context/NotificationContext';
 
-export default function useNotifications() {
+/**
+ * Custom hook to fetch and subscribe to notifications for the current region.
+ *
+ * @param onNewNotification Optional callback, called only for new notifications received via SSE (not present in initial fetch).
+ * @returns {object} notifications, unreadCount, loading, error, markAsRead, markAllAsRead, isConnected
+ */
+export default function useNotifications(onNewNotification?: (n: Notification) => void) {
 	const { regionId } = useUser();
 	const { lastNotificationId, setLastNotificationId } = useNotificationContext();
 	const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -15,25 +20,42 @@ export default function useNotifications() {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-	// Fetch initial notifications
-	const fetchNotificationsCallback = useCallback(async () => {
-		setLoading(true);
-		try {
-			const data = await fetchNotifications(regionId);
-			setNotifications(Array.isArray(data) ? data : []);
-			setUnreadCount(Array.isArray(data) ? data.filter(n => !n.read).length : 0);
-			setError(null);
-		} catch {
-			setError('Failed to fetch notifications');
-		} finally {
-			setLoading(false);
-		}
+	// Tracks notification IDs from the initial fetch to avoid duplicate browser notifications
+	const [initialNotificationIds, setInitialNotificationIds] = useState<Set<string>>(new Set());
+	// True after the initial fetch completes
+	const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+	// Initial fetch only on mount or regionId change
+	useEffect(() => {
+		let isMounted = true;
+		const fetchInitial = async () => {
+			setLoading(true);
+			try {
+				const data = await fetchNotifications(regionId);
+				if (!isMounted) return;
+				setNotifications(Array.isArray(data) ? data : []);
+				setUnreadCount(Array.isArray(data) ? data.filter(n => !n.read).length : 0);
+				setInitialNotificationIds(
+					new Set((Array.isArray(data) ? data : []).map(n => n.notificationId))
+				);
+				setError(null);
+			} catch {
+				if (!isMounted) return;
+				setError('Failed to fetch notifications');
+			} finally {
+				if (!isMounted) return;
+				setLoading(false);
+				setInitialLoadComplete(true);
+			}
+		};
+		fetchInitial();
+		return () => {
+			isMounted = false;
+		};
 	}, [regionId]);
 
 	// Subscribe to SSE endpoint for real-time notifications
 	useEffect(() => {
-		fetchNotificationsCallback();
-
+		if (!initialLoadComplete) return;
 		// Pass lastNotificationId as a query param if present
 		const streamUrl = `${config.api.baseURL}/notifications/incidents/stream/${regionId}${lastNotificationId ? `?lastNotificationId=${lastNotificationId}` : ''}`;
 
@@ -54,6 +76,10 @@ export default function useNotifications() {
 					return [notification, ...prev];
 				});
 				setUnreadCount(prev => prev + 1);
+				// Only call onNewNotification if this notification was not in the initial fetch
+				if (onNewNotification && !initialNotificationIds.has(notification.notificationId)) {
+					onNewNotification(notification);
+				}
 				// Update lastNotificationId in context if this notification is newer
 				const notifIdNum = Number(notification.notificationId);
 				if (!lastNotificationId || (!isNaN(notifIdNum) && notifIdNum > lastNotificationId)) {
@@ -74,7 +100,14 @@ export default function useNotifications() {
 			eventSource.close();
 			setIsConnected(false);
 		};
-	}, [fetchNotificationsCallback, lastNotificationId, setLastNotificationId, regionId]);
+	}, [
+		regionId,
+		lastNotificationId,
+		setLastNotificationId,
+		onNewNotification,
+		initialNotificationIds,
+		initialLoadComplete,
+	]);
 
 	const markAsRead = useCallback(async (id: string) => {
 		try {
@@ -109,6 +142,6 @@ export default function useNotifications() {
 		error,
 		markAsRead,
 		markAllAsRead,
-		refresh: fetchNotificationsCallback,
+		// refresh: fetchNotificationsCallback, // Removed, function no longer exists
 	};
 }
