@@ -76,19 +76,56 @@
 
 ---
 
-## Checklist
-- [ ] Docker images build and run locally
-- [ ] AWS resources created (VPC, RDS, ECR, ECS)
-- [ ] Images pushed to ECR
-- [ ] ECS services deployed
-- [ ] Database migrated
-- [ ] CI/CD pipeline updated
-- [ ] Local development environment intact
-- [ ] Monitoring and security configured
+## Migration Progress & Resources Created (as of 2025-10-24)
+
+
+### Progress Summary (as of 2025-10-25)
+- Docker images for all backend services have been built and tested locally.
+- AWS resources provisioned:
+  - VPC and subnets (10.0.0.0/16, public subnets for ECS tasks)
+  - Amazon RDS (PostgreSQL) for production database
+  - Amazon ECR repositories for all services
+  - ECS cluster (drccs-backend-cluster) and Fargate services deployed
+  - AWS Secrets Manager secret for DB credentials (`drccs-db-credentials`)
+  - VPC Endpoint for Secrets Manager (interface endpoint, Private DNS enabled)
+  - Security groups configured for database and ECS networking
+- Database migrated to RDS and services configured to use RDS endpoint
+- ECS services initially failed to pull secrets from Secrets Manager due to VPC endpoint security group rules; resolved by adding inbound rule to VPC endpoint security group to allow TCP 443 from VPC CIDR (10.0.0.0/16)
+- Subnet route tables and IGW/NAT configuration fixed to allow ECS tasks internet access and ECR pulls
+- CloudWatch log groups created for all ECS services
+- Task definitions updated for Eureka registration and health check tuning
+- Discovery-service (Eureka) health check failures resolved by:
+  - Exposing actuator health endpoint
+  - Ensuring server binds to 0.0.0.0
+  - Opening required ports in security group
+  - Removing ECS container health checks (now rely on process status)
+- Discovery-service now starts and remains healthy; logs confirm successful startup
+- Other services updated to bind to 0.0.0.0 for container compatibility
+- API Gateway currently unable to register with Eureka due to service DNS resolution; will address in next session
+
+### Troubleshooting & Key Learnings
+- If using a VPC endpoint for Secrets Manager, ensure its security group allows inbound TCP 443 from ECS tasks/subnets
+- Outbound rules for ECS task security groups must allow all traffic (default)
+- Subnet route tables must provide internet access (via IGW for public, NAT for private)
+- IAM roles (ecsTaskExecutionRole) must have SecretsManager and KMS permissions
+- ECS health checks can block service startup if actuator endpoints are not exposed or not reachable; binding to 0.0.0.0 is required in containers
+- Removing ECS health checks is a valid workaround if process status is sufficient for your use case
+- Eureka registration requires correct service discovery DNS or internal IP; ECS Service Discovery (Cloud Map) is recommended for production
+
+### Outstanding Tasks
+- Update CI/CD pipeline for automated deploys
+- Set up CloudWatch monitoring and alerting
+- Finalize security hardening and documentation
+- Fix API Gateway Eureka registration (update Eureka client URL to use correct DNS or Cloud Map)
 
 ---
 
-## References
-- [AWS ECS Documentation](https://docs.aws.amazon.com/ecs/latest/developerguide/)
-- [AWS RDS Documentation](https://docs.aws.amazon.com/rds/index.html)
-- [GitLab CI/CD with AWS](https://docs.gitlab.com/ee/ci/cloud_services/aws/)
+## Checklist
+- [x] Docker images build and run locally
+- [x] AWS resources created (VPC, RDS, ECR, ECS, Secrets Manager, VPC Endpoint)
+- [x] Images pushed to ECR
+- [x] ECS services deployed (API Gateway, microservices)
+- [x] Database migrated to RDS
+- [ ] CI/CD pipeline updated
+- [x] Local development environment intact
+- [ ] Monitoring and security configured

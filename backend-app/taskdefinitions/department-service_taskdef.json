@@ -19,6 +19,10 @@
         {
           "name": "SPRING_DATASOURCE_URL",
           "value": "jdbc:postgresql://drccs-db.cv24ewc6mmoj.eu-north-1.rds.amazonaws.com:5432/postgres"
+        },
+        {
+          "name": "EUREKA_CLIENT_SERVICEURL_DEFAULTZONE",
+          "value": "http://discovery-service:8761/eureka/"
         }
       ],
       "secrets": [
@@ -39,13 +43,6 @@
           "awslogs-region": "eu-north-1",
           "awslogs-stream-prefix": "ecs"
         }
-      },
-      "healthCheck": {
-        "command": ["CMD-SHELL", "curl -f http://localhost:8081/actuator/health || exit 1"],
-        "interval": 30,
-        "timeout": 5,
-        "retries": 3,
-        "startPeriod": 10
       }
     }
   ]
