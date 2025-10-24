@@ -2,7 +2,6 @@ package nl.saxion.disaster.departmentservice.repository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.TypedQuery;
 import lombok.RequiredArgsConstructor;
 import nl.saxion.disaster.departmentservice.model.entity.Department;
 import nl.saxion.disaster.departmentservice.repository.contract.DepartmentRepository;

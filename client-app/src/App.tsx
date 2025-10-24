@@ -9,11 +9,11 @@ import DepartmentsPage from './pages/DepartmentsPage';
 import MunicipalitiesPage from './pages/MunicipalitiesPage';
 import IncidentDetailsPage from './pages/IncidentDetailsPage';
 import IncidentPriorityPage from './pages/IncidentPriorityPage';
-import { ToastProvider } from './components/toast/ToastProvider';
+import { AppProviders } from './context/AppProviders';
 
 function App() {
 	return (
-		<ToastProvider>
+		<AppProviders>
 			<Router>
 				<div className="App">
 					<Navigation />
@@ -30,7 +30,7 @@ function App() {
 					</Routes>
 				</div>
 			</Router>
-		</ToastProvider>
+		</AppProviders>
 	);
 }
 

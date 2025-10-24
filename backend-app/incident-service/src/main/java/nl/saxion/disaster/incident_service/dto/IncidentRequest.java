@@ -18,5 +18,6 @@ public record IncidentRequest(
         @NotNull OffsetDateTime reportedAt,
         String location,
         Double latitude,
-        Double longitude
+        Double longitude,
+        @NotNull Long regionId
 ) {}

@@ -45,18 +45,17 @@ export default function DepartmentPage() {
 			const savedDept = await saveDepartment(formData);
 			if (savedDept) {
 				if (isNewDepartment) {
-					showSuccess(`Department "${savedDept.name}" created successfully!`);
+					showSuccess(`Department \"${savedDept.name}\" created successfully!`);
 					navigate(`/departments/${municipalityId}`);
 				} else {
-					showSuccess(`Department "${savedDept.name}" updated successfully!`);
+					showSuccess(`Department \"${savedDept.name}\" updated successfully!`);
 					setEditing(false);
 				}
 			} else {
 				showError('Failed to save department. Please try again.');
 			}
-		} catch (err) {
+		} catch {
 			showError('An unexpected error occurred while saving.');
-			console.error(err);
 		}
 	};
 
@@ -70,11 +69,10 @@ export default function DepartmentPage() {
 		if (!department) return;
 		try {
 			await removeDepartment();
-			showSuccess(`Department "${department.name}" deleted successfully.`);
+			showSuccess(`Department \"${department.name}\" deleted successfully.`);
 			navigate(`/departments/${municipalityId}`);
-		} catch (err) {
+		} catch {
 			showError('An unexpected error occurred while deleting.');
-			console.error(err);
 		}
 		setShowDeleteModal(false);
 	};

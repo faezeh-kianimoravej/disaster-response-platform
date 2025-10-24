@@ -22,8 +22,7 @@ export function useResource(resourceId: string | undefined, isNewResource: boole
 			try {
 				const r = await getResourceById(id);
 				setResource(r || null);
-			} catch (err) {
-				console.error('Failed to fetch resource:', err);
+			} catch {
 				setResource(null);
 			} finally {
 				setLoading(false);

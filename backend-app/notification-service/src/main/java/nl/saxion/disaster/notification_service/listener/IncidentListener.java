@@ -2,13 +2,13 @@ package nl.saxion.disaster.notification_service.listener;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl.saxion.disaster.notification_service.client.RegionClient;
 import nl.saxion.disaster.notification_service.dto.IncidentNotificationDto;
 import nl.saxion.disaster.notification_service.model.entity.Notification;
 import nl.saxion.disaster.notification_service.model.enums.NotificationStatus;
 import nl.saxion.disaster.notification_service.model.enums.NotificationType;
 import nl.saxion.disaster.notification_service.repository.contract.NotificationRepository;
 import nl.saxion.disaster.shared.event.IncidentEvent;
+import nl.saxion.disaster.notification_service.service.contract.IncidentNotificationService;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
@@ -26,27 +26,23 @@ import java.time.OffsetDateTime;
 @RequiredArgsConstructor
 public class IncidentListener {
 
-    private final RegionClient regionClient;
+    private final IncidentNotificationService incidentNotificationService;
     private final NotificationRepository notificationRepository;
 
     @KafkaListener(topics = "incidents", groupId = "notification-group")
     public void handleIncidentEvent(IncidentEvent event) {
-        log.info("Received IncidentEvent from Kafka: incidentId={}, type={}", event.incidentId(), event.type());
+        log.info("Received IncidentEvent from Kafka: incidentId={}", event.incidentId());
 
         //Create Notification entity
         Notification notification = Notification.builder()
-                .incidentId(event.incidentId())
-                .regionId(0L) // Region will be determined later if needed
-                .incidentType(event.type())
-                .notificationType(NotificationType.NEW_INCIDENT)
-                .notificationStatus(NotificationStatus.CREATED)
-                .message(event.message())
-                .severity(event.severity())
-                .location(event.location())
-                .createdBy(event.createdBy())
-                .createdAt(event.createdAt())
-                .reportedAt(event.sendTime())
-                .build();
+            .incidentId(event.incidentId())
+            .regionId(event.regionId())
+            .notificationType(NotificationType.NEW_INCIDENT)
+            .title(event.incidentTitle())
+            .description(event.incidentDescription())
+            .createdAt(java.time.OffsetDateTime.now())
+            .read(false)
+            .build();
 
         try {
             //Save notification in DB
@@ -57,38 +53,22 @@ public class IncidentListener {
             return;
         }
 
-        //Send notification to region-service
+        // Broadcast notification to SSE clients for the region
         try {
             IncidentNotificationDto dto = new IncidentNotificationDto(
-                    notification.getId(),
-                    notification.getIncidentId(),
-                    notification.getRegionId(),
-                    notification.getIncidentType(),
-                    notification.getNotificationType(),
-                    notification.getNotificationStatus(),
-                    notification.getMessage(),
-                    notification.getSeverity(),
-                    notification.getLocation(),
-                    notification.getCreatedBy(),
-                    notification.getCreatedAt(),
-                    notification.getReportedAt(),
-                    notification.getDeliveredAt()
+                notification.getId(),
+                notification.getIncidentId(),
+                notification.getRegionId(),
+                "New Incident - " + notification.getTitle(),
+                notification.getDescription(),
+                notification.getNotificationType(),
+                notification.getCreatedAt(),
+                notification.isRead()
             );
-
-            regionClient.sendIncidentNotification(dto);
-            log.info("sent notification to region-service for incidentId={}", event.incidentId());
-
-            //Update status to DELIVERED
-            notification.setNotificationStatus(NotificationStatus.DELIVERED);
-            notification.setDeliveredAt(OffsetDateTime.now());
-            notificationRepository.updateNotificationStatus(notification);
-            log.info("Notification {} marked as DELIVERED", notification.getId());
-
+            incidentNotificationService.broadcastIncidentNotification(dto);
+            log.info("Broadcasted notification to SSE clients for regionId={} incidentId={}", notification.getRegionId(), event.incidentId());
         } catch (Exception e) {
-            //Update status to FAILED
-            notification.setNotificationStatus(NotificationStatus.FAILED);
-            notificationRepository.updateNotificationStatus(notification);
-            log.error("Failed to send notification to region-service for incidentId={} → {}", event.incidentId(), e.getMessage());
+            log.error("Failed to broadcast notification for incidentId={} → {}", event.incidentId(), e.getMessage());
         }
     }
 }

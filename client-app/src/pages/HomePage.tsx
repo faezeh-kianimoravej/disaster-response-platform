@@ -23,8 +23,8 @@ export default function HomePage() {
 			setLoading(true);
 			const data = await getIncidents();
 			setIncidents(data);
-		} catch (error) {
-			console.error('Failed to load incidents:', error);
+		} catch (err) {
+			console.error('Failed to load incidents:', err);
 		} finally {
 			setLoading(false);
 		}
@@ -37,8 +37,7 @@ export default function HomePage() {
 		navigate(`/incidents/${incident.incidentId}`);
 	};
 
-	const handleChatClick = (incident: Incident) => {
-		console.log('Chat clicked for incident:', incident.incidentId);
+	const handleChatClick = () => {
 		// TODO: Open chat interface for incident
 	};
 

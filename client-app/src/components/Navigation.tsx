@@ -1,5 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import Logo from '@/components/Logo';
+import NotificationPanel from '@/components/NotificationPanel';
+
 export default function Navigation() {
 	const location = useLocation();
 
@@ -19,7 +21,7 @@ export default function Navigation() {
 							DRCCS
 						</Link>
 					</div>
-					<div className="flex space-x-8">
+					<div className="flex items-center space-x-8">
 						{navItems.map(item => (
 							<Link
 								key={item.path}
@@ -31,6 +33,7 @@ export default function Navigation() {
 								{item.label}
 							</Link>
 						))}
+						<NotificationPanel />
 					</div>
 				</div>
 			</div>

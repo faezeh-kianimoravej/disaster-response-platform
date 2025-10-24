@@ -23,17 +23,11 @@ public class Notification {
     private Long id;
     private Long incidentId;
     private Long regionId;
-    private String incidentType;
     @Enumerated(EnumType.STRING)
     private NotificationType notificationType;
-    @Enumerated(EnumType.STRING)
-    private NotificationStatus notificationStatus;
-    private String message;
-    private String severity;
-    private String location;
-    private String createdBy;
+    private String title;
+    private String description;
     private OffsetDateTime createdAt;
-    private OffsetDateTime reportedAt;
-    private OffsetDateTime deliveredAt;
+    private boolean read;
 }
 

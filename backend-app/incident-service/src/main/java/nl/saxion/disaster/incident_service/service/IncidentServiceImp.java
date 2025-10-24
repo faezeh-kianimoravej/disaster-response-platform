@@ -30,17 +30,18 @@ public class IncidentServiceImp implements IncidentService {
     public IncidentResponse createIncident(IncidentRequest req) {
         // Create new Incident entity from request
         Incident incident = Incident.builder()
-                .reportedBy(req.reportedBy())
-                .title(req.title())
-                .description(req.description())
-                .severity(req.severity())
-                .gripLevel(req.gripLevel())
-                .status(req.status())
-                .reportedAt(req.reportedAt())
-                .location(req.location())
-                .latitude(req.latitude())
-                .longitude(req.longitude())
-                .build();
+            .reportedBy(req.reportedBy())
+            .title(req.title())
+            .description(req.description())
+            .severity(req.severity())
+            .gripLevel(req.gripLevel())
+            .status(req.status())
+            .reportedAt(req.reportedAt())
+            .location(req.location())
+            .latitude(req.latitude())
+            .longitude(req.longitude())
+            .regionId(req.regionId())
+            .build();
 
         // Save to database
         Incident savedIncident = repository.save(incident);
@@ -48,17 +49,12 @@ public class IncidentServiceImp implements IncidentService {
 
         // Build the event object for Kafka
         IncidentEvent event = IncidentEvent.builder()
-                .notificationId(0L)
-                .incidentId(savedIncident.getIncidentId())
-                .type("")
-                .message(savedIncident.getDescription())
-                .severity(savedIncident.getSeverity().name())
-                .location(savedIncident.getLocation())
-                .status(savedIncident.getStatus().name())
-                .createdBy("112")
-                .createdAt(savedIncident.getCreatedAt())
-                .sendTime(savedIncident.getReportedAt())
-                .build();
+            .notificationId(0L)
+            .incidentId(savedIncident.getIncidentId())
+            .regionId(savedIncident.getRegionId())
+            .incidentTitle(savedIncident.getTitle())
+            .incidentDescription(savedIncident.getDescription())
+            .build();
 
         //Send event to Kafka topic
         incidentEventProducer.sendIncidentEvent(event);
@@ -109,11 +105,11 @@ public class IncidentServiceImp implements IncidentService {
 
     private IncidentResponse toResponse(Incident inc) {
         return new IncidentResponse(
-                inc.getIncidentId(), inc.getReportedBy(), inc.getTitle(),
-                inc.getDescription(), inc.getSeverity(), inc.getGripLevel(),
-                inc.getStatus(), inc.getReportedAt(), inc.getLocation(),
-                inc.getLatitude(), inc.getLongitude(),
-                inc.getCreatedAt(), inc.getUpdatedAt()
+            inc.getIncidentId(), inc.getReportedBy(), inc.getTitle(),
+            inc.getDescription(), inc.getSeverity(), inc.getGripLevel(),
+            inc.getStatus(), inc.getReportedAt(), inc.getLocation(),
+            inc.getLatitude(), inc.getLongitude(),
+            inc.getCreatedAt(), inc.getUpdatedAt()
         );
     }
 }

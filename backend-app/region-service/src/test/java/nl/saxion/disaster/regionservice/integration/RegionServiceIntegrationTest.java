@@ -5,7 +5,6 @@ import nl.saxion.disaster.regionservice.client.MunicipalityClient;
 import nl.saxion.disaster.regionservice.dto.MunicipalityDto;
 import nl.saxion.disaster.regionservice.dto.RegionDto;
 import nl.saxion.disaster.regionservice.dto.RegionSummaryDto;
-import nl.saxion.disaster.regionservice.mapper.RegionMapper;
 import nl.saxion.disaster.regionservice.model.Region;
 import nl.saxion.disaster.regionservice.repository.contract.RegionRepository;
 import nl.saxion.disaster.regionservice.service.RegionServiceImpl;
@@ -14,7 +13,6 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,9 +41,7 @@ class RegionServiceIntegrationTest {
     private RegionServiceImpl regionService;
 
     @Autowired
-    private RegionMapper regionMapper;
 
-    @MockBean
     private MunicipalityClient municipalityClient;
 
     private Region overijssel;
@@ -63,12 +59,12 @@ class RegionServiceIntegrationTest {
 
             if (seqName != null) {
                 entityManager.createNativeQuery("ALTER SEQUENCE " + seqName + " RESTART WITH 1").executeUpdate();
-                System.out.println("✅ Sequence " + seqName + " restarted successfully.");
+                 // Silenced test output
             } else {
-                System.out.println("⚠️ No sequence found for region_id — maybe using IDENTITY strategy.");
+                 // Silenced test output
             }
         } catch (Exception e) {
-            System.out.println("⚠️ Could not reset sequence: " + e.getMessage());
+              // Silenced test output
         }
 
         // Create test data

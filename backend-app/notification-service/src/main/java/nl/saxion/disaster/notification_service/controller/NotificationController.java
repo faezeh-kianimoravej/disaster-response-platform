@@ -9,32 +9,53 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Slf4j
+@Tag(name = "Notifications", description = "Endpoints for querying incident notifications")
 @RestController
 @RequestMapping("/api/notifications")
 @RequiredArgsConstructor
 public class NotificationController {
-
+    
     private final NotificationService notificationService;
 
-    /**
-     * GET /api/notifications
-     * → returns all notifications
-     */
+    @Operation(
+        summary = "Mark notification as read",
+        description = "Marks a notification as read by its ID.",
+        tags = {"Notifications"}
+    )
+    @PutMapping("/{id}/read")
+    public ResponseEntity<Void> markNotificationAsRead(@PathVariable Long id) {
+        boolean updated = notificationService.markNotificationAsRead(id);
+        if (updated) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @Operation(
+        summary = "Get all notifications",
+        description = "Returns all notifications stored in the system.",
+        tags = {"Notifications"}
+    )
     @GetMapping
-    public ResponseEntity<List<IncidentNotificationDto>> getAllNotifications() {
-        log.info("Get Request to fetch all notifications");
-        List<IncidentNotificationDto> notifications = notificationService.getAllNotifications();
+    public ResponseEntity<List<IncidentNotificationDto>> getAllNotifications(@RequestParam(value = "regionId") Long regionId) {
+        log.info("Get Request to fetch all notifications for regionId={}", regionId);
+        List<IncidentNotificationDto> notifications = notificationService.getNotificationsByRegionId(regionId);
         return ResponseEntity.ok(notifications);
     }
 
-    /**
-     * GET /api/notifications/{id}
-     * → returns a specific notification by ID
-     */
+    @Operation(
+        summary = "Get notification by ID",
+        description = "Returns a specific notification by its unique ID.",
+        tags = {"Notifications"}
+    )
     @GetMapping("/{id}")
     public ResponseEntity<IncidentNotificationDto> getNotificationById(@PathVariable Long id) {
         log.info("🔍 [GET] Request to fetch notification by ID {}", id);
@@ -46,10 +67,11 @@ public class NotificationController {
         return ResponseEntity.ok(dto);
     }
 
-    /**
-     * GET /api/notifications/type/{type}
-     * → returns notifications filtered by type
-     */
+    @Operation(
+        summary = "Get notifications by type",
+        description = "Returns all notifications filtered by the given type.",
+        tags = {"Notifications"}
+    )
     @GetMapping("/type/{type}")
     public ResponseEntity<List<IncidentNotificationDto>> getNotificationsByType(@PathVariable String type) {
         log.info("Get Request to fetch notifications by type '{}'", type);

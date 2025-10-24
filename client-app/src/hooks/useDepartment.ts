@@ -39,8 +39,7 @@ export function useDepartment(
 				} else {
 					setDepartment(null);
 				}
-			} catch (err) {
-				console.error('Failed to fetch department:', err);
+			} catch {
 				setDepartment(null);
 			} finally {
 				setLoading(false);

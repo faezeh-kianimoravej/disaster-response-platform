@@ -31,8 +31,7 @@ export default function ResourcesPage() {
 					const data = await getResourcesByDepartmentId(Number(departmentId));
 					setResources(data);
 				}
-			} catch (err) {
-				console.error('Failed to load resources:', err);
+			} catch {
 			} finally {
 				setLoading(false);
 			}

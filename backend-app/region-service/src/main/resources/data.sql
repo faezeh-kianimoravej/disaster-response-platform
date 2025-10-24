@@ -2,10 +2,6 @@
 --  Initial Region Seed Data (PostgreSQL)
 -- =========================================
 
--- Clear existing data
-DELETE FROM regions_municipality WHERE region_id = 1;
-DELETE FROM regions WHERE region_id = 1;
-
 -- Insert region
 INSERT INTO regions (region_id, name, image, created_at, updated_at)
 VALUES (

@@ -23,14 +23,19 @@ export default function IncidentPriorityPage() {
 		if (!incidentId) return;
 		const id = Number(incidentId);
 		const load = async () => {
-			setLoading(true);
-			const data = await getIncidentById(id);
-			if (data) {
-				setIncident(data);
-				setSeverity(data.severity);
-				setGrip(data.gripLevel ?? 0);
+			try {
+				setLoading(true);
+				const data = await getIncidentById(id);
+				if (data) {
+					setIncident(data);
+					setSeverity(data.severity);
+					setGrip(data.gripLevel ?? 0);
+				}
+			} catch {
+				// handle error if needed
+			} finally {
+				setLoading(false);
 			}
-			setLoading(false);
 		};
 		load();
 	}, [incidentId]);
@@ -61,8 +66,7 @@ export default function IncidentPriorityPage() {
 
 			toast.showSuccess('Incident updated');
 			navigate(`/incidents/${incident.incidentId}`);
-		} catch (err) {
-			console.error('Failed to update incident', err);
+		} catch {
 			toast.showError('Failed to update incident');
 		} finally {
 			setSubmitting(false);

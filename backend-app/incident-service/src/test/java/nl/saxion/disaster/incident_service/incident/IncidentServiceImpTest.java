@@ -54,18 +54,19 @@ class IncidentServiceImpTest {
     }
 
     private IncidentRequest sampleRequest() {
-        return new IncidentRequest(
-                "112",
-                "Fire in building",
-                "Fire at main street",
-                Severity.HIGH,
-                GripLevel.LEVEL_2,
-                Status.OPEN,
-                OffsetDateTime.now(),
-                "Main Street 12",
-                52.0,
-                5.0
-        );
+    return new IncidentRequest(
+        "112",
+        "Fire in building",
+        "Fire at main street",
+        Severity.HIGH,
+        GripLevel.LEVEL_2,
+        Status.OPEN,
+        OffsetDateTime.now(),
+        "Main Street 12",
+        52.0,
+        5.0,
+        1L // regionId
+    );
     }
 
     @Test
@@ -141,18 +142,19 @@ class IncidentServiceImpTest {
         when(repository.findById(5L)).thenReturn(Optional.of(existing));
         when(repository.save(any(Incident.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        IncidentRequest newReq = new IncidentRequest(
-                "Bob",
-                "Explosion",
-                "Gas leak explosion",
-                Severity.CRITICAL,
-                GripLevel.LEVEL_3,
-                Status.IN_PROGRESS,
-                OffsetDateTime.now(),
-                "Industrial Area",
-                53.0,
-                6.0
-        );
+    IncidentRequest newReq = new IncidentRequest(
+        "Bob",
+        "Explosion",
+        "Gas leak explosion",
+        Severity.CRITICAL,
+        GripLevel.LEVEL_3,
+        Status.IN_PROGRESS,
+        OffsetDateTime.now(),
+        "Industrial Area",
+        53.0,
+        6.0,
+        1L // regionId
+    );
 
         IncidentResponse updated = service.update(5L, newReq);
 
