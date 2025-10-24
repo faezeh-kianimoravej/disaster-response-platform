@@ -103,3 +103,31 @@ Wait 30 seconds for PostgreSQL to initialize, then check logs:
 ```powershell
 docker-compose logs postgres-db
 ```
+
+---
+
+## Environment Variables
+
+See `.env.example` for a full list of required environment variables and their usage for local and AWS deployments.
+
+| Variable                              | Description                                 |
+|----------------------------------------|---------------------------------------------|
+| SPRING_PROFILES_ACTIVE                 | Spring Boot profile (e.g., prod)            |
+| SPRING_DATASOURCE_URL                  | JDBC URL for PostgreSQL                     |
+| SPRING_DATASOURCE_USERNAME             | Database username                           |
+| SPRING_DATASOURCE_PASSWORD             | Database password                           |
+| SPRING_JPA_HIBERNATE_DDL_AUTO          | Hibernate DDL mode                          |
+| SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT| Hibernate dialect                           |
+| EUREKA_CLIENT_SERVICEURL_DEFAULTZONE   | Eureka server URL                           |
+| EUREKA_INSTANCE_PREFER_IP_ADDRESS      | Prefer IP address for Eureka registration   |
+| EUREKA_INSTANCE_HOSTNAME               | Service hostname for Eureka                 |
+| SPRING_KAFKA_BOOTSTRAP_SERVERS         | Kafka broker address                        |
+| POSTGRES_USER                          | PostgreSQL username                         |
+| POSTGRES_PASSWORD                      | PostgreSQL password                         |
+| POSTGRES_DB                            | Default database name                       |
+| SPRING_APPLICATION_NAME                | Service name (notification-service)         |
+| SERVER_PORT                            | Service port (notification-service)         |
+
+---
+
+For AWS deployments, use ECS task definitions or AWS Secrets Manager/SSM Parameter Store for sensitive values.

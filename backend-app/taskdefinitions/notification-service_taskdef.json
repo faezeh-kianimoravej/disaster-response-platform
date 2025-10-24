@@ -1,0 +1,52 @@
+{
+  "memory": "1024",
+  "family": "notification-service",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "executionRoleArn": "arn:aws:iam::484069698104:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "portMappings": [
+        {
+          "protocol": "tcp",
+          "containerPort": 8085
+        }
+      ],
+      "name": "notification-service",
+      "essential": true,
+      "environment": [
+        {
+          "name": "SPRING_DATASOURCE_URL",
+          "value": "jdbc:postgresql://drccs-db.cv24ewc6mmoj.eu-north-1.rds.amazonaws.com:5432/postgres"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "SPRING_DATASOURCE_USERNAME",
+          "valueFrom": "arn:aws:secretsmanager:eu-north-1:484069698104:secret:drccs-db-credentials-32wSdE:username::"
+        },
+        {
+          "name": "SPRING_DATASOURCE_PASSWORD",
+          "valueFrom": "arn:aws:secretsmanager:eu-north-1:484069698104:secret:drccs-db-credentials-32wSdE:password::"
+        }
+      ],
+      "image": "484069698104.dkr.ecr.eu-north-1.amazonaws.com/notification-service:latest",
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/notification-service",
+          "awslogs-region": "eu-north-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:8085/actuator/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 10
+      }
+    }
+  ]
+}
