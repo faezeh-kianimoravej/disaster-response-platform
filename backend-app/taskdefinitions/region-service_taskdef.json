@@ -10,7 +10,7 @@
       "portMappings": [
         {
           "protocol": "tcp",
-          "containerPort": 8084
+          "containerPort": 8083
         }
       ],
       "name": "region-service",
@@ -22,7 +22,19 @@
         },
         {
           "name": "EUREKA_CLIENT_SERVICEURL_DEFAULTZONE",
-          "value": "http://discovery-service:8761/eureka/"
+          "value": "http://discovery-service.drccs.local:8761/eureka/"
+        },
+                {
+          "name": "EUREKA_INSTANCE_PREFER_IP_ADDRESS",
+          "value": "false"
+        },
+        {
+          "name": "EUREKA_INSTANCE_HOSTNAME",
+          "value": "region-service"
+        },
+        {
+          "name": "SPRING_PROFILES_ACTIVE",
+          "value": "prod"
         }
       ],
       "secrets": [

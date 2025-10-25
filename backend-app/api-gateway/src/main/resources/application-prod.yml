@@ -1,0 +1,20 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+  cloud:
+    discovery:
+      enabled: true
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+      # You can add prod-specific route overrides here if needed
+      # routes: []
+eureka:
+  client:
+    enabled: true
+    service-url:
+      defaultZone: http://discovery-service.drccs.local:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true

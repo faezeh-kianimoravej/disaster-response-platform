@@ -22,7 +22,23 @@
         },
         {
           "name": "EUREKA_CLIENT_SERVICEURL_DEFAULTZONE",
-          "value": "http://discovery-service:8761/eureka/"
+          "value": "http://discovery-service.drccs.local:8761/eureka/"
+        },
+        {
+          "name": "EUREKA_INSTANCE_PREFER_IP_ADDRESS",
+          "value": "false"
+        },
+        {
+          "name": "EUREKA_INSTANCE_HOSTNAME",
+          "value": "notification-service"
+        },
+        {
+          "name": "SPRING_KAFKA_BOOTSTRAP_SERVERS",
+          "value": "kafka.drccs.local:9092"
+        },
+        {
+          "name": "SPRING_PROFILES_ACTIVE",
+          "value": "prod"
         }
       ],
       "secrets": [

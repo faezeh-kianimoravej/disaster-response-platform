@@ -16,6 +16,8 @@ spring:
           lower-case-service-id: true
       
       # Default filters applied to all routes
+        profiles:
+          active: local-docker
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
       

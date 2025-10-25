@@ -19,6 +19,18 @@
         {
           "name": "SPRING_DATASOURCE_URL",
           "value": "jdbc:postgresql://drccs-db.cv24ewc6mmoj.eu-north-1.rds.amazonaws.com:5432/postgres"
+        },
+        {
+          "name": "EUREKA_CLIENT_SERVICEURL_DEFAULTZONE",
+          "value": "http://discovery-service.drccs.local:8761/eureka/"
+        },
+                {
+          "name": "EUREKA_INSTANCE_PREFER_IP_ADDRESS",
+          "value": "false"
+        },
+        {
+          "name": "EUREKA_INSTANCE_HOSTNAME",
+          "value": "discovery-service"
         }
       ],
       "secrets": [
