@@ -59,9 +59,9 @@ Sum of cycle times: **23 days**
 Average cycle time (mean): **2.09 days**  
 Median cycle time: **2 days**
 
-![Cycle time scatter plot](cycle_time_scatter_sprint5.svg)
+![Cycle time scatter plot](cycle_time_scatter.svg)
 
-![Cycle time Gantt](cycle_time_gantt_sprint5.svg)
+![Cycle time Gantt](cycle_time_gantt.svg)
 
 ---
 
