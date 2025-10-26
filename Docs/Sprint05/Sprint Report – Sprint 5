@@ -28,6 +28,7 @@ Sprint backlog (this sprint)
 - [X] BE - Notification Alert [23/10 - 23/10]
 - [X] BE - API Gateway [18/10 - 18/10]
 - [X] BE - Region API [18/10 - 19/10]
+- [X] Iterate ADD [25/10 - 26/10]
 
 ---
 
@@ -49,17 +50,18 @@ Completed items in this sprint :
 | BE - Notification Alert | 2025-10-23 | 2025-10-23 | 1 |
 | BE - API Gateway | 2025-10-18 | 2025-10-18 | 1 |
 | BE - Region API | 2025-10-18 | 2025-10-19 | 2 |
+| Iterate ADD | 2025-10-25 | 2025-10-26 | 2 |
 
 Summary metrics
 
-Number of completed items: **10**  
-Sum of cycle times: **21 days**  
-Average cycle time (mean): **2.1 days**  
+Number of completed items: **11**  
+Sum of cycle times: **23 days**  
+Average cycle time (mean): **2.09 days**  
 Median cycle time: **2 days**
 
-![Cycle time scatter plot](cycle_time_scatter.svg)
+![Cycle time scatter plot](cycle_time_scatter_sprint5.svg)
 
-![Cycle time Gantt](cycle_time_gantt.svg)
+![Cycle time Gantt](cycle_time_gantt_sprint5.svg)
 
 ---
 
@@ -70,4 +72,5 @@ Median cycle time: **2 days**
 - Implemented and tested APIs for Incident, Grip Level, and Region coordination.  
 - Established API Gateway for service routing and consistent backend access.  
 - Frontend now displays real-time incident updates on the Region Dashboard.  
+- Added ADD (Attribute-Driven Design) iteration to refine architectural documentation.  
 - Overall sprint completed successfully with improved development coordination and stable communication flow between services.
