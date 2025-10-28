@@ -1,15 +1,22 @@
 import { Link, useLocation } from 'react-router-dom';
 import Logo from '@/components/Logo';
 import NotificationPanel from '@/components/NotificationPanel';
+import { useAuth, userHasAnyRole } from '@/context/AuthContext';
+import { ADMIN_ROLES } from '@/types/role';
 
 export default function Navigation() {
 	const location = useLocation();
+	const auth = useAuth();
 
 	const navItems = [
 		{ path: '/', label: 'Dashboard' },
 		{ path: '/alerts', label: 'Alerts' },
 		{ path: '/municipalities', label: 'Municipalities' },
 	];
+	const adminNavItems = [{ path: '/users', label: 'Users' }];
+
+	const showAdmin = userHasAnyRole(auth, ADMIN_ROLES);
+	const displayedNavItems = showAdmin ? [...navItems, ...adminNavItems] : navItems;
 
 	return (
 		<nav className="bg-[#164273] shadow-lg">
@@ -22,7 +29,7 @@ export default function Navigation() {
 						</Link>
 					</div>
 					<div className="flex items-center space-x-8">
-						{navItems.map(item => (
+						{displayedNavItems.map(item => (
 							<Link
 								key={item.path}
 								to={item.path}

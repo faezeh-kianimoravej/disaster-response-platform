@@ -9,6 +9,8 @@ import DepartmentsPage from './pages/DepartmentsPage';
 import MunicipalitiesPage from './pages/MunicipalitiesPage';
 import IncidentDetailsPage from './pages/IncidentDetailsPage';
 import IncidentPriorityPage from './pages/IncidentPriorityPage';
+import UsersPage from './pages/UsersPage';
+import UserDetailsPage from './pages/UserDetailsPage';
 import { AppProviders } from './context/AppProviders';
 
 function App() {
@@ -27,6 +29,8 @@ function App() {
 						<Route path="/departments/:municipalityId" element={<DepartmentsPage />} />
 						<Route path="/departments/:municipalityId/:departmentId" element={<DepartmentPage />} />
 						<Route path="/municipalities" element={<MunicipalitiesPage />} />
+						<Route path="/users" element={<UsersPage />} />
+						<Route path="/users/:userId" element={<UserDetailsPage />} />
 					</Routes>
 				</div>
 			</Router>

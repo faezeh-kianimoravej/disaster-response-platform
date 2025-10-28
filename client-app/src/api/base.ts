@@ -5,6 +5,7 @@ export interface ApiError {
 	message: string;
 	status: number;
 	code?: string;
+	validationErrors?: Record<string, string>;
 }
 
 /**
@@ -83,10 +84,13 @@ export class BaseApi {
 	protected handleError(error: unknown): ApiError {
 		if (error && typeof error === 'object' && 'response' in error) {
 			const axiosError = error as AxiosError;
+			const data = axiosError.response?.data as { errors?: Record<string, string> } | undefined;
+			const validationErrors = data && data.errors ? data.errors : undefined;
 			return {
 				message: axiosError.message,
 				status: axiosError.response?.status || 500,
 				...(axiosError.code && { code: axiosError.code }),
+				...(validationErrors && { validationErrors }),
 			};
 		}
 

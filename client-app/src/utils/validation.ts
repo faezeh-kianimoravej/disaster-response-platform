@@ -27,6 +27,11 @@ export function validateEmail(email: string): ValidationRule {
 	return createValidationRule(emailRegex.test(email), 'Please enter a valid email address');
 }
 
+export function validateMobile(mobile: string): ValidationRule {
+	const mobileRegex = /^\+?[1-9]\d{7,14}$/;
+	return createValidationRule(mobileRegex.test(mobile), 'Please enter a valid mobile number');
+}
+
 export function validateMinLength(
 	value: string,
 	minLength: number,
