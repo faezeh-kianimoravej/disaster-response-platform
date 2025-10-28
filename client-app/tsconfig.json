@@ -1,28 +1,24 @@
 {
 	"compilerOptions": {
-		"target": "ES2020",
+		"target": "ESNext",
 		"useDefineForClassFields": true,
-		"lib": ["ES2020", "DOM", "DOM.Iterable"],
+		"lib": ["DOM", "DOM.Iterable", "ESNext"],
 		"module": "ESNext",
 		"skipLibCheck": true,
 		"types": ["vitest/globals"],
 
 		/* Bundler mode */
-		"moduleResolution": "node",
+		"moduleResolution": "Node",
 		"resolveJsonModule": true,
 		"isolatedModules": true,
 		"noEmit": true,
 		"jsx": "react-jsx",
 
 		/* Path Mapping */
-		"baseUrl": ".",
+		"baseUrl": "./src",
 		"paths": {
-			"@/*": ["./src/*"],
-			"@/components/*": ["./src/components/*"],
-			"@/pages/*": ["./src/pages/*"],
-			"@/config/*": ["./src/config/*"],
-			"@/utils/*": ["./src/utils/*"],
-			"@/types/*": ["./src/types/*"]
+			"@/*": ["*"],
+			"@": ["."]
 		},
 
 		/* Linting */
@@ -42,8 +38,8 @@
 		"noImplicitOverride": true,
 
 		/* Compatibility */
-		"allowJs": true,
-		"esModuleInterop": true,
+		"allowJs": false,
+		"esModuleInterop": false,
 		"allowSyntheticDefaultImports": true,
 		"forceConsistentCasingInFileNames": true
 	},

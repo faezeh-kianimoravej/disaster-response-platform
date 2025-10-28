@@ -2,30 +2,30 @@ import { useEffect, useState, useCallback } from 'react';
 import type { Notification } from '@/types/notification';
 import { config } from '@/config';
 import { fetchNotifications, markNotificationAsRead } from '@/api/notification';
-import { useUser } from '@/context/UserContext';
+import { useAuth } from '@/context/AuthContext';
 import { useNotificationContext } from '@/context/NotificationContext';
 
-/**
- * Custom hook to fetch and subscribe to notifications for the current region.
- *
- * @param onNewNotification Optional callback, called only for new notifications received via SSE (not present in initial fetch).
- * @returns {object} notifications, unreadCount, loading, error, markAsRead, markAllAsRead, isConnected
- */
 export default function useNotifications(onNewNotification?: (n: Notification) => void) {
-	const { regionId } = useUser();
+	const auth = useAuth();
+	const regionId = auth?.user?.regionId;
 	const { lastNotificationId, setLastNotificationId } = useNotificationContext();
 	const [notifications, setNotifications] = useState<Notification[]>([]);
 	const [unreadCount, setUnreadCount] = useState(0);
 	const [isConnected, setIsConnected] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-
-	// Tracks notification IDs from the initial fetch to avoid duplicate browser notifications
 	const [initialNotificationIds, setInitialNotificationIds] = useState<Set<string>>(new Set());
-	// True after the initial fetch completes
 	const [initialLoadComplete, setInitialLoadComplete] = useState(false);
-	// Initial fetch only on mount or regionId change
+
+	// Initial fetch only on mount or auth change
 	useEffect(() => {
+		if (!regionId) {
+			setNotifications([]);
+			setUnreadCount(0);
+			setError(null);
+			setLoading(false);
+			return;
+		}
 		let isMounted = true;
 		const fetchInitial = async () => {
 			setLoading(true);
@@ -53,10 +53,9 @@ export default function useNotifications(onNewNotification?: (n: Notification) =
 		};
 	}, [regionId]);
 
-	// Subscribe to SSE endpoint for real-time notifications
+	// Subscribe to SSE incidents endpoint for real-time notifications
 	useEffect(() => {
-		if (!initialLoadComplete) return;
-		// Pass lastNotificationId as a query param if present
+		if (!initialLoadComplete || !regionId) return;
 		const streamUrl = `${config.api.baseURL}/notifications/incidents/stream/${regionId}${lastNotificationId ? `?lastNotificationId=${lastNotificationId}` : ''}`;
 
 		const eventSource = new EventSource(streamUrl);

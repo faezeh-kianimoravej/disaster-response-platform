@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { NOTIFICATION_UI_MAP } from '@/types/notification-ui-map';
 import {
@@ -60,11 +60,13 @@ export default function NotificationPanel() {
 	const pendingNotificationRef = useRef<null | { title: string; description: string }>(null);
 	const [, forceUpdate] = useState(0); // for triggering effect
 
+	const handleNewNotification = useCallback((n: Notification) => {
+		pendingNotificationRef.current = { title: n.title, description: n.description };
+		forceUpdate(x => x + 1); // trigger effect
+	}, []);
+
 	const { notifications, unreadCount, markAsRead, markAllAsRead, loading, error } =
-		useNotifications(n => {
-			pendingNotificationRef.current = { title: n.title, description: n.description };
-			forceUpdate(x => x + 1); // trigger effect
-		});
+		useNotifications(handleNewNotification);
 
 	// Request browser notification permission on mount
 	useEffect(() => {
