@@ -20,6 +20,7 @@ type ApiIncident = {
 	location: string;
 	latitude: number;
 	longitude: number;
+	regionId: number;
 	createdAt: string;
 	updatedAt: string;
 };
@@ -73,6 +74,7 @@ function mapIncidentApiToFrontend(api: ApiIncident): Incident {
 		location: api.location,
 		latitude: api.latitude,
 		longitude: api.longitude,
+		regionId: Number(api.regionId),
 		createdAt: toDate(api.createdAt),
 		updatedAt: toDate(api.updatedAt),
 	};
@@ -112,6 +114,7 @@ export async function deleteIncident(id: number): Promise<void> {
 }
 
 type ApiIncidentRequest = {
+	incidentId: number;
 	reportedBy: string;
 	title: string;
 	description: string;
@@ -122,6 +125,7 @@ type ApiIncidentRequest = {
 	location: string;
 	latitude: number;
 	longitude: number;
+	regionId: number;
 };
 
 function toApiRequest(
@@ -140,6 +144,7 @@ function toApiRequest(
 		...(data.location !== undefined && { location: data.location }),
 		...(data.latitude !== undefined && { latitude: data.latitude }),
 		...(data.longitude !== undefined && { longitude: data.longitude }),
+		...(data.regionId !== undefined && { regionId: data.regionId }),
 	};
 	return partial ? base : (base as ApiIncidentRequest);
 }

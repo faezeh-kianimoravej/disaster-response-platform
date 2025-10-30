@@ -6,6 +6,7 @@ import type { Incident } from '../types/incident';
 describe('useIncidentFilters hook', () => {
 	const createMockIncident = (overrides?: Partial<Incident>): Incident => ({
 		incidentId: 1,
+		regionId: 1,
 		reportedBy: 'Test Department',
 		title: 'Test Incident',
 		description: 'Test Description',

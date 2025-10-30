@@ -18,6 +18,7 @@ public record IncidentResponse(
         String location,
         Double latitude,
         Double longitude,
+        Long regionId,
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt
 ) {}

@@ -6,8 +6,9 @@ Microservices backend for the DRCCS system using Spring Boot, Docker, and Postgr
 
 ## Prerequisites
 
-- **Java 21** - for building services
-- **Docker Desktop** - must be running
+- ☕ **Java 21** (for backend builds)
+- 🧰 **Apache Maven 3.8+** (for building the backend services)
+- 🐳 **Docker Desktop** (must be running)
 
 ---
 
@@ -59,9 +60,25 @@ docker-compose down
 | Incident Service | http://localhost:8084 | 8084 |
 | PostgreSQL | localhost:5432 | 5432 |
 
-**PostgreSQL Credentials:**
-- Username: `postgres`
-- Password: `1234`
+
+---
+
+## Profiles
+
+This repository uses three runtime profiles. Keep the profile selection centralized (we use the `STACK_PROFILE`/Docker Compose mechanism for local runs and your task definition / environment for prod).
+
+- local-single: Run one service locally for quick development without starting the full stack. It disables service discovery (Eureka) and uses localhost for Kafka and PostgreSQL. Use this when you want to iterate on a single service and connect to a local database instance.
+
+- local-docker: Run the entire backend locally via Docker Compose. Uses container hostnames for dependencies (Postgres container `postgres-db`, Kafka `kafka`, discovery `discovery-service`). This is the recommended profile for full-stack local testing.
+
+- prod: Production settings for AWS/ECS. Config points to the DRCCS production hosts (RDS, prod Kafka, discovery-service.drccs.local). Secrets (database username/password) are not stored in the repo — they must be supplied at runtime by the secrets manager / task definition.
+
+Required environment variables (prod)
+- `SPRING_DATASOURCE_USERNAME` — DB username (supplied from Secrets Manager).
+- `SPRING_DATASOURCE_PASSWORD` — DB password (supplied from Secrets Manager).
+
+Local defaults
+- For local usage (both `local-single` and `local-docker`) the default DB username/password used by the compose/dev setup is `postgres` / `1234`. In prod, credentials are injected at runtime.
 
 ---
 
