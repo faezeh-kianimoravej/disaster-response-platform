@@ -1,44 +1,50 @@
 package nl.saxion.disaster.user_service.service.contract;
 
-
-import nl.saxion.disaster.user_service.dto.UserDto;
+import nl.saxion.disaster.user_service.dto.UserRequestDto;
+import nl.saxion.disaster.user_service.dto.UserResponseDto;
 
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Contract for managing users within the system.
+ * <p>
+ * This interface separates input (UserRequestDto) and output (UserResponseDto)
+ * for clear API boundaries between layers.
+ */
 public interface UserService {
 
     /**
      * Creates a new user.
      *
-     * @param userDto DTO containing user data
-     * @return created User as DTO
+     * @param requestDto DTO containing user data from the client
+     * @return created User as a response DTO
      */
-    UserDto createUser(UserDto userDto);
+    UserResponseDto createUser(UserRequestDto requestDto);
 
     /**
      * Retrieves all active (non-deleted) users.
      *
-     * @return list of active users as DTOs
+     * @return list of active users as response DTOs
      */
-    List<UserDto> getAllActiveUsers();
+    List<UserResponseDto> getAllActiveUsers();
 
     /**
      * Retrieves a user by ID.
      *
      * @param id user's ID
-     * @return optional of UserDto
+     * @return optional of UserResponseDto
      */
-    Optional<UserDto> getUserById(Long id);
+    Optional<UserResponseDto> getUserById(Long id);
 
     /**
      * Updates a user.
      *
      * @param id         ID of the user to update
-     * @param updatedDto updated data as DTO
-     * @return updated user as DTO
+     * @param requestDto updated data as request DTO
+     * @return updated user as a response DTO
      */
-    UserDto updateUser(Long id, UserDto updatedDto);
+    UserResponseDto updateUser(Long id, UserRequestDto requestDto);
 
     /**
      * Performs a soft delete for the user.

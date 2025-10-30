@@ -16,11 +16,11 @@ spring:
         locator:
           enabled: true
           lower-case-service-id: true
-      
+
       # Default filters applied to all routes
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
-      
+
       # Global CORS configuration
       globalcors:
         corsConfigurations:
@@ -38,10 +38,10 @@ spring:
               - "*"
             allowCredentials: false
             maxAge: 3600
-      
+
       # Explicit routes with path rewrites for clean API surface
       routes:
-        # Region service: /api/regions/** (all other endpoints) -> region-service/api/regions/**
+        # Region service: /api/regions/** -> region-service/api/regions/**
         - id: region
           uri: lb://region-service
           predicates:
@@ -62,7 +62,7 @@ spring:
               args:
                 name: departmentServiceCircuitBreaker
                 fallbackUri: forward:/fallback
-        
+
         # Department service: /api/resources/** -> department-service/api/resources/**
         - id: department-resources
           uri: lb://department-service
@@ -115,7 +115,7 @@ spring:
           filters:
             - SetResponseHeader=Cache-Control, no-store
             - RemoveResponseHeader=Transfer-Encoding
-            
+
         # Notification service: /api/notifications/** -> notification-service/api/notifications/**
         - id: notification
           uri: lb://notification-service
@@ -125,6 +125,17 @@ spring:
             - name: CircuitBreaker
               args:
                 name: notificationServiceCircuitBreaker
+                fallbackUri: forward:/fallback
+
+        # User service: /api/users/** -> user-service/api/users/**
+        - id: user
+          uri: lb://user-service
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: userServiceCircuitBreaker
                 fallbackUri: forward:/fallback
 
 eureka:
@@ -148,4 +159,3 @@ logging:
   level:
     org.springframework.cloud.gateway: INFO
     reactor.netty.http.client: INFO
-

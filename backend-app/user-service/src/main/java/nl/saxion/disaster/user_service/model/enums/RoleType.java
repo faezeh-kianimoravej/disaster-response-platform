@@ -1,5 +1,6 @@
 package nl.saxion.disaster.user_service.model.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum RoleType {
@@ -25,5 +26,15 @@ public enum RoleType {
     @JsonValue
     public String getLabel() {
         return label;
+    }
+
+    @JsonCreator
+    public static RoleType fromValue(String value) {
+        for (RoleType type : RoleType.values()) {
+            if (type.label.equalsIgnoreCase(value) || type.name().equalsIgnoreCase(value)) {
+                return type;
+            }
+        }
+        throw new IllegalArgumentException("Unknown role type: " + value);
     }
 }

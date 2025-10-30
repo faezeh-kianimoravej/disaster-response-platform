@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import nl.saxion.disaster.user_service.model.enums.RoleType;
 
+import java.time.OffsetDateTime;
+
 @Entity
 @Table(name = "user_roles")
 @Getter
@@ -22,9 +24,9 @@ public class UserRole {
     @Column(nullable = false)
     private RoleType roleType;
 
-    private String department;
-    private String municipality;
-    private String region;
+    private Long departmentId;
+    private Long municipalityId;
+    private Long regionId;
 
     @Column(nullable = false)
     private boolean deleted = false;
@@ -33,4 +35,21 @@ public class UserRole {
     @JoinColumn(name = "user_id")
     @ToString.Exclude
     private User user;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private OffsetDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = OffsetDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = OffsetDateTime.now();
+    }
 }
