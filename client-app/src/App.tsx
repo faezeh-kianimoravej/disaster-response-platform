@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navigation from './components/Navigation';
-import HomePage from './pages/HomePage';
+import DashboardPage from './pages/DashboardPage';
 import AlertsPage from './pages/AlertsPage';
 import ResourcesPage from './pages/ResourcesPage';
 import ResourcePage from './pages/ResourcePage';
@@ -20,7 +20,7 @@ function App() {
 				<div className="App">
 					<Navigation />
 					<Routes>
-						<Route path="/" element={<HomePage />} />
+						<Route path="/" element={<DashboardPage />} />
 						<Route path="/incidents/:incidentId" element={<IncidentDetailsPage />} />
 						<Route path="/alerts" element={<AlertsPage />} />
 						<Route path="/incidents/:incidentId/prioritize" element={<IncidentPriorityPage />} />

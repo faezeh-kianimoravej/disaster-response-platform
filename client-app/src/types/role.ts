@@ -1,4 +1,5 @@
 export type Role =
+	| 'Super Admin'
 	| 'Citizen'
 	| 'Responder'
 	| 'Officer on Duty'
@@ -12,6 +13,7 @@ export type Role =
 	| 'Region Admin';
 
 export const ALL_ROLES: Role[] = [
+	'Super Admin',
 	'Citizen',
 	'Responder',
 	'Officer on Duty',
@@ -25,4 +27,9 @@ export const ALL_ROLES: Role[] = [
 	'Region Admin',
 ];
 
-export const ADMIN_ROLES: Role[] = ['Region Admin', 'Municipality Admin', 'Department Admin'];
+export const ADMIN_ROLES: Role[] = [
+	'Super Admin',
+	'Region Admin',
+	'Municipality Admin',
+	'Department Admin',
+];

@@ -79,6 +79,11 @@ public class IncidentServiceImp implements IncidentService {
                 .collect(Collectors.toList());
     }
 
+    public List<IncidentResponse> listByRegionId(Long regionId) {
+        List<Incident> list = repository.findByRegionId(regionId);
+        return list.stream().map(this::toResponse).collect(Collectors.toList());
+    }
+
     public IncidentResponse update(Long id, IncidentRequest req) {
         Incident inc = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Incident not found: " + id));

@@ -2,10 +2,14 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { vi, Mock } from 'vitest';
 import IncidentDetailsPage from '@/pages/IncidentDetailsPage';
-import * as incidentApi from '@/api/incident';
-
+import { useIncident } from '@/hooks/useIncident';
 vi.mock('@/api/incident', () => ({
 	getIncidentById: vi.fn(),
+}));
+
+// Mock the toast provider hook used by the page
+vi.mock('@/components/toast/ToastProvider', () => ({
+	useToast: () => ({ showError: vi.fn(), showSuccess: vi.fn() }),
 }));
 
 vi.mock('react-router-dom', async () => {
@@ -16,13 +20,34 @@ vi.mock('react-router-dom', async () => {
 	};
 });
 
+// Bypass AuthGuard in tests so we can render the content directly
+vi.mock('@/components/AuthGuard', () => ({
+	default: ({ children }: { children: unknown }) => children,
+}));
+
+// Mock the data hook used by the page to avoid setting up QueryClientProvider
+vi.mock('@/hooks/useIncident', () => ({
+	useIncident: vi.fn(),
+}));
+
 describe('IncidentDetailsPage', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
-	const renderPage = async (incidentData: unknown) => {
-		(incidentApi.getIncidentById as unknown as Mock).mockResolvedValue(incidentData);
+	const renderPage = async (
+		incidentData: unknown,
+		opts?: { loading?: boolean; error?: string | null }
+	) => {
+		const mock = useIncident as Mock;
+		const refetch = vi.fn();
+		mock.mockReturnValue({
+			incident: incidentData ?? null,
+			loading: opts?.loading ?? false,
+			error: opts?.error ?? null,
+			refetch,
+		});
+
 		render(
 			<MemoryRouter initialEntries={['/incidents/42']}>
 				<Routes>
@@ -30,30 +55,21 @@ describe('IncidentDetailsPage', () => {
 				</Routes>
 			</MemoryRouter>
 		);
+		return { refetch };
 	};
 
 	it('shows loading state initially', async () => {
-		(incidentApi.getIncidentById as unknown as Mock).mockReturnValue(
-			new Promise(() => {}) // never resolves
-		);
-
-		render(
-			<MemoryRouter initialEntries={['/incidents/1']}>
-				<Routes>
-					<Route path="/incidents/:incidentId" element={<IncidentDetailsPage />} />
-				</Routes>
-			</MemoryRouter>
-		);
+		await renderPage(null, { loading: true });
 
 		expect(screen.getByText(/loading incident/i)).toBeInTheDocument();
 	});
 
 	it("shows 'Incident not found' when API returns null", async () => {
-		await renderPage(null);
+		await renderPage(null, { loading: false, error: null });
 
 		await waitFor(() => expect(screen.getByText(/incident not found/i)).toBeInTheDocument());
 
-		expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument();
+		expect(screen.getAllByRole('button', { name: /back/i }).length).toBeGreaterThan(0);
 	});
 
 	it('renders incident details when data is found', async () => {

@@ -40,6 +40,12 @@ public class IncidentController {
         return ResponseEntity.ok(service.list(reportedBy));
     }
 
+    @GetMapping("/region/{regionId}")
+    @Operation(summary = "List all incidents by regionId", description = "Fetch all existing incidents for a region.")
+    public ResponseEntity<List<IncidentResponse>> listByRegion(@PathVariable Long regionId) {
+        return ResponseEntity.ok(service.listByRegionId(regionId));
+    }
+
     @PutMapping("/{id}")
     @Operation(summary = "Update an incident", description = "Modify details of an existing incident by ID.")
     public ResponseEntity<IncidentResponse> update(@PathVariable Long id, @Valid @RequestBody IncidentRequest req) {

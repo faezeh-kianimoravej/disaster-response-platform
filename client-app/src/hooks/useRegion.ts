@@ -1,44 +1,47 @@
-import { useState, useCallback } from 'react';
+import { useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Region } from '@/types/region';
 import { getRegionById, getRegions } from '@/api/region';
+import { REGION_QUERY_KEYS } from '@/hooks/queryKeys';
 
-export function useRegion() {
-	const [region, setRegion] = useState<Region | null>(null);
-	const [regions, setRegions] = useState<Region[]>([]);
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
+export function useRegion(options?: { enabled?: boolean }) {
+	const queryClient = useQueryClient();
 
-	const fetchRegion = useCallback(async (regionId: number) => {
-		setLoading(true);
-		setError(null);
-		try {
-			const data = await getRegionById(regionId);
-			setRegion(data);
-			setLoading(false);
-			return data;
-		} catch (err: unknown) {
-			setError((err instanceof Error && err.message) || 'Error fetching region');
-			setRegion(null);
-			setLoading(false);
-			return null;
-		}
-	}, []);
+	const listQuery = useQuery<Region[], Error>({
+		queryKey: REGION_QUERY_KEYS.list,
+		queryFn: getRegions,
+		enabled: options?.enabled ?? false,
+		staleTime: 1000 * 60 * 5,
+	});
 
-	const fetchRegions = useCallback(async () => {
-		setLoading(true);
-		setError(null);
-		try {
-			const data = await getRegions();
-			setRegions(data);
-			setLoading(false);
-			return data;
-		} catch (err: unknown) {
-			setError((err instanceof Error && err.message) || 'Error fetching regions');
-			setRegions([]);
-			setLoading(false);
-			return [];
-		}
-	}, []);
+	const regions = listQuery.data ?? [];
+	const loading = listQuery.isLoading;
+	const error = listQuery.error?.message ?? null;
+	const { refetch } = listQuery;
 
-	return { region, regions, loading, error, fetchRegion, fetchRegions };
+	const fetchRegion = async (regionId: number) => {
+		return await queryClient.fetchQuery({
+			queryKey: REGION_QUERY_KEYS.item(regionId),
+			queryFn: () => getRegionById(regionId),
+		});
+	};
+
+	const fetchRegions = () =>
+		queryClient.fetchQuery({
+			queryKey: REGION_QUERY_KEYS.list,
+			queryFn: getRegions,
+		});
+
+	return useMemo(
+		() => ({
+			region: null as Region | null,
+			regions,
+			loading,
+			error,
+			refetch,
+			fetchRegion,
+			fetchRegions,
+		}),
+		[regions, loading, error, refetch, fetchRegion, fetchRegions]
+	);
 }

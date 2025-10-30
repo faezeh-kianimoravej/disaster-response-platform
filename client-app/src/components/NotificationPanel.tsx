@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { NOTIFICATION_UI_MAP } from '@/types/notification-ui-map';
 import {
@@ -13,8 +13,10 @@ import {
 	BellRing,
 } from 'lucide-react';
 import useNotifications from '@/hooks/useNotifications';
+import { ErrorRetryBlock } from '@/components/ErrorRetry';
+import LoadingPanel from '@/components/LoadingPanel';
+import { useToast } from '@/components/toast/ToastProvider';
 import type { Notification } from '../types/notification';
-import { showBrowserNotification } from '@/utils/notificationUtils';
 
 function formatTimeAgo(dateString: string): string {
 	const date = new Date(dateString);
@@ -57,36 +59,24 @@ export default function NotificationPanel() {
 	const [isOpen, setIsOpen] = useState(false);
 	const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all');
 	const panelRef = useRef<HTMLDivElement>(null);
-	const pendingNotificationRef = useRef<null | { title: string; description: string }>(null);
-	const [, forceUpdate] = useState(0); // for triggering effect
+	const {
+		notifications,
+		unreadCount,
+		markAsRead,
+		markAllAsRead,
+		loading,
+		error,
+		fetchNotifications,
+	} = useNotifications();
 
-	const handleNewNotification = useCallback((n: Notification) => {
-		pendingNotificationRef.current = { title: n.title, description: n.description };
-		forceUpdate(x => x + 1); // trigger effect
-	}, []);
+	const toast = useToast();
 
-	const { notifications, unreadCount, markAsRead, markAllAsRead, loading, error } =
-		useNotifications(handleNewNotification);
-
-	// Request browser notification permission on mount
 	useEffect(() => {
-		if (window.Notification && Notification.permission === 'default') {
-			Notification.requestPermission();
+		if (error) {
+			toast.showError(error);
 		}
-	}, []);
+	}, [error, toast]);
 
-	// Show browser notification for new notifications from SSE
-	useEffect(() => {
-		const pending = pendingNotificationRef.current;
-		if (pending) {
-			showBrowserNotification(pending.title, {
-				body: pending.description,
-			});
-			pendingNotificationRef.current = null;
-		}
-	}, [pendingNotificationRef.current]);
-
-	// Close panel when clicking outside
 	useEffect(() => {
 		function handleClickOutside(event: MouseEvent) {
 			if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
@@ -100,7 +90,6 @@ export default function NotificationPanel() {
 		return undefined;
 	}, [isOpen]);
 
-	// Filter and group notifications by date
 	const filteredNotifications =
 		activeTab === 'unread' ? notifications.filter(n => !n.read) : notifications;
 	const groupedNotifications = groupNotificationsByDate(filteredNotifications);
@@ -162,13 +151,13 @@ export default function NotificationPanel() {
 					{/* Notifications List */}
 					<div className="max-h-96 overflow-y-auto">
 						{loading ? (
-							<div className="p-8 text-center text-gray-500">
-								<p>Loading notifications...</p>
-							</div>
+							<LoadingPanel text="Loading notifications..." />
 						) : error ? (
-							<div className="p-8 text-center text-red-500">
-								<p>{error}</p>
-							</div>
+							<ErrorRetryBlock
+								message={error ?? 'Unable to load notifications.'}
+								onRetry={() => fetchNotifications && fetchNotifications()}
+								className="p-8"
+							/>
 						) : filteredNotifications.length === 0 ? (
 							<div className="p-8 text-center text-gray-500">
 								<p>No notifications</p>
@@ -182,7 +171,6 @@ export default function NotificationPanel() {
 									{items.map((notification: (typeof notifications)[number]) => {
 										const config = NOTIFICATION_UI_MAP[notification.notificationType];
 										const url = config?.actionUrl?.(notification);
-										// Map icon string to Lucide icon component
 										const iconMap: Record<string, JSX.Element> = {
 											report: <AlertCircle size={16} className="text-gray-600" />,
 											notifications: <BellRing size={16} className="text-gray-600" />,

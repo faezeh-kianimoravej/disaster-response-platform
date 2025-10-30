@@ -11,3 +11,15 @@ export async function getRegionById(regionId: number): Promise<Region> {
 export async function getRegions(): Promise<Region[]> {
 	return await regionApi.get<Region[]>(``);
 }
+
+export async function addRegion(formData: Region): Promise<Region> {
+	return await regionApi.post<Region>('', formData);
+}
+
+export async function updateRegion(updated: Region): Promise<Region> {
+	return await regionApi.put<Region>(`/${updated.regionId}`, updated);
+}
+
+export async function deleteRegion(id: number): Promise<void> {
+	return await regionApi.delete(`/${id}`);
+}
