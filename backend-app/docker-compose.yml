@@ -93,6 +93,25 @@ services:
     restart: on-failure
 
   # ==============================
+  # Resource Service
+  # ==============================
+  resource-service:
+    build: ./resource-service
+    container_name: resource-service
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      discovery-service:
+        condition: service_started
+    ports:
+      - "8091:8091"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${STACK_PROFILE:-local-docker}
+    networks:
+      - backend-network
+    restart: on-failure
+
+  # ==============================
   # Department Service
   # ==============================
   department-service:

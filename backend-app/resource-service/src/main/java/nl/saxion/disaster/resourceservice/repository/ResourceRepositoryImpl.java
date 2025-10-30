@@ -69,7 +69,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
         existing.setLatitude(updatedResource.getLatitude());
         existing.setLongitude(updatedResource.getLongitude());
         existing.setImage(updatedResource.getImage());
-        existing.setDepartment(updatedResource.getDepartment());
+        existing.setDepartmentId(updatedResource.getDepartmentId());
 
         return entityManager.merge(existing);
     }
