@@ -33,6 +33,7 @@ const renderWithRouter = (): void => {
 describe('HomePage component', () => {
 	const createMockIncident = (overrides?: Partial<Incident>): Incident => ({
 		incidentId: 1,
+		regionId: 1,
 		reportedBy: 'Test Department',
 		title: 'Test Incident',
 		description: 'Test Description',

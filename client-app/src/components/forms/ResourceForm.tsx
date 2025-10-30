@@ -23,6 +23,7 @@ export default function ResourceForm({
 	onImageChange,
 }: ResourceFormProps) {
 	const { showError } = useToast();
+	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [form, setForm] = useState<ResourceFormData>({
 		name: initialData?.name || '',
 		description: initialData?.description || '',
@@ -103,7 +104,9 @@ export default function ResourceForm({
 		});
 	}
 
-	function handleSubmit() {
+	async function handleSubmit() {
+		if (isSubmitting) return;
+		setIsSubmitting(true);
 		setTouched({
 			name: true,
 			description: true,
@@ -118,10 +121,27 @@ export default function ResourceForm({
 				.filter(field => !field.isValid)
 				.map(field => field.message);
 			showError('Please fix the following errors:\n' + errors.join('\n'));
+			setIsSubmitting(false);
 			return;
 		}
 
-		onSave(form);
+		try {
+			const result = onSave(form) as unknown;
+			// If onSave returns a Promise, await it so we keep the submit disabled
+			if (
+				result &&
+				typeof (result as { then?: (onfulfilled?: unknown) => unknown }).then === 'function'
+			) {
+				await (result as Promise<void>);
+			}
+		} catch (err: unknown) {
+			const msg = err instanceof Error ? err.message : String(err);
+			showError(msg || 'Failed to save resource');
+			setIsSubmitting(false);
+			return;
+		}
+		// keep isSubmitting true briefly; caller may navigate away/unmount component
+		setIsSubmitting(false);
 	}
 
 	return (
@@ -186,8 +206,12 @@ export default function ResourceForm({
 				</div>
 			</div>
 			<div className="mt-6 flex justify-end space-x-3">
-				<Button onClick={handleSubmit} variant={isValid ? 'success' : 'disabled'}>
-					{isNewResource ? 'Create' : 'Save'}
+				<Button
+					onClick={handleSubmit}
+					variant={isValid && !isSubmitting ? 'success' : 'disabled'}
+					disabled={isSubmitting || !isValid}
+				>
+					{isSubmitting ? 'Submitting...' : isNewResource ? 'Create' : 'Save'}
 				</Button>
 				<Button onClick={onCancel} variant="outline">
 					Cancel

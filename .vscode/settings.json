@@ -1,4 +1,9 @@
 {
     "java.compile.nullAnalysis.mode": "disabled",
-    "java.configuration.updateBuildConfiguration": "disabled"
+    "java.configuration.updateBuildConfiguration": "disabled",
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#580C3D",
+        "titleBar.activeBackground": "#7B1156",
+        "titleBar.activeForeground": "#FFFCFE"
+    }
 }
