@@ -6,6 +6,8 @@ spring:
     name: api-gateway
   main:
     web-application-type: reactive
+  profiles:
+    active: local-docker
   cloud:
     gateway:
       # Discovery Locator: Enable dynamic routing by service name

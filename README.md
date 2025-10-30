@@ -14,9 +14,9 @@ The web portal is live!
 ---
 
 ## 🚧 Current Development State
-- **Status:** Active development (student project for 2024–2025) 🛠️
+- **Status:** Active development (student project for 2025–2026) 🛠️
 - **Backend:** Java (Maven) microservices  
-    &nbsp;&nbsp;&nbsp;&nbsp;`incident-service`, `location-service`, `resource-service`, `notification-service`, `discovery-service`
+    &nbsp;&nbsp;&nbsp;&nbsp;`api-gateway`, `discovery-service`, `department-service`, `incident-service`, `municipality-service`, `notification-service`, `region-service`
 - **Frontend:** React + TypeScript (Vite) in `client-app/`
 - **CI/CD:** GitLab CI placeholders (configure pipelines in your GitLab)
 - **Known work remaining:**  
@@ -25,9 +25,9 @@ The web portal is live!
 ---
 
 ## ⚡ Quick Start — Local Development
-
 ### Prerequisites
 - ☕ **Java 21** (for backend builds)
+- 🧰 **Apache Maven 3.8+** (for building the backend services)
 - 🐳 **Docker Desktop** (must be running)
 - 🟩 **Node.js 16+** (for frontend)
 

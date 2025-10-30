@@ -108,7 +108,7 @@ public class IncidentServiceImp implements IncidentService {
             inc.getIncidentId(), inc.getReportedBy(), inc.getTitle(),
             inc.getDescription(), inc.getSeverity(), inc.getGripLevel(),
             inc.getStatus(), inc.getReportedAt(), inc.getLocation(),
-            inc.getLatitude(), inc.getLongitude(),
+            inc.getLatitude(), inc.getLongitude(), inc.getRegionId(),
             inc.getCreatedAt(), inc.getUpdatedAt()
         );
     }

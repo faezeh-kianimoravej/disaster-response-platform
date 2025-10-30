@@ -1,0 +1,17 @@
+spring:
+  config:
+    activate:
+      on-profile: local-single
+  cloud:
+    discovery:
+      enabled: false
+    gateway:
+      discovery:
+        locator:
+          enabled: false
+      routes: []
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false

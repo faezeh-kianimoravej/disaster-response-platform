@@ -112,8 +112,8 @@ describe('ResourceForm component', () => {
 		it('should show validation error for empty required name', async () => {
 			renderWithToast(<ResourceForm {...defaultProps} />);
 
-			const submitButton = screen.getByRole('button', { name: 'Create' });
-			fireEvent.click(submitButton);
+			const nameInput = screen.getByLabelText(/^Name/);
+			fireEvent.change(nameInput, { target: { value: ' ' } });
 
 			await waitFor(() => {
 				expect(screen.getByText('Resource name is required')).toBeInTheDocument();
@@ -127,13 +127,11 @@ describe('ResourceForm component', () => {
 			const quantityInput = screen.getByLabelText('Quantity');
 
 			fireEvent.change(nameInput, { target: { value: 'Test Resource' } });
+			fireEvent.change(quantityInput, { target: { value: '2' } });
 			fireEvent.change(quantityInput, { target: { value: '0' } });
 
-			const submitButton = screen.getByRole('button', { name: 'Create' });
-			fireEvent.click(submitButton);
-
 			await waitFor(() => {
-				expect(screen.getByText('Quantity must be at least 1')).toBeInTheDocument();
+				expect(screen.getByText(/Quantity must be at least 1/i)).toBeInTheDocument();
 			});
 		});
 

@@ -4,28 +4,53 @@
 *.iml
 *.iws
 *.ipr
+.classpath
+.project
+.settings/
 
-# Maven
+# Maven specific files
+.mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/maven-wrapper.properties
+dependency-reduced-pom.xml
+
+# Maven build output
 **/target/
 *.jar
 *.war
 *.ear
 *.class
 
-# Node
+# Node dependencies and build output
 **/node_modules/
 **/build/
 **/dist/
 **/coverage/
+/node_modules
+/build
+/coverage
+/.pnp
+.pnp.js
 
-# OS
+# Logs & temp files
+*.log
+logs/
+*.tmp
+*.out
+hs_err_pid*
+replay_pid*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS generated files
 .DS_Store
 Thumbs.db
+ehthumbs.db
+Desktop.ini
 
-# Logs
-*.log
+# Docker & environment
+.docker/
+docker-compose.override.yml
 
-# Environment
-.env
-.env.local
-.env.*.local
+# Misc
+HELP.md

@@ -18,11 +18,13 @@ export interface Incident {
 	location: string;
 	latitude: number;
 	longitude: number;
+	regionId: number;
 	createdAt: Date;
 	updatedAt: Date;
 }
 
 export interface IncidentFormData {
+	incidentId: number;
 	reportedBy: string;
 	title: string;
 	description: string;
@@ -33,4 +35,5 @@ export interface IncidentFormData {
 	location: string;
 	latitude: number;
 	longitude: number;
+	regionId: number;
 }
