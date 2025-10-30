@@ -1,13 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
 import Logo from '@/components/Logo';
 import NotificationPanel from '@/components/NotificationPanel';
-import { useAuth, userHasAnyRole } from '@/context/AuthContext';
+import AccountPanel from '@/components/AccountPanel';
+import { useUserHasAnyRole } from '@/context/AuthContext';
 import { ADMIN_ROLES } from '@/types/role';
 
 export default function Navigation() {
 	const location = useLocation();
-	const auth = useAuth();
-
 	const navItems = [
 		{ path: '/', label: 'Dashboard' },
 		{ path: '/alerts', label: 'Alerts' },
@@ -15,7 +14,7 @@ export default function Navigation() {
 	];
 	const adminNavItems = [{ path: '/users', label: 'Users' }];
 
-	const showAdmin = userHasAnyRole(auth, ADMIN_ROLES);
+	const showAdmin = useUserHasAnyRole(ADMIN_ROLES);
 	const displayedNavItems = showAdmin ? [...navItems, ...adminNavItems] : navItems;
 
 	return (
@@ -41,6 +40,7 @@ export default function Navigation() {
 							</Link>
 						))}
 						<NotificationPanel />
+						<AccountPanel />
 					</div>
 				</div>
 			</div>

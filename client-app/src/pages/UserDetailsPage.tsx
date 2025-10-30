@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGetUser } from '@/hooks/useUser';
-import type { User } from '@/types/user';
 import Button from '@/components/Button';
 import { useRegion } from '@/hooks/useRegion';
 import { useDepartment } from '@/hooks/useDepartment';
 import { useMunicipality } from '@/hooks/useMunicipality';
+import LoadingPanel from '@/components/LoadingPanel';
 
 export default function UserDetailsPage() {
 	const { userId } = useParams<{ userId: string }>();
@@ -19,14 +19,16 @@ export default function UserDetailsPage() {
 	const departmentId = user?.departmentId;
 	const municipalityId = user?.municipalityId;
 
-	const { region, loading: regionLoading, error: regionError, fetchRegion } = useRegion();
+	const { fetchRegion } = useRegion();
 	const { department, loading: departmentLoading } = useDepartment(
 		departmentId ? String(departmentId) : undefined,
 		false,
 		municipalityId ?? 0
 	);
-	const { municipalities, loading: municipalityLoading } = useMunicipality();
-	const municipality = municipalities.find(m => m.municipalityId === municipalityId);
+
+	const { municipalities, municipality: fetchedMunicipality } = useMunicipality(municipalityId);
+	const municipality =
+		fetchedMunicipality ?? municipalities.find(m => m.municipalityId === municipalityId);
 
 	useEffect(() => {
 		if (userId) fetchUser(userId);
@@ -81,9 +83,7 @@ export default function UserDetailsPage() {
 			<div className="max-w-2xl mx-auto px-4">
 				<div className="bg-white rounded-xl shadow-lg p-8">
 					{loading ? (
-						<div className="flex items-center justify-center min-h-[200px] text-gray-500 text-lg">
-							Loading user...
-						</div>
+						<LoadingPanel text="Loading user..." />
 					) : error ? (
 						<div className="text-red-600 mb-4">{error}</div>
 					) : user ? (

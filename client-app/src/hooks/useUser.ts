@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import type { User, UserCreateFormData, UserEditFormData } from '@/types/user';
-import { createUser, updateUser, getUser, listUsers, removeUser } from '@/api/user';
+import { createUser, updateUser, removeUser } from '@/api/user';
 import { validateUserForm } from '@/validation/userValidation';
 import type { ApiError } from '@/api/base';
 import { mergeBackendValidation } from '@/utils/mergeBackendValidation';

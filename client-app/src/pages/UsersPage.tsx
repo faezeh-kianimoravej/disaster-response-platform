@@ -1,12 +1,14 @@
 import { useEffect } from 'react';
 import { useListUsers } from '@/hooks/useUser';
-import { useAuth, isUserLoggedIn, userHasAnyRole } from '@/context/AuthContext';
+import { useIsUserLoggedIn, useUserHasAnyRole } from '@/context/AuthContext';
 import NotAuthorizedPage from '@/pages/NotAuthorizedPage';
 import { useNavigate } from 'react-router-dom';
 import type { User } from '@/types/user';
+import LoadingPanel from '@/components/LoadingPanel';
 
 export default function UsersPage() {
-	const auth = useAuth();
+	const isLoggedIn = useIsUserLoggedIn();
+	const canView = useUserHasAnyRole(['Region Admin', 'Municipality Admin', 'Department Admin']);
 	const { users, fetchUsers, loading, error } = useListUsers();
 	const navigate = useNavigate();
 
@@ -14,10 +16,7 @@ export default function UsersPage() {
 		fetchUsers();
 	}, [fetchUsers]);
 
-	if (
-		!isUserLoggedIn(auth) ||
-		!userHasAnyRole(auth, ['Region Admin', 'Municipality Admin', 'Department Admin'])
-	) {
+	if (!isLoggedIn || !canView) {
 		return <NotAuthorizedPage />;
 	}
 
@@ -29,7 +28,7 @@ export default function UsersPage() {
 				</div>
 				<div className="bg-white rounded-lg shadow-md p-6">
 					{loading ? (
-						<div className="text-gray-500">Loading...</div>
+						<LoadingPanel text="Loading users..." />
 					) : (
 						<>
 							{error && <div className="text-red-600 mb-4">{error}</div>}

@@ -64,6 +64,7 @@ export function validateUserForm(
 		'Department Admin': 'department',
 		'Municipality Admin': 'municipality',
 		'Region Admin': 'region',
+		'Super Admin': 'none',
 	};
 
 	const roleEntityErrors: string[] = [];
