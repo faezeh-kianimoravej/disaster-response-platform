@@ -22,25 +22,30 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private String firstName;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private String lastName;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false, unique = true, length = 100)
     private String email;
 
-    @Column(unique = true)
+    @Column(unique = true, length = 20)
     private String mobile;
 
-    @Column(name = "password_hash", length = 100, nullable = false)
+    @Column(nullable = false, length = 100)
     private String password;
 
     @Column(nullable = false)
     private boolean deleted = false;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.EAGER
+    )
     private Set<UserRole> roles = new HashSet<>();
 
     @Column(name = "created_at", nullable = false, updatable = false)

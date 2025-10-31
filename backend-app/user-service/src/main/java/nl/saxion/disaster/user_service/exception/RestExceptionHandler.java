@@ -11,30 +11,31 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 
 /**
- * Centralized exception handling for the entire application.
- * Transforms technical exceptions into meaningful JSON responses for the client.
+ * Global Exception Handler
+ * Centralized exception handling across all controllers.
+ * Converts technical exceptions into user-friendly JSON responses
+ * that are consistent and descriptive.
  */
 @ControllerAdvice
 public class RestExceptionHandler {
 
-    /**
-     * Handles validation errors thrown by @Valid annotations (e.g., @NotBlank, @Email).
-     */
+    // -------------------------------------------------------------
+    // Validation errors (from @Valid annotations)
+    // -------------------------------------------------------------
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationError(MethodArgumentNotValidException ex, WebRequest request) {
         FieldError fieldError = ex.getBindingResult().getFieldError();
         String message = fieldError != null
                 ? String.format("Invalid value for '%s': %s", fieldError.getField(), fieldError.getDefaultMessage())
-                : "Validation failed";
+                : "Validation failed for request data.";
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponse.of(HttpStatus.BAD_REQUEST, message, request.getDescription(false)));
     }
 
-    /**
-     * Handles unique constraint or database-level integrity violations.
-     * Maps them to human-readable messages.
-     */
+    // -------------------------------------------------------------
+    // Database constraint or unique key violation
+    // -------------------------------------------------------------
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException ex, WebRequest request) {
         String rootMessage = ex.getRootCause() != null ? ex.getRootCause().getMessage() : ex.getMessage();
@@ -42,26 +43,31 @@ public class RestExceptionHandler {
 
         if (rootMessage != null) {
             String msg = rootMessage.toLowerCase();
-            if (msg.contains("uk6dotkott2kjsp8vw4d0m25fb7") || msg.contains("email")) {
+            if (msg.contains("email")) {
                 message = "Email already exists.";
-            } else if (msg.contains("uk63cf888pmqtt5tipcne79xsbm") || msg.contains("mobile")) {
+            } else if (msg.contains("mobile")) {
                 message = "Mobile number already exists.";
+            } else if (msg.contains("role_type")) {
+                message = "Role type is required for each role.";
+            } else if (msg.contains("foreign key")) {
+                message = "Referenced entity (e.g. department, municipality, or region) does not exist.";
+            } else if (msg.contains("not-null")) {
+                message = "A required field was missing or invalid. Please check your input.";
             } else {
-                message = "Data integrity violation.";
+                message = "A data integrity violation occurred. Please check your request.";
             }
         } else {
-            message = "Data integrity violation.";
+            message = "A data integrity violation occurred. Please check your request.";
         }
-
 
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(ErrorResponse.of(HttpStatus.CONFLICT, message, request.getDescription(false)));
     }
 
-    /**
-     * Handles missing entities or lookups.
-     */
+    // -------------------------------------------------------------
+    // Entity not found (e.g. user not found)
+    // -------------------------------------------------------------
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleEntityNotFound(EntityNotFoundException ex, WebRequest request) {
         return ResponseEntity
@@ -69,9 +75,9 @@ public class RestExceptionHandler {
                 .body(ErrorResponse.of(HttpStatus.NOT_FOUND, ex.getMessage(), request.getDescription(false)));
     }
 
-    /**
-     * Handles illegal arguments (e.g., bad request body values, invalid IDs, etc.)
-     */
+    // -------------------------------------------------------------
+    // Illegal arguments (bad IDs or invalid inputs)
+    // -------------------------------------------------------------
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex, WebRequest request) {
         return ResponseEntity
@@ -79,14 +85,30 @@ public class RestExceptionHandler {
                 .body(ErrorResponse.of(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getDescription(false)));
     }
 
-    /**
-     * Fallback for all unhandled exceptions.
-     */
+    // -------------------------------------------------------------
+    // Catch-all for unexpected exceptions
+    // -------------------------------------------------------------
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleAll(Exception ex, WebRequest request) {
-        ex.printStackTrace(); // keep for local debugging
+        ex.printStackTrace(); // Useful for debugging locally
+
+        String message = "An unexpected error occurred.";
+        String rootMsg = ex.getMessage() != null ? ex.getMessage().toLowerCase() : "";
+
+        if (rootMsg.contains("constraint") || rootMsg.contains("not-null")) {
+            message = "A required field was missing or invalid. Please check your input.";
+        } else if (rootMsg.contains("unknown role type")) {
+            message = "Invalid role type. Please use a valid value for 'roleType'.";
+        } else if (rootMsg.contains("foreign key")) {
+            message = "Referenced entity (like department, municipality, or region) does not exist.";
+        } else if (rootMsg.contains("enum")) {
+            message = "Invalid enum value provided.";
+        } else if (rootMsg.contains("relation") || rootMsg.contains("column")) {
+            message = "Database schema mismatch. Please verify database setup.";
+        }
+
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ErrorResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request.getDescription(false)));
+                .body(ErrorResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, message, request.getDescription(false)));
     }
 }

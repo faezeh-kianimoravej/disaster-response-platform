@@ -13,6 +13,8 @@ public interface UserRepository {
 
     Optional<User> findUserByEmail(String email);
 
+    List<User> findUsersByScope(String scopeType, Long scopeId);
+
     User createUser(User user);
 
     User updateUser(User user);

@@ -52,4 +52,30 @@ public interface UserService {
      * @param id ID of the user to delete
      */
     void deleteUser(Long id);
+
+    // ------------------- 🔽 New methods for scoped user retrieval -------------------
+
+    /**
+     * Retrieves all users belonging to a specific department.
+     *
+     * @param departmentId ID of the department
+     * @return list of users as response DTOs
+     */
+    List<UserResponseDto> getUsersByDepartment(Long departmentId);
+
+    /**
+     * Retrieves all users belonging to a specific municipality.
+     *
+     * @param municipalityId ID of the municipality
+     * @return list of users as response DTOs
+     */
+    List<UserResponseDto> getUsersByMunicipality(Long municipalityId);
+
+    /**
+     * Retrieves all users belonging to a specific region.
+     *
+     * @param regionId ID of the region
+     * @return list of users as response DTOs
+     */
+    List<UserResponseDto> getUsersByRegion(Long regionId);
 }

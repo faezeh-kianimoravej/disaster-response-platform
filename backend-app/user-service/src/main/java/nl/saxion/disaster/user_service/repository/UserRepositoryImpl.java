@@ -2,6 +2,7 @@ package nl.saxion.disaster.user_service.repository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 import lombok.extern.slf4j.Slf4j;
 import nl.saxion.disaster.user_service.model.entity.User;
 import nl.saxion.disaster.user_service.repository.contract.UserRepository;
@@ -80,6 +81,41 @@ public class UserRepositoryImpl implements UserRepository {
             throw e;
         }
     }
+
+    // --------------------------------------------------------------------------------------------
+    // Find USER BY SCOPE
+    // --------------------------------------------------------------------------------------------
+
+    /**
+     * Finds all active (non-deleted) users for a given organizational scope.
+     *
+     * @param scopeType one of: "department", "municipality", "region"
+     * @param scopeId   the id of the scope (e.g. departmentId)
+     * @return list of users belonging to that scope
+     */
+    @Override
+    public List<User> findUsersByScope(String scopeType, Long scopeId) {
+        String fieldName = switch (scopeType.toLowerCase()) {
+            case "department" -> "role.departmentId";
+            case "municipality" -> "role.municipalityId";
+            case "region" -> "role.regionId";
+            default -> throw new IllegalArgumentException("Invalid scope type: " + scopeType);
+        };
+
+        String jpql = """
+                SELECT DISTINCT user
+                FROM User user
+                JOIN user.roles role
+                WHERE %s = :scopeId
+                  AND role.deleted = false
+                  AND user.deleted = false
+                """.formatted(fieldName);
+
+        TypedQuery<User> query = entityManager.createQuery(jpql, User.class);
+        query.setParameter("scopeId", scopeId);
+        return query.getResultList();
+    }
+
 
     // --------------------------------------------------------------------------------------------
     // CREATE USER

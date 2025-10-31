@@ -1,6 +1,7 @@
 package nl.saxion.disaster.user_service.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -112,6 +113,82 @@ public class UserController {
                 });
 
         return response;
+    }
+
+    // --------------------------------------------------------------------------------------------
+    // USERS BY SCOPE
+    // --------------------------------------------------------------------------------------------
+
+    @GetMapping("/by-department/{departmentId}")
+    @Operation(
+            summary = "Get users belonging to a specific department",
+            description = "Retrieves all active (non-deleted) users that are associated with the given department ID.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "List of users retrieved successfully",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = UserResponseDto.class))
+                    ),
+                    @ApiResponse(responseCode = "404", description = "No users found for this department"),
+                    @ApiResponse(responseCode = "500", description = "Internal server error")
+            }
+    )
+    public ResponseEntity<List<UserResponseDto>> getUsersByDepartment(
+            @Parameter(description = "Unique ID of the department", example = "5")
+            @PathVariable Long departmentId) {
+
+        log.info("Fetching users for department ID: {}", departmentId);
+        List<UserResponseDto> users = userService.getUsersByDepartment(departmentId);
+        return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("/by-municipality/{municipalityId}")
+    @Operation(
+            summary = "Get users belonging to a specific municipality",
+            description = "Retrieves all active (non-deleted) users that are associated with the given municipality ID.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "List of users retrieved successfully",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = UserResponseDto.class))
+                    ),
+                    @ApiResponse(responseCode = "404", description = "No users found for this municipality"),
+                    @ApiResponse(responseCode = "500", description = "Internal server error")
+            }
+    )
+    public ResponseEntity<List<UserResponseDto>> getUsersByMunicipality(
+            @Parameter(description = "Unique ID of the municipality", example = "12")
+            @PathVariable Long municipalityId) {
+
+        log.info("Fetching users for municipality ID: {}", municipalityId);
+        List<UserResponseDto> users = userService.getUsersByMunicipality(municipalityId);
+        return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("/by-region/{regionId}")
+    @Operation(
+            summary = "Get users belonging to a specific region",
+            description = "Retrieves all active (non-deleted) users that are associated with the given region ID.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "List of users retrieved successfully",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = UserResponseDto.class))
+                    ),
+                    @ApiResponse(responseCode = "404", description = "No users found for this region"),
+                    @ApiResponse(responseCode = "500", description = "Internal server error")
+            }
+    )
+    public ResponseEntity<List<UserResponseDto>> getUsersByRegion(
+            @Parameter(description = "Unique ID of the region", example = "3")
+            @PathVariable Long regionId) {
+
+        log.info("Fetching users for region ID: {}", regionId);
+        List<UserResponseDto> users = userService.getUsersByRegion(regionId);
+        return ResponseEntity.ok(users);
     }
 
     // --------------------------------------------------------------------------------------------

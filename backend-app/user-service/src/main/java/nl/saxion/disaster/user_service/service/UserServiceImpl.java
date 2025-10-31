@@ -17,11 +17,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-/**
- * Service implementation for managing users.
- * Handles business logic such as password hashing, soft deletes,
- * and mapping between DTOs and entities.
- */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -42,27 +37,19 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("User request cannot be null");
         }
 
-        log.info("Attempting to create new user with email: {}", requestDto.email());
+        log.info("Creating new user with email: {}", requestDto.email());
 
         User user = userRequestMapper.toEntity(requestDto)
-                .orElseThrow(() -> {
-                    log.error("UserRequestMapper failed to convert request for email: {}", requestDto.email());
-                    return new IllegalArgumentException("Invalid user data");
-                });
+                .orElseThrow(() -> new IllegalArgumentException("Invalid user data"));
 
         user.setPassword(passwordEncoder.encode(requestDto.password()));
         user.setPasswordUpdatedAt(OffsetDateTime.now());
-
-        log.debug("Mapped User entity before saving: {}", user);
 
         User savedUser = userRepository.createUser(user);
         log.info("User successfully saved with ID: {}", savedUser.getId());
 
         return userResponseMapper.toDto(savedUser)
-                .orElseThrow(() -> {
-                    log.error("Failed to map User entity to UserResponseDto for ID: {}", savedUser.getId());
-                    return new IllegalStateException("Failed to map user entity to response");
-                });
+                .orElseThrow(() -> new IllegalStateException("Failed to map user entity to response"));
     }
 
     // --------------------------------------------------------------------------------------------
@@ -70,12 +57,12 @@ public class UserServiceImpl implements UserService {
     // --------------------------------------------------------------------------------------------
     @Override
     public List<UserResponseDto> getAllActiveUsers() {
-        log.info("Fetching all active (non-deleted) users from database.");
+        log.info("Fetching all active users...");
 
         List<User> users = Optional.ofNullable(userRepository.findAllActiveUsers())
                 .orElse(List.of())
                 .stream()
-                .filter(user -> user != null && !user.isDeleted())
+                .filter(u -> u != null && !u.isDeleted())
                 .toList();
 
         log.debug("Found {} active users.", users.size());
@@ -89,17 +76,9 @@ public class UserServiceImpl implements UserService {
     public Optional<UserResponseDto> getUserById(Long id) {
         log.info("Fetching user by ID: {}", id);
 
-        Optional<UserResponseDto> result = userRepository.findUserById(id)
-                .filter(user -> !user.isDeleted())
+        return userRepository.findUserById(id)
+                .filter(u -> !u.isDeleted())
                 .flatMap(userResponseMapper::toDto);
-
-        if (result.isPresent()) {
-            log.debug("User found for ID: {}", id);
-        } else {
-            log.warn("No active user found for ID: {}", id);
-        }
-
-        return result;
     }
 
     // --------------------------------------------------------------------------------------------
@@ -110,10 +89,7 @@ public class UserServiceImpl implements UserService {
         log.info("Updating user with ID: {}", id);
 
         User existingUser = userRepository.findUserById(id)
-                .orElseThrow(() -> {
-                    log.error("User not found for ID: {}", id);
-                    return new IllegalArgumentException("User not found");
-                });
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         existingUser.setFirstName(requestDto.firstName());
         existingUser.setLastName(requestDto.lastName());
@@ -141,29 +117,51 @@ public class UserServiceImpl implements UserService {
         log.info("User updated successfully with ID: {}", updatedUser.getId());
 
         return userResponseMapper.toDto(updatedUser)
-                .orElseThrow(() -> {
-                    log.error("Failed to map updated user entity with ID: {}", id);
-                    return new IllegalStateException("Failed to map updated user");
-                });
+                .orElseThrow(() -> new IllegalStateException("Failed to map updated user"));
     }
 
     // --------------------------------------------------------------------------------------------
-    // DELETE USER
+    // DELETE USER (SOFT DELETE)
     // --------------------------------------------------------------------------------------------
     @Override
     public void deleteUser(Long id) {
-        log.info("Attempting to soft delete user with ID: {}", id);
+        log.info("Soft-deleting user with ID: {}", id);
 
         User user = userRepository.findUserById(id)
-                .orElseThrow(() -> {
-                    log.error("User not found for ID: {}", id);
-                    return new IllegalArgumentException("User not found");
-                });
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         user.setDeleted(true);
         user.setUpdatedAt(OffsetDateTime.now());
 
         userRepository.createUser(user);
-        log.info("User with ID {} has been soft deleted.", id);
+        log.info("User with ID {} marked as deleted.", id);
+    }
+
+    // --------------------------------------------------------------------------------------------
+    // USERS BY ORGANIZATIONAL SCOPE
+    // --------------------------------------------------------------------------------------------
+
+    @Override
+    public List<UserResponseDto> getUsersByDepartment(Long departmentId) {
+        log.info("Fetching users by department ID: {}", departmentId);
+        List<User> users = userRepository.findUsersByScope("department", departmentId);
+        log.debug("Found {} users in department {}", users.size(), departmentId);
+        return userResponseMapper.toDtoList(users);
+    }
+
+    @Override
+    public List<UserResponseDto> getUsersByMunicipality(Long municipalityId) {
+        log.info("Fetching users by municipality ID: {}", municipalityId);
+        List<User> users = userRepository.findUsersByScope("municipality", municipalityId);
+        log.debug("Found {} users in municipality {}", users.size(), municipalityId);
+        return userResponseMapper.toDtoList(users);
+    }
+
+    @Override
+    public List<UserResponseDto> getUsersByRegion(Long regionId) {
+        log.info("Fetching users by region ID: {}", regionId);
+        List<User> users = userRepository.findUsersByScope("region", regionId);
+        log.debug("Found {} users in region {}", users.size(), regionId);
+        return userResponseMapper.toDtoList(users);
     }
 }
