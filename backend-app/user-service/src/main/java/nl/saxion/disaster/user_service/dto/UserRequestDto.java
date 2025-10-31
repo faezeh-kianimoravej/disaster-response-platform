@@ -36,6 +36,7 @@ public record UserRequestDto(
         @Email(message = "Invalid email format")
         String email,
 
+        @NotBlank(message = "Mobile Number is required")
         @Pattern(
                 regexp = "^(\\+\\d{1,3})?\\d{9,15}$",
                 message = "Invalid mobile number format"
