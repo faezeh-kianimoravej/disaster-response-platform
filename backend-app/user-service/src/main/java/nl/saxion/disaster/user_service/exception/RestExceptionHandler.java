@@ -111,4 +111,18 @@ public class RestExceptionHandler {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, message, request.getDescription(false)));
     }
+
+    // -------------------------------------------------------------
+    // Authentication failure (invalid email or password)
+    // -------------------------------------------------------------
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidCredentials(InvalidCredentialsException ex, WebRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(ErrorResponse.of(
+                        HttpStatus.UNAUTHORIZED,
+                        ex.getMessage() != null ? ex.getMessage() : "Invalid email or password.",
+                        request.getDescription(false)
+                ));
+    }
 }

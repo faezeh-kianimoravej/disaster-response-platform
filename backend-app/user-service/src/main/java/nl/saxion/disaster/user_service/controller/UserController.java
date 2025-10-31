@@ -11,8 +11,11 @@ import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import nl.saxion.disaster.user_service.dto.LoginRequestDto;
+import nl.saxion.disaster.user_service.dto.LoginResponseDto;
 import nl.saxion.disaster.user_service.dto.UserRequestDto;
 import nl.saxion.disaster.user_service.dto.UserResponseDto;
+import nl.saxion.disaster.user_service.service.contract.UserAuthenticationService;
 import nl.saxion.disaster.user_service.service.contract.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +35,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final UserAuthenticationService userAuthenticationService;
 
     @PostConstruct
     public void init() {
@@ -240,5 +244,35 @@ public class UserController {
         long duration = System.currentTimeMillis() - start;
         log.info("[DELETE USER] User ID={} soft deleted successfully ({} ms).", id, duration);
         return ResponseEntity.noContent().build();
+    }
+
+    // --------------------------------------------------------------------------------------------
+    // Login
+    // --------------------------------------------------------------------------------------------
+
+    /**
+     * Authenticates a user and returns a JWT token along with assigned roles.
+     *
+     * @param request contains the user's email and password
+     * @return a response containing the JWT token and role details
+     */
+    @Operation(
+            summary = "Authenticate user and generate JWT token",
+            description = "Validates user credentials (email and password). " +
+                    "If valid, returns a JWT token and user roles to be used for authorized requests."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Login successful",
+                    content = @Content(schema = @Schema(implementation = LoginResponseDto.class))),
+            @ApiResponse(responseCode = "401", description = "Invalid email or password",
+                    content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal server error",
+                    content = @Content)
+    })
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponseDto> login(
+            @Valid @RequestBody LoginRequestDto request
+    ) {
+        return ResponseEntity.ok(userAuthenticationService.login(request));
     }
 }
