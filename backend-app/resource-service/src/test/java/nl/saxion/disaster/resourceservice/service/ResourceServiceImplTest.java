@@ -1,11 +1,11 @@
-package nl.saxion.disaster.departmentservice.resource;
+package nl.saxion.disaster.resourceservice.service;
 
-import nl.saxion.disaster.departmentservice.dto.ResourceDto;
-import nl.saxion.disaster.departmentservice.mapper.ResourceMapper;
-import nl.saxion.disaster.departmentservice.model.entity.Resource;
-import nl.saxion.disaster.departmentservice.model.enums.ResourceType;
-import nl.saxion.disaster.departmentservice.repository.contract.ResourceRepository;
-import nl.saxion.disaster.departmentservice.service.ResourceServiceImpl;
+import nl.saxion.disaster.resourceservice.dto.ResourceDto;
+import nl.saxion.disaster.resourceservice.mapper.ResourceMapper;
+import nl.saxion.disaster.resourceservice.model.entity.Resource;
+import nl.saxion.disaster.resourceservice.model.enums.ResourceType;
+import nl.saxion.disaster.resourceservice.repository.contract.ResourceRepository;
+import nl.saxion.disaster.resourceservice.service.ResourceServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

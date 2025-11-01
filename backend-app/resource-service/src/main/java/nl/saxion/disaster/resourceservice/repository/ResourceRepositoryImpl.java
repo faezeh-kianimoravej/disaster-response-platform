@@ -43,7 +43,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
     @Override
     public List<Resource> findByDepartment(Long departmentId) {
         return entityManager.createQuery(
-                        "SELECT r FROM Resource r WHERE r.department.departmentId = :deptId", Resource.class)
+                        "SELECT r FROM Resource r WHERE r.departmentId = :deptId", Resource.class)
                 .setParameter("deptId", departmentId)
                 .getResultList();
     }

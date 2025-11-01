@@ -1,5 +1,6 @@
 package nl.saxion.disaster.departmentservice.model.entity;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,24 +25,25 @@ public class Department {
     @Column(name = "department_id")
     private Long departmentId;
 
-    @Column(name = "municipality_id")
-    private Long municipalityId;
-
     @Column(nullable = false, length = 100)
     private String name;
+
+    @Column(name = "municipality_id")
+    private Long municipalityId;
 
     @Lob
     @Column(name = "image", columnDefinition = "BYTEA")
     @JdbcTypeCode(SqlTypes.BINARY)
     private byte[] image;
 
-    @OneToMany(
-            mappedBy = "department",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY
+    @Schema(hidden = true)
+    @ElementCollection
+    @CollectionTable(
+            name = "department_resources",
+            joinColumns = @JoinColumn(name = "department_id")
     )
-    private List<Resource> resources;
+    @Column(name = "resource_id")
+    private List<Long> resourceIds;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

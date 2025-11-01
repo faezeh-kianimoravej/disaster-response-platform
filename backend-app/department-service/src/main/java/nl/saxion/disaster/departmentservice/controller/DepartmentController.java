@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import nl.saxion.disaster.departmentservice.dto.DepartmentDto;
 import nl.saxion.disaster.departmentservice.dto.DepartmentSummaryDto;
 import nl.saxion.disaster.departmentservice.dto.ResourceDto;
+import nl.saxion.disaster.departmentservice.dto.ResourceSummaryDto;
 import nl.saxion.disaster.departmentservice.service.contract.DepartmentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -65,9 +66,10 @@ public class DepartmentController {
 
     @Operation(summary = "Get resources of a department",
             description = "Retrieve all resources that belong to a specific department using its ID.")
-    @GetMapping("/{id}/resources")
-    public ResponseEntity<List<ResourceDto>> getResourcesByDepartment(@PathVariable Long id) {
-        return departmentService.getDepartmentById(id).map(departmentDto -> ResponseEntity.ok(departmentDto.resourceDtoList())).orElseGet(() -> ResponseEntity.notFound().build());
+    @GetMapping("/{departmentId}/resources")
+    public ResponseEntity<List<ResourceSummaryDto>> getResourcesByDepartment(@PathVariable("departmentId") Long departmentId) {
+        List<ResourceSummaryDto> resources = departmentService.getResourcesOfDepartment(departmentId);
+        return ResponseEntity.ok(resources);
     }
 
     @Operation(summary = "Get departments by municipality ID",
