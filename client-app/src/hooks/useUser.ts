@@ -1,185 +1,238 @@
-import { useState, useCallback } from 'react';
+import { useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { User, UserCreateFormData, UserEditFormData } from '@/types/user';
-import { createUser, updateUser, removeUser } from '@/api/user';
-import { validateUserForm } from '@/validation/userValidation';
+import {
+	createUser,
+	updateUser,
+	removeUser,
+	getUser,
+	listUsers,
+	getUsersByRegion,
+	getUsersByMunicipality,
+	getUsersByDepartment,
+} from '@/api/user';
 import type { ApiError } from '@/api/base';
-import { mergeBackendValidation } from '@/utils/mergeBackendValidation';
+import { USER_QUERY_KEYS } from '@/hooks/queryKeys';
 
-function useUserForm<T extends UserCreateFormData | UserEditFormData, R extends User>(
-	apiCall: (formData: T) => Promise<R>
-) {
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
-	const [validation, setValidation] = useState<ReturnType<typeof validateUserForm> | null>(null);
+// Create
+export function useCreateUser() {
+	const queryClient = useQueryClient();
 	const [user, setUser] = useState<User | null>(null);
+	const [error, setError] = useState<string | null>(null);
 
-	async function submit(formData: T) {
-		setLoading(true);
-		setError(null);
-		setValidation(null);
-		const frontendValidation = validateUserForm(formData);
-		const hasFrontendError = Object.values(frontendValidation).some(v => !v.isValid);
-		if (hasFrontendError) {
-			setValidation(frontendValidation);
-			setLoading(false);
-			return false;
-		}
-		try {
-			const result = await apiCall(formData);
-			setUser(result);
-			setLoading(false);
-			return true;
-		} catch (err) {
-			const apiError = err as ApiError;
-			if (apiError.validationErrors) {
-				setValidation(mergeBackendValidation(frontendValidation, apiError));
-			} else {
-				setError(apiError.message);
-			}
-			setLoading(false);
-			return false;
-		}
+	const mutation = useMutation<User, ApiError, UserCreateFormData>({
+		mutationFn: data => createUser(data),
+		onSuccess: saved => {
+			setUser(saved);
+			setError(null);
+			// Update caches
+			queryClient.setQueryData(USER_QUERY_KEYS.item(saved.userId), saved);
+			queryClient.invalidateQueries({ queryKey: USER_QUERY_KEYS.list });
+		},
+		onError: err => {
+			setError(err.message);
+		},
+	});
+
+	async function submit(formData: UserCreateFormData) {
+		await mutation.mutateAsync(formData); // Let errors throw to be handled by caller
+		return true;
 	}
 
-	return { submit, loading, error, validation, user };
+	return {
+		submit,
+		loading: mutation.isPending,
+		error,
+		validation: null as Record<string, never> | null,
+		user,
+	};
 }
 
-export function useCreateUser() {
-	return useUserForm<UserCreateFormData, User>(createUser);
-}
-
+// Update
 export function useUpdateUser() {
-	return useUserForm<UserEditFormData, User>(updateUser);
-}
-
-export function useGetUser() {
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
+	const queryClient = useQueryClient();
 	const [user, setUser] = useState<User | null>(null);
-
-	const fetchUser = useCallback(async (userId: string | number) => {
-		setLoading(true);
-		setError(null);
-		try {
-			await new Promise(res => setTimeout(res, 200)); // simulate network delay
-			const found = FAKE_USERS.find(u => u.userId === Number(userId));
-			setUser(found ?? null);
-			setLoading(false);
-			return found ?? null;
-		} catch (err) {
-			setError((err as Error).message);
-			setLoading(false);
-			return null;
-		}
-	}, []);
-
-	return { fetchUser, loading, error, user };
-}
-
-// --- FAKE USERS FOR TESTING ---
-const FAKE_USERS: User[] = [
-	{
-		userId: 1,
-		firstName: 'Alice',
-		lastName: 'Admin',
-		email: 'alice.admin@example.com',
-		mobile: '1234567890',
-		roles: ['Region Admin'],
-		regionId: 1,
-		departmentId: undefined,
-		municipalityId: undefined,
-	},
-	{
-		userId: 2,
-		firstName: 'Bob',
-		lastName: 'Manager',
-		email: 'bob.manager@example.com',
-		mobile: '2345678901',
-		roles: ['Municipality Admin'],
-		regionId: undefined,
-		departmentId: undefined,
-		municipalityId: 1,
-	},
-	{
-		userId: 3,
-		firstName: 'Carol',
-		lastName: 'User',
-		email: 'carol.user@example.com',
-		mobile: '3456789012',
-		roles: ['Department Admin'],
-		regionId: undefined,
-		departmentId: 1,
-		municipalityId: undefined,
-	},
-	{
-		userId: 4,
-		firstName: 'David',
-		lastName: 'Citizen',
-		email: 'david.citizen@example.com',
-		mobile: '4567890123',
-		roles: ['Citizen'],
-		regionId: undefined,
-		departmentId: undefined,
-		municipalityId: undefined,
-	},
-	{
-		userId: 5,
-		firstName: 'Eva',
-		lastName: 'Responder',
-		email: 'eva.responder@example.com',
-		mobile: '5678901234',
-		roles: ['Responder', 'Officer on Duty'],
-		regionId: undefined,
-		departmentId: 2,
-		municipalityId: undefined,
-	},
-];
-
-// --- END FAKE USERS ---
-
-export function useListUsers() {
-	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-	const [users, setUsers] = useState<User[]>([]);
 
-	const fetchUsers = useCallback(async () => {
-		setLoading(true);
-		setError(null);
-		try {
-			await new Promise(res => setTimeout(res, 300)); // simulate network delay
-			setUsers(FAKE_USERS);
-			setLoading(false);
-			return FAKE_USERS;
-		} catch (err) {
-			setError((err as Error).message);
-			setLoading(false);
-			return [];
-		}
-	}, []);
+	const mutation = useMutation<User, ApiError, UserEditFormData>({
+		mutationFn: data => updateUser(data),
+		onSuccess: updated => {
+			setUser(updated);
+			setError(null);
+			// Update caches
+			queryClient.setQueryData(USER_QUERY_KEYS.item(updated.userId), updated);
+			queryClient.invalidateQueries({ queryKey: USER_QUERY_KEYS.list });
+		},
+		onError: err => {
+			setError(err.message);
+		},
+	});
 
-	return { fetchUsers, loading, error, users };
+	async function submit(formData: UserEditFormData) {
+		await mutation.mutateAsync(formData); // Let errors throw to be handled by caller
+		return true;
+	}
+
+	return {
+		submit,
+		loading: mutation.isPending,
+		error,
+		validation: null as Record<string, never> | null,
+		user,
+	};
 }
 
+// List
+export function useUsers(options?: { enabled?: boolean }) {
+	const listQuery = useQuery<User[], Error>({
+		queryKey: USER_QUERY_KEYS.list,
+		queryFn: () => listUsers(),
+		enabled: options?.enabled ?? true,
+		staleTime: 1000 * 60 * 5,
+	});
+
+	const { data, isLoading, isFetching, error, refetch } = listQuery;
+	return useMemo(
+		() => ({
+			users: data ?? [],
+			loading: isLoading,
+			isFetching,
+			error: error?.message ?? null,
+			refetch,
+		}),
+		[data, isLoading, isFetching, error, refetch]
+	);
+}
+
+export function useUsersByRegion(regionId?: number, options?: { enabled?: boolean }) {
+	const enabled = (options?.enabled ?? !!regionId) && !!regionId;
+	const listQuery = useQuery<User[], Error>({
+		queryKey: regionId ? USER_QUERY_KEYS.byRegion(regionId) : ['users', 'region', 'none'],
+		queryFn: () => getUsersByRegion(regionId as number),
+		enabled,
+		staleTime: 1000 * 60 * 5,
+	});
+	const { data, isLoading, isFetching, error, refetch } = listQuery;
+	return useMemo(
+		() => ({
+			users: data ?? [],
+			loading: isLoading,
+			isFetching,
+			error: error?.message ?? null,
+			refetch,
+		}),
+		[data, isLoading, isFetching, error, refetch]
+	);
+}
+
+export function useUsersByMunicipality(municipalityId?: number, options?: { enabled?: boolean }) {
+	const enabled = (options?.enabled ?? !!municipalityId) && !!municipalityId;
+	const listQuery = useQuery<User[], Error>({
+		queryKey: municipalityId
+			? USER_QUERY_KEYS.byMunicipality(municipalityId)
+			: ['users', 'municipality', 'none'],
+		queryFn: () => getUsersByMunicipality(municipalityId as number),
+		enabled,
+		staleTime: 1000 * 60 * 5,
+	});
+	const { data, isLoading, isFetching, error, refetch } = listQuery;
+	return useMemo(
+		() => ({
+			users: data ?? [],
+			loading: isLoading,
+			isFetching,
+			error: error?.message ?? null,
+			refetch,
+		}),
+		[data, isLoading, isFetching, error, refetch]
+	);
+}
+
+export function useUsersByDepartment(departmentId?: number, options?: { enabled?: boolean }) {
+	const enabled = (options?.enabled ?? !!departmentId) && !!departmentId;
+	const listQuery = useQuery<User[], Error>({
+		queryKey: departmentId
+			? USER_QUERY_KEYS.byDepartment(departmentId)
+			: ['users', 'department', 'none'],
+		queryFn: () => getUsersByDepartment(departmentId as number),
+		enabled,
+		staleTime: 1000 * 60 * 5,
+	});
+	const { data, isLoading, isFetching, error, refetch } = listQuery;
+	return useMemo(
+		() => ({
+			users: data ?? [],
+			loading: isLoading,
+			isFetching,
+			error: error?.message ?? null,
+			refetch,
+		}),
+		[data, isLoading, isFetching, error, refetch]
+	);
+}
+
+// Single
+export function useUser(id?: number | string, options?: { enabled?: boolean }) {
+	const queryClient = useQueryClient();
+	const singleQuery = useQuery<User | undefined, Error>({
+		queryKey: id ? USER_QUERY_KEYS.item(id) : ['user', 'none'],
+		queryFn: () => getUser(id as number),
+		enabled: (options?.enabled ?? true) && !!id,
+		staleTime: 1000 * 60 * 5,
+	});
+
+	const { data, isLoading, error, refetch } = singleQuery;
+	const fetchUser = async (userId?: number | string) => {
+		const uid = userId ?? id;
+		if (!uid) return undefined;
+		return queryClient.fetchQuery({
+			queryKey: USER_QUERY_KEYS.item(uid),
+			queryFn: () => getUser(uid),
+		});
+	};
+
+	return useMemo(
+		() => ({
+			user: data ?? null,
+			loading: isLoading,
+			error: error?.message ?? null,
+			refetch,
+			fetchUser,
+		}),
+		[data, isLoading, error, refetch]
+	);
+}
+
+// Delete
 export function useRemoveUser() {
-	const [loading, setLoading] = useState(false);
+	const queryClient = useQueryClient();
 	const [error, setError] = useState<string | null>(null);
 	const [success, setSuccess] = useState(false);
 
-	async function remove(userId: string) {
-		setLoading(true);
-		setError(null);
-		setSuccess(false);
-		try {
-			await removeUser(userId);
+	const mutation = useMutation<void, Error, { userId: string | number } | string | number>({
+		mutationFn: args => removeUser(typeof args === 'object' ? args.userId : args),
+		onSuccess: (_data, args) => {
+			const id = typeof args === 'object' ? args.userId : args;
+			setError(null);
 			setSuccess(true);
-			setLoading(false);
+			// Remove specific user cache and refresh lists
+			queryClient.removeQueries({ queryKey: USER_QUERY_KEYS.item(id) });
+			queryClient.invalidateQueries({ queryKey: USER_QUERY_KEYS.list });
+		},
+		onError: err => {
+			setError(err.message);
+			setSuccess(false);
+		},
+	});
+
+	async function remove(userId: string) {
+		try {
+			await mutation.mutateAsync(userId);
 			return true;
-		} catch (err) {
-			setError((err as Error).message);
-			setLoading(false);
+		} catch {
 			return false;
 		}
 	}
 
-	return { remove, loading, error, success };
+	return { remove, loading: mutation.isPending, error, success };
 }

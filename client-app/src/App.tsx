@@ -11,6 +11,7 @@ import IncidentDetailsPage from '@/pages/IncidentDetailsPage';
 import IncidentPriorityPage from '@/pages/IncidentPriorityPage';
 import UsersPage from '@/pages/UsersPage';
 import UserDetailsPage from '@/pages/UserDetailsPage';
+import UserCreatePage from '@/pages/UserCreatePage';
 import { AppProviders } from '@/context/AppProviders';
 import UnauthorizedPage from '@/pages/NotAuthorizedPage';
 
@@ -49,6 +50,7 @@ function App() {
 						<Route path="/municipalities/:regionId" element={<MunicipalitiesPage />} />
 
 						<Route path="/users" element={<UsersPage />} />
+						<Route path="/users/new" element={<UserCreatePage />} />
 						<Route path="/users/:userId" element={<UserDetailsPage />} />
 
 						{/* Unknown routes -> 401 Unauthorized */}

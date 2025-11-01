@@ -22,10 +22,15 @@ describe('DepartmentsPage (smoke)', () => {
 					lastName: 'U',
 					email: 't@example.com',
 					mobile: '0',
-					roles: ['Region Admin'],
-					municipalityId: 7,
-					departmentId: undefined,
-					regionId: 1,
+					roles: [
+						{
+							roleType: 'Region Admin',
+							regionId: 1,
+							departmentId: null,
+							municipalityId: null,
+						},
+					],
+					deleted: false,
 				},
 			},
 		});
@@ -33,7 +38,7 @@ describe('DepartmentsPage (smoke)', () => {
 		expect(screen.getByRole('heading', { name: 'Departments' })).toBeInTheDocument();
 		expect(screen.getByText(/No departments found/i)).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: /Back/i })).toBeInTheDocument();
-		expect(screen.getByRole('button', { name: /Add Department/i })).toBeInTheDocument();
+		// "Add Department" button removed from UI; back button remains
 	});
 
 	it('renders with municipality admin role', () => {
@@ -45,15 +50,20 @@ describe('DepartmentsPage (smoke)', () => {
 					lastName: 'Admin',
 					email: 'm@example.com',
 					mobile: '0',
-					roles: ['Municipality Admin'],
-					municipalityId: 7,
-					departmentId: undefined,
-					regionId: 1,
+					roles: [
+						{
+							roleType: 'Municipality Admin',
+							municipalityId: 7,
+							regionId: null,
+							departmentId: null,
+						},
+					],
+					deleted: false,
 				},
 			},
 		});
 
 		expect(screen.getByRole('heading', { name: 'Departments' })).toBeInTheDocument();
-		expect(screen.getByRole('button', { name: /Add Department/i })).toBeInTheDocument();
+		// "Add Department" button removed from UI
 	});
 });

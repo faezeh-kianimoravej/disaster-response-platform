@@ -26,10 +26,15 @@ describe('ResourcesPage (smoke)', () => {
 					lastName: 'U',
 					email: 't@example.com',
 					mobile: '0',
-					roles: ['Region Admin'],
-					departmentId: 1,
-					municipalityId: undefined,
-					regionId: 1,
+					roles: [
+						{
+							roleType: 'Region Admin',
+							regionId: 1,
+							departmentId: null,
+							municipalityId: null,
+						},
+					],
+					deleted: false,
 				},
 			},
 		});
@@ -38,7 +43,7 @@ describe('ResourcesPage (smoke)', () => {
 		expect(screen.getByText(/No resources available/i)).toBeInTheDocument();
 		// back and add buttons should render
 		expect(screen.getByRole('button', { name: /Back/i })).toBeInTheDocument();
-		expect(screen.getByRole('button', { name: /Add New Resource/i })).toBeInTheDocument();
+		// "Add New Resource" button removed from UI
 	});
 
 	it('renders with department admin role', () => {
@@ -50,15 +55,20 @@ describe('ResourcesPage (smoke)', () => {
 					lastName: 'Admin',
 					email: 'd@example.com',
 					mobile: '0',
-					roles: ['Department Admin'],
-					departmentId: 1,
-					municipalityId: undefined,
-					regionId: 1,
+					roles: [
+						{
+							roleType: 'Department Admin',
+							departmentId: 1,
+							regionId: null,
+							municipalityId: null,
+						},
+					],
+					deleted: false,
 				},
 			},
 		});
 
 		expect(screen.getByText(/Resource Management/i)).toBeInTheDocument();
-		expect(screen.getByRole('button', { name: /Add New Resource/i })).toBeInTheDocument();
+		// "Add New Resource" button removed from UI
 	});
 });

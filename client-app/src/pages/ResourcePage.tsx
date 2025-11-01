@@ -11,7 +11,7 @@ import useSingleErrorToast from '@/hooks/useSingleErrorToast';
 import LoadingPanel from '@/components/ui/LoadingPanel';
 import { ErrorRetryBlock } from '@/components/ui/ErrorRetry';
 import AuthGuard from '@/components/auth/AuthGuard';
-import { DEPARTMENT_ROLES, MUNICIPALITY_ROLES, REGION_ROLES } from '@/types/role';
+import { DEPARTMENT_ROLES, MUNICIPALITY_ROLES, REGION_ROLES, createRoles } from '@/types/role';
 
 export default function ResourcePage() {
 	const { resourceId } = useParams<{ resourceId?: string }>();
@@ -20,7 +20,7 @@ export default function ResourcePage() {
 
 	return (
 		<AuthGuard
-			requireRoles={[...REGION_ROLES, ...MUNICIPALITY_ROLES, ...DEPARTMENT_ROLES]}
+			requireRoles={createRoles([...REGION_ROLES, ...MUNICIPALITY_ROLES, ...DEPARTMENT_ROLES])}
 			requireAccessToResource={resId}
 		>
 			<ResourcePageContent resourceId={resId} isNewResource={isNewResource} />
@@ -47,8 +47,11 @@ function ResourcePageContent({
 
 	const deptIdFromResource = resource?.departmentId;
 	const deptIdFromState = location?.state?.departmentId;
+	const fallbackDepartmentId = (auth?.user?.roles ?? [])
+		.map(r => r.departmentId)
+		.find((id): id is number => typeof id === 'number');
 	const departmentIdForActions =
-		deptIdFromResource ?? deptIdFromState ?? auth?.user?.departmentId ?? undefined;
+		deptIdFromResource ?? deptIdFromState ?? fallbackDepartmentId ?? undefined;
 	const deleteMutation = useDeleteResource();
 
 	const [editing, setEditing] = useState(isNewResource);

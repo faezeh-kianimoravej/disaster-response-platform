@@ -6,7 +6,7 @@ type RHFInputProps<TFormValues extends FieldValues> = {
 	label: string;
 	placeholder?: string;
 	required?: boolean;
-	type?: 'text' | 'number' | 'textarea' | 'select';
+	type?: 'text' | 'number' | 'textarea' | 'select' | 'password';
 	options?: Array<{ value: string | number; label: string }>;
 };
 

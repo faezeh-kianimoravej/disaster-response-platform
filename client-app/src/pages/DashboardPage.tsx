@@ -11,11 +11,11 @@ import { useIncidentFilters } from '@/hooks/useIncidentFilters';
 import { useAuth } from '@/context/AuthContext';
 import useSingleErrorToast from '@/hooks/useSingleErrorToast';
 import type { Incident } from '@/types/incident';
-import { REGION_ROLES } from '@/types/role';
+import { REGION_ROLES, createRoles } from '@/types/role';
 
 export default function DashboardPage() {
 	return (
-		<AuthGuard requireRoles={[...REGION_ROLES]}>
+		<AuthGuard requireRoles={createRoles([...REGION_ROLES])}>
 			<DashboardPageContent />
 		</AuthGuard>
 	);
@@ -24,7 +24,10 @@ export default function DashboardPage() {
 function DashboardPageContent(): JSX.Element {
 	const auth = useAuth();
 	const navigate = useNavigate();
-	const regionId = auth?.user?.regionId ?? 0;
+	const regionId =
+		(auth?.user?.roles ?? [])
+			.map(r => r.regionId)
+			.find((id): id is number => typeof id === 'number') ?? 0;
 
 	const {
 		incidents,

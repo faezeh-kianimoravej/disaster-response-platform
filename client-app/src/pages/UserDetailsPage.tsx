@@ -1,150 +1,152 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useGetUser } from '@/hooks/useUser';
-import Button from '@/components/Button';
-import { useRegion } from '@/hooks/useRegion';
-import { useDepartment } from '@/hooks/useDepartment';
-import { useMunicipality } from '@/hooks/useMunicipality';
-import LoadingPanel from '@/components/LoadingPanel';
+import { routes } from '@/routes';
+import { useUser, useRemoveUser } from '@/hooks/useUser';
+import Button from '@/components/ui/Button';
+import LoadingPanel from '@/components/ui/LoadingPanel';
+import UserForm from '@/components/forms/UserForm';
+import { ADMIN_ROLES } from '@/types/role';
+import { useToast } from '@/components/toast/ToastProvider';
+import AuthGuard from '@/components/auth/AuthGuard';
+import { ErrorRetryBlock } from '@/components/ui/ErrorRetry';
+import useSingleErrorToast from '@/hooks/useSingleErrorToast';
 
 export default function UserDetailsPage() {
+	return (
+		<AuthGuard requireRoles={[...ADMIN_ROLES]}>
+			<UserDetailsPageContent />
+		</AuthGuard>
+	);
+}
+
+function UserDetailsPageContent() {
 	const { userId } = useParams<{ userId: string }>();
 	const navigate = useNavigate();
-	const { fetchUser, user, loading, error } = useGetUser();
-
-	const [entityName, setEntityName] = useState<string | null>(null);
-	const [entityLabel, setEntityLabel] = useState<string | null>(null);
-
-	const regionId = user?.regionId;
-	const departmentId = user?.departmentId;
-	const municipalityId = user?.municipalityId;
-
-	const { fetchRegion } = useRegion();
-	const { department, loading: departmentLoading } = useDepartment(
-		departmentId ? String(departmentId) : undefined,
-		false,
-		municipalityId ?? 0
-	);
-
-	const { municipalities, municipality: fetchedMunicipality } = useMunicipality(municipalityId);
-	const municipality =
-		fetchedMunicipality ?? municipalities.find(m => m.municipalityId === municipalityId);
+	const { user, loading, error, refetch } = useUser(userId ? Number(userId) : undefined);
+	const { remove, loading: deleteLoading } = useRemoveUser();
+	const [isEditMode, setIsEditMode] = useState(false);
+	const toast = useToast();
 
 	useEffect(() => {
-		if (userId) fetchUser(userId);
-	}, [userId, fetchUser]);
+		if (userId) void refetch();
+	}, [userId, refetch]);
 
+	const showSingleError = useSingleErrorToast();
 	useEffect(() => {
-		if (!user) {
-			setEntityName(null);
-			setEntityLabel(null);
-			return;
-		}
-		if (regionId) {
-			fetchRegion(regionId).then(r => {
-				setEntityName(r?.name || null);
-				setEntityLabel('Region');
-			});
-		} else if (departmentId) {
-			if (!departmentLoading && department) {
-				setEntityName(department.name);
-				setEntityLabel('Department');
-			} else {
-				setEntityName(null);
-				setEntityLabel(null);
-			}
-		} else if (municipalityId) {
-			if (municipalities.length > 0 && municipality) {
-				setEntityName(municipality.name);
-				setEntityLabel('Municipality');
-			} else {
-				setEntityName(null);
-				setEntityLabel(null);
-			}
-		} else {
-			setEntityName(null);
-			setEntityLabel(null);
-		}
-	}, [
-		user,
-		regionId,
-		departmentId,
-		municipalityId,
-		department,
-		departmentLoading,
-		municipalities,
-		municipality,
-	]);
+		const key = userId ? `user.${userId}` : 'user.none';
+		showSingleError({ key, error, loading, message: 'Unable to load user.' });
+	}, [userId, error, loading, showSingleError]);
 
-	//TODO: Fix retrieval of entity names based on user associations
+	const handleDelete = async () => {
+		if (!userId || !user) return;
+
+		if (window.confirm(`Are you sure you want to delete ${user.firstName} ${user.lastName}?`)) {
+			const success = await remove(userId);
+			if (success) {
+				toast.showSuccess('User deleted successfully');
+				navigate(routes.users());
+			} else {
+				toast.showError('Failed to delete user');
+			}
+		}
+	};
+
+	const handleEditSuccess = () => {
+		setIsEditMode(false);
+		if (userId) void refetch();
+	};
 
 	return (
 		<div className="min-h-screen bg-gray-50 py-8">
-			<div className="max-w-2xl mx-auto px-4">
+			<div className="max-w-3xl mx-auto px-4">
 				<div className="bg-white rounded-xl shadow-lg p-8">
-					{loading ? (
-						<LoadingPanel text="Loading user..." />
-					) : error ? (
-						<div className="text-red-600 mb-4">{error}</div>
-					) : user ? (
-						<>
-							<div className="flex items-center mb-6">
-								<div className="flex-shrink-0 w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-2xl font-bold text-blue-700 mr-6">
-									{user.firstName[0]}
-									{user.lastName[0]}
-								</div>
-								<div>
-									<h1 className="text-2xl font-bold text-gray-900 mb-1">
-										{user.firstName} {user.lastName}
-									</h1>
-									<div className="flex flex-wrap gap-2">
-										{user.roles.map(r => (
-											<span
-												key={r}
-												className="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded"
-											>
-												{r}
-											</span>
-										))}
-									</div>
-								</div>
+					<section aria-busy={loading} aria-live="polite">
+						{loading ? (
+							<LoadingPanel text="Loading user..." />
+						) : error ? (
+							<div className="mb-4">
+								<ErrorRetryBlock message="Unable to load user." onRetry={() => refetch()} />
 							</div>
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-								<div>
-									<div className="text-gray-500 text-xs uppercase mb-1">Email</div>
-									<div className="text-gray-900 font-medium">{user.email}</div>
-								</div>
-								<div>
-									<div className="text-gray-500 text-xs uppercase mb-1">Mobile</div>
-									<div className="text-gray-900 font-medium">{user.mobile}</div>
-								</div>
-								{entityName && entityLabel && (
-									<div>
-										<div className="text-gray-500 text-xs uppercase mb-1">{entityLabel}</div>
-										<div className="text-gray-900 font-medium">{entityName}</div>
-									</div>
+						) : user ? (
+							<>
+								{isEditMode ? (
+									<UserForm
+										isNewUser={false}
+										initialData={user}
+										onCancel={() => setIsEditMode(false)}
+										onSuccess={handleEditSuccess}
+									/>
+								) : (
+									<>
+										<div className="flex items-center mb-6">
+											<div className="flex-shrink-0 w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-2xl font-bold text-blue-700 mr-6">
+												{user.firstName[0]}
+												{user.lastName[0]}
+											</div>
+											<div>
+												<h1 className="text-2xl font-bold text-gray-900 mb-1">
+													{user.firstName} {user.lastName}
+												</h1>
+												<div className="flex flex-wrap gap-2">
+													{user.roles.map((role, idx) => (
+														<span
+															key={idx}
+															className="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded"
+														>
+															{role.roleType}
+														</span>
+													))}
+												</div>
+											</div>
+										</div>
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+											<div>
+												<div className="text-gray-500 text-xs uppercase mb-1">Email</div>
+												<div className="text-gray-900 font-medium">{user.email}</div>
+											</div>
+											<div>
+												<div className="text-gray-500 text-xs uppercase mb-1">Mobile</div>
+												<div className="text-gray-900 font-medium">{user.mobile}</div>
+											</div>
+											<div className="md:col-span-2">
+												<div className="text-gray-500 text-xs uppercase mb-2">
+													Roles & Associations
+												</div>
+												<div className="space-y-2">
+													{user.roles.map((role, idx) => (
+														<div key={idx} className="text-sm text-gray-900">
+															<span className="font-medium">{role.roleType}</span>
+															{(role.regionId || role.municipalityId || role.departmentId) && (
+																<span className="text-gray-600">
+																	{' '}
+																	-{role.regionId && ` Region: ${role.regionId}`}
+																	{role.municipalityId && ` Municipality: ${role.municipalityId}`}
+																	{role.departmentId && ` Department: ${role.departmentId}`}
+																</span>
+															)}
+														</div>
+													))}
+												</div>
+											</div>
+										</div>
+										<div className="flex flex-wrap gap-2 justify-end mt-8">
+											<Button variant="outline" onClick={() => navigate(-1)}>
+												Back
+											</Button>
+											<Button variant="primary" onClick={() => setIsEditMode(true)}>
+												Edit
+											</Button>
+											<Button variant="danger" onClick={handleDelete} disabled={deleteLoading}>
+												{deleteLoading ? 'Deleting...' : 'Delete'}
+											</Button>
+										</div>
+									</>
 								)}
-							</div>
-							<div className="flex flex-wrap gap-2 justify-end mt-8">
-								<Button variant="outline" onClick={() => navigate(-1)}>
-									Back
-								</Button>
-								<Button variant="primary" onClick={() => navigate(`/users/${userId}/edit`)}>
-									Edit
-								</Button>
-								<Button
-									variant="danger"
-									onClick={() => {
-										/* TODO: implement delete logic */
-									}}
-								>
-									Delete
-								</Button>
-							</div>
-						</>
-					) : (
-						<div className="text-gray-500">User not found.</div>
-					)}
+							</>
+						) : (
+							<div className="text-gray-500">User not found.</div>
+						)}
+					</section>
 				</div>
 			</div>
 		</div>

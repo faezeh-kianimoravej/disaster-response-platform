@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useAuth, useUserHasAnyRole } from '@/context/AuthContext';
 import { routes } from '@/routes';
 import Button from '@/components/ui/Button';
-import { MUNICIPALITY_ROLES, REGION_ROLES } from '@/types/role';
+import { MUNICIPALITY_ROLES, REGION_ROLES, createRoles } from '@/types/role';
 import { Edit } from 'lucide-react';
 import type { Department } from '@/types/department';
 import AuthGuard from '@/components/auth/AuthGuard';
@@ -16,11 +16,14 @@ export default function DepartmentsPage() {
 	const { municipalityId } = useParams<{ municipalityId?: string }>();
 	const auth = useAuth();
 	const paramId = municipalityId ? Number(municipalityId) : undefined;
-	const effectiveId = paramId ?? auth?.user?.municipalityId ?? undefined;
+	const fallbackMunicipalityId = (auth?.user?.roles ?? [])
+		.map(r => r.municipalityId)
+		.find((id): id is number => typeof id === 'number');
+	const effectiveId = paramId ?? fallbackMunicipalityId ?? undefined;
 
 	return (
 		<AuthGuard
-			requireRoles={[...REGION_ROLES, ...MUNICIPALITY_ROLES]}
+			requireRoles={createRoles([...REGION_ROLES, ...MUNICIPALITY_ROLES])}
 			requireAccessToMunicipality={effectiveId}
 		>
 			<DepartmentsPageContent municipalityId={effectiveId} />
@@ -64,7 +67,7 @@ function DepartmentsPageContent({
 				<div className="flex justify-between items-center mb-8">
 					<h1 className="text-3xl font-bold text-gray-900">Departments</h1>
 					<div className="flex space-x-3">
-						{useUserHasAnyRole([...REGION_ROLES]) && (
+						{useUserHasAnyRole(createRoles([...REGION_ROLES])) && (
 							<Button onClick={() => navigate(routes.municipalities())} variant="outline">
 								Back
 							</Button>

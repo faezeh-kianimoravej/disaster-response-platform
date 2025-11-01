@@ -9,7 +9,7 @@ import {
 	useUserHasAccessToResource,
 } from '@/context/AuthContext';
 import NotAuthorizedPage from '@/pages/NotAuthorizedPage';
-import { Role } from '@/types/role';
+import { Role, RoleType } from '@/types/role';
 
 type Props = AuthGuardOptions & {
 	children: ReactNode;
@@ -17,7 +17,7 @@ type Props = AuthGuardOptions & {
 
 export type AuthGuardOptions = {
 	/** Roles required to access the page. */
-	requireRoles?: Role[];
+	requireRoles?: Role[] | RoleType[];
 	/** If 'all', user must have all roles; if 'any' (default) user must have at least one. */
 	roleMode?: 'any' | 'all';
 	/** Require user to have access to a specific region. */

@@ -4,6 +4,7 @@ import type { AuthState } from './AuthContext';
 import type { User } from '@/types/user';
 import { ToastProvider } from '../components/toast/ToastProvider';
 import React from 'react';
+import { createRole } from '@/types/role';
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
 	// TODO: Replace with real authentication logic
@@ -13,10 +14,10 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
 		lastName: 'Dev',
 		email: 'region.admin@example.com',
 		mobile: '1234567890',
-		roles: ['Region Admin'],
-		departmentId: undefined,
-		municipalityId: undefined,
-		regionId: 1,
+		roles: [createRole('Region Admin', { regionId: 1 })],
+		deleted: false,
+		createdAt: new Date().toISOString(),
+		updatedAt: new Date().toISOString(),
 	};
 
 	const [authState, setAuthState] = React.useState<AuthState>({

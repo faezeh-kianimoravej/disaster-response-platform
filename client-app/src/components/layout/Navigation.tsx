@@ -4,13 +4,19 @@ import Logo from '@/components/ui/Logo';
 import NotificationPanel from '@/components/features/notifications/NotificationPanel';
 import AccountPanel from '@/components/auth/AccountPanel';
 import { useUserHasAnyRole } from '@/context/AuthContext';
-import { ADMIN_ROLES, REGION_ROLES, MUNICIPALITY_ROLES, DEPARTMENT_ROLES } from '@/types/role';
+import {
+	ADMIN_ROLES,
+	REGION_ROLES,
+	MUNICIPALITY_ROLES,
+	DEPARTMENT_ROLES,
+	createRoles,
+} from '@/types/role';
 
 export default function Navigation() {
-	const showAdmin = useUserHasAnyRole([...ADMIN_ROLES]);
-	const showRegion = useUserHasAnyRole([...REGION_ROLES]);
-	const showMunicipality = useUserHasAnyRole([...MUNICIPALITY_ROLES]);
-	const showDepartment = useUserHasAnyRole([...DEPARTMENT_ROLES]);
+	const showAdmin = useUserHasAnyRole(createRoles([...ADMIN_ROLES]));
+	const showRegion = useUserHasAnyRole(createRoles([...REGION_ROLES]));
+	const showMunicipality = useUserHasAnyRole(createRoles([...MUNICIPALITY_ROLES]));
+	const showDepartment = useUserHasAnyRole(createRoles([...DEPARTMENT_ROLES]));
 
 	// Build nav items with role-based visibility
 	const navItems = [

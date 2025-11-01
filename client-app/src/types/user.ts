@@ -7,9 +7,10 @@ export interface User {
 	email: string;
 	mobile: string;
 	roles: Role[];
-	departmentId: number | undefined;
-	municipalityId: number | undefined;
-	regionId: number | undefined;
+	deleted: boolean;
+	createdAt?: string;
+	updatedAt?: string;
+	passwordUpdatedAt?: string;
 }
 
 export interface UserCreateFormData {
@@ -19,11 +20,20 @@ export interface UserCreateFormData {
 	mobile: string;
 	password: string;
 	roles: Role[];
-	departmentId?: number | undefined;
-	municipalityId?: number | undefined;
-	regionId?: number | undefined;
 }
 
-export interface UserEditFormData extends UserCreateFormData {
+export interface UserEditFormData {
 	userId: number;
+	firstName: string;
+	lastName: string;
+	email: string;
+	mobile: string;
+	password?: string;
+	roles: Role[];
+}
+
+export interface LoginResponse {
+	email: string;
+	roles: Role[];
+	token: string;
 }

@@ -8,11 +8,11 @@ import LoadingPanel from '@/components/ui/LoadingPanel';
 import { ErrorRetryBlock } from '@/components/ui/ErrorRetry';
 import useSingleErrorToast from '@/hooks/useSingleErrorToast';
 import AuthGuard from '@/components/auth/AuthGuard';
-import { REGION_ROLES } from '@/types/role';
+import { REGION_ROLES, createRoles } from '@/types/role';
 
 export default function MunicipalitiesPage() {
 	return (
-		<AuthGuard requireRoles={[...REGION_ROLES]}>
+		<AuthGuard requireRoles={createRoles([...REGION_ROLES])}>
 			<MunicipalitiesPageContent />
 		</AuthGuard>
 	);
@@ -21,7 +21,9 @@ export default function MunicipalitiesPage() {
 function MunicipalitiesPageContent() {
 	const auth = useAuth();
 	const navigate = useNavigate();
-	const regionId = auth?.user?.regionId;
+	const regionId = (auth?.user?.roles ?? [])
+		.map(r => r.regionId)
+		.find((id): id is number => typeof id === 'number');
 	const { municipalities, loading, error, refetch } = useMunicipalities(regionId, {
 		enabled: !!regionId,
 	});

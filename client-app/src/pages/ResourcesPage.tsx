@@ -9,18 +9,21 @@ import LoadingPanel from '@/components/ui/LoadingPanel';
 import { ErrorRetryBlock } from '@/components/ui/ErrorRetry';
 import useSingleErrorToast from '@/hooks/useSingleErrorToast';
 import AuthGuard from '@/components/auth/AuthGuard';
-import { DEPARTMENT_ROLES, MUNICIPALITY_ROLES, REGION_ROLES } from '@/types/role';
+import { DEPARTMENT_ROLES, MUNICIPALITY_ROLES, REGION_ROLES, createRoles } from '@/types/role';
 import { useAuth, useUserHasAnyRole } from '@/context/AuthContext';
 
 export default function ResourcesPage() {
 	const { departmentId } = useParams<{ departmentId?: string }>();
 	const auth = useAuth();
 	const paramId = departmentId ? Number(departmentId) : undefined;
-	const effectiveId = paramId ?? auth?.user?.departmentId ?? undefined;
+	const fallbackDepartmentId = (auth?.user?.roles ?? [])
+		.map(r => r.departmentId)
+		.find((id): id is number => typeof id === 'number');
+	const effectiveId = paramId ?? fallbackDepartmentId ?? undefined;
 
 	return (
 		<AuthGuard
-			requireRoles={[...REGION_ROLES, ...MUNICIPALITY_ROLES, ...DEPARTMENT_ROLES]}
+			requireRoles={createRoles([...REGION_ROLES, ...MUNICIPALITY_ROLES, ...DEPARTMENT_ROLES])}
 			requireAccessToDepartment={effectiveId}
 		>
 			<ResourcesPageContent departmentId={effectiveId} />
@@ -57,7 +60,7 @@ function ResourcesPageContent({
 				<div className="flex justify-between items-center mb-8">
 					<h1 className="text-3xl font-bold text-gray-900">Resource Management</h1>
 					<div className="flex space-x-3">
-						{useUserHasAnyRole([...REGION_ROLES, ...MUNICIPALITY_ROLES]) && (
+						{useUserHasAnyRole(createRoles([...REGION_ROLES, ...MUNICIPALITY_ROLES])) && (
 							<Button
 								onClick={() => {
 									if (department?.municipalityId !== undefined) {

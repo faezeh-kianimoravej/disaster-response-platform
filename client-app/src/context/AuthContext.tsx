@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-syntax */
 import { createContext, useContext } from 'react';
 import type { User } from '@/types/user';
-import type { Role } from '@/types/role';
+import type { Role, RoleType } from '@/types/role';
 import type { Municipality } from '@/types/municipality';
 import type { Department } from '@/types/department';
 import type { Resource } from '@/types/resource';
@@ -30,54 +30,76 @@ import { useResource } from '@/hooks/useResource';
  * reusability for non-React contexts.
  */
 
+/**
+ * Helper: Get all region IDs from user's roles
+ */
+function getUserRegionIds(user: User | null | undefined): number[] {
+	if (!user?.roles) return [];
+	return user.roles
+		.map(r => r.regionId)
+		.filter((id): id is number => id !== null && id !== undefined);
+}
+
+/**
+ * Helper: Get all municipality IDs from user's roles
+ */
+function getUserMunicipalityIds(user: User | null | undefined): number[] {
+	if (!user?.roles) return [];
+	return user.roles
+		.map(r => r.municipalityId)
+		.filter((id): id is number => id !== null && id !== undefined);
+}
+
+/**
+ * Helper: Get all department IDs from user's roles
+ */
+function getUserDepartmentIds(user: User | null | undefined): number[] {
+	if (!user?.roles) return [];
+	return user.roles
+		.map(r => r.departmentId)
+		.filter((id): id is number => id !== null && id !== undefined);
+}
+
 export function isUserLoggedIn(auth: AuthState | null | undefined): boolean {
 	return !!auth && !!auth.user;
 }
 
-export function userHasAnyRole(auth: AuthState | null | undefined, roles: Role[]): boolean {
+// Overloads to support both RoleType[] and Role[]
+export function userHasAnyRole(auth: AuthState | null | undefined, roles: Role[]): boolean;
+export function userHasAnyRole(auth: AuthState | null | undefined, roles: RoleType[]): boolean;
+export function userHasAnyRole(
+	auth: AuthState | null | undefined,
+	roles: (Role | RoleType)[]
+): boolean {
 	if (!auth?.user?.roles) return false;
-	return auth.user.roles.some(r => roles.includes(r));
+	const userRoleTypes = auth.user.roles.map(r => r.roleType);
+	const checkRoleTypes: RoleType[] = roles.map(
+		r => (typeof r === 'string' ? r : r.roleType) as RoleType
+	);
+	return userRoleTypes.some(r => checkRoleTypes.includes(r));
 }
 
-export function userHasAllRoles(auth: AuthState | null | undefined, roles: Role[]): boolean {
+export function userHasAllRoles(auth: AuthState | null | undefined, roles: Role[]): boolean;
+export function userHasAllRoles(auth: AuthState | null | undefined, roles: RoleType[]): boolean;
+export function userHasAllRoles(
+	auth: AuthState | null | undefined,
+	roles: (Role | RoleType)[]
+): boolean {
 	if (!auth?.user?.roles) return false;
-	return roles.every(role => auth.user?.roles && auth.user.roles.includes(role));
-}
-
-export function userHasRegionId(
-	auth: AuthState | null | undefined,
-	regionId: number | null | undefined
-): boolean {
-	if (!auth?.user) return false;
-	if (auth.user.regionId === undefined) return false;
-	return auth.user.regionId === regionId;
-}
-
-export function userHasMunicipalityId(
-	auth: AuthState | null | undefined,
-	municipalityId: number | null | undefined
-): boolean {
-	if (!auth?.user) return false;
-	if (auth.user.municipalityId === undefined) return false;
-	return auth.user.municipalityId === municipalityId;
-}
-
-export function userHasDepartmentId(
-	auth: AuthState | null | undefined,
-	departmentId: number | null | undefined
-): boolean {
-	if (!auth?.user) return false;
-	if (auth.user.departmentId === undefined) return false;
-	return auth.user.departmentId === departmentId;
+	const userRoleTypes = auth.user.roles.map(r => r.roleType);
+	const checkRoleTypes: RoleType[] = roles.map(
+		r => (typeof r === 'string' ? r : r.roleType) as RoleType
+	);
+	return checkRoleTypes.every(role => userRoleTypes.includes(role));
 }
 
 export function userHasAccessToRegion(
 	auth: AuthState | null | undefined,
 	regionId: number | null | undefined
 ): boolean {
-	if (!auth?.user) return false;
-	if (auth.user.regionId === undefined) return false;
-	return auth.user.regionId === regionId;
+	if (!auth?.user || regionId === null || regionId === undefined) return false;
+	const userRegionIds = getUserRegionIds(auth.user);
+	return userRegionIds.includes(regionId);
 }
 
 export function userHasAccessToMunicipality(
@@ -86,16 +108,23 @@ export function userHasAccessToMunicipality(
 	municipality?: Municipality | null
 ): boolean {
 	if (!auth?.user) return false;
+
+	// Direct municipality access
+	const userMunicipalityIds = getUserMunicipalityIds(auth.user);
 	if (
-		auth.user.municipalityId !== undefined &&
 		municipalityId !== null &&
-		auth.user.municipalityId === municipalityId
+		municipalityId !== undefined &&
+		userMunicipalityIds.includes(municipalityId)
 	) {
 		return true;
 	}
-	if (auth.user.regionId !== undefined && municipality) {
-		if (municipality.regionId === auth.user.regionId) return true;
+
+	// Access via region
+	const userRegionIds = getUserRegionIds(auth.user);
+	if (municipality && userRegionIds.length > 0) {
+		if (userRegionIds.includes(municipality.regionId)) return true;
 	}
+
 	return false;
 }
 
@@ -106,18 +135,29 @@ export function userHasAccessToDepartment(
 	municipality?: Municipality | null
 ): boolean {
 	if (!auth?.user) return false;
+
+	// Direct department access
+	const userDepartmentIds = getUserDepartmentIds(auth.user);
 	if (
-		auth.user.departmentId !== undefined &&
 		departmentId !== null &&
-		auth.user.departmentId === departmentId
-	)
+		departmentId !== undefined &&
+		userDepartmentIds.includes(departmentId)
+	) {
 		return true;
-	if (auth.user.municipalityId !== undefined && department) {
-		if (department.municipalityId === auth.user.municipalityId) return true;
 	}
-	if (auth.user.regionId !== undefined && municipality) {
-		if (municipality.regionId === auth.user.regionId) return true;
+
+	// Access via municipality
+	const userMunicipalityIds = getUserMunicipalityIds(auth.user);
+	if (department && userMunicipalityIds.length > 0) {
+		if (userMunicipalityIds.includes(department.municipalityId)) return true;
 	}
+
+	// Access via region
+	const userRegionIds = getUserRegionIds(auth.user);
+	if (municipality && userRegionIds.length > 0) {
+		if (userRegionIds.includes(municipality.regionId)) return true;
+	}
+
 	return false;
 }
 
@@ -128,15 +168,25 @@ export function userHasAccessToResource(
 	municipality?: Municipality | null
 ): boolean {
 	if (!auth?.user) return false;
-	if (auth.user.departmentId !== undefined && resource) {
-		if (resource.departmentId === auth.user.departmentId) return true;
+
+	// Direct department access
+	const userDepartmentIds = getUserDepartmentIds(auth.user);
+	if (resource && userDepartmentIds.length > 0) {
+		if (userDepartmentIds.includes(resource.departmentId)) return true;
 	}
-	if (auth.user.municipalityId !== undefined && department) {
-		if (department.municipalityId === auth.user.municipalityId) return true;
+
+	// Access via municipality
+	const userMunicipalityIds = getUserMunicipalityIds(auth.user);
+	if (department && userMunicipalityIds.length > 0) {
+		if (userMunicipalityIds.includes(department.municipalityId)) return true;
 	}
-	if (auth.user.regionId !== undefined && municipality) {
-		if (municipality.regionId === auth.user.regionId) return true;
+
+	// Access via region
+	const userRegionIds = getUserRegionIds(auth.user);
+	if (municipality && userRegionIds.length > 0) {
+		if (userRegionIds.includes(municipality.regionId)) return true;
 	}
+
 	return false;
 }
 
@@ -174,9 +224,13 @@ export function useIsUserLoggedIn(): boolean {
  * - Returns true if the currently authenticated user has any of the given roles.
  * - Use inside React components/pages.
  */
-export function useUserHasAnyRole(roles: Role[]): boolean {
+// Accept RoleType[] or Role[] so callers don't need to construct Role objects
+export function useUserHasAnyRole(roles: Role[] | RoleType[]): boolean {
 	const auth = useAuth();
-	return userHasAnyRole(auth ?? null, roles);
+	const normalized: RoleType[] = (roles as (Role | RoleType)[]).map(
+		r => (typeof r === 'string' ? r : r.roleType) as RoleType
+	);
+	return userHasAnyRole(auth ?? null, normalized);
 }
 
 /**
@@ -184,9 +238,13 @@ export function useUserHasAnyRole(roles: Role[]): boolean {
  * - Returns true if the currently authenticated user has all of the given roles.
  * - Use inside React components/pages.
  */
-export function useUserHasAllRoles(roles: Role[]): boolean {
+// Accept RoleType[] or Role[] so callers don't need to construct Role objects
+export function useUserHasAllRoles(roles: Role[] | RoleType[]): boolean {
 	const auth = useAuth();
-	return userHasAllRoles(auth ?? null, roles);
+	const normalized: RoleType[] = (roles as (Role | RoleType)[]).map(
+		r => (typeof r === 'string' ? r : r.roleType) as RoleType
+	);
+	return userHasAllRoles(auth ?? null, normalized);
 }
 
 /**
@@ -198,36 +256,6 @@ export function useUserHasAllRoles(roles: Role[]): boolean {
 export function useCurrentUserRoles(): Role[] {
 	const auth = useAuth();
 	return auth?.user?.roles ?? [];
-}
-
-/**
- * Hook: useUserHasRegionId
- * - Returns true if the currently authenticated user's regionId matches the given regionId.
- * - Use inside React components/pages.
- */
-export function useUserHasRegionId(regionId: number | null | undefined): boolean {
-	const auth = useAuth();
-	return userHasRegionId(auth ?? null, regionId);
-}
-
-/**
- * Hook: useUserHasMunicipalityId
- * - Returns true if the currently authenticated user's municipalityId matches the given municipalityId.
- * - Use inside React components/pages.
- */
-export function useUserHasMunicipalityId(municipalityId: number | null | undefined): boolean {
-	const auth = useAuth();
-	return userHasMunicipalityId(auth ?? null, municipalityId);
-}
-
-/**
- * Hook: useUserHasDepartmentId
- * - Returns true if the currently authenticated user's departmentId matches the given departmentId.
- * - Use inside React components/pages.
- */
-export function useUserHasDepartmentId(departmentId: number | null | undefined): boolean {
-	const auth = useAuth();
-	return userHasDepartmentId(auth ?? null, departmentId);
 }
 
 /**

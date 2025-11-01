@@ -84,10 +84,18 @@ export class BaseApi {
 	protected handleError(error: unknown): ApiError {
 		if (error && typeof error === 'object' && 'response' in error) {
 			const axiosError = error as AxiosError;
-			const data = axiosError.response?.data as { errors?: Record<string, string> } | undefined;
-			const validationErrors = data && data.errors ? data.errors : undefined;
+			const data = axiosError.response?.data as
+				| {
+						message?: string;
+						error?: string;
+						errors?: Record<string, string>;
+				  }
+				| undefined;
+			const validationErrors = data?.errors;
+			// Prefer backend-provided message if present; fallback to Axios message
+			const serverMessage = data?.message || data?.error;
 			return {
-				message: axiosError.message,
+				message: serverMessage || axiosError.message,
 				status: axiosError.response?.status || 500,
 				...(axiosError.code && { code: axiosError.code }),
 				...(validationErrors && { validationErrors }),

@@ -12,7 +12,7 @@ import { useToast } from '@/components/toast/ToastProvider';
 import useSingleErrorToast from '@/hooks/useSingleErrorToast';
 import type { Department } from '@/types/department';
 import AuthGuard from '@/components/auth/AuthGuard';
-import { MUNICIPALITY_ROLES, REGION_ROLES } from '@/types/role';
+import { MUNICIPALITY_ROLES, REGION_ROLES, createRoles } from '@/types/role';
 
 export default function DepartmentPage() {
 	const { departmentId } = useParams<{ departmentId?: string }>();
@@ -21,7 +21,7 @@ export default function DepartmentPage() {
 
 	return (
 		<AuthGuard
-			requireRoles={[...REGION_ROLES, ...MUNICIPALITY_ROLES]}
+			requireRoles={createRoles([...REGION_ROLES, ...MUNICIPALITY_ROLES])}
 			requireAccessToDepartment={deptId}
 		>
 			<DepartmentPageContent departmentId={deptId} isNewDepartment={isNewDepartment} />
@@ -48,8 +48,10 @@ function DepartmentPageContent({
 
 	const muniIdFromDept = department?.municipalityId;
 	const muniIdFromState = location?.state?.municipalityId;
-	const muniIdForActions =
-		muniIdFromDept ?? muniIdFromState ?? auth?.user?.municipalityId ?? undefined;
+	const fallbackMunicipalityId = (auth?.user?.roles ?? [])
+		.map(r => r.municipalityId)
+		.find((id): id is number => typeof id === 'number');
+	const muniIdForActions = muniIdFromDept ?? muniIdFromState ?? fallbackMunicipalityId ?? undefined;
 	const deleteMutation = useDeleteDepartment();
 
 	const [editing, setEditing] = useState(isNewDepartment);

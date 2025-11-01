@@ -5,6 +5,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import nl.saxion.disaster.user_service.validation.OnCreate;
+import nl.saxion.disaster.user_service.validation.OnUpdate;
 
 import java.util.Set;
 
@@ -45,12 +47,19 @@ public record UserRequestDto(
 
         Set<RoleDto> roles,
 
-        @NotBlank(message = "Password is required")
-        @Size(min = 8, max = 100, message = "Password must be between 8 and 100 characters")
-        @Pattern(
-                regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
-                message = "Password must contain uppercase, lowercase, number, and special character"
-        )
+        @NotBlank(message = "Password is required", groups = OnCreate.class)
+        @Pattern.List({
+                @Pattern(
+                        regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
+                        message = "Password must contain uppercase, lowercase, number, and special character",
+                        groups = OnCreate.class
+                ),
+                @Pattern(
+                        regexp = "^$|^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
+                        message = "Password must be empty or meet complexity requirements",
+                        groups = OnUpdate.class
+                )
+        })
         @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
         String password
 ) {

@@ -8,9 +8,10 @@ describe('AccountPanel smoke', () => {
 		renderWithProviders(<AccountPanel />);
 		// Open
 		fireEvent.click(screen.getByRole('button', { name: /account/i }));
-		expect(screen.getByText(/manage authentication/i)).toBeInTheDocument();
-		// Shows role list heading and a checkbox
-		expect(screen.getByText(/roles/i)).toBeInTheDocument();
+		// Updated UI shows headings for current and toggle roles
+		expect(screen.getByText(/Current Roles/i)).toBeInTheDocument();
+		expect(screen.getByText(/Toggle Roles/i)).toBeInTheDocument();
+		// Shows some role checkboxes
 		const roleCheckboxes = screen.getAllByRole('checkbox');
 		expect(roleCheckboxes.length).toBeGreaterThan(0);
 	});

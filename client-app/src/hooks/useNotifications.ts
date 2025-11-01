@@ -13,7 +13,11 @@ export default function useNotifications(
 	options?: { enabled?: boolean }
 ) {
 	const auth = useAuth();
-	const regionId = regionIdParam ?? auth?.user?.regionId;
+	const regionId =
+		regionIdParam ??
+		(auth?.user?.roles ?? [])
+			.map(r => r.regionId)
+			.find((id): id is number => typeof id === 'number');
 	const { lastNotificationId, setLastNotificationId } = useNotificationContext();
 	const [isConnected, setIsConnected] = useState(false);
 	const [error, setError] = useState<string | null>(null);

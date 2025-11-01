@@ -25,8 +25,8 @@ export const routes = {
 
 	// Users
 	users: () => '/users',
+	userNew: () => '/users/new',
 	user: (userId: number | string) => `/users/${userId}`,
-	userEdit: (userId: number | string) => `/users/${userId}/edit`,
 
 	// Incidents
 	incidents: () => '/incidents',

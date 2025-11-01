@@ -17,8 +17,11 @@ import nl.saxion.disaster.user_service.dto.UserRequestDto;
 import nl.saxion.disaster.user_service.dto.UserResponseDto;
 import nl.saxion.disaster.user_service.service.contract.UserAuthenticationService;
 import nl.saxion.disaster.user_service.service.contract.UserService;
+import nl.saxion.disaster.user_service.validation.OnCreate;
+import nl.saxion.disaster.user_service.validation.OnUpdate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -55,7 +58,7 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "Invalid request payload", content = @Content)
     })
     @PostMapping
-    public ResponseEntity<UserResponseDto> createUser(@Valid @RequestBody UserRequestDto userRequestDto) {
+    public ResponseEntity<UserResponseDto> createUser(@Validated(OnCreate.class) @RequestBody UserRequestDto userRequestDto) {
         long start = System.currentTimeMillis();
         log.debug("[CREATE USER] Request received for email={}", userRequestDto.email());
 
@@ -210,7 +213,7 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDto> updateUser(
             @PathVariable Long id,
-            @Valid @RequestBody UserRequestDto userRequestDto) {
+            @Validated(OnUpdate.class) @RequestBody UserRequestDto userRequestDto) {
 
         long start = System.currentTimeMillis();
         log.info("[UPDATE USER] Request received to update user ID={}", id);

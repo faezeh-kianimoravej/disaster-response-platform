@@ -7,7 +7,7 @@ export interface FormInputProps {
 	onChange: (
 		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
 	) => void;
-	type?: 'text' | 'number' | 'textarea' | 'select' | 'file';
+	type?: 'text' | 'number' | 'textarea' | 'select' | 'file' | 'password';
 	required?: boolean;
 	error?: string | undefined;
 	showValidation?: boolean;
@@ -143,6 +143,20 @@ export default function FormInput({
 						placeholder={placeholder}
 						min={min}
 						max={max}
+						disabled={disabled}
+						className={baseClasses}
+					/>
+				);
+
+			case 'password':
+				return (
+					<input
+						type="password"
+						id={inputId}
+						name={name}
+						value={value}
+						onChange={onChange}
+						placeholder={placeholder}
 						disabled={disabled}
 						className={baseClasses}
 					/>

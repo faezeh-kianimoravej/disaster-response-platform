@@ -22,3 +22,11 @@ export const RESOURCE_QUERY_KEYS = {
 	list: (departmentId: number) => ['resources', departmentId] as const,
 	item: (resourceId: number) => ['resource', resourceId] as const,
 };
+
+export const USER_QUERY_KEYS = {
+	list: ['users'] as const,
+	item: (userId: number | string) => ['user', userId] as const,
+	byRegion: (regionId: number) => ['users', 'region', regionId] as const,
+	byMunicipality: (municipalityId: number) => ['users', 'municipality', municipalityId] as const,
+	byDepartment: (departmentId: number) => ['users', 'department', departmentId] as const,
+};
