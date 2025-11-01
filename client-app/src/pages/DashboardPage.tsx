@@ -1,24 +1,21 @@
-﻿import { useEffect, useState } from 'react';
+﻿import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-import AuthGuard from '@/components/AuthGuard';
-import LoadingPanel from '@/components/LoadingPanel';
-import SearchSelect from '@/components/SearchSelect';
-import IncidentFilters from '@/components/IncidentFilters';
-import IncidentCard from '@/components/IncidentCard';
-import { ErrorRetryInline, ErrorRetryBlock } from '@/components/ErrorRetry';
-
+import { routes } from '@/routes';
+import AuthGuard from '@/components/auth/AuthGuard';
+import LoadingPanel from '@/components/ui/LoadingPanel';
+import IncidentFilters from '@/components/features/incidents/IncidentFilters';
+import IncidentCard from '@/components/features/incidents/IncidentCard';
+import { ErrorRetryBlock } from '@/components/ui/ErrorRetry';
 import { useIncidents } from '@/hooks/useIncident';
-import { useRegion } from '@/hooks/useRegion';
 import { useIncidentFilters } from '@/hooks/useIncidentFilters';
-import { useAuth, useUserHasAnyRole } from '@/context/AuthContext';
-import { useToast } from '@/components/toast/ToastProvider';
-
+import { useAuth } from '@/context/AuthContext';
+import useSingleErrorToast from '@/hooks/useSingleErrorToast';
 import type { Incident } from '@/types/incident';
+import { REGION_ROLES } from '@/types/role';
 
 export default function DashboardPage() {
 	return (
-		<AuthGuard requireRoles={['Calamity Coordinator', 'Chair Safety Region', 'Region Admin']}>
+		<AuthGuard requireRoles={[...REGION_ROLES]}>
 			<DashboardPageContent />
 		</AuthGuard>
 	);
@@ -27,20 +24,7 @@ export default function DashboardPage() {
 function DashboardPageContent(): JSX.Element {
 	const auth = useAuth();
 	const navigate = useNavigate();
-	const isSuper = useUserHasAnyRole(['Super Admin']);
-
-	const { regions, fetchRegions, error: regionsError } = useRegion({ enabled: isSuper });
-	const [selectedRegionId, setSelectedRegionId] = useState<number | null>(
-		auth?.user?.regionId ?? null
-	);
-
-	useEffect(() => {
-		if (isSuper && regions.length > 0 && selectedRegionId === null) {
-			setSelectedRegionId(regions[0]?.regionId ?? null);
-		}
-	}, [isSuper, regions, selectedRegionId]);
-
-	const regionId = selectedRegionId ?? auth?.user?.regionId ?? 0;
+	const regionId = auth?.user?.regionId ?? 0;
 
 	const {
 		incidents,
@@ -48,21 +32,22 @@ function DashboardPageContent(): JSX.Element {
 		error: incidentsError,
 		refetch: incidentsRefetch,
 	} = useIncidents(regionId, { enabled: true });
-	const { showError } = useToast();
+	const showSingleError = useSingleErrorToast();
 
 	const { filters, setFilters, filteredIncidents, clearAllFilters } = useIncidentFilters({
 		incidents,
 	});
 
 	useEffect(() => {
-		if (incidentsError) showError('Unable to load incidents.');
-	}, [incidentsError, showError]);
+		showSingleError({
+			key: 'dashboard.incidents',
+			error: incidentsError,
+			loading: incidentsLoading,
+			message: 'Unable to load incidents.',
+		});
+	}, [incidentsError, incidentsLoading, showSingleError]);
 
-	useEffect(() => {
-		if (regionsError) showError('Unable to load regions.');
-	}, [regionsError, showError]);
-
-	const handleDetailsClick = (incident: Incident) => navigate(`/incidents/${incident.incidentId}`);
+	const handleDetailsClick = (incident: Incident) => navigate(routes.incident(incident.incidentId));
 
 	const statusOrder: Record<Incident['status'], number> = {
 		Open: 3,
@@ -95,27 +80,6 @@ function DashboardPageContent(): JSX.Element {
 		<div className="min-h-screen bg-gray-50 py-8">
 			<div className="max-w-6xl mx-auto px-4">
 				<h1 className="text-3xl font-bold text-gray-900 mb-6">Dashboard</h1>
-
-				{isSuper && (
-					<div className="mb-4">
-						<SearchSelect
-							items={regions}
-							getId={r => r.regionId}
-							getLabel={r => r.name}
-							value={selectedRegionId}
-							onChange={id => setSelectedRegionId(id)}
-							placeholder="Region"
-							className="w-64"
-							inputClassName="pr-8"
-						/>
-
-						{regionsError && (
-							<div className="mt-2">
-								<ErrorRetryInline message="Unable to load regions" onRetry={() => fetchRegions()} />
-							</div>
-						)}
-					</div>
-				)}
 
 				<IncidentFilters
 					statusFilter={filters.statusFilter}

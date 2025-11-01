@@ -9,15 +9,14 @@ import {
 } from '@/api/incident';
 import type { Incident, IncidentFormData } from '@/types/incident';
 import { INCIDENT_QUERY_KEYS } from '@/hooks/queryKeys';
-import { useState } from 'react';
-import incidentRequestSchema from '@/validation/incidentValidation';
-import type { ApiError } from '@/api/base';
 
-export function useIncidents(regionId: number, options?: { enabled?: boolean }) {
+export function useIncidents(regionId?: number, options?: { enabled?: boolean }) {
+	const enabled = options?.enabled ?? !!regionId;
+	const listKey = regionId ? INCIDENT_QUERY_KEYS.list(regionId) : ['incidents', 'none'];
 	const listQuery = useQuery<Incident[], Error>({
-		queryKey: INCIDENT_QUERY_KEYS.list(regionId),
-		queryFn: () => getIncidents(regionId),
-		enabled: (options?.enabled ?? true) && regionId > 0,
+		queryKey: listKey,
+		queryFn: () => getIncidents(regionId as number),
+		enabled: enabled && !!regionId && regionId > 0,
 		staleTime: 1000 * 60 * 2,
 	});
 
@@ -105,50 +104,4 @@ export function useDeleteIncident(regionId: number) {
 	return mutation;
 }
 
-export function useUpdateIncidentForm(regionId: number) {
-	const mutation = useUpdateIncident(regionId);
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
-	const [validation, setValidation] = useState<Record<string, string> | null>(null);
-
-	async function submit(id: number, formData: Partial<IncidentFormData>) {
-		setLoading(true);
-		setError(null);
-		setValidation(null);
-
-		const prioritySchema = incidentRequestSchema.pick({ severity: true, gripLevel: true });
-		const parsed = prioritySchema.safeParse({
-			severity: formData.severity,
-			gripLevel: formData.gripLevel,
-		});
-		if (!parsed.success) {
-			const zErr = parsed.error;
-			const flat = zErr.flatten().fieldErrors as Record<string, string[] | undefined>;
-			const map: Record<string, string> = {};
-			for (const k in flat) {
-				const arr = flat[k];
-				if (Array.isArray(arr) && arr[0]) map[k] = arr[0];
-			}
-			setValidation(Object.keys(map).length > 0 ? map : null);
-			setLoading(false);
-			return false;
-		}
-
-		try {
-			await mutation.mutateAsync({ id, data: formData });
-			setLoading(false);
-			return true;
-		} catch (err) {
-			const apiErr = err as ApiError;
-			if (apiErr && apiErr.validationErrors) {
-				setValidation(apiErr.validationErrors as Record<string, string>);
-			} else {
-				setError(apiErr?.message ?? String(err));
-			}
-			setLoading(false);
-			return false;
-		}
-	}
-
-	return { submit, loading, error, validation } as const;
-}
+// Hooks don’t validate; forms do. Remove form-level validation helper in favor of zodResolver in forms.

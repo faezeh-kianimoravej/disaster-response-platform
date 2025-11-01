@@ -17,3 +17,8 @@ export const INCIDENT_QUERY_KEYS = {
 	list: (regionId: number) => ['incidents', regionId] as const,
 	item: (incidentId: number) => ['incident', incidentId] as const,
 };
+
+export const RESOURCE_QUERY_KEYS = {
+	list: (departmentId: number) => ['resources', departmentId] as const,
+	item: (resourceId: number) => ['resource', resourceId] as const,
+};

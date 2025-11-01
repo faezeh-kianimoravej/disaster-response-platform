@@ -13,10 +13,10 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
 		lastName: 'Dev',
 		email: 'region.admin@example.com',
 		mobile: '1234567890',
-		roles: ['Super Admin'],
+		roles: ['Region Admin'],
 		departmentId: undefined,
 		municipalityId: undefined,
-		regionId: undefined,
+		regionId: 1,
 	};
 
 	const [authState, setAuthState] = React.useState<AuthState>({

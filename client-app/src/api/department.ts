@@ -1,30 +1,58 @@
 import { BaseApi } from '@/api/base';
-import type { Department, DepartmentFormData } from '@/types/department';
+import type { Department } from '@/types/department';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const departmentApi = new BaseApi(`${API_BASE_URL}/departments`);
 
-export async function getDepartments(): Promise<Department[]> {
-	return await departmentApi.get<Department[]>('');
+type ApiDepartment = {
+	departmentId: number | string;
+	municipalityId: number | string;
+	name: string;
+	description?: string;
+	contactInfo?: string;
+	image: string;
+	capacity?: number | string;
+	currentStaff?: number | string;
+};
+
+function fromApiDepartment(a: ApiDepartment): Department {
+	return {
+		departmentId: Number(a.departmentId),
+		municipalityId: Number(a.municipalityId),
+		name: a.name,
+		description: a.description,
+		contactInfo: a.contactInfo,
+		image: a.image,
+		capacity: a.capacity !== undefined ? Number(a.capacity) : undefined,
+		currentStaff: a.currentStaff !== undefined ? Number(a.currentStaff) : undefined,
+	} as Department;
+}
+
+function fromApiDepartments(list: ApiDepartment[]): Department[] {
+	return list.map(fromApiDepartment);
 }
 
 export async function getDepartmentsByMunicipalityId(
 	municipalityId: number
 ): Promise<Department[]> {
-	return await departmentApi.get<Department[]>(`/municipality/${municipalityId}`);
+	const data = await departmentApi.get<ApiDepartment[]>(`/municipality/${municipalityId}`);
+	return fromApiDepartments(data);
 }
 
 export async function getDepartmentById(id: number): Promise<Department> {
-	return await departmentApi.get<Department>(`/${id}`);
+	const data = await departmentApi.get<ApiDepartment>(`/${id}`);
+	return fromApiDepartment(data);
 }
 
-export async function addDepartment(formData: DepartmentFormData): Promise<Department> {
-	return await departmentApi.post<Department>('', formData);
+export async function addDepartment(formData: Department): Promise<Department> {
+	const created = await departmentApi.post<ApiDepartment>('', formData);
+	return fromApiDepartment(created);
 }
 
 export async function updateDepartment(updated: Department): Promise<Department> {
-	return await departmentApi.put<Department>(`/${updated.departmentId}`, updated);
+	const updatedApi = await departmentApi.put<ApiDepartment>(`/${updated.departmentId}`, updated);
+	return fromApiDepartment(updatedApi);
 }
 
 export async function deleteDepartment(id: number): Promise<void> {

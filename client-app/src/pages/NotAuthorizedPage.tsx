@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { routes } from '@/routes';
 
 export default function NotAuthorizedPage() {
 	return (
@@ -9,7 +10,7 @@ export default function NotAuthorizedPage() {
 				<br />
 				Please contact your administrator if you believe this is a mistake.
 			</p>
-			<Link to="/" className="text-blue-600 hover:underline">
+			<Link to={routes.home()} className="text-blue-600 hover:underline">
 				Go to Home
 			</Link>
 		</div>

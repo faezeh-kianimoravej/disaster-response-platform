@@ -1,65 +1,81 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { useDepartment } from '@/hooks/useDepartment';
+import { useAuth } from '@/context/AuthContext';
+import LoadingPanel from '@/components/ui/LoadingPanel';
+import { ErrorRetryBlock } from '@/components/ui/ErrorRetry';
+import { routes } from '@/routes';
+import { useDepartment, useDeleteDepartment } from '@/hooks/useDepartment';
 import DepartmentForm from '@/components/forms/DepartmentForm';
 import DepartmentView from '@/components/views/DepartmentView';
-import ConfirmModal from '@/components/ConfirmModal';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useToast } from '@/components/toast/ToastProvider';
-import type { DepartmentFormData } from '@/types/department';
+import useSingleErrorToast from '@/hooks/useSingleErrorToast';
+import type { Department } from '@/types/department';
+import AuthGuard from '@/components/auth/AuthGuard';
+import { MUNICIPALITY_ROLES, REGION_ROLES } from '@/types/role';
 
 export default function DepartmentPage() {
-	const { departmentId, municipalityId } = useParams<{
-		departmentId?: string;
-		municipalityId?: string;
-	}>();
-	const isNewDepartment = departmentId === 'new';
-	const navigate = useNavigate();
-	const { showSuccess, showError } = useToast();
+	const { departmentId } = useParams<{ departmentId?: string }>();
+	const isNewDepartment = departmentId === undefined;
+	const deptId = departmentId ? Number(departmentId) : undefined;
 
-	const { department, loading, saveDepartment, removeDepartment } = useDepartment(
-		departmentId,
-		isNewDepartment,
-		municipalityId ? Number(municipalityId) : 0
+	return (
+		<AuthGuard
+			requireRoles={[...REGION_ROLES, ...MUNICIPALITY_ROLES]}
+			requireAccessToDepartment={deptId}
+		>
+			<DepartmentPageContent departmentId={deptId} isNewDepartment={isNewDepartment} />
+		</AuthGuard>
 	);
+}
+
+function DepartmentPageContent({
+	departmentId,
+	isNewDepartment,
+}: {
+	departmentId?: number | undefined;
+	isNewDepartment: boolean;
+}) {
+	const navigate = useNavigate();
+	const location = useLocation() as { state?: { municipalityId?: number } };
+	const { showSuccess, showError } = useToast();
+	const auth = useAuth();
+	const showSingleError = useSingleErrorToast();
+
+	const { department, loading, error, refetch } = useDepartment(departmentId, {
+		enabled: departmentId !== undefined,
+	});
+
+	const muniIdFromDept = department?.municipalityId;
+	const muniIdFromState = location?.state?.municipalityId;
+	const muniIdForActions =
+		muniIdFromDept ?? muniIdFromState ?? auth?.user?.municipalityId ?? undefined;
+	const deleteMutation = useDeleteDepartment();
 
 	const [editing, setEditing] = useState(isNewDepartment);
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-	// Handle navigation for invalid IDs
 	useEffect(() => {
-		if (!isNewDepartment && departmentId && isNaN(Number(departmentId))) {
-			navigate(`/departments/${municipalityId}`);
+		if (!isNewDepartment && departmentId === undefined) {
+			navigate(muniIdForActions ? routes.departments(muniIdForActions) : routes.departments());
 		}
-	}, [departmentId, navigate, isNewDepartment]);
+	}, [departmentId, navigate, isNewDepartment, muniIdForActions]);
 
-	// Auto-disable editing for existing departments
 	useEffect(() => {
 		if (!isNewDepartment && department) {
 			setEditing(false);
 		}
 	}, [department, isNewDepartment]);
 
-	// Save handler
-	const handleSave = async (formData: DepartmentFormData) => {
-		try {
-			const savedDept = await saveDepartment(formData);
-			if (savedDept) {
-				if (isNewDepartment) {
-					showSuccess(`Department \"${savedDept.name}\" created successfully!`);
-					navigate(`/departments/${municipalityId}`);
-				} else {
-					showSuccess(`Department \"${savedDept.name}\" updated successfully!`);
-					setEditing(false);
-				}
-			} else {
-				showError('Failed to save department. Please try again.');
-			}
-		} catch {
-			showError('An unexpected error occurred while saving.');
-		}
-	};
+	useEffect(() => {
+		showSingleError({
+			key: `department.${departmentId ?? 'unknown'}`,
+			error,
+			loading,
+			message: 'Unable to load department.',
+		});
+	}, [error, loading, departmentId, showSingleError]);
 
-	// Delete handlers
 	const handleDelete = () => {
 		if (!department) return;
 		setShowDeleteModal(true);
@@ -67,10 +83,18 @@ export default function DepartmentPage() {
 
 	const confirmDelete = async () => {
 		if (!department) return;
+		const departmentId = department.departmentId;
+		const municipalityId = department.municipalityId;
+		const departmentName = department.name;
+
 		try {
-			await removeDepartment();
-			showSuccess(`Department \"${department.name}\" deleted successfully.`);
-			navigate(`/departments/${municipalityId}`);
+			navigate(routes.departments(municipalityId), { replace: true });
+
+			await deleteMutation.mutateAsync({
+				id: departmentId,
+				municipalityId: municipalityId,
+			});
+			showSuccess(`Department "${departmentName}" deleted successfully.`);
 		} catch {
 			showError('An unexpected error occurred while deleting.');
 		}
@@ -79,54 +103,57 @@ export default function DepartmentPage() {
 
 	const handleCancel = () => {
 		if (isNewDepartment) {
-			navigate(`/departments/${municipalityId}`);
+			navigate(muniIdForActions ? routes.departments(muniIdForActions) : routes.departments());
 		} else {
 			setEditing(false);
 		}
 	};
 
-	if (loading) {
-		return (
-			<div className="min-h-screen bg-gray-50 py-8 flex justify-center items-center">
-				<p className="text-gray-600">Loading...</p>
-			</div>
-		);
-	}
-
-	if (!department && !isNewDepartment) {
-		return (
-			<div className="min-h-screen bg-gray-50 py-8">
-				<div className="max-w-4xl mx-auto px-4">
-					<h2 className="text-2xl font-semibold">Department not found</h2>
-					<p className="mt-4 text-gray-600">The requested department was not found.</p>
-				</div>
-			</div>
-		);
-	}
-
 	return (
 		<div className="min-h-screen bg-gray-50 py-8">
 			<div className="max-w-4xl mx-auto px-4">
 				<div className="bg-white rounded-lg shadow-md p-6">
+					{loading && <LoadingPanel />}
+					{error && !loading && (
+						<ErrorRetryBlock message="Unable to load department." onRetry={() => refetch()} />
+					)}
 					{editing || isNewDepartment ? (
 						<DepartmentForm
 							{...(department && { initialData: department })}
 							isNewDepartment={isNewDepartment}
-							onSave={handleSave}
+							municipalityId={muniIdForActions ?? -1}
 							onCancel={handleCancel}
-							municipalityId={Number(municipalityId)}
+							onSuccess={(dept: Department | undefined) => {
+								if (isNewDepartment) {
+									showSuccess(`Department "${dept?.name}" created successfully!`);
+									navigate(
+										muniIdForActions ? routes.departments(muniIdForActions) : routes.departments()
+									);
+								} else {
+									showSuccess(`Department "${dept?.name}" updated successfully!`);
+									setEditing(false);
+								}
+							}}
+							onFailure={(err?: unknown) => {
+								const apiErr = err as { message?: string } | undefined;
+								if (!apiErr?.message) return;
+								showError(apiErr.message);
+							}}
 						/>
 					) : (
 						<DepartmentView
 							department={department!}
 							onEdit={() => setEditing(true)}
 							onDelete={handleDelete}
-							onBack={() => navigate(`/departments/${municipalityId}`)}
+							onBack={() =>
+								navigate(
+									muniIdForActions ? routes.departments(muniIdForActions) : routes.departments()
+								)
+							}
 						/>
 					)}
 				</div>
 			</div>
-
 			{/* Delete Confirmation Modal */}
 			<ConfirmModal
 				isOpen={showDeleteModal}

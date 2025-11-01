@@ -1,0 +1,56 @@
+import { NavLink } from 'react-router-dom';
+import { routes } from '@/routes';
+import Logo from '@/components/ui/Logo';
+import NotificationPanel from '@/components/features/notifications/NotificationPanel';
+import AccountPanel from '@/components/auth/AccountPanel';
+import { useUserHasAnyRole } from '@/context/AuthContext';
+import { ADMIN_ROLES, REGION_ROLES, MUNICIPALITY_ROLES, DEPARTMENT_ROLES } from '@/types/role';
+
+export default function Navigation() {
+	const showAdmin = useUserHasAnyRole([...ADMIN_ROLES]);
+	const showRegion = useUserHasAnyRole([...REGION_ROLES]);
+	const showMunicipality = useUserHasAnyRole([...MUNICIPALITY_ROLES]);
+	const showDepartment = useUserHasAnyRole([...DEPARTMENT_ROLES]);
+
+	// Build nav items with role-based visibility
+	const navItems = [
+		{ path: routes.home(), label: 'Dashboard' },
+		{ path: routes.alerts(), label: 'Alerts' },
+		...(showRegion ? [{ path: routes.municipalities(), label: 'Municipalities' }] : []),
+		...(showMunicipality ? [{ path: routes.departments(), label: 'Departments' }] : []),
+		...(showDepartment ? [{ path: routes.resources(), label: 'Resources' }] : []),
+		...(showAdmin ? [{ path: routes.users(), label: 'Users' }] : []),
+	];
+
+	return (
+		<nav className="bg-[#164273] shadow-lg">
+			<div className="max-w-6xl mx-auto px-4">
+				<div className="flex justify-between items-center py-4">
+					<div className="flex items-center">
+						<Logo withText className="mx-auto mb-6" />
+						<NavLink end to={routes.home()} className="text-white text-xl font-bold">
+							DRCCS
+						</NavLink>
+					</div>
+					<div className="flex items-center space-x-8">
+						{navItems.map(item => (
+							<NavLink
+								key={item.path}
+								to={item.path}
+								className={({ isActive }) =>
+									`text-white hover:text-blue-200 transition-colors ${
+										isActive ? 'font-semibold border-b-2 border-blue-200' : ''
+									}`
+								}
+							>
+								{item.label}
+							</NavLink>
+						))}
+						<NotificationPanel />
+						<AccountPanel />
+					</div>
+				</div>
+			</div>
+		</nav>
+	);
+}

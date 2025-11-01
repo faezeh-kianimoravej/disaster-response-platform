@@ -4,44 +4,58 @@ import type { Region } from '@/types/region';
 import { getRegionById, getRegions } from '@/api/region';
 import { REGION_QUERY_KEYS } from '@/hooks/queryKeys';
 
-export function useRegion(options?: { enabled?: boolean }) {
-	const queryClient = useQueryClient();
+export function useRegions(options?: { enabled?: boolean }) {
+	const enabled = options?.enabled ?? false;
 
 	const listQuery = useQuery<Region[], Error>({
 		queryKey: REGION_QUERY_KEYS.list,
 		queryFn: getRegions,
-		enabled: options?.enabled ?? false,
+		enabled,
 		staleTime: 1000 * 60 * 5,
 	});
 
-	const regions = listQuery.data ?? [];
-	const loading = listQuery.isLoading;
-	const error = listQuery.error?.message ?? null;
-	const { refetch } = listQuery;
-
-	const fetchRegion = async (regionId: number) => {
-		return await queryClient.fetchQuery({
-			queryKey: REGION_QUERY_KEYS.item(regionId),
-			queryFn: () => getRegionById(regionId),
-		});
-	};
-
-	const fetchRegions = () =>
-		queryClient.fetchQuery({
-			queryKey: REGION_QUERY_KEYS.list,
-			queryFn: getRegions,
-		});
+	const { data, isLoading, error, refetch } = listQuery;
 
 	return useMemo(
 		() => ({
-			region: null as Region | null,
-			regions,
-			loading,
-			error,
+			regions: data ?? [],
+			loading: isLoading,
+			error: error?.message ?? null,
+			refetch,
+		}),
+		[data, isLoading, error, refetch]
+	);
+}
+
+export function useRegion(id?: number, options?: { enabled?: boolean }) {
+	const queryClient = useQueryClient();
+
+	const singleQuery = useQuery<Region | undefined, Error>({
+		queryKey: id ? REGION_QUERY_KEYS.item(id) : ['region', 'none'],
+		queryFn: () => getRegionById(id as number),
+		enabled: (options?.enabled ?? true) && !!id,
+		staleTime: 1000 * 60 * 5,
+	});
+
+	const { data: regionData, isLoading, error, refetch } = singleQuery;
+
+	const fetchRegion = async (regionId?: number) => {
+		const rid = regionId ?? id;
+		if (!rid) return undefined;
+		return queryClient.fetchQuery({
+			queryKey: REGION_QUERY_KEYS.item(rid),
+			queryFn: () => getRegionById(rid as number),
+		});
+	};
+
+	return useMemo(
+		() => ({
+			region: regionData ?? null,
+			loading: isLoading,
+			error: error?.message ?? null,
 			refetch,
 			fetchRegion,
-			fetchRegions,
 		}),
-		[regions, loading, error, refetch, fetchRegion, fetchRegions]
+		[regionData, isLoading, error, refetch, fetchRegion]
 	);
 }

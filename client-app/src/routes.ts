@@ -1,0 +1,37 @@
+export const routes = {
+	home: () => '/',
+
+	// Regions
+	regions: () => '/regions',
+
+	// Alerts
+	alerts: () => '/alerts',
+
+	// Municipalities
+	municipalities: (regionId?: number | string) =>
+		regionId !== undefined ? `/municipalities/${regionId}` : '/municipalities',
+
+	// Departments
+	departments: (municipalityId?: number | string) =>
+		municipalityId !== undefined ? `/departments/${municipalityId}` : '/departments',
+	departmentNew: () => '/department/new',
+	department: (departmentId: number | string) => `/department/${departmentId}`,
+
+	// Resources
+	resources: (departmentId?: number | string) =>
+		departmentId !== undefined ? `/resources/${departmentId}` : '/resources',
+	resource: (resourceId: number | string) => `/resource/${resourceId}`,
+	resourceNew: () => `/resource/new`,
+
+	// Users
+	users: () => '/users',
+	user: (userId: number | string) => `/users/${userId}`,
+	userEdit: (userId: number | string) => `/users/${userId}/edit`,
+
+	// Incidents
+	incidents: () => '/incidents',
+	incident: (incidentId: number | string) => `/incidents/${incidentId}`,
+	incidentPrioritize: (incidentId: number | string) => `/incidents/${incidentId}/prioritize`,
+};
+
+export type Routes = typeof routes;

@@ -1,115 +1,133 @@
-import { Role } from '@/types/role';
-import type { UserCreateFormData, UserEditFormData } from '@/types/user';
-import type { ValidationResult } from '@/utils/validation';
-import {
-	validateRequired,
-	validateEmail,
-	validateMobile,
-	validateMinLength,
-	createValidationRule,
-	validateMinValue,
-} from '@/utils/validation';
-type UserValidationFields = Pick<
-	UserCreateFormData,
-	| 'firstName'
-	| 'lastName'
-	| 'email'
-	| 'mobile'
-	| 'password'
-	| 'roles'
-	| 'departmentId'
-	| 'regionId'
-	| 'municipalityId'
->;
+import { z } from 'zod';
+import type { Role } from '@/types/role';
 
-export function validateUserForm(
-	data: UserCreateFormData | UserEditFormData
-): ValidationResult<UserValidationFields> {
-	const filled = [data.departmentId, data.regionId, data.municipalityId].filter(
-		v => typeof v === 'number' && v > 0
-	);
-	let departmentId, regionId, municipalityId;
-	if (filled.length > 1) {
-		departmentId =
-			regionId =
-			municipalityId =
-				{
-					isValid: false,
-					message: 'Only one of Department, Region, or Municipality can be chosen',
-				};
-	} else {
-		departmentId =
-			typeof data.departmentId === 'number' && data.departmentId > 0
-				? validateMinValue(data.departmentId, 1, 'Department')
-				: { isValid: true, message: '' };
-		regionId =
-			typeof data.regionId === 'number' && data.regionId > 0
-				? validateMinValue(data.regionId, 1, 'Region')
-				: { isValid: true, message: '' };
-		municipalityId =
-			typeof data.municipalityId === 'number' && data.municipalityId > 0
-				? validateMinValue(data.municipalityId, 1, 'Municipality')
-				: { isValid: true, message: '' };
+const mobileRegex = /^[0-9+\-\s]{7,20}$/;
+
+const roleEntityMap: Record<Role, 'department' | 'municipality' | 'region' | 'none'> = {
+	Citizen: 'none',
+	Responder: 'department',
+	'Officer on Duty': 'department',
+	'Leader CoPI': 'department',
+	'Calamity Coordinator': 'region',
+	'Operational Leader': 'municipality',
+	Mayor: 'municipality',
+	'Chair Safety Region': 'region',
+	'Department Admin': 'department',
+	'Municipality Admin': 'municipality',
+	'Region Admin': 'region',
+};
+
+const userBaseSchema = z.object({
+	firstName: z.string().min(1, 'First name is required'),
+	lastName: z.string().min(1, 'Last name is required'),
+	email: z.string().email('Invalid email address'),
+	mobile: z.string().regex(mobileRegex, 'Invalid mobile number'),
+	password: z.string().min(8, 'Password must be at least 8 characters'),
+	roles: z.array(z.string() as unknown as z.ZodType<Role>).min(1, 'Select at least one role'),
+	departmentId: z.coerce.number().int().min(0).optional().default(0),
+	municipalityId: z.coerce.number().int().min(0).optional().default(0),
+	regionId: z.coerce.number().int().min(0).optional().default(0),
+});
+
+export const userCreateRequestSchema = userBaseSchema.superRefine((data, ctx) => {
+	// Only one of departmentId, municipalityId, regionId may be > 0
+	const picks = [data.departmentId, data.municipalityId, data.regionId].filter(v => (v ?? 0) > 0);
+	if (picks.length > 1) {
+		ctx.addIssue({
+			code: z.ZodIssueCode.custom,
+			message: 'Only one of Department, Municipality, or Region can be chosen',
+			path: ['departmentId'],
+		});
+		ctx.addIssue({ code: z.ZodIssueCode.custom, message: '', path: ['municipalityId'] });
+		ctx.addIssue({ code: z.ZodIssueCode.custom, message: '', path: ['regionId'] });
 	}
 
-	const roleEntityMap: Record<Role, 'department' | 'municipality' | 'region' | 'none'> = {
-		Citizen: 'none',
-		Responder: 'department',
-		'Officer on Duty': 'department',
-		'Leader CoPI': 'department',
-		'Calamity Coordinator': 'region',
-		'Operational Leader': 'region',
-		Mayor: 'municipality',
-		'Chair Safety Region': 'region',
-		'Department Admin': 'department',
-		'Municipality Admin': 'municipality',
-		'Region Admin': 'region',
-		'Super Admin': 'none',
-	};
-
-	const roleEntityErrors: string[] = [];
+	// Role-specific entity requirements
 	(data.roles || []).forEach(role => {
-		const required = roleEntityMap[role];
-		if (
-			required === 'department' &&
-			!(typeof data.departmentId === 'number' && data.departmentId > 0)
-		) {
-			roleEntityErrors.push(`${role} requires a Department to be selected.`);
+		const required = roleEntityMap[role as Role];
+		if (required === 'department' && (data.departmentId ?? 0) <= 0) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: `${role} requires a Department to be selected.`,
+				path: ['departmentId'],
+			});
+		}
+		if (required === 'municipality' && (data.municipalityId ?? 0) <= 0) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: `${role} requires a Municipality to be selected.`,
+				path: ['municipalityId'],
+			});
+		}
+		if (required === 'region' && (data.regionId ?? 0) <= 0) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: `${role} requires a Region to be selected.`,
+				path: ['regionId'],
+			});
 		}
 		if (
-			required === 'municipality' &&
-			!(typeof data.municipalityId === 'number' && data.municipalityId > 0)
+			required === 'none' &&
+			((data.departmentId ?? 0) > 0 || (data.municipalityId ?? 0) > 0 || (data.regionId ?? 0) > 0)
 		) {
-			roleEntityErrors.push(`${role} requires a Municipality to be selected.`);
-		}
-		if (required === 'region' && !(typeof data.regionId === 'number' && data.regionId > 0)) {
-			roleEntityErrors.push(`${role} requires a Region to be selected.`);
-		}
-		if (required === 'none' && (data.departmentId || data.municipalityId || data.regionId)) {
-			roleEntityErrors.push(
-				`${role} should not be linked to a Department, Municipality, or Region.`
-			);
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: `${role} should not be linked to a Department, Municipality, or Region.`,
+				path: ['roles'],
+			});
 		}
 	});
+});
 
-	return {
-		firstName: validateRequired(data.firstName, 'First name'),
-		lastName: validateRequired(data.lastName, 'Last name'),
-		email: validateEmail(data.email),
-		mobile: validateMobile(data.mobile),
-		password:
-			!data.password || data.password.trim() === ''
-				? validateRequired(data.password, 'Password')
-				: validateMinLength(data.password, 8, 'Password'),
-		roles:
-			roleEntityErrors.length > 0
-				? { isValid: false, message: roleEntityErrors.join(' ') }
-				: createValidationRule(
-						Array.isArray(data.roles) && data.roles.length > 0,
-						'At least one role must be selected'
-					),
-		departmentId,
-		regionId,
-		municipalityId,
-	};
-}
+export const userEditRequestSchema = userBaseSchema
+	.extend({ userId: z.coerce.number().int().min(1, 'Invalid user id') })
+	.superRefine((data, ctx) => {
+		// Reuse same superRefine logic as create
+		const picks = [data.departmentId, data.municipalityId, data.regionId].filter(v => (v ?? 0) > 0);
+		if (picks.length > 1) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: 'Only one of Department, Municipality, or Region can be chosen',
+				path: ['departmentId'],
+			});
+			ctx.addIssue({ code: z.ZodIssueCode.custom, message: '', path: ['municipalityId'] });
+			ctx.addIssue({ code: z.ZodIssueCode.custom, message: '', path: ['regionId'] });
+		}
+		(data.roles || []).forEach(role => {
+			const required = roleEntityMap[role as Role];
+			if (required === 'department' && (data.departmentId ?? 0) <= 0) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					message: `${role} requires a Department to be selected.`,
+					path: ['departmentId'],
+				});
+			}
+			if (required === 'municipality' && (data.municipalityId ?? 0) <= 0) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					message: `${role} requires a Municipality to be selected.`,
+					path: ['municipalityId'],
+				});
+			}
+			if (required === 'region' && (data.regionId ?? 0) <= 0) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					message: `${role} requires a Region to be selected.`,
+					path: ['regionId'],
+				});
+			}
+			if (
+				required === 'none' &&
+				((data.departmentId ?? 0) > 0 || (data.municipalityId ?? 0) > 0 || (data.regionId ?? 0) > 0)
+			) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					message: `${role} should not be linked to a Department, Municipality, or Region.`,
+					path: ['roles'],
+				});
+			}
+		});
+	});
+
+export type UserCreateRequestValues = z.infer<typeof userCreateRequestSchema>;
+export type UserEditRequestValues = z.infer<typeof userEditRequestSchema>;

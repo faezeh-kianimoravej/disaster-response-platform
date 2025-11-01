@@ -1,15 +1,12 @@
-// Moved from Department/validation.ts
-import type { ValidationResult } from '@/utils/validation';
-import { validateRequired } from '@/utils/validation';
-import type { DepartmentFormData } from '@/types/department';
+import { z } from 'zod';
 
-type DepartmentValidationFields = Pick<DepartmentFormData, 'name' | 'image'>;
+export const departmentRequestSchema = z.object({
+	name: z.string().min(1, { message: 'Department name is required' }),
+	image: z.string().min(1, { message: 'Department image is required' }),
+	municipalityId: z.coerce
+		.number()
+		.int()
+		.min(1, { message: 'Municipality ID must be 1 or higher' }),
+});
 
-export function validateDepartment(
-	data: DepartmentFormData
-): ValidationResult<DepartmentValidationFields> {
-	return {
-		name: validateRequired(data.name, 'Department name'),
-		image: validateRequired(data.image, 'Department image'),
-	};
-}
+export type DepartmentRequestValues = z.infer<typeof departmentRequestSchema>;

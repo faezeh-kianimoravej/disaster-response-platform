@@ -7,9 +7,13 @@ import { useAuth } from '@/context/AuthContext';
 import { useNotificationContext } from '@/context/NotificationContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-export default function useNotifications(onNewNotification?: (n: Notification) => void) {
+export default function useNotifications(
+	onNewNotification?: (n: Notification) => void,
+	regionIdParam?: number,
+	options?: { enabled?: boolean }
+) {
 	const auth = useAuth();
-	const regionId = auth?.user?.regionId;
+	const regionId = regionIdParam ?? auth?.user?.regionId;
 	const { lastNotificationId, setLastNotificationId } = useNotificationContext();
 	const [isConnected, setIsConnected] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -28,14 +32,13 @@ export default function useNotifications(onNewNotification?: (n: Notification) =
 		}
 	}, []);
 
-	// Use react-query for the initial fetch so it shows up in React Query Devtools.
+	const enabled = options?.enabled ?? !!regionId;
 	const listQuery = useQuery<Notification[], Error>({
 		queryKey: ['notifications', regionId],
 		queryFn: () => fetchNotifications(Number(regionId)),
-		enabled: !!regionId,
+		enabled,
 	});
 
-	// react to changes in the query result to set initial ids and error state
 	useEffect(() => {
 		const data = listQuery.data;
 		if (data) {
@@ -62,7 +65,6 @@ export default function useNotifications(onNewNotification?: (n: Notification) =
 		const handleNotificationEvent = (event: MessageEvent) => {
 			try {
 				const notification: Notification = JSON.parse(event.data);
-				// Update react-query cache so Devtools and other consumers see the change
 				queryClient.setQueryData<Notification[] | undefined>(['notifications', regionId], prev => {
 					const current = Array.isArray(prev) ? prev : [];
 					const exists = current.some(n => n.notificationId === notification.notificationId);
@@ -70,7 +72,6 @@ export default function useNotifications(onNewNotification?: (n: Notification) =
 					return [notification, ...current];
 				});
 
-				// local mirrors removed; rely on react-query cache for data and derived unread count
 				const isNew = !initialNotificationIds.has(notification.notificationId);
 				if (isNew) {
 					try {
@@ -116,7 +117,6 @@ export default function useNotifications(onNewNotification?: (n: Notification) =
 	const markAsReadMutation = useMutation<void, Error, string>({
 		mutationFn: (id: string) => markNotificationAsRead(id),
 		onSuccess(_, id) {
-			// Update cache
 			queryClient.setQueryData<Notification[] | undefined>(['notifications', regionId], prev =>
 				prev ? prev.map(n => (n.notificationId === id ? { ...n, read: true } : n)) : prev
 			);

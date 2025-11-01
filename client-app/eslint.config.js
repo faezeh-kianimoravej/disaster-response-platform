@@ -49,7 +49,8 @@ export default [
     rules: {
       // Disallow direct access to auth.user.roles in components. Use
       // `useUserHasAnyRole`, `useUserHasAllRoles`, or `useCurrentUserRoles`
-      // instead.
+      // instead. Also disallow calling the pure auth predicate helpers
+      // directly from components — prefer the hook wrappers (use*).
       'no-restricted-syntax': [
         'error',
         {
@@ -66,6 +67,36 @@ export default [
           selector: "CallExpression[callee.name='userHasAllRoles']",
           message:
             'Do not call userHasAllRoles(auth, ...) inside components — use useUserHasAllRoles([...]) instead.'
+        },
+        {
+          selector: "CallExpression[callee.name='userHasRegionId']",
+          message:
+            'Do not call userHasRegionId(auth, ...) inside components — use useUserHasRegionId(...) instead.'
+        },
+        {
+          selector: "CallExpression[callee.name='userHasMunicipalityId']",
+          message:
+            'Do not call userHasMunicipalityId(auth, ...) inside components — use useUserHasMunicipalityId(...) instead.'
+        },
+        {
+          selector: "CallExpression[callee.name='userHasDepartmentId']",
+          message:
+            'Do not call userHasDepartmentId(auth, ...) inside components — use useUserHasDepartmentId(...) instead.'
+        },
+        {
+          selector: "CallExpression[callee.name='userHasAccessToRegion']",
+          message:
+            'Do not call userHasAccessToRegion(auth, ...) inside components — use useUserHasAccessToRegion(...) instead.'
+        },
+        {
+          selector: "CallExpression[callee.name='userHasAccessToMunicipalityState']",
+          message:
+            'Do not call userHasAccessToMunicipalityState(auth, ...) inside components — use useUserHasAccessToMunicipalityState(...) instead.'
+        },
+        {
+          selector: "CallExpression[callee.name='userHasAccessToDepartmentState']",
+          message:
+            'Do not call userHasAccessToDepartmentState(auth, ...) inside components — use useUserHasAccessToDepartmentState(...) instead.'
         }
       ]
     }

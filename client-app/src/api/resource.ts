@@ -5,34 +5,58 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const resourceApi = new BaseApi(`${API_BASE_URL}/resources`);
 
-export async function getResources(): Promise<Resource[]> {
-	return await resourceApi.get<Resource[]>('/available');
+type ApiResource = {
+	resourceId: number | string;
+	departmentId: number | string;
+	name: string;
+	description?: string | null;
+	quantity: number | string;
+	available: number | string;
+	resourceType: string;
+	image?: string;
+};
+
+function fromApiResource(a: ApiResource): Resource {
+	return {
+		resourceId: Number(a.resourceId),
+		departmentId: Number(a.departmentId),
+		name: a.name,
+		description: a.description ?? undefined,
+		quantity: Number(a.quantity),
+		available: Number(a.available),
+		resourceType: a.resourceType,
+		image: a.image,
+	} as Resource;
 }
 
-export async function getResourceById(id: number): Promise<Resource> {
-	return await resourceApi.get<Resource>(`/${id}`);
-}
-
-export async function addResource(formData: ResourceFormData): Promise<Resource> {
-	return await resourceApi.post<Resource>('', formData);
-}
-
-export async function updateResource(updated: Resource): Promise<Resource> {
-	return await resourceApi.put<Resource>(`/${updated.resourceId}`, updated);
-}
-
-export async function deleteResource(id: number): Promise<void> {
-	await resourceApi.delete(`/${id}`);
-}
-
-export async function getResourcesByType(type: string): Promise<Resource[]> {
-	return await resourceApi.get<Resource[]>(`/type/${type}`);
+function fromApiResources(list: ApiResource[]): Resource[] {
+	return list.map(fromApiResource);
 }
 
 export async function getResourcesByDepartmentId(departmentId: number): Promise<Resource[]> {
-	return await resourceApi.get<Resource[]>(`/department/${departmentId}`);
+	const data = await resourceApi.get<ApiResource[]>(`/department/${departmentId}`);
+	return fromApiResources(data);
 }
 
 export async function getResourceTypes(): Promise<string[]> {
 	return await resourceApi.get<string[]>('/resource-types');
+}
+
+export async function getResourceById(id: number): Promise<Resource> {
+	const data = await resourceApi.get<ApiResource>(`/${id}`);
+	return fromApiResource(data);
+}
+
+export async function addResource(formData: ResourceFormData): Promise<Resource> {
+	const created = await resourceApi.post<ApiResource>('', formData);
+	return fromApiResource(created);
+}
+
+export async function updateResource(updated: Resource): Promise<Resource> {
+	const updatedApi = await resourceApi.put<ApiResource>(`/${updated.resourceId}`, updated);
+	return fromApiResource(updatedApi);
+}
+
+export async function deleteResource(id: number): Promise<void> {
+	await resourceApi.delete(`/${id}`);
 }
