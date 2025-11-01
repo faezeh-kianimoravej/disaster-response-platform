@@ -64,8 +64,8 @@ public class ResourceController {
             description = "Retrieve all resources filtered by their resourceType (e.g., AMBULANCE, FIELD_OPERATOR, FIRE_TRUCK, etc.)."
     )
     @GetMapping("/resourceType/{resourceType}")
-    public ResponseEntity<List<ResourceDto>> getResourcesByType(@PathVariable ResourceType type) {
-        return ResponseEntity.ok(resourceService.getResourcesByType(type));
+    public ResponseEntity<List<ResourceDto>> getResourcesByType(@PathVariable ResourceType resourceType) {
+        return ResponseEntity.ok(resourceService.getResourcesByType(resourceType));
     }
 
     @Operation(

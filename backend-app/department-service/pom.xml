@@ -11,7 +11,7 @@
     <groupId>nl.saxion.disaster</groupId>
     <artifactId>department-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>resource-service</name>
+    <name>department-service</name>
     <description>Resource Service for Disaster Response System - manages emergency team resources (vehicles, equipment,
         staff)
     </description>

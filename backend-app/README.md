@@ -104,6 +104,10 @@ docker-compose down -v
 ---
 
 ## Troubleshooting
+**Rebuild and Run Single Service:**
+```powershell
+docker-compose up -d --build service-name
+``` 
 
 **Port already in use:**
 ```powershell

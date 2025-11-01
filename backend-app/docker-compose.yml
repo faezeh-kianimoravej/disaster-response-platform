@@ -104,7 +104,7 @@ services:
       discovery-service:
         condition: service_started
     ports:
-      - "8091:8091"
+      - "8087:8087"
     environment:
       SPRING_PROFILES_ACTIVE: ${STACK_PROFILE:-local-docker}
     networks:

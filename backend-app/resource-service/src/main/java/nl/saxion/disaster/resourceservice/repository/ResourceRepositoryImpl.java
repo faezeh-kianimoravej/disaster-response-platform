@@ -28,7 +28,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
     @Override
     public List<Resource> findAvailable() {
         return entityManager.createQuery(
-                        "SELECT r FROM Resource r WHERE r.available = true", Resource.class)
+                        "SELECT r FROM Resource r WHERE r.available = 1", Resource.class)
                 .getResultList();
     }
 
@@ -36,7 +36,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
     public List<Resource> findByType(ResourceType type) {
         return entityManager.createQuery(
                         "SELECT r FROM Resource r WHERE r.resourceType = :resourceType", Resource.class)
-                .setParameter("type", type)
+                .setParameter("resourceType", type)
                 .getResultList();
     }
 
