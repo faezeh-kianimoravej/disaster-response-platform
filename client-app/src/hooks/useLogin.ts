@@ -26,6 +26,10 @@ export function useLogin() {
 				deleted: false,
 			};
 
+			// Store token in localStorage
+			localStorage.setItem('auth_token', response.token);
+			localStorage.setItem('user_email', response.email);
+
 			// Update auth state with the token and user info
 			auth?.setAuth?.({
 				isLoggedIn: true,
@@ -44,6 +48,10 @@ export function useLogin() {
 	}
 
 	function logout() {
+		// Clear token from localStorage
+		localStorage.removeItem('auth_token');
+		localStorage.removeItem('user_email');
+
 		auth?.setAuth?.({
 			isLoggedIn: false,
 			user: null,

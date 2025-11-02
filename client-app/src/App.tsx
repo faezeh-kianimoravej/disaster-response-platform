@@ -12,6 +12,7 @@ import IncidentPriorityPage from '@/pages/IncidentPriorityPage';
 import UsersPage from '@/pages/UsersPage';
 import UserDetailsPage from '@/pages/UserDetailsPage';
 import UserCreatePage from '@/pages/UserCreatePage';
+import LoginPage from '@/pages/LoginPage';
 import { AppProviders } from '@/context/AppProviders';
 import UnauthorizedPage from '@/pages/NotAuthorizedPage';
 
@@ -52,6 +53,9 @@ function App() {
 						<Route path="/users" element={<UsersPage />} />
 						<Route path="/users/new" element={<UserCreatePage />} />
 						<Route path="/users/:userId" element={<UserDetailsPage />} />
+
+						{/* Auth */}
+						<Route path="/login" element={<LoginPage />} />
 
 						{/* Unknown routes -> 401 Unauthorized */}
 						<Route path="*" element={<UnauthorizedPage />} />

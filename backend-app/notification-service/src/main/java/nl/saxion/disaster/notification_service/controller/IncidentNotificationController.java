@@ -20,7 +20,6 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequestMapping("/api/notifications/incidents")
-@CrossOrigin(origins = "*")
 public class IncidentNotificationController {
     private final IncidentNotificationService incidentNotificationService;
 

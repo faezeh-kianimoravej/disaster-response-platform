@@ -7,7 +7,8 @@ import { renderWithProviders } from '@/test/utils';
 
 // Mock useUpdateIncident hook
 const mockUpdate = {
-	mutateAsync: vi.fn<[{ id: number; data: Partial<Record<string, unknown>> }], Promise<Incident>>(),
+	// Keep typing simple for build: we don't need generics here
+	mutateAsync: vi.fn(),
 	isPending: false,
 };
 

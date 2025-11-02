@@ -3,6 +3,8 @@ import axios, {
 	type AxiosResponse,
 	type AxiosError,
 	type InternalAxiosRequestConfig,
+	type AxiosRequestHeaders,
+	AxiosHeaders,
 } from 'axios';
 
 // Create axios instance with base configuration
@@ -18,11 +20,20 @@ const axiosInstance: AxiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
 	(config: InternalAxiosRequestConfig) => {
 		// Add auth token if available
-		// const token = localStorage.getItem('token');
-		// if (token) {
-		// 	// Axios v1 uses AxiosHeaders which supports .set()
-		// 	config.headers?.set?.('Authorization', `Bearer ${token}`);
-		// }
+		const token = localStorage.getItem('auth_token');
+		if (token) {
+			const headers = config.headers;
+			// Axios v1 may provide AxiosHeaders which supports .set()
+			if (headers && headers instanceof AxiosHeaders) {
+				headers.set('Authorization', `Bearer ${token}`);
+			} else {
+				// Fallback for plain object headers
+				config.headers = {
+					...((headers as AxiosRequestHeaders) || {}),
+					Authorization: `Bearer ${token}`,
+				} as AxiosRequestHeaders;
+			}
+		}
 		return config;
 	},
 	(error: AxiosError | unknown) => Promise.reject(error)

@@ -266,7 +266,7 @@ export default function UserForm({
 								const entityType = getEntityScope(roleType);
 
 								return (
-									<div key={roleType} className="border rounded-lg p-3">
+									<div key={roleType} className="p-2">
 										<div className="flex items-center">
 											<input
 												type="checkbox"

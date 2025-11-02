@@ -7,10 +7,12 @@ import { renderWithProviders } from '@/test/utils';
 
 // Mocks for useDepartment hooks (create/update)
 const mockCreate = {
-	mutateAsync: vi.fn<[Record<string, unknown>], Promise<Department>>(),
+	// Keep typing simple for build: we don't need generics here
+	mutateAsync: vi.fn(),
 };
 const mockUpdate = {
-	mutateAsync: vi.fn<[{ id: number; data: Record<string, unknown> }], Promise<Department>>(),
+	// Keep typing simple for build: we don't need generics here
+	mutateAsync: vi.fn(),
 };
 
 vi.mock('@/hooks/useDepartment', () => ({

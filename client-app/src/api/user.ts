@@ -103,7 +103,7 @@ export async function removeUser(userId: string | number): Promise<void> {
 }
 
 export async function login(email: string, password: string): Promise<LoginResponse> {
-	const response = await userApi.post<LoginResponse>('login', { email, password });
+	const response = await userApi.post<LoginResponse>('/login', { email, password });
 	return response;
 }
 

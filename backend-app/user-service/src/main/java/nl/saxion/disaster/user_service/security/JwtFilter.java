@@ -1,13 +1,21 @@
 package nl.saxion.disaster.user_service.security;
 
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * JwtFilter is a custom security filter that executes once per request.
@@ -47,12 +55,28 @@ public class JwtFilter extends OncePerRequestFilter {
             String token = header.substring(7); // remove "Bearer " prefix
 
             try {
-                // Validate the token (signature, expiration, etc.)
-                jwtUtil.validateToken(token);
+                // Validate the token (signature, expiration, etc.) and extract claims
+                Claims claims = jwtUtil.validateToken(token);
 
-                // At this point, token is valid.
-                // Normally, you would also extract user details and set authentication
-                // in SecurityContextHolder for full Spring Security integration.
+                // Extract user details from token claims
+                String email = claims.getSubject();
+                @SuppressWarnings("unchecked")
+                List<String> roleNames = claims.get("roles", List.class);
+
+                // Convert role names to Spring Security authorities
+                Collection<? extends GrantedAuthority> authorities = 
+                    roleNames != null ? 
+                        roleNames.stream()
+                            .map(SimpleGrantedAuthority::new)
+                            .collect(Collectors.toList()) 
+                        : List.of();
+
+                // Create authentication token and set it in SecurityContext
+                // This is what Spring Security checks with .authenticated()
+                UsernamePasswordAuthenticationToken authentication = 
+                    new UsernamePasswordAuthenticationToken(email, null, authorities);
+                
+                SecurityContextHolder.getContext().setAuthentication(authentication);
 
             } catch (Exception e) {
                 // Token is invalid or expired → block request

@@ -95,7 +95,10 @@ describe('IncidentCard', () => {
 		const now = new Date();
 		const yesterday = new Date(now);
 		yesterday.setDate(yesterday.getDate() - 1);
-		yesterday.setHours(12, 0, 0, 0);
+		// Set to same time as now to ensure it's more than 24 hours ago
+		yesterday.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
+		// Subtract a few extra minutes to guarantee we're past the 24-hour threshold
+		yesterday.setMinutes(yesterday.getMinutes() - 5);
 		const incident = makeIncident({ reportedAt: yesterday });
 		renderWithRouter(<IncidentCard incident={incident} />);
 		const meta = screen.getByText(/Dock District/i);

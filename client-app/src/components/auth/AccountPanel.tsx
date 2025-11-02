@@ -228,7 +228,12 @@ export default function AccountPanel() {
 									Logout
 								</button>
 							) : (
-								<div className="text-sm text-gray-500">Please login</div>
+								<div className="flex items-center gap-2">
+									<div className="text-sm text-gray-500">Please login</div>
+									<a href="/login" className="text-sm text-blue-600 hover:underline">
+										Login
+									</a>
+								</div>
 							)}
 							<button
 								onClick={() => setIsOpen(false)}

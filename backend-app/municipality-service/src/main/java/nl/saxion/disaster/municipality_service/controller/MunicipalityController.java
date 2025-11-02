@@ -21,7 +21,6 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/municipalities")
-@CrossOrigin(origins = "*")
 public class MunicipalityController {
 
     private final MunicipalityService municipalityService;

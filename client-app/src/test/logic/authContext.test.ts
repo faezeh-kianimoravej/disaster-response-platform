@@ -37,10 +37,10 @@ describe('AuthContext pure predicates', () => {
 		expect(userHasAnyRole(auth(createRoles(['Region Admin'])), ['Region Admin'])).toBe(true);
 		expect(userHasAnyRole(auth(createRoles(['Region Admin'])), ['Municipality Admin'])).toBe(false);
 		expect(
-			userHasAllRoles(
-				auth(createRoles(['Region Admin', 'Municipality Admin'])),
-				['Region Admin', 'Municipality Admin']
-			)
+			userHasAllRoles(auth(createRoles(['Region Admin', 'Municipality Admin'])), [
+				'Region Admin',
+				'Municipality Admin',
+			])
 		).toBe(true);
 		expect(
 			userHasAllRoles(auth(createRoles(['Region Admin'])), ['Region Admin', 'Municipality Admin'])
@@ -87,10 +87,18 @@ describe('AuthContext pure predicates', () => {
 			)
 		).toBe(true);
 		expect(
-			userHasAccessToMunicipality(auth([createRole('Region Admin', { regionId: 1 })]), 10, municipality)
+			userHasAccessToMunicipality(
+				auth([createRole('Region Admin', { regionId: 1 })]),
+				10,
+				municipality
+			)
 		).toBe(true);
 		expect(
-			userHasAccessToMunicipality(auth([createRole('Region Admin', { regionId: 2 })]), 10, municipality)
+			userHasAccessToMunicipality(
+				auth([createRole('Region Admin', { regionId: 2 })]),
+				10,
+				municipality
+			)
 		).toBe(false);
 
 		// Department: via dept id, via municipality, or via region
@@ -111,10 +119,20 @@ describe('AuthContext pure predicates', () => {
 			)
 		).toBe(true);
 		expect(
-			userHasAccessToDepartment(auth([createRole('Region Admin', { regionId: 1 })]), 100, department, municipality)
+			userHasAccessToDepartment(
+				auth([createRole('Region Admin', { regionId: 1 })]),
+				100,
+				department,
+				municipality
+			)
 		).toBe(true);
 		expect(
-			userHasAccessToDepartment(auth([createRole('Region Admin', { regionId: 2 })]), 100, department, municipality)
+			userHasAccessToDepartment(
+				auth([createRole('Region Admin', { regionId: 2 })]),
+				100,
+				department,
+				municipality
+			)
 		).toBe(false);
 
 		// Resource: via dept ownership, municipality ownership, or region ownership
@@ -135,10 +153,20 @@ describe('AuthContext pure predicates', () => {
 			)
 		).toBe(true);
 		expect(
-			userHasAccessToResource(auth([createRole('Region Admin', { regionId: 1 })]), resource, department, municipality)
+			userHasAccessToResource(
+				auth([createRole('Region Admin', { regionId: 1 })]),
+				resource,
+				department,
+				municipality
+			)
 		).toBe(true);
 		expect(
-			userHasAccessToResource(auth([createRole('Region Admin', { regionId: 2 })]), resource, department, municipality)
+			userHasAccessToResource(
+				auth([createRole('Region Admin', { regionId: 2 })]),
+				resource,
+				department,
+				municipality
+			)
 		).toBe(false);
 	});
 });

@@ -4,27 +4,15 @@ import type { AuthState } from './AuthContext';
 import type { User } from '@/types/user';
 import { ToastProvider } from '../components/toast/ToastProvider';
 import React from 'react';
-import { createRole } from '@/types/role';
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
-	// TODO: Replace with real authentication logic
-	const defaultUser: User = {
-		userId: 1,
-		firstName: 'Frontend',
-		lastName: 'Dev',
-		email: 'region.admin@example.com',
-		mobile: '1234567890',
-		roles: [createRole('Region Admin', { regionId: 1 })],
-		deleted: false,
-		createdAt: new Date().toISOString(),
-		updatedAt: new Date().toISOString(),
-	};
-
+	// Start as unauthenticated
 	const [authState, setAuthState] = React.useState<AuthState>({
-		isLoggedIn: true,
-		user: defaultUser,
-		token: 'mock-token',
+		isLoggedIn: false,
+		user: null,
+		token: undefined,
 	});
+	const [isRestoring, setIsRestoring] = React.useState(true);
 
 	const setAuth = (a: AuthState) => setAuthState(a);
 
@@ -38,11 +26,45 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
 		);
 	};
 
+	// Restore auth from localStorage on mount
+	React.useEffect(() => {
+		const token = localStorage.getItem('auth_token');
+		const email = localStorage.getItem('user_email');
+
+		if (token && email) {
+			// Restore user from stored credentials
+			// For now, we'll create a minimal user object
+			// In a real app, you'd fetch user details from the API using the token
+			const restoredUser: User = {
+				userId: 0,
+				firstName: '',
+				lastName: '',
+				email,
+				mobile: '',
+				roles: [],
+				deleted: false,
+			};
+
+			setAuthState({
+				isLoggedIn: true,
+				user: restoredUser,
+				token,
+			});
+		}
+
+		setIsRestoring(false);
+	}, []);
+
 	const contextValue = {
 		...authState,
 		setAuth,
 		updateUser,
 	};
+
+	// Show loading state while restoring auth
+	if (isRestoring) {
+		return null;
+	}
 
 	return (
 		<ToastProvider>

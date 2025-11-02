@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 import {
 	useIsUserLoggedIn,
 	useUserHasAnyRole,
@@ -10,6 +11,7 @@ import {
 } from '@/context/AuthContext';
 import NotAuthorizedPage from '@/pages/NotAuthorizedPage';
 import { Role, RoleType } from '@/types/role';
+import { routes } from '@/routes';
 
 type Props = AuthGuardOptions & {
 	children: ReactNode;
@@ -40,8 +42,11 @@ export type AuthGuardOptions = {
  */
 export default function AuthGuard({ children, ...opts }: Props) {
 	const isLoggedIn = useIsUserLoggedIn();
+	const location = useLocation();
 
-	if (!isLoggedIn) return (<NotAuthorizedPage />) as JSX.Element;
+	if (!isLoggedIn) {
+		return (<Navigate to={routes.login()} replace state={{ from: location }} />) as JSX.Element;
+	}
 
 	const required = opts.requireRoles ?? [];
 	if (required.length > 0) {

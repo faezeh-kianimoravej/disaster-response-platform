@@ -10,6 +10,8 @@ import { useToast } from '@/components/toast/ToastProvider';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { ErrorRetryBlock } from '@/components/ui/ErrorRetry';
 import useSingleErrorToast from '@/hooks/useSingleErrorToast';
+import ConfirmModal from '@/components/ui/ConfirmModal';
+import { useAuth } from '@/context/AuthContext';
 
 export default function UserDetailsPage() {
 	return (
@@ -22,10 +24,15 @@ export default function UserDetailsPage() {
 function UserDetailsPageContent() {
 	const { userId } = useParams<{ userId: string }>();
 	const navigate = useNavigate();
+	const auth = useAuth();
 	const { user, loading, error, refetch } = useUser(userId ? Number(userId) : undefined);
 	const { remove, loading: deleteLoading } = useRemoveUser();
 	const [isEditMode, setIsEditMode] = useState(false);
+	const [showDeleteModal, setShowDeleteModal] = useState(false);
 	const toast = useToast();
+
+	// Check if the current user is viewing their own profile
+	const isCurrentUser = Boolean(auth?.user?.email && user?.email && auth.user.email === user.email);
 
 	useEffect(() => {
 		if (userId) void refetch();
@@ -37,18 +44,21 @@ function UserDetailsPageContent() {
 		showSingleError({ key, error, loading, message: 'Unable to load user.' });
 	}, [userId, error, loading, showSingleError]);
 
-	const handleDelete = async () => {
+	const handleDelete = () => {
+		setShowDeleteModal(true);
+	};
+
+	const confirmDelete = async () => {
 		if (!userId || !user) return;
 
-		if (window.confirm(`Are you sure you want to delete ${user.firstName} ${user.lastName}?`)) {
-			const success = await remove(userId);
-			if (success) {
-				toast.showSuccess('User deleted successfully');
-				navigate(routes.users());
-			} else {
-				toast.showError('Failed to delete user');
-			}
+		const success = await remove(userId);
+		if (success) {
+			toast.showSuccess('User deleted successfully');
+			navigate(routes.users());
+		} else {
+			toast.showError('Failed to delete user');
 		}
+		setShowDeleteModal(false);
 	};
 
 	const handleEditSuccess = () => {
@@ -136,7 +146,12 @@ function UserDetailsPageContent() {
 											<Button variant="primary" onClick={() => setIsEditMode(true)}>
 												Edit
 											</Button>
-											<Button variant="danger" onClick={handleDelete} disabled={deleteLoading}>
+											<Button
+												variant="danger"
+												onClick={handleDelete}
+												disabled={deleteLoading || isCurrentUser}
+												title={isCurrentUser ? 'You cannot delete yourself' : undefined}
+											>
 												{deleteLoading ? 'Deleting...' : 'Delete'}
 											</Button>
 										</div>
@@ -149,6 +164,17 @@ function UserDetailsPageContent() {
 					</section>
 				</div>
 			</div>
+			{/* Delete Confirmation Modal */}
+			<ConfirmModal
+				isOpen={showDeleteModal}
+				title="Delete User"
+				message={`Are you sure you want to delete ${user?.firstName} ${user?.lastName}? This action cannot be undone.`}
+				confirmText="Delete"
+				cancelText="Cancel"
+				variant="danger"
+				onConfirm={confirmDelete}
+				onCancel={() => setShowDeleteModal(false)}
+			/>
 		</div>
 	);
 }

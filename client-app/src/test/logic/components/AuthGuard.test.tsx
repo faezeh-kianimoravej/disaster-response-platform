@@ -1,97 +1,205 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+﻿import { describe, it, expect } from 'vitest';
+import { screen } from '@testing-library/react';
+import { renderWithProviders } from '@/test/utils';
 import AuthGuard from '@/components/auth/AuthGuard';
 
-vi.mock('@/context/AuthContext', () => ({
-	useIsUserLoggedIn: vi.fn(),
-	useUserHasAnyRole: vi.fn(),
-	useUserHasAllRoles: vi.fn(),
-	useUserHasAccessToRegion: vi.fn(),
-	useUserHasAccessToMunicipality: vi.fn(),
-	useUserHasAccessToDepartment: vi.fn(),
-	useUserHasAccessToResource: vi.fn(),
-}));
-
-const authHooks = await import('@/context/AuthContext');
-
 describe('AuthGuard', () => {
-	beforeEach(() => {
-		vi.clearAllMocks();
-	});
-
-	it('renders NotAuthorized when not logged in', () => {
-		vi.mocked(authHooks.useIsUserLoggedIn).mockReturnValue(false);
-		render(
-			<MemoryRouter>
+	describe('Basic Authentication', () => {
+		it('renders children when user is logged in', () => {
+			renderWithProviders(
 				<AuthGuard>
-					<div>Secret</div>
-				</AuthGuard>
-			</MemoryRouter>
-		);
-		expect(screen.getByText(/Not Authorized/i)).toBeInTheDocument();
+					<div>Protected Content</div>
+				</AuthGuard>,
+				{
+					auth: {
+						isLoggedIn: true,
+						user: {
+							userId: 1,
+							firstName: 'Test',
+							lastName: 'User',
+							email: 'test@example.com',
+							mobile: '000',
+							roles: [
+								{ roleType: 'Citizen', regionId: 1, departmentId: null, municipalityId: null },
+							],
+							deleted: false,
+						},
+					},
+				}
+			);
+
+			expect(screen.getByText('Protected Content')).toBeInTheDocument();
+		});
 	});
 
-	it('allows access when logged in and no extra requirements', () => {
-		vi.mocked(authHooks.useIsUserLoggedIn).mockReturnValue(true);
-		render(
-			<MemoryRouter>
-				<AuthGuard>
-					<div>Secret</div>
-				</AuthGuard>
-			</MemoryRouter>
-		);
-		expect(screen.getByText('Secret')).toBeInTheDocument();
+	describe('Role-based Authorization', () => {
+		it('allows access when user has one of the required roles', () => {
+			renderWithProviders(
+				<AuthGuard requireRoles={['Region Admin']}>
+					<div>Admin Content</div>
+				</AuthGuard>,
+				{
+					auth: {
+						isLoggedIn: true,
+						user: {
+							userId: 1,
+							firstName: 'Test',
+							lastName: 'User',
+							email: 'test@example.com',
+							mobile: '000',
+							roles: [
+								{ roleType: 'Region Admin', regionId: 1, departmentId: null, municipalityId: null },
+							],
+							deleted: false,
+						},
+					},
+				}
+			);
+
+			expect(screen.getByText('Admin Content')).toBeInTheDocument();
+		});
+
+		it('denies access when user lacks required roles', () => {
+			renderWithProviders(
+				<AuthGuard requireRoles={['Region Admin']}>
+					<div>Admin Content</div>
+				</AuthGuard>,
+				{
+					auth: {
+						isLoggedIn: true,
+						user: {
+							userId: 1,
+							firstName: 'Test',
+							lastName: 'User',
+							email: 'test@example.com',
+							mobile: '000',
+							roles: [
+								{ roleType: 'Citizen', regionId: 1, departmentId: null, municipalityId: null },
+							],
+							deleted: false,
+						},
+					},
+				}
+			);
+
+			expect(screen.queryByText('Admin Content')).not.toBeInTheDocument();
+			expect(screen.getByText('Not Authorized')).toBeInTheDocument();
+		});
 	});
 
-	it('requires ANY role by default', () => {
-		vi.mocked(authHooks.useIsUserLoggedIn).mockReturnValue(true);
-		vi.mocked(authHooks.useUserHasAnyRole).mockReturnValue(false);
-		render(
-			<MemoryRouter>
-				<AuthGuard requireRoles={['Region Admin', 'Municipality Admin']}>
-					<div>Secret</div>
-				</AuthGuard>
-			</MemoryRouter>
-		);
-		expect(screen.getByText(/Not Authorized/i)).toBeInTheDocument();
+	describe('Region-based Authorization', () => {
+		it('allows access when user has access to the required region', () => {
+			renderWithProviders(
+				<AuthGuard requireAccessToRegion={1}>
+					<div>Region Content</div>
+				</AuthGuard>,
+				{
+					auth: {
+						isLoggedIn: true,
+						user: {
+							userId: 1,
+							firstName: 'Test',
+							lastName: 'User',
+							email: 'test@example.com',
+							mobile: '000',
+							roles: [
+								{ roleType: 'Region Admin', regionId: 1, departmentId: null, municipalityId: null },
+							],
+							deleted: false,
+						},
+					},
+				}
+			);
+
+			expect(screen.getByText('Region Content')).toBeInTheDocument();
+		});
+
+		it('denies access when user lacks access to the required region', () => {
+			renderWithProviders(
+				<AuthGuard requireAccessToRegion={2}>
+					<div>Region Content</div>
+				</AuthGuard>,
+				{
+					auth: {
+						isLoggedIn: true,
+						user: {
+							userId: 1,
+							firstName: 'Test',
+							lastName: 'User',
+							email: 'test@example.com',
+							mobile: '000',
+							roles: [
+								{ roleType: 'Region Admin', regionId: 1, departmentId: null, municipalityId: null },
+							],
+							deleted: false,
+						},
+					},
+				}
+			);
+
+			expect(screen.queryByText('Region Content')).not.toBeInTheDocument();
+			expect(screen.getByText('Not Authorized')).toBeInTheDocument();
+		});
 	});
 
-	it('requires ALL roles when roleMode=all', () => {
-		vi.mocked(authHooks.useIsUserLoggedIn).mockReturnValue(true);
-		vi.mocked(authHooks.useUserHasAllRoles).mockReturnValue(false);
-		render(
-			<MemoryRouter>
-				<AuthGuard requireRoles={['Region Admin', 'Municipality Admin']} roleMode="all">
-					<div>Secret</div>
-				</AuthGuard>
-			</MemoryRouter>
-		);
-		expect(screen.getByText(/Not Authorized/i)).toBeInTheDocument();
+	describe('Municipality-based Authorization', () => {
+		it('allows access when user has access to the required municipality', () => {
+			renderWithProviders(
+				<AuthGuard requireAccessToMunicipality={5}>
+					<div>Municipality Content</div>
+				</AuthGuard>,
+				{
+					auth: {
+						isLoggedIn: true,
+						user: {
+							userId: 1,
+							firstName: 'Test',
+							lastName: 'User',
+							email: 'test@example.com',
+							mobile: '000',
+							roles: [
+								{
+									roleType: 'Municipality Admin',
+									regionId: 1,
+									departmentId: null,
+									municipalityId: 5,
+								},
+							],
+							deleted: false,
+						},
+					},
+				}
+			);
+
+			expect(screen.getByText('Municipality Content')).toBeInTheDocument();
+		});
 	});
 
-	it('checks region/municipality/department/resource access', () => {
-		vi.mocked(authHooks.useIsUserLoggedIn).mockReturnValue(true);
-		vi.mocked(authHooks.useUserHasAnyRole).mockReturnValue(true);
-		vi.mocked(authHooks.useUserHasAccessToRegion).mockReturnValue(false);
-		vi.mocked(authHooks.useUserHasAccessToMunicipality).mockReturnValue(false);
-		vi.mocked(authHooks.useUserHasAccessToDepartment).mockReturnValue(false);
-		vi.mocked(authHooks.useUserHasAccessToResource).mockReturnValue(false);
+	describe('Department-based Authorization', () => {
+		it('allows access when user has access to the required department', () => {
+			renderWithProviders(
+				<AuthGuard requireAccessToDepartment={7}>
+					<div>Department Content</div>
+				</AuthGuard>,
+				{
+					auth: {
+						isLoggedIn: true,
+						user: {
+							userId: 1,
+							firstName: 'Test',
+							lastName: 'User',
+							email: 'test@example.com',
+							mobile: '000',
+							roles: [
+								{ roleType: 'Department Admin', regionId: 1, departmentId: 7, municipalityId: 5 },
+							],
+							deleted: false,
+						},
+					},
+				}
+			);
 
-		render(
-			<MemoryRouter>
-				<AuthGuard
-					requireRoles={['Citizen']}
-					requireAccessToRegion={1}
-					requireAccessToMunicipality={2}
-					requireAccessToDepartment={3}
-					requireAccessToResource={4}
-				>
-					<div>Secret</div>
-				</AuthGuard>
-			</MemoryRouter>
-		);
-
-		expect(screen.getByText(/Not Authorized/i)).toBeInTheDocument();
+			expect(screen.getByText('Department Content')).toBeInTheDocument();
+		});
 	});
 });
