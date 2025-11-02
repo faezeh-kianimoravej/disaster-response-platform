@@ -2,7 +2,7 @@
 
 **Location:** Saxion  
 **Date:** Wednesday, 29 October 2025  
-**Time:** 11:30–12:30  
+**Time:** 10:30–11:30  
 
 ---
 
