@@ -20,3 +20,12 @@ export interface ResourceFormData {
 	departmentId: number;
 	image: string;
 }
+
+export interface ResourceSearchResult {
+	resourceId: number;
+	resourceType: string;
+	department: string;
+	municipality: string;
+	available: number;
+	distance: string;
+}
