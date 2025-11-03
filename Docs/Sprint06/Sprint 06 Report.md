@@ -61,9 +61,14 @@ Completed items in this sprint:
 
 ---
 
-![Cycle time scatter plot](cycle_time_scatter.svg)
+<p align="center">
+  <img src="cycle_time_scatter.svg" alt="Cycle time scatter plot" width="65%">
+</p>
 
-![Cycle time Gantt](cycle_time_gantt.svg)
+<p align="center">
+  <img src="cycle_time_gantt.svg" alt="Cycle time gantt" width="65%">
+</p>
+
 
 ---
 
