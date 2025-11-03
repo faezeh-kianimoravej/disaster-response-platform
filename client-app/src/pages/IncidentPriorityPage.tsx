@@ -78,7 +78,7 @@ export default function IncidentPriorityPage() {
 
 	return (
 		<div className="min-h-screen bg-gray-50 py-8">
-			<div className="max-w-4xl mx-auto px-4">
+			<div className="max-w-5xl mx-auto px-4">
 				<h1 className="text-2xl font-bold mb-4">Prioritize Incident</h1>
 
 				<div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 mb-6">

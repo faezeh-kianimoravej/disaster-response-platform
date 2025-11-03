@@ -44,7 +44,7 @@ export default function IncidentDetailsPage() {
 
 	return (
 		<div className="min-h-screen bg-gray-50 py-8">
-			<div className="max-w-4xl mx-auto px-4">
+			<div className="max-w-5xl mx-auto px-4">
 				<div className="flex items-center justify-between mb-6">
 					<div>
 						<h1 className="text-2xl font-bold">Incident details</h1>
@@ -84,12 +84,15 @@ export default function IncidentDetailsPage() {
 								Prioritize
 							</Link>
 							<span className="mx-2 text-gray-300">|</span>
-							<a href="#" className="hover:text-blue-800 hover:underline">
-								Instructions
-							</a>
+							<Link
+								to={`/incidents/${incident.incidentId}/allocate-resources`}
+								className="hover:text-blue-800 hover:underline"
+							>
+								Allocate Resources
+							</Link>
 							<span className="mx-2 text-gray-300">|</span>
 							<a href="#" className="hover:text-blue-800 hover:underline">
-								Assign
+								Instructions
 							</a>
 							<span className="mx-2 text-gray-300">|</span>
 							<a href="#" className="hover:text-blue-800 hover:underline">
