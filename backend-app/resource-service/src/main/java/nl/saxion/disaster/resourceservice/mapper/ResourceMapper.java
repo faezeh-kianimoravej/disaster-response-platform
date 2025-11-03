@@ -64,12 +64,6 @@ public class ResourceMapper implements BaseMapper<Resource, ResourceDto> {
         resource.setImage(imageBytes);
         resource.setDepartmentId(resourceDto.departmentId());
         mapResourceType(resourceDto, resource);
-//        if (resourceDto.departmentId() != null) {
-//            Department dept = new Department();
-//            dept.setDepartmentId(resourceDto.departmentId());
-//            resource.setDepartment(dept);
-//        }
-
 
         return resource;
     }

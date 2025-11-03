@@ -100,20 +100,6 @@ public class DepartmentMapper implements BaseMapper<Department, DepartmentDto> {
                 .image(department.getImage())
                 .resourceIds(resourceIds)
                 .build();
-//
-//        if (dto.resources() != null && !dto.resources().isEmpty()) {
-//            List<Resource> resources = dto.resources().stream()
-//                    .filter(Objects::nonNull)
-//                    .map(resourceMapper::toEntity)
-//                    .toList();
-//
-//            department.setResourceIds(resources);
-//            resources.forEach(r -> r.setDepartment(department));
-//        } else {
-//            department.setResourceIds(List.of());
-//        }
-//
-//        return department;
     }
 
 }
