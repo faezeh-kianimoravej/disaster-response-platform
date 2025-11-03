@@ -53,7 +53,7 @@ spring:
                 fallbackUri: forward:/fallback
 
         # Department service: /api/departments/** -> department-service/api/departments/**
-        - id: department-departments
+        - id: department
           uri: lb://department-service
           predicates:
             - Path=/api/departments/**
@@ -63,9 +63,9 @@ spring:
                 name: departmentServiceCircuitBreaker
                 fallbackUri: forward:/fallback
         
-        # Department service: /api/resources/** -> department-service/api/resources/**
-        - id: department-resources
-          uri: lb://department-service
+        # Resources service: /api/resources/** -> department-service/api/resources/**
+        - id: resource
+          uri: lb://resource-service
           predicates:
             - Path=/api/resources/**
           filters:
