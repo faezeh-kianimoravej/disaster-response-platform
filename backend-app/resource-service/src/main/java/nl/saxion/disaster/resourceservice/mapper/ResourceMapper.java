@@ -1,9 +1,9 @@
-package nl.saxion.disaster.departmentservice.mapper;
+package nl.saxion.disaster.resourceservice.mapper;
 
-import nl.saxion.disaster.departmentservice.dto.ResourceDto;
-import nl.saxion.disaster.departmentservice.model.entity.Department;
-import nl.saxion.disaster.departmentservice.model.entity.Resource;
-import nl.saxion.disaster.departmentservice.model.enums.ResourceType;
+
+import nl.saxion.disaster.resourceservice.dto.ResourceDto;
+import nl.saxion.disaster.resourceservice.model.entity.Resource;
+import nl.saxion.disaster.resourceservice.model.enums.ResourceType;
 import org.springframework.stereotype.Component;
 
 import java.util.Base64;
@@ -30,9 +30,7 @@ public class ResourceMapper implements BaseMapper<Resource, ResourceDto> {
                             Optional.ofNullable(res.getResourceType())
                                     .map(Enum::name)
                                     .orElse(null),
-                            Optional.ofNullable(res.getDepartment())
-                                    .map(Department::getDepartmentId)
-                                    .orElse(null),
+                            res.getDepartmentId(),
                             res.getLatitude(),
                             res.getLongitude(),
                             imageBase64
@@ -64,12 +62,8 @@ public class ResourceMapper implements BaseMapper<Resource, ResourceDto> {
         resource.setLatitude(resourceDto.latitude());
         resource.setLongitude(resourceDto.longitude());
         resource.setImage(imageBytes);
+        resource.setDepartmentId(resourceDto.departmentId());
         mapResourceType(resourceDto, resource);
-        if (resourceDto.departmentId() != null) {
-            Department dept = new Department();
-            dept.setDepartmentId(resourceDto.departmentId());
-            resource.setDepartment(dept);
-        }
 
         return resource;
     }

@@ -1,11 +1,12 @@
-package nl.saxion.disaster.departmentservice.controller;
+package nl.saxion.disaster.resourceservice.controller;
+
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import nl.saxion.disaster.departmentservice.dto.ResourceDto;
-import nl.saxion.disaster.departmentservice.model.enums.ResourceType;
-import nl.saxion.disaster.departmentservice.service.contract.ResourceService;
+import nl.saxion.disaster.resourceservice.dto.ResourceDto;
+import nl.saxion.disaster.resourceservice.model.enums.ResourceType;
+import nl.saxion.disaster.resourceservice.service.contract.ResourceService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -63,8 +64,8 @@ public class ResourceController {
             description = "Retrieve all resources filtered by their resourceType (e.g., AMBULANCE, FIELD_OPERATOR, FIRE_TRUCK, etc.)."
     )
     @GetMapping("/resourceType/{resourceType}")
-    public ResponseEntity<List<ResourceDto>> getResourcesByType(@PathVariable ResourceType type) {
-        return ResponseEntity.ok(resourceService.getResourcesByType(type));
+    public ResponseEntity<List<ResourceDto>> getResourcesByType(@PathVariable ResourceType resourceType) {
+        return ResponseEntity.ok(resourceService.getResourcesByType(resourceType));
     }
 
     @Operation(

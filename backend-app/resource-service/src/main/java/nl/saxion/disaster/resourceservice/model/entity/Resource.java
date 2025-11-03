@@ -1,4 +1,5 @@
-package nl.saxion.disaster.departmentservice.model.entity;
+package nl.saxion.disaster.resourceservice.model.entity;
+
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -9,7 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import nl.saxion.disaster.departmentservice.model.enums.ResourceType;
+import nl.saxion.disaster.resourceservice.model.enums.ResourceType;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -28,10 +29,8 @@ public class Resource {
     @Column(name = "resource_id")
     private Long resourceId;
 
-    @NotNull(message = "Department must not be null")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "department_id", nullable = false)
-    private Department department;
+    @Column(name = "department_id")
+    private Long departmentId;
 
     @NotBlank(message = "Name cannot be empty")
     @Size(max = 100, message = "Name cannot exceed 100 characters")

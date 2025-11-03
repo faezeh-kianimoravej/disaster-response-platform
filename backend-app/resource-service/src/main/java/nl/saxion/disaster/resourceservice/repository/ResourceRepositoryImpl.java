@@ -1,10 +1,11 @@
-package nl.saxion.disaster.departmentservice.repository;
+package nl.saxion.disaster.resourceservice.repository;
+
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import nl.saxion.disaster.departmentservice.model.entity.Resource;
-import nl.saxion.disaster.departmentservice.model.enums.ResourceType;
-import nl.saxion.disaster.departmentservice.repository.contract.ResourceRepository;
+import nl.saxion.disaster.resourceservice.model.entity.Resource;
+import nl.saxion.disaster.resourceservice.model.enums.ResourceType;
+import nl.saxion.disaster.resourceservice.repository.contract.ResourceRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +28,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
     @Override
     public List<Resource> findAvailable() {
         return entityManager.createQuery(
-                        "SELECT r FROM Resource r WHERE r.available = true", Resource.class)
+                        "SELECT r FROM Resource r WHERE r.available = 1", Resource.class)
                 .getResultList();
     }
 
@@ -35,14 +36,14 @@ public class ResourceRepositoryImpl implements ResourceRepository {
     public List<Resource> findByType(ResourceType type) {
         return entityManager.createQuery(
                         "SELECT r FROM Resource r WHERE r.resourceType = :resourceType", Resource.class)
-                .setParameter("type", type)
+                .setParameter("resourceType", type)
                 .getResultList();
     }
 
     @Override
     public List<Resource> findByDepartment(Long departmentId) {
         return entityManager.createQuery(
-                        "SELECT r FROM Resource r WHERE r.department.departmentId = :deptId", Resource.class)
+                        "SELECT r FROM Resource r WHERE r.departmentId = :deptId", Resource.class)
                 .setParameter("deptId", departmentId)
                 .getResultList();
     }
@@ -68,7 +69,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
         existing.setLatitude(updatedResource.getLatitude());
         existing.setLongitude(updatedResource.getLongitude());
         existing.setImage(updatedResource.getImage());
-        existing.setDepartment(updatedResource.getDepartment());
+        existing.setDepartmentId(updatedResource.getDepartmentId());
 
         return entityManager.merge(existing);
     }

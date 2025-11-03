@@ -2,23 +2,16 @@ package nl.saxion.disaster.departmentservice.mapper;
 
 import nl.saxion.disaster.departmentservice.dto.DepartmentDto;
 import nl.saxion.disaster.departmentservice.dto.DepartmentSummaryDto;
-import nl.saxion.disaster.departmentservice.dto.ResourceDto;
 import nl.saxion.disaster.departmentservice.model.entity.Department;
-import nl.saxion.disaster.departmentservice.model.entity.Resource;
 import org.springframework.stereotype.Component;
 
 import java.util.Base64;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 @Component
 public class DepartmentMapper implements BaseMapper<Department, DepartmentDto> {
-
-    private final ResourceMapper resourceMapper;
-
-    public DepartmentMapper(ResourceMapper resourceMapper) {
-        this.resourceMapper = resourceMapper;
-    }
 
     @Override
     public DepartmentDto toDto(Department department) {
@@ -30,19 +23,14 @@ public class DepartmentMapper implements BaseMapper<Department, DepartmentDto> {
             String base64 = Base64.getEncoder().encodeToString(department.getImage());
             imageBase64 = "data:image/png;base64," + base64;
         }
-        List<ResourceDto> resourceDtos = department.getResources() == null
-                ? List.of()
-                : department.getResources().stream()
-                .filter(Objects::nonNull)
-                .map(resourceMapper::toDto)
-                .toList();
+
+        // Departments will be populated by the service layer via Feign client
         return new DepartmentDto(
-                null,
                 department.getDepartmentId(),
                 department.getMunicipalityId(),
                 department.getName(),
                 imageBase64,
-                resourceDtos
+                Collections.emptyList() // Will be populated by service
         );
     }
 
@@ -54,6 +42,7 @@ public class DepartmentMapper implements BaseMapper<Department, DepartmentDto> {
         if (department == null) {
             throw new IllegalArgumentException("Department cannot be null");
         }
+
         String imageBase64 = null;
         if (department.getImage() != null && department.getImage().length > 0) {
             String base64 = Base64.getEncoder().encodeToString(department.getImage());
@@ -97,19 +86,20 @@ public class DepartmentMapper implements BaseMapper<Department, DepartmentDto> {
             department.setImage(null);
         }
 
-        if (dto.resourceDtoList() != null && !dto.resourceDtoList().isEmpty()) {
-            List<Resource> resources = dto.resourceDtoList().stream()
-                    .filter(Objects::nonNull)
-                    .map(resourceMapper::toEntity)
+        //Extract resource IDs from resource summaries
+        List<Long> resourceIds = Collections.emptyList();
+        if(dto.resources() != null){
+            resourceIds = dto.resources().stream()
+                    .map( resource -> resource.resourceId())
                     .toList();
-
-            department.setResources(resources);
-            resources.forEach(r -> r.setDepartment(department));
-        } else {
-            department.setResources(List.of());
         }
 
-        return department;
+        return Department.builder()
+                .departmentId(dto.departmentId())
+                .name(dto.name())
+                .image(department.getImage())
+                .resourceIds(resourceIds)
+                .build();
     }
 
 }

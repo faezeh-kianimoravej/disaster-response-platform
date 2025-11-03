@@ -1,9 +1,12 @@
 package nl.saxion.disaster.departmentservice.service;
 
+import lombok.RequiredArgsConstructor;
+import nl.saxion.disaster.departmentservice.client.ResourceClient;
 import nl.saxion.disaster.departmentservice.dto.DepartmentDto;
 import nl.saxion.disaster.departmentservice.dto.DepartmentSummaryDto;
+import nl.saxion.disaster.departmentservice.dto.ResourceSummaryDto;
+import nl.saxion.disaster.departmentservice.exception.DepartmentNotFoundException;
 import nl.saxion.disaster.departmentservice.mapper.DepartmentMapper;
-import nl.saxion.disaster.departmentservice.mapper.ResourceMapper;
 import nl.saxion.disaster.departmentservice.model.entity.Department;
 import nl.saxion.disaster.departmentservice.repository.contract.DepartmentRepository;
 import nl.saxion.disaster.departmentservice.service.contract.DepartmentService;
@@ -14,17 +17,12 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class DepartmentServiceImpl implements DepartmentService {
 
     private final DepartmentRepository departmentRepository;
+    private final ResourceClient resourceClient;
     private final DepartmentMapper departmentMapper;
-    private final ResourceMapper resourceMapper;
-
-    public DepartmentServiceImpl(DepartmentRepository departmentRepository) {
-        this.departmentRepository = departmentRepository;
-        this.resourceMapper = new ResourceMapper();
-        this.departmentMapper = new DepartmentMapper(resourceMapper);
-    }
 
     /**
      * Get all departments - returns simplified DTO without nested resources.
@@ -32,7 +30,9 @@ public class DepartmentServiceImpl implements DepartmentService {
      */
     @Override
     public List<DepartmentSummaryDto> getAllDepartments() {
-        return departmentRepository.findAllDepartments().stream()
+        List<Department> departments = departmentRepository.findAllDepartments();
+
+        return departments.stream()
                 .map(departmentMapper::toSummaryDto)
                 .filter(Objects::nonNull)
                 .toList();
@@ -78,4 +78,14 @@ public class DepartmentServiceImpl implements DepartmentService {
                 .filter(Objects::nonNull)
                 .toList();
     }
+
+    @Override
+    public List<ResourceSummaryDto> getResourcesOfDepartment(Long departmentId) {
+        Department department = departmentRepository.findDepartmentById(departmentId)
+                .orElseThrow( () -> new DepartmentNotFoundException(departmentId));
+
+        return resourceClient.getResourcesByDepartment(department.getDepartmentId());
+
+        }
+
 }

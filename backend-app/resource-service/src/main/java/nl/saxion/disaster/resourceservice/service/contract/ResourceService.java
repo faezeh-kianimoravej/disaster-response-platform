@@ -1,7 +1,7 @@
-package nl.saxion.disaster.departmentservice.service.contract;
+package nl.saxion.disaster.resourceservice.service.contract;
 
-import nl.saxion.disaster.departmentservice.dto.ResourceDto;
-import nl.saxion.disaster.departmentservice.model.enums.ResourceType;
+import nl.saxion.disaster.resourceservice.dto.ResourceDto;
+import nl.saxion.disaster.resourceservice.model.enums.ResourceType;
 
 import java.util.List;
 import java.util.Optional;

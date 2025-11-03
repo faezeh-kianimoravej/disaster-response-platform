@@ -1,7 +1,7 @@
-package nl.saxion.disaster.departmentservice.repository.contract;
+package nl.saxion.disaster.resourceservice.repository.contract;
 
-import nl.saxion.disaster.departmentservice.model.entity.Resource;
-import nl.saxion.disaster.departmentservice.model.enums.ResourceType;
+import nl.saxion.disaster.resourceservice.model.entity.Resource;
+import nl.saxion.disaster.resourceservice.model.enums.ResourceType;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

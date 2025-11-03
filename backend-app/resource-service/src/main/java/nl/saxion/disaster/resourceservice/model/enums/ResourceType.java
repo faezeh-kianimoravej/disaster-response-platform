@@ -1,4 +1,4 @@
-package nl.saxion.disaster.departmentservice.model.enums;
+package nl.saxion.disaster.resourceservice.model.enums;
 
 public enum ResourceType {
 
