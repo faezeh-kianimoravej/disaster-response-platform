@@ -214,6 +214,27 @@ services:
       - backend-network
     restart: on-failure
 
+  # ==============================
+  # User Service (WITH Eureka)
+  # ==============================
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      discovery-service:
+        condition: service_started
+      kafka:
+        condition: service_started
+    ports:
+      - "8086:8086"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${STACK_PROFILE:-local-docker}
+    networks:
+      - backend-network
+    restart: on-failure
+
 # ==============================
 # Network & Volumes
 # ==============================

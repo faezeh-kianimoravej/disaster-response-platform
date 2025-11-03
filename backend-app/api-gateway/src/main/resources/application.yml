@@ -16,11 +16,11 @@ spring:
         locator:
           enabled: true
           lower-case-service-id: true
-      
+
       # Default filters applied to all routes
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
-      
+
       # Global CORS configuration
       globalcors:
         corsConfigurations:
@@ -53,7 +53,7 @@ spring:
                 fallbackUri: forward:/fallback
 
         # Department service: /api/departments/** -> department-service/api/departments/**
-        - id: department
+        - id: department-departments
           uri: lb://department-service
           predicates:
             - Path=/api/departments/**
@@ -63,9 +63,9 @@ spring:
                 name: departmentServiceCircuitBreaker
                 fallbackUri: forward:/fallback
         
-        # Resources service: /api/resources/** -> department-service/api/resources/**
-        - id: resource
-          uri: lb://resource-service
+        # Department service: /api/resources/** -> department-service/api/resources/**
+        - id: department-resources
+          uri: lb://department-service
           predicates:
             - Path=/api/resources/**
           filters:

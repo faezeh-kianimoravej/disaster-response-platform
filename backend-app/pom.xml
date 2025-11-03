@@ -19,6 +19,7 @@
         <module>region-service</module>
         <module>notification-service</module>
         <module>event-common</module>
+        <module>user-service</module>
         <module>resource-service</module>
     </modules>
 
