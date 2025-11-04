@@ -33,7 +33,7 @@ describe('Resource API (contract)', () => {
 	});
 
 	it('getResourceTypes - GET /resources/resource-types', async () => {
-		vi.mocked(axios.get).mockResolvedValueOnce({ data: ['Truck'] });
+		vi.mocked(axios.get).mockResolvedValueOnce({ data: { FIRE_TRUCK: 'Fire Truck' } });
 		await getResourceTypes();
 		expect(axios.get).toHaveBeenCalledWith(expect.stringContaining('/resources/resource-types'), {
 			params: undefined,

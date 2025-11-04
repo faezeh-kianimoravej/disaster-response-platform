@@ -1,19 +1,22 @@
 import { BaseApi } from '@/api/base';
-import type { Department } from '@/types/department';
+import type { Department, ResourceSummary } from '@/types/department';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const departmentApi = new BaseApi(`${API_BASE_URL}/departments`);
 
+type ApiResourceSummary = {
+	resourceId: number | string;
+	name: string;
+	image: string;
+};
+
 type ApiDepartment = {
 	departmentId: number | string;
 	municipalityId: number | string;
 	name: string;
-	description?: string;
-	contactInfo?: string;
 	image: string;
-	capacity?: number | string;
-	currentStaff?: number | string;
+	resources?: ApiResourceSummary[];
 };
 
 function fromApiDepartment(a: ApiDepartment): Department {
@@ -21,11 +24,12 @@ function fromApiDepartment(a: ApiDepartment): Department {
 		departmentId: Number(a.departmentId),
 		municipalityId: Number(a.municipalityId),
 		name: a.name,
-		description: a.description,
-		contactInfo: a.contactInfo,
 		image: a.image,
-		capacity: a.capacity !== undefined ? Number(a.capacity) : undefined,
-		currentStaff: a.currentStaff !== undefined ? Number(a.currentStaff) : undefined,
+		resources: a.resources?.map(r => ({
+			resourceId: Number(r.resourceId),
+			name: r.name,
+			image: r.image,
+		})) as ResourceSummary[] | undefined,
 	} as Department;
 }
 

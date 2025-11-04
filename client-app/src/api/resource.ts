@@ -13,6 +13,8 @@ type ApiResource = {
 	quantity: number | string;
 	available: number | string;
 	resourceType: string;
+	latitude?: number;
+	longitude?: number;
 	image?: string;
 };
 
@@ -25,6 +27,8 @@ function fromApiResource(a: ApiResource): Resource {
 		quantity: Number(a.quantity),
 		available: Number(a.available),
 		resourceType: a.resourceType,
+		latitude: a.latitude,
+		longitude: a.longitude,
 		image: a.image,
 	} as Resource;
 }
@@ -38,8 +42,8 @@ export async function getResourcesByDepartmentId(departmentId: number): Promise<
 	return fromApiResources(data);
 }
 
-export async function getResourceTypes(): Promise<string[]> {
-	return await resourceApi.get<string[]>('/resource-types');
+export async function getResourceTypes(): Promise<Record<string, string>> {
+	return await resourceApi.get<Record<string, string>>('/resource-types');
 }
 
 export async function getResourceById(id: number): Promise<Resource> {

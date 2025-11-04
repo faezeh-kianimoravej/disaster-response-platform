@@ -2,10 +2,12 @@ export interface Resource {
 	resourceId: number;
 	departmentId: number;
 	name: string;
-	description: string;
+	description?: string;
 	quantity: number;
 	available: number;
 	resourceType: string;
+	latitude?: number;
+	longitude?: number;
 	image: string;
 }
 
