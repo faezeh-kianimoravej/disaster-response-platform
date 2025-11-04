@@ -20,7 +20,7 @@ import {
 } from '@/api/incident';
 import type { Incident } from '@/types/incident';
 import { Resource } from '@/types/resource';
-import Button from '@/components/ui/Button';
+import Button from '@/components/Button';
 import Badge from '@/components/ui/Badge';
 import { useToast } from '@/components/toast/ToastProvider';
 
@@ -46,7 +46,7 @@ const IncidentAllocateResourcePage = () => {
 		const loadData = async () => {
 			setResourceTypes(Object.values(RESOURCE_TYPES));
 			const depts = await getDepartmentsByMunicipalityId(1);
-			const munis = await getMunicipalitiesByRegionId(1);
+			const munis = await getMunicipalitiesByRegionId(1);			
 			setDepartments(depts);
 			setMunicipalities(munis);
 		};

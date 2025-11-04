@@ -186,7 +186,6 @@ export async function getAllocatedResources(incidentId: number): Promise<Resourc
 	]);
 }
 
-
 function toApiRequest(
 	data: IncidentFormData,
 	partial = false

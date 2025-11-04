@@ -1,21 +1,21 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-import Navigation from '@/components/layout/Navigation';
 import DashboardPage from '@/pages/DashboardPage';
-import ResourcesPage from '@/pages/ResourcesPage';
-import ResourcePage from '@/pages/ResourcePage';
-import DepartmentPage from '@/pages/DepartmentPage';
-import DepartmentsPage from '@/pages/DepartmentsPage';
-import MunicipalitiesPage from '@/pages/MunicipalitiesPage';
-import IncidentDetailsPage from '@/pages/IncidentDetailsPage';
-import IncidentPriorityPage from '@/pages/IncidentPriorityPage';
 import UsersPage from '@/pages/UsersPage';
 import UserDetailsPage from '@/pages/UserDetailsPage';
 import UserCreatePage from '@/pages/UserCreatePage';
 import LoginPage from '@/pages/LoginPage';
-import { AppProviders } from '@/context/AppProviders';
 import UnauthorizedPage from '@/pages/NotAuthorizedPage';
+import Navigation from '@/components/layout/Navigation';
+import ResourcesPage from './pages/ResourcesPage';
+import ResourcePage from './pages/ResourcePage';
+import DepartmentPage from './pages/DepartmentPage';
+import DepartmentsPage from './pages/DepartmentsPage';
+import MunicipalitiesPage from './pages/MunicipalitiesPage';
+import IncidentDetailsPage from './pages/IncidentDetailsPage';
+import IncidentPriorityPage from './pages/IncidentPriorityPage';
 import IncidentAllocateResourcePage from './pages/IncidentAllocateResourcePage';
+import { AppProviders } from './context/AppProviders';
 
 function App() {
 	return (
