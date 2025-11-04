@@ -104,4 +104,96 @@ describe('userValidation (userEditFormSchema)', () => {
 			expect(res.error.issues.some(i => (i.path ?? []).includes('password'))).toBe(true);
 		}
 	});
+
+	it('validates email format', () => {
+		const invalidEmail = userEditFormSchema.safeParse({
+			...base,
+			email: 'notanemail',
+			roles: [{ roleType: 'Citizen', departmentId: null, municipalityId: null, regionId: null }],
+		});
+		expect(invalidEmail.success).toBe(false);
+
+		const validEmail = userEditFormSchema.safeParse({
+			...base,
+			email: 'valid@example.com',
+			roles: [{ roleType: 'Citizen', departmentId: null, municipalityId: null, regionId: null }],
+		});
+		expect(validEmail.success).toBe(true);
+	});
+
+	it('validates mobile format', () => {
+		const invalidMobile = userEditFormSchema.safeParse({
+			...base,
+			mobile: '123',
+			roles: [{ roleType: 'Citizen', departmentId: null, municipalityId: null, regionId: null }],
+		});
+		expect(invalidMobile.success).toBe(false);
+
+		const validMobile = userEditFormSchema.safeParse({
+			...base,
+			mobile: '+31612345678',
+			roles: [{ roleType: 'Citizen', departmentId: null, municipalityId: null, regionId: null }],
+		});
+		expect(validMobile.success).toBe(true);
+	});
+
+	it('requires firstName', () => {
+		const res = userEditFormSchema.safeParse({
+			...base,
+			firstName: '',
+			roles: [{ roleType: 'Citizen', departmentId: null, municipalityId: null, regionId: null }],
+		});
+		expect(res.success).toBe(false);
+	});
+
+	it('requires lastName', () => {
+		const res = userEditFormSchema.safeParse({
+			...base,
+			lastName: '',
+			roles: [{ roleType: 'Citizen', departmentId: null, municipalityId: null, regionId: null }],
+		});
+		expect(res.success).toBe(false);
+	});
+});
+
+describe('userValidation (password complexity)', () => {
+	it('rejects password without uppercase letter', () => {
+		const res = userCreateFormSchema.safeParse({
+			...base,
+			password: 'lowercase123!',
+		});
+		expect(res.success).toBe(false);
+	});
+
+	it('rejects password without lowercase letter', () => {
+		const res = userCreateFormSchema.safeParse({
+			...base,
+			password: 'UPPERCASE123!',
+		});
+		expect(res.success).toBe(false);
+	});
+
+	it('rejects password without number', () => {
+		const res = userCreateFormSchema.safeParse({
+			...base,
+			password: 'NoNumbers!',
+		});
+		expect(res.success).toBe(false);
+	});
+
+	it('rejects password without special character', () => {
+		const res = userCreateFormSchema.safeParse({
+			...base,
+			password: 'NoSpecial123',
+		});
+		expect(res.success).toBe(false);
+	});
+
+	it('rejects password shorter than 8 characters', () => {
+		const res = userCreateFormSchema.safeParse({
+			...base,
+			password: 'Short1!',
+		});
+		expect(res.success).toBe(false);
+	});
 });

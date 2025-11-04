@@ -57,4 +57,14 @@ describe('useDepartment', () => {
 		await waitFor(() => screen.getByText(/name:Ops/));
 		expect(screen.getByText(/loading:n/)).toBeInTheDocument();
 	});
+
+	it('should not fetch without municipalityId', async () => {
+		renderWithProviders(<ListHarness />);
+		expect(screen.getByText(/count:0/)).toBeInTheDocument();
+	});
+
+	it('should not fetch single department without id', async () => {
+		renderWithProviders(<SingleHarness />);
+		expect(screen.getByText(/name:none/)).toBeInTheDocument();
+	});
 });

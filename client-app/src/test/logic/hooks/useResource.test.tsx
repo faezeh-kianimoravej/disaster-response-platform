@@ -67,4 +67,14 @@ describe('useResource', () => {
 		await waitFor(() => screen.getByText(/name:Truck/));
 		expect(screen.getByText(/loading:n/)).toBeInTheDocument();
 	});
+
+	it('should not fetch without departmentId', async () => {
+		renderWithProviders(<ListHarness />);
+		expect(screen.getByText(/count:0/)).toBeInTheDocument();
+	});
+
+	it('should not fetch single resource without id', async () => {
+		renderWithProviders(<SingleHarness />);
+		expect(screen.getByText(/name:none/)).toBeInTheDocument();
+	});
 });
