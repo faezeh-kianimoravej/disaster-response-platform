@@ -1,23 +1,28 @@
-import type { ValidationResult } from '@/utils/validation';
-import { createValidationRule, validateRequired, validateMinValue } from '@/utils/validation';
-import type { ResourceFormData } from '@/types/resource';
+import { z } from 'zod';
+import { RESOURCE_TYPES } from '@/utils/resourceUtils';
 
-type ResourceValidationFields = Pick<
-	ResourceFormData,
-	'name' | 'quantity' | 'available' | 'departmentId' | 'image'
->;
+export const resourceRequestSchema = z
+	.object({
+		name: z.string().min(1, 'Name is required'),
+		description: z.string().optional().nullable(),
+		quantity: z.coerce.number().int().min(1, 'Quantity must be at least 1'),
+		available: z.coerce.number().int().min(0, 'Available must be at least 0'),
+		resourceType: z.string().refine(val => Object.keys(RESOURCE_TYPES).includes(val), {
+			message: 'Invalid resource type',
+		}),
+		departmentId: z.coerce.number().int().min(1, 'Department is required'),
+		image: z.string().min(1, 'Image is required'),
+	})
+	.superRefine((val, ctx) => {
+		if (val.available < 0 || val.available > val.quantity) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: 'Available must be between 0 and quantity',
+				path: ['available'],
+			});
+		}
+	});
 
-export function validateResource(
-	data: ResourceFormData
-): ValidationResult<ResourceValidationFields> {
-	return {
-		name: validateRequired(data.name, 'Resource name'),
-		quantity: validateMinValue(data.quantity, 1, 'Quantity'),
-		available: createValidationRule(
-			data.available >= 0 && data.available <= data.quantity,
-			'Available must be between 0 and quantity'
-		),
-		departmentId: validateMinValue(data.departmentId, 1, 'Department ID'),
-		image: validateRequired(data.image, 'Image'),
-	};
-}
+export type ResourceRequestValues = z.infer<typeof resourceRequestSchema>;
+
+export type ResourceFormDataValidated = ResourceRequestValues;

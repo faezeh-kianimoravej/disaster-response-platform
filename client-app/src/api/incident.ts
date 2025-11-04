@@ -3,12 +3,52 @@ import { BaseApi } from './base';
 
 const incidentApi = new BaseApi('/incidents');
 
-// Backend response shapes (enums are UPPER_SNAKE_CASE)
+// ----------------------------------------
+// API endpoints / requests
+// ----------------------------------------
+
+export async function getIncidents(regionId: number): Promise<Incident[]> {
+	const apiList = await incidentApi.get<ApiIncident[]>(`/region/${regionId}`);
+	return fromApiIncidents(apiList);
+}
+
+export async function getIncidentById(id: number): Promise<Incident | undefined> {
+	try {
+		const data = await incidentApi.get<ApiIncident>(`/${id}`);
+		return fromApiIncident(data);
+	} catch {
+		return undefined;
+	}
+}
+
+export async function createIncident(data: IncidentFormData): Promise<Incident> {
+	const payload = toApiRequest(data) as ApiIncidentRequest;
+	const created = await incidentApi.post<ApiIncident>('', payload);
+	return fromApiIncident(created);
+}
+
+export async function updateIncident(
+	id: number,
+	data: Partial<IncidentFormData>
+): Promise<Incident> {
+	const payload = toApiRequest(data as IncidentFormData, true) as Partial<ApiIncidentRequest>;
+	const updated = await incidentApi.put<ApiIncident>(`/${id}`, payload);
+	return fromApiIncident(updated);
+}
+
+export async function deleteIncident(id: number): Promise<void> {
+	return incidentApi.delete(`/${id}`);
+}
+
+// ----------------------------------------
+// Helpers & conversion (Api <-> Domain)
+// ----------------------------------------
+
 type ApiSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 type ApiStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
 type ApiGrip = 'NONE' | 'LEVEL_1' | 'LEVEL_2' | 'LEVEL_3' | 'LEVEL_4' | 'LEVEL_5';
 
-type ApiIncident = {
+export type ApiIncident = {
 	incidentId: number | string;
 	reportedBy: string;
 	title: string;
@@ -25,7 +65,20 @@ type ApiIncident = {
 	updatedAt: string;
 };
 
-// ---------- DRY enum/field mapping helpers ----------
+type ApiIncidentRequest = {
+	reportedBy: string;
+	title: string;
+	description: string;
+	severity: ApiSeverity;
+	gripLevel: ApiGrip;
+	status?: ApiStatus;
+	reportedAt: string;
+	location: string;
+	latitude: number;
+	longitude: number;
+	regionId: number;
+};
+
 const SEVERITY_IN = {
 	LOW: 'Low',
 	MEDIUM: 'Medium',
@@ -59,74 +112,28 @@ const SEVERITY_OUT = invertRecord(SEVERITY_IN) as Record<IncidentSeverity, ApiSe
 const STATUS_OUT = invertRecord(STATUS_IN) as Record<Incident['status'], ApiStatus>;
 const GRIP_OUT = invertRecord(GRIP_IN) as Record<number, ApiGrip>;
 
-const toDate = (iso: string) => new Date(iso);
-
-function mapIncidentApiToFrontend(api: ApiIncident): Incident {
+function fromApiIncident(a: ApiIncident): Incident {
 	return {
-		incidentId: Number(api.incidentId),
-		reportedBy: api.reportedBy,
-		title: api.title,
-		description: api.description,
-		severity: SEVERITY_IN[api.severity],
-		gripLevel: GRIP_IN[api.gripLevel],
-		status: STATUS_IN[api.status],
-		reportedAt: toDate(api.reportedAt),
-		location: api.location,
-		latitude: api.latitude,
-		longitude: api.longitude,
-		regionId: Number(api.regionId),
-		createdAt: toDate(api.createdAt),
-		updatedAt: toDate(api.updatedAt),
+		incidentId: Number(a.incidentId),
+		reportedBy: a.reportedBy,
+		title: a.title,
+		description: a.description,
+		severity: SEVERITY_IN[a.severity],
+		gripLevel: GRIP_IN[a.gripLevel] ?? 0,
+		status: STATUS_IN[a.status],
+		reportedAt: new Date(a.reportedAt),
+		location: a.location,
+		latitude: a.latitude,
+		longitude: a.longitude,
+		regionId: Number(a.regionId),
+		createdAt: new Date(a.createdAt),
+		updatedAt: new Date(a.updatedAt),
 	};
 }
 
-export async function getIncidents(): Promise<Incident[]> {
-	const list = await incidentApi.get<ApiIncident[]>('');
-	return list.map(mapIncidentApiToFrontend);
+function fromApiIncidents(list: ApiIncident[]): Incident[] {
+	return list.map(fromApiIncident);
 }
-
-export async function getIncidentById(id: number): Promise<Incident | undefined> {
-	try {
-		const data = await incidentApi.get<ApiIncident>(`/${id}`);
-		return mapIncidentApiToFrontend(data);
-	} catch {
-		return undefined;
-	}
-}
-
-export async function createIncident(data: IncidentFormData): Promise<Incident> {
-	const payload = toApiRequest(data);
-	const created = await incidentApi.post<ApiIncident>('', payload);
-	return mapIncidentApiToFrontend(created);
-}
-
-export async function updateIncident(
-	id: number,
-	data: Partial<IncidentFormData>
-): Promise<Incident> {
-	const payload = toApiRequest(data as IncidentFormData, true);
-	const updated = await incidentApi.put<ApiIncident>(`/${id}`, payload);
-	return mapIncidentApiToFrontend(updated);
-}
-
-export async function deleteIncident(id: number): Promise<void> {
-	return incidentApi.delete(`/${id}`);
-}
-
-type ApiIncidentRequest = {
-	incidentId: number;
-	reportedBy: string;
-	title: string;
-	description: string;
-	severity: ApiSeverity;
-	gripLevel: ApiGrip;
-	status?: ApiStatus;
-	reportedAt: string;
-	location: string;
-	latitude: number;
-	longitude: number;
-	regionId: number;
-};
 
 function toApiRequest(
 	data: IncidentFormData,

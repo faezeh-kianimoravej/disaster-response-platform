@@ -1,86 +1,94 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import type { Notification } from '@/types/notification';
 import { config } from '@/config';
 import { fetchNotifications, markNotificationAsRead } from '@/api/notification';
-import { useUser } from '@/context/UserContext';
+import { showBrowserNotification } from '@/utils/notificationUtils';
+import { useAuth } from '@/context/AuthContext';
 import { useNotificationContext } from '@/context/NotificationContext';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-/**
- * Custom hook to fetch and subscribe to notifications for the current region.
- *
- * @param onNewNotification Optional callback, called only for new notifications received via SSE (not present in initial fetch).
- * @returns {object} notifications, unreadCount, loading, error, markAsRead, markAllAsRead, isConnected
- */
-export default function useNotifications(onNewNotification?: (n: Notification) => void) {
-	const { regionId } = useUser();
+export default function useNotifications(
+	onNewNotification?: (n: Notification) => void,
+	regionIdParam?: number,
+	options?: { enabled?: boolean }
+) {
+	const auth = useAuth();
+	const regionId =
+		regionIdParam ??
+		(auth?.user?.roles ?? [])
+			.map(r => r.regionId)
+			.find((id): id is number => typeof id === 'number');
 	const { lastNotificationId, setLastNotificationId } = useNotificationContext();
-	const [notifications, setNotifications] = useState<Notification[]>([]);
-	const [unreadCount, setUnreadCount] = useState(0);
 	const [isConnected, setIsConnected] = useState(false);
-	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-
-	// Tracks notification IDs from the initial fetch to avoid duplicate browser notifications
 	const [initialNotificationIds, setInitialNotificationIds] = useState<Set<string>>(new Set());
-	// True after the initial fetch completes
 	const [initialLoadComplete, setInitialLoadComplete] = useState(false);
-	// Initial fetch only on mount or regionId change
-	useEffect(() => {
-		let isMounted = true;
-		const fetchInitial = async () => {
-			setLoading(true);
-			try {
-				const data = await fetchNotifications(regionId);
-				if (!isMounted) return;
-				setNotifications(Array.isArray(data) ? data : []);
-				setUnreadCount(Array.isArray(data) ? data.filter(n => !n.read).length : 0);
-				setInitialNotificationIds(
-					new Set((Array.isArray(data) ? data : []).map(n => n.notificationId))
-				);
-				setError(null);
-			} catch {
-				if (!isMounted) return;
-				setError('Failed to fetch notifications');
-			} finally {
-				if (!isMounted) return;
-				setLoading(false);
-				setInitialLoadComplete(true);
-			}
-		};
-		fetchInitial();
-		return () => {
-			isMounted = false;
-		};
-	}, [regionId]);
 
-	// Subscribe to SSE endpoint for real-time notifications
+	const queryClient = useQueryClient();
+
 	useEffect(() => {
-		if (!initialLoadComplete) return;
-		// Pass lastNotificationId as a query param if present
+		if (
+			typeof window !== 'undefined' &&
+			'Notification' in window &&
+			Notification.permission === 'default'
+		) {
+			Notification.requestPermission();
+		}
+	}, []);
+
+	const enabled = options?.enabled ?? !!regionId;
+	const listQuery = useQuery<Notification[], Error>({
+		queryKey: ['notifications', regionId],
+		queryFn: () => fetchNotifications(Number(regionId)),
+		enabled,
+	});
+
+	useEffect(() => {
+		const data = listQuery.data;
+		if (data) {
+			const arr = Array.isArray(data) ? data : [];
+			setInitialNotificationIds(new Set(arr.map(n => n.notificationId)));
+			setError(null);
+			setInitialLoadComplete(true);
+		}
+		if (listQuery.error) {
+			setError(String(listQuery.error.message));
+		}
+	}, [listQuery.data, listQuery.error]);
+
+	const refreshNotifications = listQuery.refetch;
+
+	useEffect(() => {
+		if (!initialLoadComplete || !regionId) return;
 		const streamUrl = `${config.api.baseURL}/notifications/incidents/stream/${regionId}${lastNotificationId ? `?lastNotificationId=${lastNotificationId}` : ''}`;
 
 		const eventSource = new EventSource(streamUrl);
 
-		eventSource.onopen = () => {
-			setIsConnected(true);
-		};
+		eventSource.onopen = () => setIsConnected(true);
 
 		const handleNotificationEvent = (event: MessageEvent) => {
 			try {
 				const notification: Notification = JSON.parse(event.data);
-				setNotifications(prev => {
-					const exists = prev.some(n => n.notificationId === notification.notificationId);
-					if (exists) {
-						return prev;
-					}
-					return [notification, ...prev];
+				queryClient.setQueryData<Notification[] | undefined>(['notifications', regionId], prev => {
+					const current = Array.isArray(prev) ? prev : [];
+					const exists = current.some(n => n.notificationId === notification.notificationId);
+					if (exists) return current;
+					return [notification, ...current];
 				});
-				setUnreadCount(prev => prev + 1);
-				// Only call onNewNotification if this notification was not in the initial fetch
-				if (onNewNotification && !initialNotificationIds.has(notification.notificationId)) {
-					onNewNotification(notification);
+
+				const isNew = !initialNotificationIds.has(notification.notificationId);
+				if (isNew) {
+					try {
+						if (
+							typeof window !== 'undefined' &&
+							'Notification' in window &&
+							Notification.permission === 'granted'
+						) {
+							showBrowserNotification(notification.title, { body: notification.description });
+						}
+					} catch {}
+					if (onNewNotification) onNewNotification(notification);
 				}
-				// Update lastNotificationId in context if this notification is newer
 				const notifIdNum = Number(notification.notificationId);
 				if (!lastNotificationId || (!isNaN(notifIdNum) && notifIdNum > lastNotificationId)) {
 					setLastNotificationId(notifIdNum);
@@ -107,41 +115,51 @@ export default function useNotifications(onNewNotification?: (n: Notification) =
 		onNewNotification,
 		initialNotificationIds,
 		initialLoadComplete,
+		queryClient,
 	]);
 
-	const markAsRead = useCallback(async (id: string) => {
-		try {
-			await markNotificationAsRead(id);
-			setNotifications(prev => prev.map(n => (n.notificationId === id ? { ...n, read: true } : n)));
-			setUnreadCount(prev => Math.max(0, prev - 1));
+	const markAsReadMutation = useMutation<void, Error, string>({
+		mutationFn: (id: string) => markNotificationAsRead(id),
+		onSuccess(_, id) {
+			queryClient.setQueryData<Notification[] | undefined>(['notifications', regionId], prev =>
+				prev ? prev.map(n => (n.notificationId === id ? { ...n, read: true } : n)) : prev
+			);
 			setError(null);
-		} catch {
+		},
+		onError() {
 			setError('Failed to mark notification as read');
-		}
-	}, []);
+		},
+	});
 
-	const markAllAsRead = useCallback(async () => {
-		try {
-			// Find all unread notifications
-			const unread = notifications.filter(n => !n.read);
-			// Send mark-as-read requests in parallel
+	const markAllAsReadMutation = useMutation<void, Error, void>({
+		mutationFn: async () => {
+			const unread = (
+				queryClient.getQueryData<Notification[]>(['notifications', regionId]) || []
+			).filter(n => !n.read);
 			await Promise.all(unread.map(n => markNotificationAsRead(n.notificationId)));
-			setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-			setUnreadCount(0);
+		},
+		onSuccess() {
+			queryClient.setQueryData<Notification[] | undefined>(['notifications', regionId], prev =>
+				prev ? prev.map(n => ({ ...n, read: true })) : prev
+			);
 			setError(null);
-		} catch {
+		},
+		onError() {
 			setError('Failed to mark all notifications as read');
-		}
-	}, [notifications]);
+		},
+	});
+
+	const notificationsResult = listQuery.data ?? [];
+	const derivedUnread = notificationsResult.filter(n => !n.read).length;
 
 	return {
-		notifications,
-		unreadCount,
+		notifications: notificationsResult,
+		unreadCount: derivedUnread,
 		isConnected,
-		loading,
-		error,
-		markAsRead,
-		markAllAsRead,
-		// refresh: fetchNotificationsCallback, // Removed, function no longer exists
+		loading: listQuery.isFetching,
+		error: listQuery.error ? String(listQuery.error.message) : error,
+		markAsRead: (id: string) => markAsReadMutation.mutateAsync(id),
+		markAllAsRead: () => markAllAsReadMutation.mutateAsync(),
+		fetchNotifications: refreshNotifications,
 	};
 }

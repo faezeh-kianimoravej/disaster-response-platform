@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface IncidentRepository extends JpaRepository<Incident, Long> {
     List<Incident> findByReportedBy(String reportedBy);
+    List<Incident> findByRegionId(Long regionId);
 }

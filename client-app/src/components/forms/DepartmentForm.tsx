@@ -1,144 +1,117 @@
-import { useState, useEffect } from 'react';
-import Button from '@/components/Button';
-import FormInput from '@/components/FormInput';
-import type { Department, DepartmentFormData } from '@/types/department';
-import { validateDepartment } from '@/validation/departmentValidation';
-import { isFormValid } from '@/utils/validation';
+import { useEffect, useMemo, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import FormShell from '@/components/forms/base/FormShell';
+import RHFInput from '@/components/forms/rhf/RHFInput';
+import RHFImageInput from '@/components/forms/rhf/RHFImageInput';
+import {
+	departmentRequestSchema,
+	type DepartmentRequestValues,
+} from '@/validation/departmentValidation';
+import { useCreateDepartment, useUpdateDepartment } from '@/hooks/useDepartment';
 import { useToast } from '@/components/toast/ToastProvider';
+import type { Department, DepartmentFormData } from '@/types/department';
 
 const DEFAULT_DEPARTMENT_IMAGE = '/images/default.png';
 
-interface DepartmentFormProps {
+type DepartmentFormProps = {
 	initialData?: Partial<Department>;
 	isNewDepartment: boolean;
-	onSave: (formData: DepartmentFormData) => void;
-	onCancel: () => void;
-	onImageChange?: (imageSrc: string) => void;
 	municipalityId: number;
-}
+	onCancel?: () => void;
+	onSuccess?: (dept?: Department) => void;
+	onFailure?: (err?: unknown) => void;
+};
 
 export default function DepartmentForm({
 	initialData,
 	isNewDepartment,
-	onSave,
-	onCancel,
-	onImageChange,
 	municipalityId,
+	onCancel,
+	onSuccess,
+	onFailure,
 }: DepartmentFormProps) {
-	const { showError } = useToast();
+	const toast = useToast();
 
-	const defaultImage = initialData?.image || DEFAULT_DEPARTMENT_IMAGE;
+	const defaultValues: DepartmentRequestValues = useMemo(
+		() => ({
+			name: initialData?.name ?? '',
+			image: initialData?.image ?? DEFAULT_DEPARTMENT_IMAGE,
+			municipalityId: initialData?.municipalityId ?? municipalityId,
+		}),
+		[initialData, municipalityId]
+	);
 
-	const [form, setForm] = useState<DepartmentFormData>({
-		name: initialData?.name || '',
-		image: defaultImage,
-		municipalityId: initialData?.municipalityId || municipalityId,
+	const methods = useForm<DepartmentRequestValues>({
+		resolver: zodResolver(departmentRequestSchema),
+		defaultValues,
+		mode: 'onSubmit',
 	});
 
-	const [preview, setPreview] = useState<string>(defaultImage);
-	const [touched, setTouched] = useState<Record<string, boolean>>({});
+	const { reset } = methods;
 
 	useEffect(() => {
-		if (initialData) {
-			const img = initialData.image || DEFAULT_DEPARTMENT_IMAGE;
-			setForm({
-				name: initialData.name || '',
-				image: img,
-				municipalityId: initialData.municipalityId || municipalityId,
+		reset(defaultValues);
+	}, [defaultValues, reset]);
+
+	const createMutation = useCreateDepartment(municipalityId ?? -1);
+	const updateMutation = useUpdateDepartment(municipalityId ?? -1);
+
+	const [serverValidation, setServerValidation] = useState<Record<string, string> | null>(null);
+
+	const onSubmit = async (values: DepartmentRequestValues) => {
+		setServerValidation(null);
+		try {
+			if (isNewDepartment) {
+				const saved = await createMutation.mutateAsync(values as DepartmentFormData);
+				onSuccess?.(saved);
+				return;
+			}
+
+			const id = (initialData?.departmentId as number) ?? 0;
+			const updated = await updateMutation.mutateAsync({
+				id,
+				data: values as DepartmentFormData,
 			});
-			setPreview(img);
+			onSuccess?.(updated);
+		} catch (err) {
+			const apiErr = err as {
+				validationErrors?: Record<string, string>;
+				message?: string;
+			};
+			if (apiErr.validationErrors) {
+				setServerValidation(apiErr.validationErrors);
+				onFailure?.(apiErr);
+				return;
+			}
+			toast.showError(apiErr.message ?? 'An unexpected error occurred while saving.');
+			onFailure?.(apiErr ?? err);
 		}
-	}, [initialData, municipalityId]);
-
-	// Validation
-	const validation = validateDepartment(form);
-	const isValid = isFormValid(validation);
-	const showValidation = (field: string) =>
-		(touched[field] && !validation[field as keyof typeof validation]?.isValid) || false;
-
-	function handleChange(
-		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-	) {
-		const { name, value } = e.target;
-		setTouched(prev => ({ ...prev, [name]: true }));
-		setForm(prev => ({ ...prev, [name]: value }));
-	}
-
-	function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
-		const file = e.target.files?.[0];
-		if (!file) return;
-
-		const reader = new FileReader();
-		reader.onloadend = () => {
-			const base64 = reader.result as string;
-			setForm(prev => ({ ...prev, image: base64 }));
-			setPreview(base64);
-			onImageChange?.(base64);
-		};
-		reader.readAsDataURL(file);
-	}
-
-	function handleSubmit() {
-		setTouched({ name: true, image: true });
-
-		if (!isValid) {
-			const errors = Object.values(validation)
-				.filter(f => !f.isValid)
-				.map(f => f.message);
-			showError('Please fix the following errors:\n' + errors.join('\n'));
-			return;
-		}
-
-		onSave(form);
-	}
+	};
 
 	return (
-		<div>
-			<h2 className="text-2xl font-semibold mb-4">
-				{isNewDepartment ? 'Create New Department' : 'Edit Department'}
-			</h2>
+		<FormShell
+			methods={methods}
+			onSubmit={onSubmit}
+			serverValidation={serverValidation}
+			footer={{ onCancel }}
+		>
+			<div>
+				<h2 className="text-2xl font-semibold mb-4">
+					{isNewDepartment ? 'Create New Department' : 'Edit Department'}
+				</h2>
 
-			<div className="space-y-3">
-				<FormInput
-					label="Department Name"
-					name="name"
-					value={form.name}
-					onChange={handleChange}
-					required
-					validation={validation.name}
-					showValidation={showValidation('name')}
-					placeholder="Enter department name"
-				/>
-
-				{/* Image Upload Section */}
-				<div>
-					<label htmlFor="image-url-input" className="block text-gray-700 font-medium mb-1">
-						Image Upload <span className="text-red-500">*</span>
-					</label>
-					<input
-						id="image-url-input"
-						type="file"
-						accept="image/*"
-						onChange={handleImageChange}
-						className="block w-full text-gray-700 border border-gray-300 rounded-md p-2"
+				<div className="space-y-3">
+					<RHFInput
+						name="name"
+						label="Department Name"
+						placeholder="Enter department name"
+						required
 					/>
-					{showValidation('image') && (
-						<p className="text-red-500 text-sm mt-1">{validation.image.message}</p>
-					)}
-					<div className="mt-3">
-						<img src={preview} alt="Preview" className="h-32 w-32 object-cover border rounded-md" />
-					</div>
+
+					<RHFImageInput name="image" label="Image Upload" />
 				</div>
 			</div>
-
-			<div className="mt-6 flex justify-end space-x-3">
-				<Button onClick={handleSubmit} variant={isValid ? 'success' : 'disabled'}>
-					{isNewDepartment ? 'Create' : 'Save'}
-				</Button>
-				<Button onClick={onCancel} variant="outline">
-					Cancel
-				</Button>
-			</div>
-		</div>
+		</FormShell>
 	);
 }

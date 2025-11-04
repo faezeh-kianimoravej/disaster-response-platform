@@ -1,11 +1,9 @@
-export type IncidentSeverity = 'Low' | 'Medium' | 'High' | 'Critical';
-export type IncidentStatus = 'Open' | 'In Progress' | 'Resolved' | 'Closed';
+export const INCIDENT_SEVERITIES = ['Low', 'Medium', 'High', 'Critical'] as const;
+export const INCIDENT_STATUS = ['Open', 'In Progress', 'Resolved', 'Closed'] as const;
 
-/**
- * Note: The backend API returns incidentId and departmentId as strings
- * (due to ToStringSerializer for JavaScript safety with large numbers).
- * Convert to numbers when comparing: Number(incident.departmentId) === Number(urlParam)
- */
+export type IncidentSeverity = (typeof INCIDENT_SEVERITIES)[number];
+export type IncidentStatus = (typeof INCIDENT_STATUS)[number];
+
 export interface Incident {
 	incidentId: number;
 	reportedBy: string;

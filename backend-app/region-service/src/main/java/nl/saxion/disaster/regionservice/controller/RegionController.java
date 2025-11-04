@@ -18,7 +18,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/regions")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class RegionController {
 
     private final RegionService regionService;
