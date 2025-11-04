@@ -5,10 +5,12 @@ import type { Municipality } from '@/types/municipality';
 import { getDepartmentsByMunicipalityId } from '@/api/department';
 import { getMunicipalitiesByRegionId } from '@/api/municipality';
 import { RESOURCE_TYPES } from '@/utils/resourceUtils';
-import ResourceSearchForm from '@/components/ResourceSearchForm';
-import ResourceTable from '@/components/ResourceTable';
-import AllocationSummary from '@/components/AllocationSummary';
+import ResourceSearchForm from '@/components/views/ResourceSearchForm';
+import ResourceTable from '@/components/views/ResourceTable';
+import AllocationSummary from '@/components/views/AllocationSummary';
 import { searchResources } from '@/api/resource';
+import AuthGuard from '@/components/auth/AuthGuard';
+import { REGION_ROLES } from '@/types/role';
 
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -18,7 +20,7 @@ import {
 } from '@/api/incident';
 import type { Incident } from '@/types/incident';
 import { Resource } from '@/types/resource';
-import Button from '@/components/Button';
+import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import { useToast } from '@/components/toast/ToastProvider';
 
@@ -139,7 +141,8 @@ const IncidentAllocateResourcePage = () => {
 	if (!incident) return <div className="p-6">Incident not found</div>;
 
 	return (
-		<div className="min-h-screen bg-gray-50 py-8">
+        <AuthGuard requireRoles={[...REGION_ROLES]} requireAccessToRegion={incident?.regionId}>
+            <div className="min-h-screen bg-gray-50 py-8">
 			<div className="max-w-5xl mx-auto px-4">
 				<h1 className="text-2xl font-bold mb-4">
 					{hasExistingAllocations ? 'Manage Resource Allocation' : 'Allocate Resources'}
@@ -280,6 +283,8 @@ const IncidentAllocateResourcePage = () => {
 				</form>
 			</div>
 		</div>
+        </AuthGuard>
+		
 	);
 };
 

@@ -1,5 +1,5 @@
 import FormInput from '@/components/forms/base/FormInput';
-import Button from './Button';
+import Button from '@/components/ui/Button';
 import type { Department } from '@/types/department';
 import type { Municipality } from '@/types/municipality';
 

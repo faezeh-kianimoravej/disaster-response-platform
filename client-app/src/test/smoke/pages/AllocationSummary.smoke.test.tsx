@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import AllocationSummary from '@/components/AllocationSummary';
+import AllocationSummary from '@/components/views/AllocationSummary';
 
 describe('AllocationSummary', () => {
 	const mockResourceTypesMap = {
