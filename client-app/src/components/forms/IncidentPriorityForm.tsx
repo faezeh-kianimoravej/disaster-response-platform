@@ -57,6 +57,7 @@ export default function IncidentPriorityForm({
 			await updateMutation.mutateAsync({
 				id: incident.incidentId,
 				data: {
+					...incident,
 					severity: values.severity,
 					gripLevel: values.gripLevel,
 				} as Partial<IncidentFormData>,

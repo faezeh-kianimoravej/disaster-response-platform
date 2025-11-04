@@ -71,6 +71,7 @@ describe('IncidentPriorityForm', () => {
 			expect(mockUpdate.mutateAsync).toHaveBeenCalledWith({
 				id: 1,
 				data: {
+					...incident,
 					severity: 'Critical',
 					gripLevel: 5,
 				},
