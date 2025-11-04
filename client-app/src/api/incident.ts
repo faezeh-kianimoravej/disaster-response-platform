@@ -5,6 +5,7 @@ import type {
 	IncidentResourceAllocationRequest,
 	IncidentResourceAllocationResponse,
 } from '@/types/incident';
+import { Resource } from '@/types/resource';
 import { BaseApi } from './base';
 
 const incidentApi = new BaseApi('/incidents');
@@ -153,6 +154,39 @@ export async function allocateResourcesToIncident(
 		payload
 	);
 }
+export async function getAllocatedResources(incidentId: number): Promise<Resource[]> {
+	// TODO: Uncomment when API is ready
+	//return await incidentApi.get<Resource[]>(`/${incidentId}/allocations`);
+	
+	// Fake data for testing - suppress unused parameter warning
+	//console.log(`Loading allocations for incident ${incidentId}`);
+	
+	// Fake data matching Resource interface
+	return Promise.resolve([
+		{
+			resourceId: 1,
+			departmentId: 1,
+			name: 'EMS Unit 01',
+			description: 'Advanced Life Support Ambulance',
+			quantity: 2,
+			available: 5,
+			resourceType: 'Ambulance',
+			image: '/images/ambulance.png'
+		},
+		{
+			resourceId: 2,
+			departmentId: 2,
+			name: 'Fire Engine 12',
+			description: 'Heavy Rescue Fire Truck',
+			quantity: 1,
+			available: 3,
+			resourceType: 'Fire Truck',
+			image: '/images/fire-truck.png'
+		}
+	]);
+}
+
+
 function toApiRequest(
 	data: IncidentFormData,
 	partial = false
