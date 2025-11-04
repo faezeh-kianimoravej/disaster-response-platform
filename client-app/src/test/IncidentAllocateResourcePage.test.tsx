@@ -17,6 +17,7 @@ vi.mock('@/components/toast/ToastProvider', () => ({
 vi.mock('@/api/incident', () => ({
 	getIncidentById: vi.fn(),
 	allocateResourcesToIncident: vi.fn(),
+	getAllocatedResources: vi.fn(),
 }));
 
 // Mock resource API
@@ -92,6 +93,7 @@ describe('IncidentAllocateResourcePage', () => {
 			showToast: mockShowToast,
 		});
 		(incidentApi.getIncidentById as unknown as Mock).mockResolvedValue(mockIncident);
+		(incidentApi.getAllocatedResources as unknown as Mock).mockResolvedValue([]);
 		(departmentApi.getDepartments as unknown as Mock).mockResolvedValue(mockDepartments);
 		(municipalityApi.getMunicipalities as unknown as Mock).mockResolvedValue(mockMunicipalities);
 		(resourceApi.searchResources as unknown as Mock).mockResolvedValue(mockResources);
@@ -246,9 +248,49 @@ describe('IncidentAllocateResourcePage', () => {
 
 		await waitFor(() => {
 			expect(incidentApi.getIncidentById).toHaveBeenCalledWith(123);
+			expect(incidentApi.getAllocatedResources).toHaveBeenCalledWith(123);
 			expect(departmentApi.getDepartments).toHaveBeenCalled();
 			expect(municipalityApi.getMunicipalities).toHaveBeenCalled();
 			expect(resourceApi.searchResources).toHaveBeenCalled();
 		});
+	});
+
+	it('handles existing allocations correctly', async () => {
+		const existingAllocations = [
+			{
+				resourceId: 1,
+				resourceType: 'Ambulance',
+				quantity: 2,
+				department: 'Central EMS',
+				municipality: 'Springfield',
+			},
+			{
+				resourceId: 2,
+				resourceType: 'Fire Truck',
+				quantity: 1,
+				department: 'Downtown Fire Dept',
+				municipality: 'Springfield',
+			},
+		];
+
+		// Mock existing allocations
+		(incidentApi.getAllocatedResources as unknown as Mock).mockResolvedValue(existingAllocations);
+
+		renderPage();
+
+		// Wait for page to load with existing allocations
+		await waitFor(() => {
+			expect(screen.getByText(/manage resource allocation/i)).toBeInTheDocument();
+		});
+
+		// Should show existing allocations message
+		expect(screen.getByText(/existing resource allocations/i)).toBeInTheDocument();
+		expect(screen.getByText(/this incident already has allocated resources/i)).toBeInTheDocument();
+
+		// Should not show the search form (resource table is not rendered)
+		expect(screen.queryByLabelText(/resource type/i)).not.toBeInTheDocument();
+
+		// Should show update button instead of finalize
+		expect(screen.getByRole('button', { name: /update allocation/i })).toBeInTheDocument();
 	});
 });

@@ -11,8 +11,13 @@ import AllocationSummary from '@/components/AllocationSummary';
 import { searchResources } from '@/api/resource';
 
 import { useParams, useNavigate } from 'react-router-dom';
-import { allocateResourcesToIncident, getIncidentById } from '@/api/incident';
+import {
+	allocateResourcesToIncident,
+	getIncidentById,
+	getAllocatedResources,
+} from '@/api/incident';
 import type { Incident } from '@/types/incident';
+import { Resource } from '@/types/resource';
 import Button from '@/components/Button';
 import Badge from '@/components/Badge';
 import { useToast } from '@/components/toast/ToastProvider';
@@ -31,6 +36,8 @@ const IncidentAllocateResourcePage = () => {
 	const [loading, setLoading] = useState(true);
 	const [allocationQuantities, setAllocationQuantities] = useState<Record<string, number>>({});
 	const [submitting, setSubmitting] = useState(false);
+	const [hasExistingAllocations, setHasExistingAllocations] = useState(false);
+	const [allocatedResources, setAllocatedResources] = useState<Resource[]>([]);
 	const { showToast } = useToast();
 
 	useEffect(() => {
@@ -49,9 +56,33 @@ const IncidentAllocateResourcePage = () => {
 		const id = Number(incidentId);
 		const load = async () => {
 			setLoading(true);
-			const data = await getIncidentById(id);
-			if (data) setIncident(data);
-			setLoading(false);
+			try {
+				// Load incident data
+				const data = await getIncidentById(id);
+				if (data) setIncident(data);
+
+				// Load existing allocations
+				const existingAllocations = await getAllocatedResources(id);
+				if (existingAllocations && existingAllocations.length > 0) {
+					setAllocatedResources(existingAllocations);
+					setHasExistingAllocations(true);
+
+					// Convert allocated resources to allocation quantities format
+					const quantities: Record<string, number> = {};
+					existingAllocations.forEach(resource => {
+						quantities[resource.resourceId.toString()] = resource.quantity || 1;
+					});
+					setAllocationQuantities(quantities);
+				} else {
+					setHasExistingAllocations(false);
+					setAllocatedResources([]);
+				}
+			} catch (error) {
+				console.error('Error loading data:', error);
+				setHasExistingAllocations(false);
+			} finally {
+				setLoading(false);
+			}
 		};
 		load();
 	}, [incidentId]);
@@ -73,7 +104,10 @@ const IncidentAllocateResourcePage = () => {
 		const entries = Object.entries(allocationQuantities).filter(([, qty]) => qty && qty > 0);
 
 		if (entries.length === 0) {
-			showToast('Please allocate at least one resource before finalizing.', 'error');
+			const message = hasExistingAllocations
+				? 'Please maintain at least one resource allocation.'
+				: 'Please allocate at least one resource before finalizing.';
+			showToast(message, 'error');
 			return;
 		}
 
@@ -85,14 +119,17 @@ const IncidentAllocateResourcePage = () => {
 		try {
 			setSubmitting(true);
 			const response = await allocateResourcesToIncident(id, payload);
-			showToast(
-				`Successfully allocated ${response.allocatedResources.length} resources.`,
-				'success'
-			);
+			const message = hasExistingAllocations
+				? `Successfully updated allocations for ${response.allocatedResources.length} resources.`
+				: `Successfully allocated ${response.allocatedResources.length} resources.`;
+			showToast(message, 'success');
 			navigate(`/incidents/${id}`);
 		} catch (error) {
-			console.error('Allocation failed:', error);
-			showToast('Failed to allocate resources. Please try again.', 'error');
+			console.error('Allocation operation failed:', error);
+			const message = hasExistingAllocations
+				? 'Failed to update resource allocations. Please try again.'
+				: 'Failed to allocate resources. Please try again.';
+			showToast(message, 'error');
 		} finally {
 			setSubmitting(false);
 		}
@@ -104,7 +141,9 @@ const IncidentAllocateResourcePage = () => {
 	return (
 		<div className="min-h-screen bg-gray-50 py-8">
 			<div className="max-w-5xl mx-auto px-4">
-				<h1 className="text-2xl font-bold mb-4">Allocate Resources</h1>
+				<h1 className="text-2xl font-bold mb-4">
+					{hasExistingAllocations ? 'Manage Resource Allocation' : 'Allocate Resources'}
+				</h1>
 
 				<div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 mb-6">
 					<h3 className="text-lg font-semibold text-gray-900 mb-2">{incident.title}</h3>
@@ -145,39 +184,86 @@ const IncidentAllocateResourcePage = () => {
 					}}
 					className="bg-white rounded-lg shadow-md p-6 border border-gray-200"
 				>
-					<ResourceSearchForm
-						resourceTypes={resourceTypes}
-						departments={departments}
-						municipalities={municipalities}
-						selectedType={selectedType}
-						setSelectedType={setSelectedType}
-						selectedDepartment={selectedDepartment}
-						setSelectedDepartment={setSelectedDepartment}
-						selectedMunicipality={selectedMunicipality}
-						setSelectedMunicipality={setSelectedMunicipality}
-						onSearch={handleSearch}
-					/>
-					<div className="flex flex-col md:flex-row gap-6 items-start w-full">
-						<div className="flex-1">
-							{loading ? (
-								<p>Loading...</p>
-							) : (
-								<ResourceTable
-									results={searchResults}
+					{!hasExistingAllocations && (
+						<ResourceSearchForm
+							resourceTypes={resourceTypes}
+							departments={departments}
+							municipalities={municipalities}
+							selectedType={selectedType}
+							setSelectedType={setSelectedType}
+							selectedDepartment={selectedDepartment}
+							setSelectedDepartment={setSelectedDepartment}
+							selectedMunicipality={selectedMunicipality}
+							setSelectedMunicipality={setSelectedMunicipality}
+							onSearch={handleSearch}
+						/>
+					)}
+
+					{hasExistingAllocations && (
+						<div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+							<h3 className="text-lg font-semibold text-blue-800 mb-2">
+								Existing Resource Allocations
+							</h3>
+							<p className="text-sm text-blue-700">
+								This incident already has allocated resources. You can edit quantities or remove
+								resources from the summary panel.
+							</p>
+						</div>
+					)}
+
+					{hasExistingAllocations ? (
+						// Layout for existing allocations - left-aligned AllocationSummary with original width
+						<div className="flex flex-col md:flex-row gap-6 items-start w-full">
+							<div className="w-full md:w-72">
+								<AllocationSummary
 									allocationQuantities={allocationQuantities}
-									setAllocationQuantities={setAllocationQuantities}
+									resourceTypesMap={Object.fromEntries(
+										allocatedResources.map(r => [r.resourceId.toString(), r.resourceType])
+									)}
+									editable={hasExistingAllocations}
+									onChange={updatedQuantities => {
+										setAllocationQuantities(updatedQuantities);
+									}}
+									onSave={updatedQuantities => {
+										setAllocationQuantities(updatedQuantities);
+										showToast('Allocation quantities updated.', 'success');
+									}}
 								/>
-							)}
+							</div>
+							<div className="flex-1"></div>
 						</div>
-						<div className="w-full md:w-72">
-							<AllocationSummary
-								allocationQuantities={allocationQuantities}
-								resourceTypesMap={Object.fromEntries(
-									searchResults.map(r => [r.resourceId, r.resourceType])
+					) : (
+						// Original layout for new allocations - side-by-side
+						<div className="flex flex-col md:flex-row gap-6 items-start w-full">
+							<div className="flex-1">
+								{loading ? (
+									<p>Loading...</p>
+								) : (
+									<ResourceTable
+										results={searchResults}
+										allocationQuantities={allocationQuantities}
+										setAllocationQuantities={setAllocationQuantities}
+									/>
 								)}
-							/>
+							</div>
+							<div className="w-full md:w-72">
+								<AllocationSummary
+									allocationQuantities={allocationQuantities}
+									resourceTypesMap={Object.fromEntries(
+										searchResults.map(r => [r.resourceId, r.resourceType])
+									)}
+									editable={false}
+									onChange={updatedQuantities => {
+										setAllocationQuantities(updatedQuantities);
+									}}
+									onSave={updatedQuantities => {
+										setAllocationQuantities(updatedQuantities);
+										showToast('Allocation quantities updated.', 'success');
+									}}
+								/>
+							</div>
 						</div>
-					</div>
+					)}
 					<div className="mt-6 flex justify-end space-x-4">
 						<Button
 							type="submit"
@@ -185,7 +271,7 @@ const IncidentAllocateResourcePage = () => {
 							className="px-4"
 							disabled={submitting}
 						>
-							Finalize Allocation
+							{hasExistingAllocations ? 'Update Allocation' : 'Finalize Allocation'}
 						</Button>
 						<Button type="button" variant="outline" onClick={() => navigate(-1)}>
 							Cancel
