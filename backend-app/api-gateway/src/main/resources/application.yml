@@ -63,9 +63,9 @@ spring:
                 name: departmentServiceCircuitBreaker
                 fallbackUri: forward:/fallback
         
-        # Department service: /api/resources/** -> department-service/api/resources/**
-        - id: department-resources
-          uri: lb://department-service
+        # Resource service: /api/resources/** -> resource-service/api/resources/**
+        - id: resource
+          uri: lb://resource-service
           predicates:
             - Path=/api/resources/**
           filters:
@@ -73,6 +73,7 @@ spring:
               args:
                 name: resourceServiceCircuitBreaker
                 fallbackUri: forward:/fallback
+
 
         # Municipality service: /api/municipalities/** -> municipality-service/api/municipalities/**
         - id: municipality
@@ -115,7 +116,7 @@ spring:
           filters:
             - SetResponseHeader=Cache-Control, no-store
             - RemoveResponseHeader=Transfer-Encoding
-            
+
         # Notification service: /api/notifications/** -> notification-service/api/notifications/**
         - id: notification
           uri: lb://notification-service
