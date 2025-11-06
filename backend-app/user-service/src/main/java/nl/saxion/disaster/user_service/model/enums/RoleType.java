@@ -13,6 +13,7 @@ public enum RoleType {
     OPERATIONAL_LEADER("Operational Leader"),
     MAYOR("Mayor"),
     CHAIR_SAFETY_REGION("Chair Safety Region"),
+    SYSTEM_ADMIN("System Admin"),
     DEPARTMENT_ADMIN("Department Admin"),
     MUNICIPALITY_ADMIN("Municipality Admin"),
     REGION_ADMIN("Region Admin");
