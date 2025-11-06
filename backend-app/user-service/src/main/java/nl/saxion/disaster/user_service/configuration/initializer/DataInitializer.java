@@ -19,17 +19,12 @@ import java.util.Set;
  * =============================================================
  * DataInitializer
  * =============================================================
- * This component automatically inserts initial admin users
- * into the database when the application starts.
+ * Automatically seeds initial admin users when the application starts.
  * <p>
  * Behavior:
- * - In all environments → Creates the System Admin user.
- * - In development and local environments → Also creates
- * Region, Municipality, and Department Admins.
- * <p>
- * Purpose:
- * Ensures that at least one privileged user exists
- * after a clean database setup, preventing manual inserts.
+ * - In "prod" profile → Creates only the Region Admin.
+ * - In "local", "local-docker", and "local-single" → Creates Region,
+ * Municipality, and Department Admins for development/testing.
  */
 @Slf4j
 @Component
@@ -40,64 +35,54 @@ public class DataInitializer {
     private final PasswordEncoder passwordEncoder;
 
     /**
-     * Reads the currently active Spring profile
-     * (e.g., "local", "local-docker", "dev", "prod").
+     * Reads the active Spring profile (e.g. "local", "local-docker", "prod").
      */
     @Value("${spring.profiles.active:default}")
     private String activeProfile;
 
     /**
-     * Executed automatically by Spring after the bean is constructed.
-     * This method is responsible for seeding admin user accounts.
+     * Executed after the bean is constructed.
      */
     @PostConstruct
     public void init() {
         log.info("Active Profile: {}", activeProfile);
         log.info("Starting Data Initialization...");
 
-        // Always create the main System Admin account.
-        createSystemAdmin();
-
-        // Only create the additional admins if running in a dev or local environment.
-        if (isDevProfile()) {
+        if (isLocalProfile()) {
+            // Local or Docker-based development
             createRegionAdmin();
             createMunicipalityAdmins();
             createDepartmentAdmins();
+        } else if (isProdProfile()) {
+            // Production environment
+            createRegionAdmin();
+        } else {
+            log.warn("No matching profile found for data initialization: {}", activeProfile);
         }
 
         log.info("Data initialization completed.");
     }
 
     /**
-     * Determines if the current profile represents a
-     * development or local testing environment.
-     *
-     * @return true if the profile name contains "local" or "dev"
+     * Checks if the current profile is one of the local development profiles.
      */
-    private boolean isDevProfile() {
-        return activeProfile != null &&
-                (activeProfile.contains("local") || activeProfile.contains("dev"));
-    }
-
-    /**
-     * Creates the main System Administrator.
-     * This account always exists in every environment.
-     */
-    private void createSystemAdmin() {
-        createAdminIfNotExists(
-                "system.admin@disaster.nl",
-                "System",
-                "Admin",
-                RoleType.SYSTEM_ADMIN,
-                null,
-                null,
-                null
+    private boolean isLocalProfile() {
+        return activeProfile != null && (
+                activeProfile.equalsIgnoreCase("local") ||
+                        activeProfile.equalsIgnoreCase("local-docker") ||
+                        activeProfile.equalsIgnoreCase("local-single")
         );
     }
 
     /**
+     * Checks if the current profile is the production profile.
+     */
+    private boolean isProdProfile() {
+        return "prod".equalsIgnoreCase(activeProfile);
+    }
+
+    /**
      * Creates a Region-level admin user responsible for managing one region.
-     * Only runs in local/dev profiles.
      */
     private void createRegionAdmin() {
         createAdminIfNotExists(
@@ -113,7 +98,7 @@ public class DataInitializer {
 
     /**
      * Creates one Municipality Admin for each municipality record.
-     * Each admin belongs to a single municipality.
+     * (Only for local/dev environments)
      */
     private void createMunicipalityAdmins() {
         List<Long> municipalityIds = List.of(1L, 2L, 3L);
@@ -134,10 +119,6 @@ public class DataInitializer {
 
     /**
      * Creates one Department Admin for each department under each municipality.
-     * Example:
-     * - dept.fire.deventer@disaster.nl
-     * - dept.police.enschede@disaster.nl
-     * - dept.medical.zwolle@disaster.nl
      */
     private void createDepartmentAdmins() {
         String[] municipalities = {"Deventer", "Enschede", "Zwolle"};
@@ -160,15 +141,7 @@ public class DataInitializer {
     }
 
     /**
-     * Creates a user with the given parameters if they do not already exist.
-     *
-     * @param email          unique email for the user
-     * @param firstName      first name
-     * @param lastName       last name
-     * @param roleType       user's role (SYSTEM_ADMIN, REGION_ADMIN, etc.)
-     * @param regionId       optional region assignment
-     * @param municipalityId optional municipality assignment
-     * @param departmentId   optional department assignment
+     * Creates a user with the given parameters if not already existing.
      */
     private void createAdminIfNotExists(
             String email,
@@ -179,24 +152,21 @@ public class DataInitializer {
             Long municipalityId,
             Long departmentId
     ) {
-        // Skip creation if the user already exists.
         if (userRepository.findUserByEmail(email).isPresent()) {
             return;
         }
 
-        // Create the user entity.
         User user = User.builder()
                 .firstName(firstName)
                 .lastName(lastName)
                 .email(email)
-                .mobile(generateDefaultMobile(email)) // ✅ Added mobile number
-                .password(passwordEncoder.encode("Admin@123")) // Securely encoded password
+                .mobile(generateDefaultMobile(email))
+                .password(passwordEncoder.encode("Admin@123"))
                 .deleted(false)
                 .createdAt(OffsetDateTime.now())
                 .updatedAt(OffsetDateTime.now())
                 .build();
 
-        // Create and link the user role entity.
         UserRole userRole = UserRole.builder()
                 .roleType(roleType)
                 .regionId(regionId)
@@ -208,7 +178,6 @@ public class DataInitializer {
                 .updatedAt(OffsetDateTime.now())
                 .build();
 
-        // Link the user and role, then persist.
         user.setRoles(Set.of(userRole));
         userRepository.createUser(user);
 
@@ -216,11 +185,9 @@ public class DataInitializer {
     }
 
     /**
-     * Generates a simple deterministic phone number based on the email prefix.
-     * This prevents NULL values in the 'mobile' column.
+     * Generates a deterministic phone number from the email to avoid nulls.
      */
     private String generateDefaultMobile(String email) {
-        // Example: "system.admin@disaster.nl" -> "0000000001"
         int hash = Math.abs(email.hashCode() % 10000000);
         return String.format("06%07d", hash);
     }
