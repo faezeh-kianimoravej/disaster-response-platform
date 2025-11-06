@@ -222,6 +222,6 @@ public class DataInitializer {
     private String generateDefaultMobile(String email) {
         // Example: "system.admin@disaster.nl" -> "0000000001"
         int hash = Math.abs(email.hashCode() % 10000000);
-        return String.format("0c6%07d", hash);
+        return String.format("06%07d", hash);
     }
 }
