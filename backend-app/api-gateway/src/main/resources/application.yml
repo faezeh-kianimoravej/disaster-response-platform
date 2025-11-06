@@ -127,6 +127,17 @@ spring:
                 name: notificationServiceCircuitBreaker
                 fallbackUri: forward:/fallback
 
+        # User service: /api/users/** -> user-service/api/users/**
+        - id: user
+          uri: lb://user-service
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: userServiceCircuitBreaker
+                fallbackUri: forward:/fallback
+
 eureka:
   client:
     serviceUrl:
