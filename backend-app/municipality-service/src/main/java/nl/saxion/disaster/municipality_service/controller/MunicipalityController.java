@@ -1,9 +1,12 @@
 package nl.saxion.disaster.municipality_service.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import nl.saxion.disaster.municipality_service.dto.DepartmentSummaryDto;
+import nl.saxion.disaster.municipality_service.dto.MunicipalityBasicDto;
 import nl.saxion.disaster.municipality_service.dto.MunicipalityDto;
 import nl.saxion.disaster.municipality_service.dto.MunicipalitySummaryDto;
 import nl.saxion.disaster.municipality_service.model.entity.Municipality;
@@ -100,5 +103,31 @@ public class MunicipalityController {
     public ResponseEntity<List<MunicipalitySummaryDto>> getMunicipalitiesByRegion(@PathVariable Long regionId) {
         List<MunicipalitySummaryDto> municipalities = municipalityService.getMunicipalitySummaryListByRegionId(regionId);
         return ResponseEntity.ok(municipalities);
+    }
+
+
+    /**
+     * Returns basic municipality info (ID and name only).
+     * <p>
+     * Used by other microservices such as <b>resource-service</b>
+     * to fetch minimal data when showing department or resource details.
+     * </p>
+     *
+     * @param id municipality ID
+     * @return {@link MunicipalityBasicDto} if found, otherwise 404 Not Found
+     */
+    @GetMapping("/{id}/basic")
+    @Operation(
+            summary = "Get basic municipality information",
+            description = "Returns a lightweight DTO (ID and name only) for inter-service communication."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Municipality basic information retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Municipality not found")
+    })
+    public ResponseEntity<MunicipalityBasicDto> getMunicipalityBasicInfo(@PathVariable Long id) {
+        return municipalityService.getMunicipalityBasicInfoById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

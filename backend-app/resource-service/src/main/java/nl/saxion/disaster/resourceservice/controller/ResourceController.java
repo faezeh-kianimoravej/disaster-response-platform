@@ -2,9 +2,14 @@ package nl.saxion.disaster.resourceservice.controller;
 
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import nl.saxion.disaster.resourceservice.dto.ResourceAllocationRequestDto;
 import nl.saxion.disaster.resourceservice.dto.ResourceDto;
+import nl.saxion.disaster.resourceservice.dto.ResourceSearchRequestDto;
+import nl.saxion.disaster.resourceservice.dto.ResourceSearchResponseDto;
 import nl.saxion.disaster.resourceservice.model.enums.ResourceType;
 import nl.saxion.disaster.resourceservice.service.contract.ResourceService;
 import org.springframework.http.HttpStatus;
@@ -105,4 +110,53 @@ public class ResourceController {
         resourceService.deleteResource(id);
         return ResponseEntity.noContent().build();
     }
+    // ----------------------------------------------------------------------------------------
+    // Get the 10 closest resources to the specified incident
+    // ----------------------------------------------------------------------------------------
+
+    @GetMapping("/available")
+    @Operation(
+            summary = "Search nearest available resources for an incident",
+            description = """
+                    Returns up to 10 nearest available resources of the specified type for a given incident.
+                    You can optionally filter by municipality or department.
+                    Results are sorted by distance.
+                    """
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Available resources retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters provided")
+    })
+    public ResponseEntity<List<ResourceSearchResponseDto>> getNearestResourcesForIncident(
+            @RequestParam String resourceType,
+            @RequestParam Long incidentId,
+            @RequestParam(required = false) Long municipalityId,
+            @RequestParam(required = false) Long departmentId
+    ) {
+        var request = new ResourceSearchRequestDto(resourceType, incidentId, municipalityId, departmentId);
+        List<ResourceSearchResponseDto> results = resourceService.getNearestResourcesForIncident(request);
+        return ResponseEntity.ok(results);
+    }
+
+    // ----------------------------------------------------------------------------------------
+    // Allocate a list of resources to an incident
+    // ----------------------------------------------------------------------------------------
+
+    @PostMapping("/allocate")
+    @Operation(
+            summary = "Finalize resource allocation for an incident",
+            description = """
+                    Allocates selected resources to a given incident.
+                    Decreases their availability and notifies incident-service.
+                    """
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Resources allocated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid data or unavailable resources")
+    })
+    public ResponseEntity<Void> allocateResourcesToIncident(@RequestBody ResourceAllocationRequestDto request) {
+        resourceService.allocateResourcesToIncident(request);
+        return ResponseEntity.ok().build();
+    }
+
 }

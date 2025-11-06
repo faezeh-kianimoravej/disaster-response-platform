@@ -5,7 +5,6 @@ import nl.saxion.disaster.resourceservice.mapper.ResourceMapper;
 import nl.saxion.disaster.resourceservice.model.entity.Resource;
 import nl.saxion.disaster.resourceservice.model.enums.ResourceType;
 import nl.saxion.disaster.resourceservice.repository.contract.ResourceRepository;
-import nl.saxion.disaster.resourceservice.service.ResourceServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -74,7 +73,7 @@ class ResourceServiceImplTest {
 
     @Test
     void testGetAvailableResources() {
-        when(resourceRepository.findAvailable()).thenReturn(List.of(resource));
+        when(resourceRepository.findAllAvailableResources()).thenReturn(List.of(resource));
         when(resourceMapper.toDto(resource)).thenReturn(resourceDto);
 
         // Act
@@ -83,7 +82,7 @@ class ResourceServiceImplTest {
         // Assert
         assertEquals(1, result.size());
         assertEquals(1, result.get(0).available());
-        verify(resourceRepository, times(1)).findAvailable();
+        verify(resourceRepository, times(1)).findAllAvailableResources();
     }
 
     @Test

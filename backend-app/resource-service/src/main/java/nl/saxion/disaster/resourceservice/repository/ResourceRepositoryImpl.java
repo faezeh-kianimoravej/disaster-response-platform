@@ -26,9 +26,9 @@ public class ResourceRepositoryImpl implements ResourceRepository {
     }
 
     @Override
-    public List<Resource> findAvailable() {
+    public List<Resource> findAllAvailableResources() {
         return entityManager.createQuery(
-                        "SELECT r FROM Resource r WHERE r.available = 1", Resource.class)
+                        "SELECT resource FROM Resource resource WHERE resource.available > 0", Resource.class)
                 .getResultList();
     }
 
@@ -46,6 +46,36 @@ public class ResourceRepositoryImpl implements ResourceRepository {
                         "SELECT r FROM Resource r WHERE r.departmentId = :deptId", Resource.class)
                 .setParameter("deptId", departmentId)
                 .getResultList();
+    }
+
+    /*
+     * Fetches all available resources that match the given filters.
+     * - Only returns resources with available > 0 (at least one unit free).
+     * - Filters by resource type if provided.
+     * - Filters by a single departmentId OR by multiple departmentIds (from a municipality), if provided.
+     * - If no filters are provided, returns all available resources.
+     */
+    @Override
+    public List<Resource> findAvailableResourcesByTypeAndDepartment(String resourceType, Long departmentId, List<Long> departmentIds) {
+
+        var query = entityManager.createQuery("""
+                SELECT r FROM Resource r
+                WHERE r.available > 0
+                  AND (:resourceType IS NULL OR r.resourceType = :resourceType)
+                  AND (:departmentId IS NULL OR r.departmentId = :departmentId)
+                  AND (
+                       :departmentIds IS NULL
+                       OR r.departmentId IN :departmentIds
+                  )
+                """, Resource.class);
+
+        // Map the optional parameters safely
+        query.setParameter("resourceType",
+                (resourceType != null && !resourceType.isBlank()) ? ResourceType.valueOf(resourceType) : null);
+        query.setParameter("departmentId", departmentId);
+        query.setParameter("departmentIds", (departmentIds != null && !departmentIds.isEmpty()) ? departmentIds : null);
+
+        return query.getResultList();
     }
 
     @Override

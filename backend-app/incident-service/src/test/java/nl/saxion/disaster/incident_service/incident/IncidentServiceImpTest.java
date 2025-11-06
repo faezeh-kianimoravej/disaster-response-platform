@@ -7,7 +7,8 @@ import nl.saxion.disaster.incident_service.model.entity.Incident;
 import nl.saxion.disaster.incident_service.model.enums.GripLevel;
 import nl.saxion.disaster.incident_service.model.enums.Severity;
 import nl.saxion.disaster.incident_service.model.enums.Status;
-import nl.saxion.disaster.incident_service.repository.IncidentRepository;
+import nl.saxion.disaster.incident_service.repository.contract.IncidentRepository;
+import nl.saxion.disaster.incident_service.repository.contract.IncidentResourceRepository;
 import nl.saxion.disaster.incident_service.service.IncidentServiceImp;
 import nl.saxion.disaster.incident_service.service.messaging.IncidentEventProducer;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,14 +26,16 @@ import static org.mockito.Mockito.*;
 class IncidentServiceImpTest {
 
     private IncidentRepository repository;
+    private IncidentResourceRepository incidentResourceRepository;
     private IncidentEventProducer eventProducer;
     private IncidentServiceImp service;
 
     @BeforeEach
     void setup() {
         repository = mock(IncidentRepository.class);
+        incidentResourceRepository = mock(IncidentResourceRepository.class);
         eventProducer = mock(IncidentEventProducer.class);
-        service = new IncidentServiceImp(repository, eventProducer);
+        service = new IncidentServiceImp(repository, incidentResourceRepository, eventProducer);
     }
 
     private Incident sampleIncident(Long id) {
@@ -54,32 +57,29 @@ class IncidentServiceImpTest {
     }
 
     private IncidentRequest sampleRequest() {
-    return new IncidentRequest(
-        "112",
-        "Fire in building",
-        "Fire at main street",
-        Severity.HIGH,
-        GripLevel.LEVEL_2,
-        Status.OPEN,
-        OffsetDateTime.now(),
-        "Main Street 12",
-        52.0,
-        5.0,
-        1L // regionId
-    );
+        return new IncidentRequest(
+                "112",
+                "Fire in building",
+                "Fire at main street",
+                Severity.HIGH,
+                GripLevel.LEVEL_2,
+                Status.OPEN,
+                OffsetDateTime.now(),
+                "Main Street 12",
+                52.0,
+                5.0,
+                1L // regionId
+        );
     }
 
     @Test
     void createIncident_ShouldSaveAndReturnResponse() {
-        // given
         IncidentRequest req = sampleRequest();
         Incident incident = sampleIncident(1L);
         when(repository.save(any(Incident.class))).thenReturn(incident);
 
-        // when
         IncidentResponse response = service.createIncident(req);
 
-        // then
         assertThat(response.incidentId()).isEqualTo(1L);
         assertThat(response.title()).isEqualTo(req.title());
 
@@ -87,21 +87,16 @@ class IncidentServiceImpTest {
         verify(repository).save(captor.capture());
         Incident savedEntity = captor.getValue();
         assertThat(savedEntity.getReportedBy()).isEqualTo(req.reportedBy());
-
-        // Verify event producer called
         verify(eventProducer, times(1)).sendIncidentEvent(any());
     }
 
     @Test
     void getById_ShouldReturnIncidentResponse_WhenFound() {
-        // given
         Incident incident = sampleIncident(10L);
         when(repository.findById(10L)).thenReturn(Optional.of(incident));
 
-        // when
         IncidentResponse result = service.getById(10L);
 
-        // then
         assertThat(result.incidentId()).isEqualTo(10L);
         verify(repository).findById(10L);
     }
@@ -142,19 +137,19 @@ class IncidentServiceImpTest {
         when(repository.findById(5L)).thenReturn(Optional.of(existing));
         when(repository.save(any(Incident.class))).thenAnswer(inv -> inv.getArgument(0));
 
-    IncidentRequest newReq = new IncidentRequest(
-        "Bob",
-        "Explosion",
-        "Gas leak explosion",
-        Severity.CRITICAL,
-        GripLevel.LEVEL_3,
-        Status.IN_PROGRESS,
-        OffsetDateTime.now(),
-        "Industrial Area",
-        53.0,
-        6.0,
-        1L // regionId
-    );
+        IncidentRequest newReq = new IncidentRequest(
+                "Bob",
+                "Explosion",
+                "Gas leak explosion",
+                Severity.CRITICAL,
+                GripLevel.LEVEL_3,
+                Status.IN_PROGRESS,
+                OffsetDateTime.now(),
+                "Industrial Area",
+                53.0,
+                6.0,
+                1L
+        );
 
         IncidentResponse updated = service.update(5L, newReq);
 

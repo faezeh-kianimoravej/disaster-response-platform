@@ -3,6 +3,7 @@ package nl.saxion.disaster.municipality_service.service;
 import lombok.RequiredArgsConstructor;
 import nl.saxion.disaster.municipality_service.client.DepartmentClient;
 import nl.saxion.disaster.municipality_service.dto.DepartmentSummaryDto;
+import nl.saxion.disaster.municipality_service.dto.MunicipalityBasicDto;
 import nl.saxion.disaster.municipality_service.dto.MunicipalityDto;
 import nl.saxion.disaster.municipality_service.dto.MunicipalitySummaryDto;
 import nl.saxion.disaster.municipality_service.exception.MunicipalityNotFoundException;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,10 +53,10 @@ public class MunicipalityServiceImpl implements MunicipalityService {
                 .orElseThrow(() -> new MunicipalityNotFoundException("Municipality not found with id: " + id));
 
         MunicipalityDto dto = mapper.toDto(municipality);
-        
+
         // Fetch department summaries from department-service
         List<DepartmentSummaryDto> departments = departmentClient.getDepartmentsByMunicipality(id);
-        
+
         return new MunicipalityDto(
                 dto.municipalityId(),
                 dto.regionId(),
@@ -62,6 +64,30 @@ public class MunicipalityServiceImpl implements MunicipalityService {
                 dto.image(),
                 departments != null ? departments : Collections.emptyList()
         );
+    }
+
+    /**
+     * Retrieves a lightweight version of a Municipality entity by its unique ID.
+     * <p>
+     * This method is specifically designed for inter-service communication —
+     * for example, when the <b>resource-service</b> needs to display department
+     * and municipality names together while allocating or viewing resources.
+     * </p>
+     * <p>
+     * Only basic information (ID and name) is returned to minimize payload size
+     * and avoid circular dependencies between microservices.
+     * </p>
+     *
+     * @param id the unique identifier of the municipality
+     * @return an {@link Optional} containing {@link MunicipalityBasicDto} if found,
+     * or an empty Optional if the municipality does not exist
+     */
+    @Override
+    public Optional<MunicipalityBasicDto> getMunicipalityBasicInfoById(Long id) {
+        return repository.findMunicipalityById(id)
+                .map(municipality ->
+                        new MunicipalityBasicDto(municipality.getMunicipalityId(),
+                                municipality.getName()));
     }
 
     /**

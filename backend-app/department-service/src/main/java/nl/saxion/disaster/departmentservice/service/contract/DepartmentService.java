@@ -1,5 +1,6 @@
 package nl.saxion.disaster.departmentservice.service.contract;
 
+import nl.saxion.disaster.departmentservice.dto.DepartmentBasicDto;
 import nl.saxion.disaster.departmentservice.dto.DepartmentDto;
 import nl.saxion.disaster.departmentservice.dto.DepartmentSummaryDto;
 import nl.saxion.disaster.departmentservice.dto.ResourceSummaryDto;
@@ -19,6 +20,12 @@ public interface DepartmentService {
      */
     Optional<DepartmentDto> getDepartmentById(Long id);
 
+    /**
+     * Get a lightweight version of Department (id, name, municipalityId)
+     * — used by resource-service through FeignClient.
+     */
+    Optional<DepartmentBasicDto> getDepartmentBasicInfoById(Long id);
+
     DepartmentDto createDepartment(DepartmentDto departmentDto);
 
     DepartmentDto updateDepartment(Long id, DepartmentDto departmentDto);
@@ -34,4 +41,9 @@ public interface DepartmentService {
      * Get Resources by department ID - returns simplified DTO
      */
     List<ResourceSummaryDto> getResourcesOfDepartment(Long departmentId);
+
+    /**
+     * Fetches basic department info for a given municipality.
+     */
+    List<DepartmentBasicDto> getDepartmentsBasicInfoByMunicipalityId(Long municipalityId);
 }
