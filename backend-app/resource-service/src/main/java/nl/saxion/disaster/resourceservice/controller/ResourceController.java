@@ -114,7 +114,7 @@ public class ResourceController {
     // Get the 10 closest resources to the specified incident
     // ----------------------------------------------------------------------------------------
 
-    @GetMapping("/available")
+    @GetMapping("/available/nearest")
     @Operation(
             summary = "Search nearest available resources for an incident",
             description = """
