@@ -12,6 +12,7 @@ import nl.saxion.disaster.incident_service.service.contract.IncidentResourceServ
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -73,5 +74,10 @@ public class IncidentResourceServiceImpl implements IncidentResourceService {
                     );
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Map<Long, Integer> getActiveAllocationsForResources(List<Long> resourceIds) {
+        return repository.findActiveAllocations(resourceIds);
     }
 }

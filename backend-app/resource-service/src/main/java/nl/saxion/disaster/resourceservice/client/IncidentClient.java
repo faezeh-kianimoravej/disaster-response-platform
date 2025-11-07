@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Feign client for communicating with the incident-service.
@@ -51,5 +52,17 @@ public interface IncidentClient {
     void assignResourcesToIncident(
             @PathVariable("incidentId") Long incidentId,
             @RequestBody List<ResourceAllocationItemDto> allocations
+    );
+
+    /**
+     * Retrieves the total active allocations for a list of resource IDs.
+     * <p>
+     * Used by the resource-service to calculate available quantities
+     * (total - allocated) when searching for available resources.
+     * </p>
+     */
+    @GetMapping("/resources/allocations/active")
+    Map<Long, Integer> getActiveAllocationsForResources(
+            @RequestBody List<Long> resourceIds
     );
 }

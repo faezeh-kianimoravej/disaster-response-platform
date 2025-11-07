@@ -33,4 +33,12 @@ public class IncidentResource {
 
     @Column(nullable = false)
     private Integer quantity;
+
+
+    /**
+     * Indicates whether the resource allocation is currently active.
+     * When set to false, it means the resource has been released.
+     */
+    @Column(name = "is_allocated", nullable = false)
+    private Boolean isAllocated = true; // default value
 }
