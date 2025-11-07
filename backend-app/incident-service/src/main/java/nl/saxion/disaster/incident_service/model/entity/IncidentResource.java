@@ -40,5 +40,6 @@ public class IncidentResource {
      * When set to false, it means the resource has been released.
      */
     @Column(name = "is_allocated", nullable = false)
-    private Boolean isAllocated = true; // default value
+    @Builder.Default
+    private boolean isAllocated = true;
 }
