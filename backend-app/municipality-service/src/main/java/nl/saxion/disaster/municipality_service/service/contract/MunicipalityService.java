@@ -58,4 +58,6 @@ public interface MunicipalityService {
     void deleteMunicipality(Long id);
 
     List<DepartmentSummaryDto> getDepartmentsOfMunicipality(Long municipalityId);
+
+    List<Long> getDepartmentIdsByMunicipalityId(Long municipalityId);
 }

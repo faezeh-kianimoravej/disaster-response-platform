@@ -1,5 +1,7 @@
 package nl.saxion.disaster.resourceservice.dto;
 
+import java.util.List;
+
 /**
  * Lightweight DTO used for inter-service communication.
  * <p>
@@ -10,6 +12,7 @@ package nl.saxion.disaster.resourceservice.dto;
 public record MunicipalityBasicDto(
 
         Long id,
-        String name
+        String name,
+        List<Long> departmentIds
 ) {
 }

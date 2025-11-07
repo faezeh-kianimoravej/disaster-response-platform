@@ -15,7 +15,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 @Tag(
         name = "Municipality Management",
@@ -107,10 +109,11 @@ public class MunicipalityController {
 
 
     /**
-     * Returns basic municipality info (ID and name only).
+     * Returns basic municipality info including department IDs.
      * <p>
      * Used by other microservices such as <b>resource-service</b>
-     * to fetch minimal data when showing department or resource details.
+     * to fetch minimal data (ID, name, and department IDs)
+     * for filtering resources or showing basic details.
      * </p>
      *
      * @param id municipality ID
@@ -118,16 +121,44 @@ public class MunicipalityController {
      */
     @GetMapping("/{id}/basic")
     @Operation(
-            summary = "Get basic municipality information",
-            description = "Returns a lightweight DTO (ID and name only) for inter-service communication."
+            summary = "Get basic municipality information (ID, name, department IDs)",
+            description = """
+                    Returns a lightweight DTO containing:
+                    - Municipality ID
+                    - Municipality name
+                    - List of department IDs
+                    
+                    Used for inter-service communication, e.g., by the Resource-Service
+                    when filtering resources by municipality.
+                    """
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Municipality basic information retrieved successfully"),
             @ApiResponse(responseCode = "404", description = "Municipality not found")
     })
     public ResponseEntity<MunicipalityBasicDto> getMunicipalityBasicInfo(@PathVariable Long id) {
-        return municipalityService.getMunicipalityBasicInfoById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        MunicipalityDto municipalityDto = municipalityService.getMunicipalityById(id);
+
+        if (municipalityDto == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Extract only department IDs from DepartmentSummaryDto list
+        List<Long> departmentIds = municipalityDto.departments() != null
+                ? municipalityDto.departments().stream()
+                .map(DepartmentSummaryDto::departmentId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList()
+                : Collections.emptyList();
+
+        // Build a lightweight DTO for inter-service communication
+        var dto = new MunicipalityBasicDto(
+                municipalityDto.municipalityId(),
+                municipalityDto.name(),
+                departmentIds
+        );
+
+        return ResponseEntity.ok(dto);
     }
 }
