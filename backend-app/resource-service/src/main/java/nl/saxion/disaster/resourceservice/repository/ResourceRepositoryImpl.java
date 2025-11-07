@@ -57,41 +57,42 @@ public class ResourceRepositoryImpl implements ResourceRepository {
      * - If no filters are provided, returns all available resources.
      */
     @Override
-    public List<Resource> findAvailableResourcesByTypeAndDepartment(String resourceType, Long departmentId, List<Long> departmentIds) {
+    public List<Resource> findAvailableResourcesByTypeAndDepartment(
+            String resourceType,
+            Long departmentId,
+            List<Long> departmentIds) {
 
-        // Sanitize input lists
         List<Long> safeDepartmentIds = (departmentIds == null)
-                ? null
-                : departmentIds.stream()
-                .filter(Objects::nonNull)
-                .distinct()
-                .toList();
+                ? List.of()
+                : departmentIds.stream().filter(Objects::nonNull).distinct().toList();
 
-        var query = entityManager.createQuery("""
-                SELECT r FROM Resource r
-                WHERE r.available > 0
-                  AND (:resourceType IS NULL OR r.resourceType = :resourceType)
-                  AND (
-                        (:departmentId IS NOT NULL AND r.departmentId = :departmentId)
-                     OR (:departmentId IS NULL AND (:departmentIds IS NULL OR r.departmentId IN :departmentIds))
-                  )
-                """, Resource.class);
+        String queryStr = """
+        SELECT r FROM Resource r
+        WHERE r.available > 0
+          AND (:resourceType IS NULL OR r.resourceType = :resourceType)
+        """;
 
-        // Map parameters safely
+        if (departmentId != null) {
+            queryStr += " AND r.departmentId = :departmentId";
+        } else if (!safeDepartmentIds.isEmpty()) {
+            queryStr += " AND r.departmentId IN :departmentIds";
+        }
+
+        var query = entityManager.createQuery(queryStr, Resource.class);
+
+        // Set parameters safely
         query.setParameter("resourceType",
                 (resourceType != null && !resourceType.isBlank()) ? ResourceType.valueOf(resourceType) : null);
 
-        query.setParameter("departmentId", departmentId);
-
-        // Important: only set departmentIds if non-empty; otherwise set null explicitly
-        if (safeDepartmentIds == null || safeDepartmentIds.isEmpty()) {
-            query.setParameter("departmentIds", null);
-        } else {
+        if (departmentId != null) {
+            query.setParameter("departmentId", departmentId);
+        } else if (!safeDepartmentIds.isEmpty()) {
             query.setParameter("departmentIds", safeDepartmentIds);
         }
 
         return query.getResultList();
     }
+
 
 
     @Override

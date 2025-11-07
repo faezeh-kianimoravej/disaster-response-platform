@@ -170,7 +170,20 @@ public class ResourceServiceImpl implements ResourceService {
                         departmentClient.getDepartmentBasicInfoById(availableResource.getDepartmentId());
 
                 // 🔹 Instead of calling municipalityClient again, reuse the object
-                String municipalityName = municipality != null ? municipality.name() : "N/A";
+                String municipalityName;
+                if (municipality != null) {
+                    municipalityName = municipality.name();
+                } else if (department != null && department.municipalityId() != null) {
+                    try {
+                        var muni = municipalityClient.getMunicipalityBasicInfoById(department.municipalityId());
+                        municipalityName = muni != null ? muni.name() : "N/A";
+                    } catch (Exception ex) {
+                        municipalityName = "N/A";
+                    }
+                } else {
+                    municipalityName = "N/A";
+                }
+
 
                 double distanceKm = distanceCalculator.calculateDistanceKm(
                         incidentLocation.latitude(), incidentLocation.longitude(),
@@ -192,12 +205,24 @@ public class ResourceServiceImpl implements ResourceService {
             int available,
             double distanceKm
     ) {
+        String resolvedMunicipalityName = municipalityName;
+
+        if ((resolvedMunicipalityName == null || resolvedMunicipalityName.isBlank())
+                && department != null && department.municipalityId() != null) {
+            try {
+                var muni = municipalityClient.getMunicipalityBasicInfoById(department.municipalityId());
+                resolvedMunicipalityName = muni != null ? muni.name() : "N/A";
+            } catch (Exception ex) {
+                resolvedMunicipalityName = "N/A";
+            }
+        }
+
         return new ResourceSearchResponseDto(
                 availableResource.getName(),
                 availableResource.getResourceId(),
                 availableResource.getResourceType().name(),
-                department.name(),
-                municipalityName,
+                department != null ? department.name() : "Unknown Department",
+                resolvedMunicipalityName,
                 available,
                 String.format("%.1f km", distanceKm)
         );

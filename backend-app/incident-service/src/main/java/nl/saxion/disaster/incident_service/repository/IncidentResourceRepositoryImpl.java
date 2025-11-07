@@ -26,6 +26,7 @@ public class IncidentResourceRepositoryImpl implements IncidentResourceRepositor
 
     @Override
     public void updateIncidentAfterResourceAssignment(Incident incident, List<ResourceAllocationItemDto> allocations) {
+
         incident.setStatus(Status.IN_PROGRESS);
         entityManager.merge(incident);
 
@@ -34,6 +35,7 @@ public class IncidentResourceRepositoryImpl implements IncidentResourceRepositor
                     .incidentId(incident.getIncidentId())
                     .resourceId(allocation.resourceId())
                     .quantity(allocation.quantity())
+                    .isAllocated(true)
                     .build();
 
             entityManager.persist(incidentResource);

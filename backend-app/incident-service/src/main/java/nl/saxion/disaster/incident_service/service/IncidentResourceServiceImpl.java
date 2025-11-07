@@ -67,6 +67,7 @@ public class IncidentResourceServiceImpl implements IncidentResourceService {
                     // Combine everything into one response DTO
                     return new IncidentResourceResponseDto(
                             resource.getResourceId(),
+                            resourceInfo.name(),
                             resourceInfo.resourceType(),
                             departmentInfo.name(),
                             municipalityInfo.name(),

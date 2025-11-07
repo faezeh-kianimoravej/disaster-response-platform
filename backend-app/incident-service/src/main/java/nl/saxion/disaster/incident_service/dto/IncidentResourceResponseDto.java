@@ -1,6 +1,5 @@
 package nl.saxion.disaster.incident_service.dto;
 
-
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
@@ -16,6 +15,9 @@ public record IncidentResourceResponseDto(
         @Schema(description = "Unique ID of the allocated resource", example = "45")
         Long resourceId,
 
+        @Schema(description = "Name of the resource", example = "Truck 12")
+        String name,
+
         @Schema(description = "Type of the allocated resource", example = "Fire Truck")
         String resourceType,
 
@@ -27,5 +29,4 @@ public record IncidentResourceResponseDto(
 
         @Schema(description = "Allocated quantity for this resource", example = "2")
         Integer quantity
-) {
-}
+) {}
