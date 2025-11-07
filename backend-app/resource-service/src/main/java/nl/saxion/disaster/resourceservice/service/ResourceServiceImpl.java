@@ -212,8 +212,6 @@ public class ResourceServiceImpl implements ResourceService {
                 throw new IllegalArgumentException(
                         "Not enough available units for resource: " + resource.getName());
             }
-
-            updateResourceAvailability(resource, allocation.quantity());
         }
 
         // Notify incident-service to register allocation
@@ -235,21 +233,6 @@ public class ResourceServiceImpl implements ResourceService {
         } catch (Exception ex) {
             throw new IllegalStateException("Failed to validate incident existence (incident-service might be unavailable)", ex);
         }
-    }
-
-
-    /**
-     * Decreases the available count for a resource and persists the change.
-     *
-     * @param resource          the resource entity to update
-     * @param quantityAllocated how many units were allocated
-     */
-    private void updateResourceAvailability(Resource resource, int quantityAllocated) {
-        int updatedAvailable = resource.getAvailable() - quantityAllocated;
-        resource.setAvailable(updatedAvailable);
-
-        // Delegate persistence to the repository (which handles its own transaction)
-        resourceRepository.edit(resource.getResourceId(), resource);
     }
 }
 
