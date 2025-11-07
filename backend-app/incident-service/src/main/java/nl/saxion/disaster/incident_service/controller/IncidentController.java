@@ -8,12 +8,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.saxion.disaster.incident_service.dto.*;
+import nl.saxion.disaster.incident_service.exception.ResourceNotFoundException;
 import nl.saxion.disaster.incident_service.service.contract.IncidentResourceService;
 import nl.saxion.disaster.incident_service.service.contract.IncidentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -185,8 +187,8 @@ public class IncidentController {
     }
 
     // ----------------------------------------------------------------------------------------
-    // Get allocated resources of an incident
-    // ----------------------------------------------------------------------------------------
+// Get allocated resources of an incident
+// ----------------------------------------------------------------------------------------
     @GetMapping("/{id}/resources")
     @Operation(
             summary = "Get allocated resources of an incident",
@@ -199,16 +201,27 @@ public class IncidentController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Allocated resources retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "No resources found for the given incident ID")
+            @ApiResponse(responseCode = "404", description = "Incident not found")
     })
     public ResponseEntity<List<IncidentResourceResponseDto>> getAllocatedResources(@PathVariable Long id) {
-        List<IncidentResourceResponseDto> resources = incidentResourceService.getResourcesByIncidentId(id);
+        log.info("Fetching allocated resources for Incident ID {}", id);
 
-        if (resources.isEmpty()) {
-            log.info("No allocated resources found for Incident ID {}", id);
-            return ResponseEntity.notFound().build();
+        // Check if the incident exists
+        IncidentResponse incidentResponse = incidentService.getById(id);
+        if (incidentResponse == null) {
+            throw new ResourceNotFoundException("Incident with ID " + id + " not found");
         }
 
+        // Retrieve all allocated resources for the given incident
+        List<IncidentResourceResponseDto> resources = incidentResourceService.getResourcesByIncidentId(id);
+
+        // If no resources are allocated, return an empty list with status 200 (OK)
+        if (resources.isEmpty()) {
+            log.info("Incident {} has no allocated resources yet.", id);
+            return ResponseEntity.ok(Collections.emptyList());
+        }
+
+        // Return all allocated resources
         log.info("Returning {} allocated resources for Incident ID {}", resources.size(), id);
         return ResponseEntity.ok(resources);
     }

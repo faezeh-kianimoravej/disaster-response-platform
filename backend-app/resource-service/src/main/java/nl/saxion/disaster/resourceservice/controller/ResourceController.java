@@ -128,7 +128,7 @@ public class ResourceController {
             @ApiResponse(responseCode = "400", description = "Invalid parameters provided")
     })
     public ResponseEntity<List<ResourceSearchResponseDto>> getNearestResourcesForIncident(
-            @RequestParam String resourceType,
+            @RequestParam(required = false) String resourceType,
             @RequestParam Long incidentId,
             @RequestParam(required = false) Long municipalityId,
             @RequestParam(required = false) Long departmentId
