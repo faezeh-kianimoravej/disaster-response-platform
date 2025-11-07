@@ -126,13 +126,20 @@ public class ResourceServiceImpl implements ResourceService {
     // Get departmentIds if only municipalityId is provided
     private List<Long> getDepartmentIds(Long municipalityId, Long departmentId) {
         if (municipalityId != null && departmentId == null) {
-            return departmentClient.getDepartmentsByMunicipalityId(municipalityId)
+            List<Long> departmentIds = departmentClient.getDepartmentsByMunicipalityId(municipalityId)
                     .stream()
                     .map(DepartmentBasicDto::id)
                     .collect(Collectors.toList());
+
+            // Check if the list is empty or contains null, and handle accordingly
+            if (departmentIds == null || departmentIds.isEmpty()) {
+                return Collections.emptyList(); // Return an empty list if no departments found
+            }
+            return departmentIds;
         }
-        return null;
+        return Collections.emptyList(); // Return an empty list if departmentId is not null
     }
+
 
     // Fetch available resources from the repository
     private List<Resource> getAvailableResources(String resourceType, Long departmentId, List<Long> departmentIds) {
