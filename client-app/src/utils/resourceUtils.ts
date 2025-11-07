@@ -31,3 +31,6 @@ export function getDisplayImageSrc(image?: string | null): string | undefined {
 	else if (val.startsWith('UklGR')) mime = 'image/webp';
 	return `data:${mime};base64,${val}`;
 }
+export function getReadableResourceType(type: string): string {
+	return RESOURCE_TYPES[type as keyof typeof RESOURCE_TYPES] || type;
+}

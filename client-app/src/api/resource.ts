@@ -1,6 +1,6 @@
 import { BaseApi } from '@/api/base';
 import type { Resource, ResourceFormData, ResourceSearchResult } from '@/types/resource';
-
+import { RESOURCE_TYPES } from '@/utils/resourceUtils';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const resourceApi = new BaseApi(`${API_BASE_URL}/resources`);
@@ -70,52 +70,24 @@ export async function getResourcesByType(type: string): Promise<Resource[]> {
 }
 
 export async function searchResources(
+	incidentId: number,
 	resourceType: string,
 	departmentId: string,
 	municipalityId: string
 ): Promise<ResourceSearchResult[]> {
+	debugger;
 	const params = new URLSearchParams();
+	const mappedType =
+		Object.keys(RESOURCE_TYPES).find(
+			key => RESOURCE_TYPES[key as keyof typeof RESOURCE_TYPES] === resourceType
+		) || resourceType;
 
-	if (resourceType && resourceType !== 'All') params.append('resourceType', resourceType);
+	if (mappedType && mappedType !== 'All') params.append('resourceType', mappedType);
 	if (departmentId && departmentId !== 'All') params.append('departmentId', departmentId);
 	if (municipalityId && municipalityId !== 'All') params.append('municipalityId', municipalityId);
+	if (incidentId) params.append('incidentId', incidentId.toString());
 
-	//const queryString = params.toString() ? `?${params.toString()}` : '';
-	//return await resourceApi.get<ResourceSearchResult[]>(`/search${queryString}`);
-
-	// FAKE DATA FOR TESTING
-	return [
-		{
-			resourceId: 1,
-			resourceType: 'Fire Truck',
-			department: 'Fire Department Deventer',
-			municipality: 'Deventer',
-			available: 2,
-			distance: '2.1 km',
-		},
-		{
-			resourceId: 2,
-			resourceType: 'Ambulance',
-			department: 'Medical Department Enschede',
-			municipality: 'Enschede',
-			available: 1,
-			distance: '3.7 km',
-		},
-		{
-			resourceId: 3,
-			resourceType: 'Police Car',
-			department: 'Police Department Deventer',
-			municipality: 'Deventer',
-			available: 4,
-			distance: '7.5 km',
-		},
-		{
-			resourceId: 4,
-			resourceType: 'Rescue Boat',
-			department: 'Fire Department Deventer',
-			municipality: 'Enschede',
-			available: 1,
-			distance: '12.3 km',
-		},
-	];
+	const queryString = params.toString() ? `?${params.toString()}` : '';
+	debugger;
+	return await resourceApi.get<ResourceSearchResult[]>(`/available/nearest${queryString}`);
 }

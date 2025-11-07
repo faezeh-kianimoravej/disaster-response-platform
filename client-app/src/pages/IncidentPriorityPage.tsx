@@ -28,12 +28,10 @@ export default function IncidentPriorityPage() {
 	}, [error, loading, id, showSingleError]);
 
 	return (
-
-<AuthGuard requireRoles={[...REGION_ROLES]} requireAccessToRegion={incident?.regionId}>
-		<div className="min-h-screen bg-gray-50 py-8">
-			<div className="max-w-5xl mx-auto px-4">
-				<h1 className="text-2xl font-bold mb-4">Prioritize Incident</h1>
-
+		<AuthGuard requireRoles={[...REGION_ROLES]} requireAccessToRegion={incident?.regionId}>
+			<div className="min-h-screen bg-gray-50 py-8">
+				<div className="max-w-5xl mx-auto px-4">
+					<h1 className="text-2xl font-bold mb-4">Prioritize Incident</h1>
 
 					{loading && (
 						<div className="mb-6">

@@ -93,7 +93,7 @@ export default function IncidentDetailsPage() {
 											className="hover:text-blue-800 hover:underline"
 										>
 											Allocate Resources
-										</Link>										
+										</Link>
 										<span className="mx-2 text-gray-300">|</span>
 										<a href="#" className="hover:text-blue-800 hover:underline">
 											Instructions

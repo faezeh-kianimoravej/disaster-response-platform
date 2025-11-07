@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { getReadableResourceType } from '@/utils/resourceUtils';
 
 interface AllocationSummaryProps {
 	allocationQuantities: Record<string, number>;
 	resourceTypesMap?: Record<string, string>; // resourceId -> type name
+	resourceNamesMap?: Record<string, string>; // resourceId -> resource name
 	onChange?: (updatedQuantities: Record<string, number>) => void;
 	onSave?: (updatedQuantities: Record<string, number>) => void;
 	editable?: boolean;
@@ -11,6 +13,7 @@ interface AllocationSummaryProps {
 const AllocationSummary: React.FC<AllocationSummaryProps> = ({
 	allocationQuantities,
 	resourceTypesMap,
+	resourceNamesMap,
 	onChange,
 	onSave,
 	editable = false,
@@ -66,13 +69,30 @@ const AllocationSummary: React.FC<AllocationSummaryProps> = ({
 				<p className="text-gray-400">No resources allocated.</p>
 			) : (
 				<>
+					<div className="mb-2">
+						<div className="grid grid-cols-3 gap-2 text-xs font-semibold text-gray-600 pb-1 border-b border-gray-200">
+							<span>Type</span>
+							<span>Name</span>
+							<span className="text-center">Quantity</span>
+						</div>
+					</div>
 					<ul className="divide-y divide-gray-200">
 						{entries.map(([resourceId, qty]) => (
-							<li key={resourceId} className="flex items-center justify-between py-2 text-gray-800">
-								<span className="flex-1 truncate pr-2">
-									{resourceTypesMap?.[resourceId] ?? `Resource ${resourceId}`}
+							<li
+								key={resourceId}
+								className="grid grid-cols-3 gap-2 py-2 text-gray-800 items-center"
+							>
+								<span className="truncate text-xs">
+									{(() => {
+										const rawType = resourceTypesMap?.[resourceId];
+										if (!rawType) return `Unknown Type`;
+										return getReadableResourceType(rawType);
+									})()}
 								</span>
-								<div className="flex items-center space-x-1">
+								<span className="truncate text-xs">
+									{resourceNamesMap?.[resourceId] || `Resource ${resourceId}`}
+								</span>
+								<div className="flex items-center justify-center">
 									{editable ? (
 										<>
 											<input
@@ -109,7 +129,7 @@ const AllocationSummary: React.FC<AllocationSummaryProps> = ({
 											</button>
 										</>
 									) : (
-										<span className="font-medium">{qty}</span>
+										<span className="font-medium text-center">{qty}</span>
 									)}
 								</div>
 							</li>

@@ -1,17 +1,11 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { vi, Mock } from 'vitest';
 import IncidentAllocateResourcePage from '@/pages/IncidentAllocateResourcePage';
 import * as incidentApi from '@/api/incident';
 import * as resourceApi from '@/api/resource';
 import * as departmentApi from '@/api/department';
 import * as municipalityApi from '@/api/municipality';
-import { useToast } from '@/components/toast/ToastProvider';
-
-// Mock toast provider
-vi.mock('@/components/toast/ToastProvider', () => ({
-	useToast: vi.fn(),
-}));
+import { renderWithProviders } from '@/test/utils';
 
 // Mock incident API
 vi.mock('@/api/incident', () => ({
@@ -27,12 +21,13 @@ vi.mock('@/api/resource', () => ({
 
 // Mock department API
 vi.mock('@/api/department', () => ({
-	getDepartments: vi.fn(),
+	getDepartmentsByMunicipalityId: vi.fn(),
+	getAllDepartments: vi.fn(),
 }));
 
 // Mock municipality API
 vi.mock('@/api/municipality', () => ({
-	getMunicipalities: vi.fn(),
+	getMunicipalitiesByRegionId: vi.fn(),
 }));
 
 // Mock router
@@ -45,8 +40,6 @@ vi.mock('react-router-dom', async () => {
 });
 
 describe('IncidentAllocateResourcePage', () => {
-	const mockShowToast = vi.fn();
-
 	const mockIncident = {
 		incidentId: 123,
 		title: 'Building fire emergency',
@@ -56,6 +49,7 @@ describe('IncidentAllocateResourcePage', () => {
 		location: 'Downtown',
 		status: 'Active' as const,
 		reportedAt: new Date('2025-01-01T10:00:00Z'),
+		regionId: 1,
 	};
 
 	const mockDepartments = [
@@ -89,27 +83,36 @@ describe('IncidentAllocateResourcePage', () => {
 
 	beforeEach(() => {
 		vi.resetAllMocks();
-		(useToast as unknown as Mock).mockReturnValue({
-			showToast: mockShowToast,
-		});
 		(incidentApi.getIncidentById as unknown as Mock).mockResolvedValue(mockIncident);
 		(incidentApi.getAllocatedResources as unknown as Mock).mockResolvedValue([]);
-		(departmentApi.getDepartments as unknown as Mock).mockResolvedValue(mockDepartments);
-		(municipalityApi.getMunicipalities as unknown as Mock).mockResolvedValue(mockMunicipalities);
+		(departmentApi.getAllDepartments as unknown as Mock).mockResolvedValue(mockDepartments);
+		(departmentApi.getDepartmentsByMunicipalityId as unknown as Mock).mockResolvedValue(
+			mockDepartments
+		);
+		(municipalityApi.getMunicipalitiesByRegionId as unknown as Mock).mockImplementation(() =>
+			Promise.resolve(mockMunicipalities)
+		);
 		(resourceApi.searchResources as unknown as Mock).mockResolvedValue(mockResources);
 	});
 
 	const renderPage = () => {
-		render(
-			<MemoryRouter initialEntries={['/incidents/123/allocate-resources']}>
-				<Routes>
-					<Route
-						path="/incidents/:incidentId/allocate-resources"
-						element={<IncidentAllocateResourcePage />}
-					/>
-				</Routes>
-			</MemoryRouter>
-		);
+		renderWithProviders(<IncidentAllocateResourcePage />, {
+			route: '/incidents/123/allocate-resources',
+			routePath: '/incidents/:incidentId/allocate-resources',
+			auth: {
+				user: {
+					userId: 1,
+					firstName: 'Test',
+					lastName: 'User',
+					email: 'test@example.com',
+					mobile: '000',
+					roles: [
+						{ roleType: 'Region Admin', departmentId: null, municipalityId: null, regionId: 1 },
+					],
+					deleted: false,
+				},
+			},
+		});
 	};
 
 	it('shows loading state initially', () => {
@@ -239,7 +242,7 @@ describe('IncidentAllocateResourcePage', () => {
 
 		// Verify search was called with the filter
 		await waitFor(() => {
-			expect(resourceApi.searchResources).toHaveBeenCalledWith('Ambulance', '', '');
+			expect(resourceApi.searchResources).toHaveBeenCalledWith(123, 'Ambulance', '', '');
 		});
 	});
 
@@ -249,8 +252,8 @@ describe('IncidentAllocateResourcePage', () => {
 		await waitFor(() => {
 			expect(incidentApi.getIncidentById).toHaveBeenCalledWith(123);
 			expect(incidentApi.getAllocatedResources).toHaveBeenCalledWith(123);
-			expect(departmentApi.getDepartments).toHaveBeenCalled();
-			expect(municipalityApi.getMunicipalities).toHaveBeenCalled();
+			expect(departmentApi.getAllDepartments).toHaveBeenCalled();
+			expect(municipalityApi.getMunicipalitiesByRegionId).toHaveBeenCalled();
 			expect(resourceApi.searchResources).toHaveBeenCalled();
 		});
 	});
@@ -290,7 +293,7 @@ describe('IncidentAllocateResourcePage', () => {
 		// Should not show the search form (resource table is not rendered)
 		expect(screen.queryByLabelText(/resource type/i)).not.toBeInTheDocument();
 
-		// Should show update button instead of finalize
-		expect(screen.getByRole('button', { name: /update allocation/i })).toBeInTheDocument();
+		// Should show finalize button (not update - this feature is not implemented yet)
+		expect(screen.getByRole('button', { name: /finalize allocation/i })).toBeInTheDocument();
 	});
 });

@@ -45,22 +45,6 @@ const ResourceSearchForm: React.FC<ResourceSearchFormProps> = ({
 			</div>
 			<div className="flex-1">
 				<FormInput
-					label="Department"
-					name="department"
-					type="select"
-					value={selectedDepartment}
-					onChange={e => setSelectedDepartment(e.target.value)}
-					options={[
-						{ value: '', label: 'All' },
-						...departments.map((dept: Department) => ({
-							value: dept.departmentId,
-							label: dept.name,
-						})),
-					]}
-				/>
-			</div>
-			<div className="flex-1">
-				<FormInput
 					label="Municipality"
 					name="municipality"
 					type="select"
@@ -71,6 +55,22 @@ const ResourceSearchForm: React.FC<ResourceSearchFormProps> = ({
 						...municipalities.map((muni: Municipality) => ({
 							value: muni.municipalityId,
 							label: muni.name,
+						})),
+					]}
+				/>
+			</div>
+			<div className="flex-1">
+				<FormInput
+					label="Department"
+					name="department"
+					type="select"
+					value={selectedDepartment}
+					onChange={e => setSelectedDepartment(e.target.value)}
+					options={[
+						{ value: '', label: 'All' },
+						...departments.map((dept: Department) => ({
+							value: dept.departmentId,
+							label: dept.name,
 						})),
 					]}
 				/>

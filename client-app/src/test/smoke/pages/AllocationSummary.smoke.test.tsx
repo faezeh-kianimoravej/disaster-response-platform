@@ -307,7 +307,7 @@ describe('AllocationSummary', () => {
 
 		// Should not show the resource with 0 quantity in read-only mode
 		expect(screen.queryByText('Ambulance')).not.toBeInTheDocument();
-		
+
 		// Should still show resources with positive quantities
 		expect(screen.getByText('Fire Truck')).toBeInTheDocument();
 		expect(screen.getByText('Police Car')).toBeInTheDocument();

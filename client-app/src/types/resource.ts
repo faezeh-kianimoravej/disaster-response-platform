@@ -21,11 +21,8 @@ export interface ResourceFormData {
 	image: string;
 }
 
-export interface ResourceSearchResult {
-	resourceId: number;
-	resourceType: string;
+export interface ResourceSearchResult extends Resource {
 	department: string;
 	municipality: string;
-	available: number;
 	distance: string;
 }

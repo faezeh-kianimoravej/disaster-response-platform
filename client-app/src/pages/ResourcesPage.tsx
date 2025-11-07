@@ -4,7 +4,7 @@ import { routes } from '@/routes';
 import { useResources } from '@/hooks/useResource';
 import { useDepartment } from '@/hooks/useDepartment';
 import Button from '@/components/ui/Button';
-import { RESOURCE_TYPES, getDisplayImageSrc } from '@/utils/resourceUtils';
+import { RESOURCE_TYPES, getImageForResourceType } from '@/utils/resourceUtils';
 import LoadingPanel from '@/components/ui/LoadingPanel';
 import { ErrorRetryBlock } from '@/components/ui/ErrorRetry';
 import useSingleErrorToast from '@/hooks/useSingleErrorToast';
@@ -106,13 +106,11 @@ function ResourcesPageContent({
 											to={routes.resource(r.resourceId)}
 											className="block bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition"
 										>
-											{getDisplayImageSrc(r.image) && (
-												<img
-													src={getDisplayImageSrc(r.image)}
-													alt={r.name}
-													className="h-24 w-24 object-contain mx-auto mb-4"
-												/>
-											)}
+											<img
+												src={getImageForResourceType(r.resourceType)}
+												alt={r.name}
+												className="h-24 w-24 object-contain mx-auto mb-4"
+											/>
 											<h3 className="text-lg font-semibold text-gray-800 mb-2">{r.name}</h3>
 											<p className="text-sm text-gray-500 mb-2">{r.description}</p>
 											<p className="text-gray-700">

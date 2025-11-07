@@ -1,13 +1,6 @@
 import React from 'react';
-
-interface ResourceSearchResult {
-	resourceId: string | number;
-	resourceType: string;
-	department: string;
-	municipality: string;
-	available: number;
-	distance: string;
-}
+import { getReadableResourceType } from '@/utils/resourceUtils';
+import { ResourceSearchResult } from '@/types/resource';
 
 interface ResourceTableProps {
 	results: ResourceSearchResult[];
@@ -20,8 +13,9 @@ const ResourceTable: React.FC<ResourceTableProps> = ({
 	allocationQuantities,
 	setAllocationQuantities,
 }) => {
-	const handleChange = (id: string, value: number) => {
-		setAllocationQuantities({ ...allocationQuantities, [id]: value });
+	const handleChange = (id: string, value: number, max: number) => {
+		const safeValue = Math.min(value, max);
+		setAllocationQuantities({ ...allocationQuantities, [id]: safeValue });
 	};
 
 	return (
@@ -30,6 +24,7 @@ const ResourceTable: React.FC<ResourceTableProps> = ({
 				<thead className="bg-gray-50">
 					<tr>
 						<th className="px-3 py-1.5 border-b border-gray-200 text-left font-medium">Type</th>
+						<th className="px-3 py-1.5 border-b border-gray-200 text-left font-medium">Name</th>
 						<th className="px-3 py-1.5 border-b border-gray-200 text-left font-medium">
 							Department
 						</th>
@@ -51,8 +46,9 @@ const ResourceTable: React.FC<ResourceTableProps> = ({
 					{results.map((resource: ResourceSearchResult, idx: number) => (
 						<tr key={resource.resourceId} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
 							<td className="px-3 py-1 border-b border-gray-100 align-middle">
-								{resource.resourceType}
+								{getReadableResourceType(resource.resourceType)}
 							</td>
+							<td className="px-3 py-1 border-b border-gray-100 align-middle">{resource.name}</td>
 							<td className="px-3 py-1 border-b border-gray-100 align-middle">
 								{resource.department}
 							</td>
@@ -71,8 +67,14 @@ const ResourceTable: React.FC<ResourceTableProps> = ({
 									min={0}
 									max={resource.available}
 									value={allocationQuantities[String(resource.resourceId)] || ''}
-									onChange={e => handleChange(String(resource.resourceId), Number(e.target.value))}
-									className="w-16 border border-gray-300 rounded px-1 py-0.5 text-right focus:outline-none focus:ring-2 focus:ring-blue-500"
+									onChange={e =>
+										handleChange(
+											String(resource.resourceId),
+											Number(e.target.value),
+											resource.available
+										)
+									}
+									className="w-12 border border-gray-300 rounded px-1 py-0.5 text-right focus:outline-none focus:ring-2 focus:ring-blue-500"
 									style={{ height: '1.8rem' }}
 								/>
 							</td>
