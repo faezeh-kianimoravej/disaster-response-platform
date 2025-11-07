@@ -11,7 +11,9 @@ import nl.saxion.disaster.municipality_service.mapper.MunicipalityMapper;
 import nl.saxion.disaster.municipality_service.model.entity.Municipality;
 import nl.saxion.disaster.municipality_service.repository.contract.MunicipalityRepository;
 import nl.saxion.disaster.municipality_service.service.contract.MunicipalityService;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -87,7 +89,7 @@ public class MunicipalityServiceImpl implements MunicipalityService {
         return repository.findMunicipalityById(id)
                 .map(municipality ->
                         new MunicipalityBasicDto(municipality.getMunicipalityId(),
-                                municipality.getName()));
+                                municipality.getName(), municipality.getDepartmentIds()));
     }
 
     /**
@@ -167,5 +169,21 @@ public class MunicipalityServiceImpl implements MunicipalityService {
                 .orElseThrow(() -> new MunicipalityNotFoundException(municipalityId));
 
         return departmentClient.getDepartmentsByMunicipality(municipality.getMunicipalityId());
+    }
+
+    @Override
+    public List<Long> getDepartmentIdsByMunicipalityId(Long municipalityId) {
+        // Retrieve the municipality or throw 404 if not found
+        Municipality municipality = repository.findMunicipalityById(municipalityId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Municipality not found with ID: " + municipalityId
+                ));
+
+        // Ensure a non-null list
+        List<Long> departmentIds = municipality.getDepartmentIds();
+        if (departmentIds == null) {
+            return Collections.emptyList();
+        }
+        return departmentIds;
     }
 }

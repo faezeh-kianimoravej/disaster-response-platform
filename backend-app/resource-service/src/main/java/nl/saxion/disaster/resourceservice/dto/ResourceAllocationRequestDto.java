@@ -7,7 +7,16 @@ import java.util.List;
 /**
  * Request DTO for finalizing resource allocation to an incident.
  */
-@Schema(description = "Request payload for finalizing resource allocation to an incident.")
+@Schema(name = "ResourceAllocationRequestDto",
+        example = """
+                {
+                  "incidentId": 1,
+                  "allocations": [
+                    { "resourceId": 1, "quantity": 2 },
+                    { "resourceId": 13, "quantity": 2 }
+                  ]
+                }
+                """)
 public record ResourceAllocationRequestDto(
 
         @Schema(description = "The ID of the incident this allocation belongs to")

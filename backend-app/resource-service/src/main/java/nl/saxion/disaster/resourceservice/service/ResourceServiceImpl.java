@@ -80,9 +80,6 @@ public class ResourceServiceImpl implements ResourceService {
     // ----------------------------------------------------------------------------------------
     // Advanced search: Get available resources for an incident (sorted by distance)
     // ----------------------------------------------------------------------------------------
-    // ----------------------------------------------------------------------------------------
-// Advanced search: Get available resources for an incident (sorted by distance)
-// ----------------------------------------------------------------------------------------
     @Override
     public List<ResourceSearchResponseDto> getNearestResourcesForIncident(ResourceSearchRequestDto resourceSearchRequestDto) {
 
@@ -91,45 +88,56 @@ public class ResourceServiceImpl implements ResourceService {
         Long departmentId = resourceSearchRequestDto.departmentId();
         Long municipalityId = resourceSearchRequestDto.municipalityId();
 
-        // Retrieve the incident's location from incident-service
-        IncidentLocationDto incidentLocation = incidentClient.getIncidentLocation(resourceSearchRequestDto.incidentId());
+        // Step 1: If municipalityId provided, fetch municipality info once here
+        MunicipalityBasicDto municipality = null;
+        List<Long> departmentIds = null;
 
-        // Determine related department IDs if only a municipality filter is provided
-        List<Long> departmentIds = getDepartmentIds(municipalityId, departmentId);
+        if (municipalityId != null) {
+            municipality = municipalityClient.getMunicipalityBasicInfoById(municipalityId);
+            departmentIds = municipality.departmentIds();
 
-        // ❗Safety guard: if municipality filter is set but no departments found, return empty quickly
-        //    (Prevents IN ([null,...]) and avoids unnecessary DB/external calls)
-        if (municipalityId != null && departmentId == null &&
-                (departmentIds == null || departmentIds.isEmpty())) {
+            // Safety guard
+            if (departmentIds == null || departmentIds.isEmpty()) {
+                return Collections.emptyList();
+            }
+        }
+
+        // Step 2: Fetch available resources
+        List<Resource> availableResources = getAvailableResources(resourceType, departmentId, departmentIds);
+        if (availableResources.isEmpty()) {
             return Collections.emptyList();
         }
 
-        // Fetch available resources from the database
-        List<Resource> availableResources = getAvailableResources(resourceType, departmentId, departmentIds);
-
-        // Collect resourceIds for active allocation query
+        // Step 3: Collect resourceIds for active allocation query
         List<Long> resourceIds = availableResources.stream()
                 .map(Resource::getResourceId)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-        // Fetch active allocations from incident-service (skip call if there is nothing to check)
         Map<Long, Integer> activeAllocations =
                 resourceIds.isEmpty()
                         ? Collections.emptyMap()
                         : incidentClient.getActiveAllocationsForResources(resourceIds);
 
-        // Map Resource entities into frontend-friendly DTOs, and calculate available
-        List<ResourceSearchResponseDto> toSort = calculateAvailableResources(availableResources, activeAllocations, incidentLocation);
+        // Step 4: Retrieve the incident's location
+        final IncidentLocationDto incidentLocation;
+        try {
+            incidentLocation = incidentClient.getIncidentLocation(resourceSearchRequestDto.incidentId());
+        } catch (Exception ex) {
+            return Collections.emptyList();
+        }
 
-        // Sort resources by ascending distance and limit to top 10 results
-        // If `distance` in DTO is double -> this line is fine.
-        // If `distance` is a String like "12.3 km", replace the comparator with:
-        // .sorted(Comparator.comparingDouble(dto -> Double.parseDouble(dto.distance().replace(" km","").trim())))
+        // Step 5: Pass the municipality object so we don’t call Feign again
+        List<ResourceSearchResponseDto> toSort =
+                calculateAvailableResources(availableResources, activeAllocations, incidentLocation, municipality);
+
+        // Step 6: Sort & limit
         return toSort.stream()
                 .sorted(Comparator.comparing(ResourceSearchResponseDto::distance))
                 .limit(10)
                 .collect(Collectors.toList());
     }
+
 
     // Normalize resourceType if "All" is provided
     private String normalizeResourceType(String resourceType) {
@@ -139,57 +147,57 @@ public class ResourceServiceImpl implements ResourceService {
         return resourceType;
     }
 
-    // Get departmentIds if only municipalityId is provided
-    private List<Long> getDepartmentIds(Long municipalityId, Long departmentId) {
-        if (municipalityId != null && departmentId == null) {
-            List<Long> departmentIds = departmentClient.getDepartmentsByMunicipalityId(municipalityId)
-                    .stream()
-                    .map(DepartmentBasicDto::id)
-                    .filter(Objects::nonNull)
-                    .distinct()
-                    .toList();
-
-            return departmentIds;
-        }
-        return null;
-    }
-
-
     // Fetch available resources from the repository
     private List<Resource> getAvailableResources(String resourceType, Long departmentId, List<Long> departmentIds) {
         return resourceRepository.findAvailableResourcesByTypeAndDepartment(resourceType, departmentId, departmentIds);
     }
 
     // Calculate available resources and create response DTOs
-    private List<ResourceSearchResponseDto> calculateAvailableResources(List<Resource> availableResources, Map<Long, Integer> activeAllocations, IncidentLocationDto incidentLocation) {
+    private List<ResourceSearchResponseDto> calculateAvailableResources(
+            List<Resource> availableResources,
+            Map<Long, Integer> activeAllocations,
+            IncidentLocationDto incidentLocation,
+            MunicipalityBasicDto municipality // new param
+    ) {
         List<ResourceSearchResponseDto> toSort = new ArrayList<>();
+
         for (Resource availableResource : availableResources) {
             int allocated = activeAllocations.getOrDefault(availableResource.getResourceId(), 0);
-            int available = Math.max(availableResource.getQuantity() - allocated, 0); // Ensure non-negative available
+            int available = Math.max(availableResource.getQuantity() - allocated, 0);
 
-            if (available > 0) {  // Only include resources with available quantity > 0
-                DepartmentBasicDto department = departmentClient.getDepartmentBasicInfoById(availableResource.getDepartmentId());
-                MunicipalityBasicDto municipality = municipalityClient.getMunicipalityBasicInfoById(department.municipalityId());
+            if (available > 0) {
+                DepartmentBasicDto department =
+                        departmentClient.getDepartmentBasicInfoById(availableResource.getDepartmentId());
 
-                // Calculate distance from the incident location
+                // 🔹 Instead of calling municipalityClient again, reuse the object
+                String municipalityName = municipality != null ? municipality.name() : "N/A";
+
                 double distanceKm = distanceCalculator.calculateDistanceKm(
                         incidentLocation.latitude(), incidentLocation.longitude(),
                         availableResource.getLatitude(), availableResource.getLongitude()
                 );
 
-                toSort.add(mapToResourceSearchResponse(availableResource, department, municipality, available, distanceKm));
+                toSort.add(mapToResourceSearchResponse(availableResource, department, municipalityName, available, distanceKm));
             }
         }
         return toSort;
     }
 
+
     // Map resource data to ResourceSearchResponseDto
-    private ResourceSearchResponseDto mapToResourceSearchResponse(Resource availableResource, DepartmentBasicDto department, MunicipalityBasicDto municipality, int available, double distanceKm) {
+    private ResourceSearchResponseDto mapToResourceSearchResponse(
+            Resource availableResource,
+            DepartmentBasicDto department,
+            String municipalityName,
+            int available,
+            double distanceKm
+    ) {
         return new ResourceSearchResponseDto(
+                availableResource.getName(),
                 availableResource.getResourceId(),
                 availableResource.getResourceType().name(),
                 department.name(),
-                municipality.name(),
+                municipalityName,
                 available,
                 String.format("%.1f km", distanceKm)
         );

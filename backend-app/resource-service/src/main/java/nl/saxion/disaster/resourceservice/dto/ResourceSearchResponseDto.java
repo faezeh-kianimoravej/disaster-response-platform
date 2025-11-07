@@ -9,6 +9,8 @@ package nl.saxion.disaster.resourceservice.dto;
  * </p>
  */
 public record ResourceSearchResponseDto(
+
+        String name,
         Long resourceId,
         String resourceType,
         String department,
