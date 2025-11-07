@@ -80,6 +80,9 @@ public class ResourceServiceImpl implements ResourceService {
     // ----------------------------------------------------------------------------------------
     // Advanced search: Get available resources for an incident (sorted by distance)
     // ----------------------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------
+// Advanced search: Get available resources for an incident (sorted by distance)
+// ----------------------------------------------------------------------------------------
     @Override
     public List<ResourceSearchResponseDto> getNearestResourcesForIncident(ResourceSearchRequestDto resourceSearchRequestDto) {
 
@@ -94,6 +97,13 @@ public class ResourceServiceImpl implements ResourceService {
         // Determine related department IDs if only a municipality filter is provided
         List<Long> departmentIds = getDepartmentIds(municipalityId, departmentId);
 
+        // ❗Safety guard: if municipality filter is set but no departments found, return empty quickly
+        //    (Prevents IN ([null,...]) and avoids unnecessary DB/external calls)
+        if (municipalityId != null && departmentId == null &&
+                (departmentIds == null || departmentIds.isEmpty())) {
+            return Collections.emptyList();
+        }
+
         // Fetch available resources from the database
         List<Resource> availableResources = getAvailableResources(resourceType, departmentId, departmentIds);
 
@@ -102,13 +112,19 @@ public class ResourceServiceImpl implements ResourceService {
                 .map(Resource::getResourceId)
                 .collect(Collectors.toList());
 
-        // Fetch active allocations from incident-service
-        Map<Long, Integer> activeAllocations = incidentClient.getActiveAllocationsForResources(resourceIds);
+        // Fetch active allocations from incident-service (skip call if there is nothing to check)
+        Map<Long, Integer> activeAllocations =
+                resourceIds.isEmpty()
+                        ? Collections.emptyMap()
+                        : incidentClient.getActiveAllocationsForResources(resourceIds);
 
         // Map Resource entities into frontend-friendly DTOs, and calculate available
         List<ResourceSearchResponseDto> toSort = calculateAvailableResources(availableResources, activeAllocations, incidentLocation);
 
         // Sort resources by ascending distance and limit to top 10 results
+        // If `distance` in DTO is double -> this line is fine.
+        // If `distance` is a String like "12.3 km", replace the comparator with:
+        // .sorted(Comparator.comparingDouble(dto -> Double.parseDouble(dto.distance().replace(" km","").trim())))
         return toSort.stream()
                 .sorted(Comparator.comparing(ResourceSearchResponseDto::distance))
                 .limit(10)
@@ -129,15 +145,13 @@ public class ResourceServiceImpl implements ResourceService {
             List<Long> departmentIds = departmentClient.getDepartmentsByMunicipalityId(municipalityId)
                     .stream()
                     .map(DepartmentBasicDto::id)
-                    .collect(Collectors.toList());
+                    .filter(Objects::nonNull)
+                    .distinct()
+                    .toList();
 
-            // Check if the list is empty or contains null, and handle accordingly
-            if (departmentIds == null || departmentIds.isEmpty()) {
-                return Collections.emptyList(); // Return an empty list if no departments found
-            }
             return departmentIds;
         }
-        return Collections.emptyList(); // Return an empty list if departmentId is not null
+        return null;
     }
 
 

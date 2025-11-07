@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Repository
@@ -58,25 +59,40 @@ public class ResourceRepositoryImpl implements ResourceRepository {
     @Override
     public List<Resource> findAvailableResourcesByTypeAndDepartment(String resourceType, Long departmentId, List<Long> departmentIds) {
 
+        // Sanitize input lists
+        List<Long> safeDepartmentIds = (departmentIds == null)
+                ? null
+                : departmentIds.stream()
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
         var query = entityManager.createQuery("""
                 SELECT r FROM Resource r
                 WHERE r.available > 0
                   AND (:resourceType IS NULL OR r.resourceType = :resourceType)
-                  AND (:departmentId IS NULL OR r.departmentId = :departmentId)
                   AND (
-                       :departmentIds IS NULL
-                       OR r.departmentId IN :departmentIds
+                        (:departmentId IS NOT NULL AND r.departmentId = :departmentId)
+                     OR (:departmentId IS NULL AND (:departmentIds IS NULL OR r.departmentId IN :departmentIds))
                   )
                 """, Resource.class);
 
-        // Map the optional parameters safely
+        // Map parameters safely
         query.setParameter("resourceType",
                 (resourceType != null && !resourceType.isBlank()) ? ResourceType.valueOf(resourceType) : null);
+
         query.setParameter("departmentId", departmentId);
-        query.setParameter("departmentIds", (departmentIds != null && !departmentIds.isEmpty()) ? departmentIds : null);
+
+        // Important: only set departmentIds if non-empty; otherwise set null explicitly
+        if (safeDepartmentIds == null || safeDepartmentIds.isEmpty()) {
+            query.setParameter("departmentIds", null);
+        } else {
+            query.setParameter("departmentIds", safeDepartmentIds);
+        }
 
         return query.getResultList();
     }
+
 
     @Override
     public Resource save(Resource resource) {
