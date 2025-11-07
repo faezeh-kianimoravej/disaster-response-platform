@@ -14,10 +14,7 @@ import nl.saxion.disaster.resourceservice.service.contract.ResourceService;
 import nl.saxion.disaster.resourceservice.util.DistanceCalculator;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -87,11 +84,7 @@ public class ResourceServiceImpl implements ResourceService {
     public List<ResourceSearchResponseDto> getNearestResourcesForIncident(ResourceSearchRequestDto resourceSearchRequestDto) {
 
         // Normalize request parameters
-        // Convert "All" dropdown values to null for easier filtering in repository
-        String resourceType = resourceSearchRequestDto.resourceType();
-        if (resourceType != null && resourceType.equalsIgnoreCase("All")) {
-            resourceType = null;
-        }
+        String resourceType = normalizeResourceType(resourceSearchRequestDto.resourceType());
         Long departmentId = resourceSearchRequestDto.departmentId();
         Long municipalityId = resourceSearchRequestDto.municipalityId();
 
@@ -99,55 +92,88 @@ public class ResourceServiceImpl implements ResourceService {
         IncidentLocationDto incidentLocation = incidentClient.getIncidentLocation(resourceSearchRequestDto.incidentId());
 
         // Determine related department IDs if only a municipality filter is provided
-        List<Long> departmentIds = null;
-        if (municipalityId != null && departmentId == null) {
-            var departments = departmentClient.getDepartmentsByMunicipalityId(municipalityId);
-            departmentIds = departments.stream()
-                    .map(DepartmentBasicDto::id)
-                    .toList();
-        }
+        List<Long> departmentIds = getDepartmentIds(municipalityId, departmentId);
 
         // Fetch available resources from the database
-        // Filters dynamically by resourceType, departmentId, or municipality's departmentIds
-        List<Resource> availableResources = resourceRepository.findAvailableResourcesByTypeAndDepartment(
-                resourceType,
-                departmentId,
-                departmentIds
-        );
+        List<Resource> availableResources = getAvailableResources(resourceType, departmentId, departmentIds);
 
-        // Map Resource entities into frontend-friendly DTOs
-        // Includes department & municipality names and calculated distance
-        // Sort by ascending distance
-        // Limit to top 10 nearest results
+        // Collect resourceIds for active allocation query
+        List<Long> resourceIds = availableResources.stream()
+                .map(Resource::getResourceId)
+                .collect(Collectors.toList());
+
+        // Fetch active allocations from incident-service
+        Map<Long, Integer> activeAllocations = incidentClient.getActiveAllocationsForResources(resourceIds);
+
+        // Map Resource entities into frontend-friendly DTOs, and calculate available
+        List<ResourceSearchResponseDto> toSort = calculateAvailableResources(availableResources, activeAllocations, incidentLocation);
+
+        // Sort resources by ascending distance and limit to top 10 results
+        return toSort.stream()
+                .sorted(Comparator.comparing(ResourceSearchResponseDto::distance))
+                .limit(10)
+                .collect(Collectors.toList());
+    }
+
+    // Normalize resourceType if "All" is provided
+    private String normalizeResourceType(String resourceType) {
+        if (resourceType != null && resourceType.equalsIgnoreCase("All")) {
+            return null;
+        }
+        return resourceType;
+    }
+
+    // Get departmentIds if only municipalityId is provided
+    private List<Long> getDepartmentIds(Long municipalityId, Long departmentId) {
+        if (municipalityId != null && departmentId == null) {
+            return departmentClient.getDepartmentsByMunicipalityId(municipalityId)
+                    .stream()
+                    .map(DepartmentBasicDto::id)
+                    .collect(Collectors.toList());
+        }
+        return null;
+    }
+
+    // Fetch available resources from the repository
+    private List<Resource> getAvailableResources(String resourceType, Long departmentId, List<Long> departmentIds) {
+        return resourceRepository.findAvailableResourcesByTypeAndDepartment(resourceType, departmentId, departmentIds);
+    }
+
+    // Calculate available resources and create response DTOs
+    private List<ResourceSearchResponseDto> calculateAvailableResources(List<Resource> availableResources, Map<Long, Integer> activeAllocations, IncidentLocationDto incidentLocation) {
         List<ResourceSearchResponseDto> toSort = new ArrayList<>();
         for (Resource availableResource : availableResources) {
-            DepartmentBasicDto department = departmentClient.getDepartmentBasicInfoById(availableResource.getDepartmentId());
-            MunicipalityBasicDto municipality = municipalityClient.getMunicipalityBasicInfoById(department.municipalityId());
+            int allocated = activeAllocations.getOrDefault(availableResource.getResourceId(), 0);
+            int available = Math.max(availableResource.getQuantity() - allocated, 0); // Ensure non-negative available
 
-            double distanceKm = distanceCalculator.calculateDistanceKm(
-                    incidentLocation.latitude(), incidentLocation.longitude(),
-                    availableResource.getLatitude(), availableResource.getLongitude()
-            );
+            if (available > 0) {  // Only include resources with available quantity > 0
+                DepartmentBasicDto department = departmentClient.getDepartmentBasicInfoById(availableResource.getDepartmentId());
+                MunicipalityBasicDto municipality = municipalityClient.getMunicipalityBasicInfoById(department.municipalityId());
 
-            ResourceSearchResponseDto apply = new ResourceSearchResponseDto(
-                    availableResource.getResourceId(),
-                    availableResource.getResourceType().name(),
-                    department.name(),
-                    municipality.name(),
-                    availableResource.getAvailable(),
-                    String.format("%.1f km", distanceKm)
-            );
-            toSort.add(apply);
+                // Calculate distance from the incident location
+                double distanceKm = distanceCalculator.calculateDistanceKm(
+                        incidentLocation.latitude(), incidentLocation.longitude(),
+                        availableResource.getLatitude(), availableResource.getLongitude()
+                );
+
+                toSort.add(mapToResourceSearchResponse(availableResource, department, municipality, available, distanceKm));
+            }
         }
-        toSort.sort(Comparator.comparing(ResourceSearchResponseDto::distance));
-        List<ResourceSearchResponseDto> list = new ArrayList<>();
-        long limit = 10;
-        for (ResourceSearchResponseDto apply : toSort) {
-            if (limit-- == 0) break;
-            list.add(apply);
-        }
-        return list;
+        return toSort;
     }
+
+    // Map resource data to ResourceSearchResponseDto
+    private ResourceSearchResponseDto mapToResourceSearchResponse(Resource availableResource, DepartmentBasicDto department, MunicipalityBasicDto municipality, int available, double distanceKm) {
+        return new ResourceSearchResponseDto(
+                availableResource.getResourceId(),
+                availableResource.getResourceType().name(),
+                department.name(),
+                municipality.name(),
+                available,
+                String.format("%.1f km", distanceKm)
+        );
+    }
+
 
     /**
      * Finalizes the resource allocation process for a specific incident.
