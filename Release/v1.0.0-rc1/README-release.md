@@ -71,7 +71,7 @@ You can also open the following URLs to verify manually:
 
 When the system starts, the **User Service** automatically creates default admin accounts depending on the active profile:
 
-### 🔹 In Local / Docker Environments
+### 🔹 In Local/ Release / Docker Environments
 | Role | Email | Password | Scope |
 |------|--------|-----------|--------|
 | **Region Admin** | `region.admin@disaster.nl` | `Admin@123` | Manages all regions |
