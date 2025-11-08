@@ -27,6 +27,9 @@ test:client-app:
   extends: .client-app-base
   stage: test
   rules:
+    # Always run on version tags
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+(-rc\d+)?$/'
+      when: always
     # Run tests only when client-app files change (or manual/schedule)
     - changes:
         - client-app/**/*

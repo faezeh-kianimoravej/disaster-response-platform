@@ -62,7 +62,21 @@ validate:version:
   needs:
     - job: validate:version
       artifacts: true
+    - job: test:backend-app
+      optional: true
+    - job: test:client-app
+      optional: true
   before_script:
+    - echo "Docker Hub Username - ${DOCKERHUB_USERNAME}"
+    - |
+      if [ -z "$DOCKERHUB_USERNAME" ]; then
+        echo "ERROR: DOCKERHUB_USERNAME is not set"
+        exit 1
+      fi
+      if [ -z "$DOCKERHUB_TOKEN" ]; then
+        echo "ERROR: DOCKERHUB_TOKEN is not set"
+        exit 1
+      fi
     - docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_TOKEN"
     - |
       if [ -z "$VERSION" ]; then
@@ -215,7 +229,21 @@ image:frontend:
   needs:
     - job: validate:version
       artifacts: true
+    - job: test:backend-app
+      optional: true
+    - job: test:client-app
+      optional: true
   before_script:
+    - echo "Docker Hub Username - ${DOCKERHUB_USERNAME}"
+    - |
+      if [ -z "$DOCKERHUB_USERNAME" ]; then
+        echo "ERROR: DOCKERHUB_USERNAME is not set"
+        exit 1
+      fi
+      if [ -z "$DOCKERHUB_TOKEN" ]; then
+        echo "ERROR: DOCKERHUB_TOKEN is not set"
+        exit 1
+      fi
     - docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_TOKEN"
     - |
       if [ -z "$VERSION" ]; then
