@@ -42,14 +42,7 @@ git push origin main
 Create an annotated tag matching the VERSION file with a `v` prefix:
 
 ```bash
-# Read the version from the file
-VERSION=$(cat VERSION)
-
-# Create annotated tag
-git tag -a "v$VERSION" -m "Release v$VERSION"
-
-# Push the tag
-git push origin "v$VERSION"
+git tag -a "v$(Get-Content VERSION)" -m "Release v$(Get-Content VERSION)"
 ```
 
 **Important:** The tag MUST match `v$(cat VERSION)` exactly, or the pipeline will fail validation.
