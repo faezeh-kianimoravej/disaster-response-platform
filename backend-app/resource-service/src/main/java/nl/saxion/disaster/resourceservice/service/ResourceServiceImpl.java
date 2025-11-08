@@ -169,19 +169,18 @@ public class ResourceServiceImpl implements ResourceService {
                 DepartmentBasicDto department =
                         departmentClient.getDepartmentBasicInfoById(availableResource.getDepartmentId());
 
-                // 🔹 Instead of calling municipalityClient again, reuse the object
                 String municipalityName;
                 if (municipality != null) {
                     municipalityName = municipality.name();
                 } else if (department != null && department.municipalityId() != null) {
                     try {
                         var muni = municipalityClient.getMunicipalityBasicInfoById(department.municipalityId());
-                        municipalityName = muni != null ? muni.name() : "N/A";
+                        municipalityName = muni != null ? muni.name() : "Unavailable";
                     } catch (Exception ex) {
-                        municipalityName = "N/A";
+                        municipalityName = "Unavailable";
                     }
                 } else {
-                    municipalityName = "N/A";
+                    municipalityName = "Unavailable";
                 }
 
 
@@ -287,6 +286,18 @@ public class ResourceServiceImpl implements ResourceService {
         } catch (Exception ex) {
             throw new IllegalStateException("Failed to validate incident existence (incident-service might be unavailable)", ex);
         }
+    }
+
+    @Override
+    public Optional<ResourceBasicDto> getResourceBasicInfoById(Long id) {
+        // Retrieve the resource entity by its ID
+        return resourceRepository.findById(id)
+                .map(resource -> new ResourceBasicDto(
+                        resource.getResourceId(),
+                        resource.getName(),
+                        resource.getResourceType().name(),     // Type of resource
+                        resource.getDepartmentId()             // Department ID (Long)
+                ));
     }
 }
 

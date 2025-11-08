@@ -8,6 +8,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 @FeignClient(name = "resource-service", path = "/api/resources")
 public interface ResourceClient {
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id}/basic")
     ResourceBasicDto getResourceBasicInfoById(@PathVariable("id") Long id);
 }

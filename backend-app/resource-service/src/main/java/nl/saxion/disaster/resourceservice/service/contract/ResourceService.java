@@ -1,9 +1,6 @@
 package nl.saxion.disaster.resourceservice.service.contract;
 
-import nl.saxion.disaster.resourceservice.dto.ResourceAllocationRequestDto;
-import nl.saxion.disaster.resourceservice.dto.ResourceDto;
-import nl.saxion.disaster.resourceservice.dto.ResourceSearchRequestDto;
-import nl.saxion.disaster.resourceservice.dto.ResourceSearchResponseDto;
+import nl.saxion.disaster.resourceservice.dto.*;
 import nl.saxion.disaster.resourceservice.model.enums.ResourceType;
 
 import java.util.List;
@@ -28,4 +25,6 @@ public interface ResourceService {
     List<ResourceSearchResponseDto> getNearestResourcesForIncident(ResourceSearchRequestDto resourceSearchRequestDto);
 
     void allocateResourcesToIncident(ResourceAllocationRequestDto request);
+
+    Optional<ResourceBasicDto> getResourceBasicInfoById(Long id);
 }

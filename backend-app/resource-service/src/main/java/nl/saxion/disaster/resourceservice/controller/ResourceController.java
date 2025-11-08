@@ -6,10 +6,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import nl.saxion.disaster.resourceservice.dto.ResourceAllocationRequestDto;
-import nl.saxion.disaster.resourceservice.dto.ResourceDto;
-import nl.saxion.disaster.resourceservice.dto.ResourceSearchRequestDto;
-import nl.saxion.disaster.resourceservice.dto.ResourceSearchResponseDto;
+import lombok.extern.slf4j.Slf4j;
+import nl.saxion.disaster.resourceservice.dto.*;
 import nl.saxion.disaster.resourceservice.model.enums.ResourceType;
 import nl.saxion.disaster.resourceservice.service.contract.ResourceService;
 import org.springframework.http.HttpStatus;
@@ -24,6 +22,7 @@ import java.util.Map;
         name = "Resource Management",
         description = "Endpoints for managing resources, filtering them by resourceType or department, and retrieving resource categories."
 )
+@Slf4j
 @RestController
 @RequestMapping("/api/resources")
 @RequiredArgsConstructor
@@ -157,6 +156,36 @@ public class ResourceController {
     public ResponseEntity<Void> allocateResourcesToIncident(@RequestBody ResourceAllocationRequestDto request) {
         resourceService.allocateResourcesToIncident(request);
         return ResponseEntity.ok().build();
+    }
+
+    // ----------------------------------------------------------------------------------------
+// Get basic information of a resource (for inter-service use)
+// ----------------------------------------------------------------------------------------
+    @GetMapping("/{id}/basic")
+    @Operation(
+            summary = "Get basic resource info by ID (for inter-service use)",
+            description = """
+                    Returns minimal resource information such as ID, type, and department ID.
+                    This endpoint is used internally by other microservices (e.g., incident-service)
+                    to fetch essential resource details without exposing the entire resource object.
+                    """
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Basic resource info retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Resource not found")
+    })
+    public ResponseEntity<ResourceBasicDto> getResourceBasicInfoById(@PathVariable Long id) {
+        // Log the request for traceability
+        // Example: fetching resource info for cross-service communication
+        log.info("Fetching basic info for resource ID: {}", id);
+
+        // Delegate the call to the service layer
+        return resourceService.getResourceBasicInfoById(id)
+                .map(ResponseEntity::ok) // If found → return 200 OK with the DTO
+                .orElseGet(() -> {
+                    log.warn("Resource with ID {} not found", id);
+                    return ResponseEntity.notFound().build(); // If not found → return 404
+                });
     }
 
 }

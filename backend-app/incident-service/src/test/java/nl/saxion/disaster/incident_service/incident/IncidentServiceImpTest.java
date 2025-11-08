@@ -2,6 +2,7 @@ package nl.saxion.disaster.incident_service.incident;
 
 import nl.saxion.disaster.incident_service.dto.IncidentRequest;
 import nl.saxion.disaster.incident_service.dto.IncidentResponse;
+import nl.saxion.disaster.incident_service.dto.ResourceAllocationItemDto;
 import nl.saxion.disaster.incident_service.exception.ResourceNotFoundException;
 import nl.saxion.disaster.incident_service.model.entity.Incident;
 import nl.saxion.disaster.incident_service.model.enums.GripLevel;
@@ -179,5 +180,89 @@ class IncidentServiceImpTest {
         assertThatThrownBy(() -> service.delete(99L))
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("99");
+    }
+
+    @Test
+    void getIncidentBasicInfoById_ShouldReturnBasicInfo_WhenIncidentExists() {
+        Incident incident = sampleIncident(7L);
+        when(repository.findById(7L)).thenReturn(Optional.of(incident));
+
+        var result = service.getIncidentBasicInfoById(7L);
+
+        assertThat(result).isPresent();
+        var dto = result.get();
+        assertThat(dto.incidentId()).isEqualTo(7L);
+        assertThat(dto.title()).isEqualTo(incident.getTitle());
+        assertThat(dto.status()).isEqualTo(incident.getStatus().name());
+
+        verify(repository).findById(7L);
+    }
+
+    @Test
+    void getIncidentBasicInfoById_ShouldReturnEmpty_WhenNotFound() {
+        when(repository.findById(99L)).thenReturn(Optional.empty());
+
+        var result = service.getIncidentBasicInfoById(99L);
+
+        assertThat(result).isEmpty();
+        verify(repository).findById(99L);
+    }
+
+    @Test
+    void getIncidentLocation_ShouldReturnCoordinates_WhenIncidentExists() {
+        Incident incident = sampleIncident(8L);
+        incident.setLatitude(52.5);
+        incident.setLongitude(5.5);
+        when(repository.findById(8L)).thenReturn(Optional.of(incident));
+
+        var result = service.getIncidentLocation(8L);
+
+        assertThat(result).isPresent();
+        var loc = result.get();
+        assertThat(loc.latitude()).isEqualTo(52.5);
+        assertThat(loc.longitude()).isEqualTo(5.5);
+        verify(repository).findById(8L);
+    }
+
+    @Test
+    void getIncidentLocation_ShouldReturnEmpty_WhenIncidentNotFound() {
+        when(repository.findById(999L)).thenReturn(Optional.empty());
+
+        var result = service.getIncidentLocation(999L);
+
+        assertThat(result).isEmpty();
+        verify(repository).findById(999L);
+    }
+
+    @Test
+    void assignResourcesToIncident_ShouldUpdateIncident_WhenFound() {
+        Incident incident = sampleIncident(10L);
+        when(repository.findById(10L)).thenReturn(Optional.of(incident));
+
+        List<ResourceAllocationItemDto> allocations = List.of(
+                new ResourceAllocationItemDto(101L, 2),
+                new ResourceAllocationItemDto(102L, 1)
+        );
+
+        service.assignResourcesToIncident(10L, allocations);
+
+        verify(repository).findById(10L);
+        verify(incidentResourceRepository).updateIncidentAfterResourceAssignment(incident, allocations);
+    }
+
+    @Test
+    void assignResourcesToIncident_ShouldThrow_WhenIncidentNotFound() {
+        when(repository.findById(404L)).thenReturn(Optional.empty());
+
+        List<ResourceAllocationItemDto> allocations = List.of(
+                new ResourceAllocationItemDto(201L, 2)
+        );
+
+        assertThatThrownBy(() -> service.assignResourcesToIncident(404L, allocations))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("404");
+
+        verify(repository).findById(404L);
+        verifyNoInteractions(incidentResourceRepository);
     }
 }
