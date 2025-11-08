@@ -114,7 +114,7 @@
         <dependency>
             <groupId>nl.saxion.disaster</groupId>
             <artifactId>event-common</artifactId>
-            <version>1.0.0</version>
+            <version>${project.version}</version>
         </dependency>
 
         <!-- Validation API -->
