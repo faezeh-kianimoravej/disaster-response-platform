@@ -29,27 +29,21 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
 	// Restore auth from localStorage on mount
 	React.useEffect(() => {
 		const token = localStorage.getItem('auth_token');
-		const email = localStorage.getItem('user_email');
+		const userDataStr = localStorage.getItem('user_data');
 
-		if (token && email) {
-			// Restore user from stored credentials
-			// For now, we'll create a minimal user object
-			// In a real app, you'd fetch user details from the API using the token
-			const restoredUser: User = {
-				userId: 0,
-				firstName: '',
-				lastName: '',
-				email,
-				mobile: '',
-				roles: [],
-				deleted: false,
-			};
-
-			setAuthState({
-				isLoggedIn: true,
-				user: restoredUser,
-				token,
-			});
+		if (token && userDataStr) {
+			try {
+				const restoredUser = JSON.parse(userDataStr) as User;
+				setAuthState({
+					isLoggedIn: true,
+					user: restoredUser,
+					token,
+				});
+			} catch {
+				// If JSON parse fails, clear invalid data
+				localStorage.removeItem('auth_token');
+				localStorage.removeItem('user_data');
+			}
 		}
 
 		setIsRestoring(false);
