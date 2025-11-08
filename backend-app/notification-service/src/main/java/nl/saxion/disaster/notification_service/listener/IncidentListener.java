@@ -56,7 +56,7 @@ public class IncidentListener {
         // Broadcast notification to SSE clients for the region
         try {
             IncidentNotificationDto dto = new IncidentNotificationDto(
-                notification.getId(),
+                notification.getNotificationId(),
                 notification.getIncidentId(),
                 notification.getRegionId(),
                 "New Incident - " + notification.getTitle(),
