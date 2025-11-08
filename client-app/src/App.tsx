@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
+import HomePage from '@/pages/HomePage';
 import DashboardPage from '@/pages/DashboardPage';
 import UsersPage from '@/pages/UsersPage';
 import UserDetailsPage from '@/pages/UserDetailsPage';
@@ -24,7 +25,8 @@ function App() {
 				<div className="App">
 					<Navigation />
 					<Routes>
-						<Route path="/" element={<DashboardPage />} />
+						<Route path="/" element={<HomePage />} />
+						<Route path="/dashboard" element={<DashboardPage />} />
 
 						<Route path="/incidents/:incidentId" element={<IncidentDetailsPage />} />
 						<Route path="/incidents/:incidentId/prioritize" element={<IncidentPriorityPage />} />
@@ -32,6 +34,7 @@ function App() {
 							path="/incidents/:incidentId/allocate-resources"
 							element={<IncidentAllocateResourcePage />}
 						/>
+						<Route path="/resources" element={<ResourcesPage />} />
 						<Route path="/resources/:departmentId" element={<ResourcesPage />} />
 
 						{/* Resource detail / new */}

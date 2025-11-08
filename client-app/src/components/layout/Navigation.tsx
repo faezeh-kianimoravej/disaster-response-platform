@@ -20,9 +20,12 @@ export default function Navigation() {
 
 	// Build nav items with role-based visibility
 	const navItems = [
-		{ path: routes.home(), label: 'Dashboard' },
-		{ path: routes.alerts(), label: 'Alerts' },
-		...(showRegion ? [{ path: routes.municipalities(), label: 'Municipalities' }] : []),
+		...(showRegion
+			? [
+					{ path: routes.dashboard(), label: 'Dashboard' },
+					{ path: routes.municipalities(), label: 'Municipalities' },
+				]
+			: []),
 		...(showMunicipality ? [{ path: routes.departments(), label: 'Departments' }] : []),
 		...(showDepartment ? [{ path: routes.resources(), label: 'Resources' }] : []),
 		...(showAdmin ? [{ path: routes.users(), label: 'Users' }] : []),

@@ -12,9 +12,9 @@ vi.mock('@/components/auth/AccountPanel', () => ({
 import Navigation from '@/components/layout/Navigation';
 
 describe('Navigation smoke', () => {
-	it('renders brand and dashboard link', () => {
+	it('renders brand logo', () => {
 		renderWithProviders(<Navigation />);
 		expect(screen.getByText(/drccs/i)).toBeInTheDocument();
-		expect(screen.getByRole('link', { name: /dashboard/i })).toBeInTheDocument();
+		expect(screen.getByRole('link', { name: /drccs/i })).toBeInTheDocument();
 	});
 });

@@ -3,10 +3,8 @@ export const routes = {
 	login: () => '/login',
 
 	// Regions
+	dashboard: () => '/dashboard',
 	regions: () => '/regions',
-
-	// Alerts
-	alerts: () => '/alerts',
 
 	// Municipalities
 	municipalities: (regionId?: number | string) =>

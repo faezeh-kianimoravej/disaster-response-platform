@@ -4,6 +4,7 @@ import { useLogin } from '@/hooks/useLogin';
 import * as userApi from '@/api/user';
 import { useAuth } from '@/context/AuthContext';
 import type { AuthContextValue } from '@/context/AuthContext';
+import type { User } from '@/types/user';
 
 vi.mock('@/api/user');
 vi.mock('@/context/AuthContext');
@@ -44,19 +45,27 @@ describe('useLogin', () => {
 		expect(result.current.loading).toBe(false);
 		expect(result.current.error).toBeNull();
 
-		let success: boolean = false;
+		let user: User | null = null;
 		await act(async () => {
-			success = await result.current.login('test@example.com', 'password123');
+			user = await result.current.login('test@example.com', 'password123');
 		});
 
 		await waitFor(() => {
-			expect(success).toBe(true);
+			expect(user).not.toBeNull();
+			expect(user).toEqual(
+				expect.objectContaining({
+					email: 'test@example.com',
+					roles: mockLoginResponse.roles,
+				})
+			);
 			expect(result.current.loading).toBe(false);
 			expect(result.current.error).toBeNull();
 		});
 
 		expect(localStorage.getItem('auth_token')).toBe('test-token');
-		expect(localStorage.getItem('user_email')).toBe('test@example.com');
+		const storedUser = JSON.parse(localStorage.getItem('user_data') || '{}');
+		expect(storedUser.email).toBe('test@example.com');
+		expect(storedUser.roles).toEqual(mockLoginResponse.roles);
 
 		expect(mockSetAuth).toHaveBeenCalledWith({
 			isLoggedIn: true,
@@ -77,24 +86,25 @@ describe('useLogin', () => {
 
 		const { result } = renderHook(() => useLogin());
 
-		let success: boolean = true;
+		let user: User | null = null;
 		await act(async () => {
-			success = await result.current.login('test@example.com', 'wrongpassword');
+			user = await result.current.login('test@example.com', 'wrongpassword');
 		});
 
 		await waitFor(() => {
-			expect(success).toBe(false);
+			expect(user).toBeNull();
 			expect(result.current.loading).toBe(false);
 			expect(result.current.error).toBe('Invalid credentials');
 		});
 
 		expect(localStorage.getItem('auth_token')).toBeNull();
+		expect(localStorage.getItem('user_data')).toBeNull();
 		expect(mockSetAuth).not.toHaveBeenCalled();
 	});
 
 	it('should logout and clear localStorage', () => {
 		localStorage.setItem('auth_token', 'test-token');
-		localStorage.setItem('user_email', 'test@example.com');
+		localStorage.setItem('user_data', JSON.stringify({ email: 'test@example.com', roles: [] }));
 
 		const { result } = renderHook(() => useLogin());
 
@@ -103,7 +113,7 @@ describe('useLogin', () => {
 		});
 
 		expect(localStorage.getItem('auth_token')).toBeNull();
-		expect(localStorage.getItem('user_email')).toBeNull();
+		expect(localStorage.getItem('user_data')).toBeNull();
 
 		expect(mockSetAuth).toHaveBeenCalledWith({
 			isLoggedIn: false,
@@ -117,13 +127,13 @@ describe('useLogin', () => {
 
 		const { result } = renderHook(() => useLogin());
 
-		let success: boolean = true;
+		let user: User | null = null;
 		await act(async () => {
-			success = await result.current.login('test@example.com', 'password');
+			user = await result.current.login('test@example.com', 'password');
 		});
 
 		await waitFor(() => {
-			expect(success).toBe(false);
+			expect(user).toBeNull();
 			expect(result.current.error).toBe('Login failed');
 		});
 	});

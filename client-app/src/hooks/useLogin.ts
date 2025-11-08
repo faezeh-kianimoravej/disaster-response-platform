@@ -9,7 +9,7 @@ export function useLogin() {
 	const [error, setError] = useState<string | null>(null);
 	const auth = useAuth();
 
-	async function login(email: string, password: string): Promise<boolean> {
+	async function login(email: string, password: string): Promise<User | null> {
 		setLoading(true);
 		setError(null);
 		try {
@@ -26,9 +26,9 @@ export function useLogin() {
 				deleted: false,
 			};
 
-			// Store token in localStorage
+			// Store token and user in localStorage
 			localStorage.setItem('auth_token', response.token);
-			localStorage.setItem('user_email', response.email);
+			localStorage.setItem('user_data', JSON.stringify(user));
 
 			// Update auth state with the token and user info
 			auth?.setAuth?.({
@@ -36,21 +36,20 @@ export function useLogin() {
 				user,
 				token: response.token,
 			});
-
 			setLoading(false);
-			return true;
+			return user;
 		} catch (err) {
 			const apiError = err as ApiError;
 			setError(apiError.message || 'Login failed');
 			setLoading(false);
-			return false;
+			return null;
 		}
 	}
 
 	function logout() {
-		// Clear token from localStorage
+		// Clear all auth data from localStorage
 		localStorage.removeItem('auth_token');
-		localStorage.removeItem('user_email');
+		localStorage.removeItem('user_data');
 
 		auth?.setAuth?.({
 			isLoggedIn: false,
