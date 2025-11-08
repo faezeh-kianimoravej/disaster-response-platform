@@ -6,9 +6,12 @@
 
     <groupId>nl.saxion.disaster</groupId>
     <artifactId>backend-app</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.0-rc1</version>
     <packaging>pom</packaging>
+    <name>Disaster Response Coordination and Communication System - Backend</name>
+    <description>Parent module for all backend microservices of DRCCS</description>
 
+    <!--List of backend microservices -->
     <modules>
         <module>discovery-service</module>
         <module>api-gateway</module>
