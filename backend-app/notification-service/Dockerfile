@@ -8,14 +8,19 @@ ARG VERSION=1.0.0-SNAPSHOT
 # Install Maven (since this service doesn't use Maven wrapper)
 RUN apk add --no-cache maven
 
+# Copy and build event-common dependency first
+COPY event-common/pom.xml event-common/pom.xml
+COPY event-common/src event-common/src
+RUN cd event-common && mvn clean install -Drevision=${VERSION} -DskipTests
+
 # Copy project descriptor
-COPY pom.xml ./
+COPY notification-service/pom.xml ./
 
 # Download dependencies (cache layer)
 RUN mvn dependency:go-offline -Drevision=${VERSION} -DskipTests || true
 
 # Copy source
-COPY src ./src
+COPY notification-service/src ./src
 
 # Build the application
 RUN mvn clean package -Drevision=${VERSION} -DskipTests

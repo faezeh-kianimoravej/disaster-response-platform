@@ -135,7 +135,7 @@ image:incident-service:
   script:
     - |
       IMAGE="$DOCKERHUB_USERNAME/disaster-response-incident-service"
-      docker build --build-arg VERSION=$VERSION -t "$IMAGE:$VERSION" backend-app/incident-service
+      docker build --build-arg VERSION=$VERSION -f backend-app/incident-service/Dockerfile -t "$IMAGE:$VERSION" backend-app
       if [[ "$VERSION" != *"-rc"* ]]; then
         docker tag "$IMAGE:$VERSION" "$IMAGE:latest"
       fi
@@ -163,7 +163,7 @@ image:notification-service:
   script:
     - |
       IMAGE="$DOCKERHUB_USERNAME/disaster-response-notification-service"
-      docker build --build-arg VERSION=$VERSION -t "$IMAGE:$VERSION" backend-app/notification-service
+      docker build --build-arg VERSION=$VERSION -f backend-app/notification-service/Dockerfile -t "$IMAGE:$VERSION" backend-app
       if [[ "$VERSION" != *"-rc"* ]]; then
         docker tag "$IMAGE:$VERSION" "$IMAGE:latest"
       fi
