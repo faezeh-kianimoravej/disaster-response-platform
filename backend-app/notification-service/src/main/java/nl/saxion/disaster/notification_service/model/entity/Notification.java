@@ -20,7 +20,8 @@ public class Notification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "notification_id")
+    private Long notificationId;
     private Long incidentId;
     private Long regionId;
     @Enumerated(EnumType.STRING)

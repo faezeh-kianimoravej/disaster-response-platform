@@ -22,7 +22,7 @@ public class IncidentNotificationMapper implements BaseMapper<Notification, Inci
     public IncidentNotificationDto toDto(Notification entity) {
         if (entity == null) return null;
         return new IncidentNotificationDto(
-            entity.getId(),
+            entity.getNotificationId(),
             entity.getIncidentId(),
             entity.getRegionId(),
             "New Incident - " + entity.getTitle(),
