@@ -6,12 +6,6 @@
 
 A TypeScript React application for the Disaster Response Crisis Communication System (DRCCS), built with Vite for fast development and modern build tooling.
 
-## 🌐 Hosted Frontend
-The web portal is live!
-
-**Access via AWS (S3 + CloudFront):**  
-[👉 DRCCS Web Portal](https://d2m24xdy5zz2ti.cloudfront.net/)
-
 ## Getting Started
 
 Install dependencies:

@@ -1,5 +1,4 @@
-services:
-  # ---------- Backend stack (reuse existing Dockerfiles) ----------
+﻿services:
   postgres-db:
     image: postgres:16
     container_name: postgres-db
@@ -32,6 +31,7 @@ services:
       - "2181:2181"
     networks:
       - app-network
+    restart: always
 
   kafka:
     image: confluentinc/cp-kafka:7.5.0
@@ -48,10 +48,10 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     networks:
       - app-network
-    restart: on-failure
+    restart: always
 
   discovery-service:
-    build: ../backend-app/discovery-service
+    image: fkiani/disaster-response-discovery-service:latest
     container_name: discovery-service
     ports:
       - "8761:8761"
@@ -60,160 +60,129 @@ services:
     depends_on:
       postgres-db:
         condition: service_healthy
-    restart: on-failure
+    restart: always
 
   api-gateway:
-    build: ../backend-app/api-gateway
+    image: fkiani/disaster-response-api-gateway:latest
     container_name: api-gateway
-    depends_on:
-      discovery-service:
-        condition: service_started
     ports:
       - "8080:8080"
     environment:
-      SPRING_PROFILES_ACTIVE: ${STACK_PROFILE:-local-docker}
-    networks:
-      - app-network
-    restart: on-failure
-
-  resource-service:
-    build: ../backend-app/resource-service
-    container_name: resource-service
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
     depends_on:
-      postgres-db:
-        condition: service_healthy
       discovery-service:
         condition: service_started
-    ports:
-      - "8087:8087"
-    environment:
-      SPRING_PROFILES_ACTIVE: ${STACK_PROFILE:-local-docker}
     networks:
       - app-network
-    restart: on-failure
-
-  department-service:
-    build: ../backend-app/department-service
-    container_name: department-service
-    depends_on:
-      postgres-db:
-        condition: service_healthy
-      discovery-service:
-        condition: service_started
-    ports:
-      - "8081:8081"
-    environment:
-      SPRING_PROFILES_ACTIVE: ${STACK_PROFILE:-local-docker}
-    networks:
-      - app-network
-    restart: on-failure
-
-  municipality-service:
-    build: ../backend-app/municipality-service
-    container_name: municipality-service
-    depends_on:
-      postgres-db:
-        condition: service_healthy
-      discovery-service:
-        condition: service_started
-      department-service:
-        condition: service_started
-    ports:
-      - "8082:8082"
-    environment:
-      SPRING_PROFILES_ACTIVE: ${STACK_PROFILE:-local-docker}
-    networks:
-      - app-network
-    restart: on-failure
-
-  region-service:
-    build: ../backend-app/region-service
-    container_name: region-service
-    depends_on:
-      postgres-db:
-        condition: service_healthy
-      discovery-service:
-        condition: service_started
-      municipality-service:
-        condition: service_started
-    ports:
-      - "8083:8083"
-    environment:
-      SPRING_PROFILES_ACTIVE: ${STACK_PROFILE:-local-docker}
-    networks:
-      - app-network
-    restart: on-failure
-
-  incident-service:
-    build: ../backend-app/incident-service
-    container_name: incident-service
-    depends_on:
-      postgres-db:
-        condition: service_healthy
-      discovery-service:
-        condition: service_started
-      kafka:
-        condition: service_started
-    ports:
-      - "8084:8084"
-    environment:
-      SPRING_PROFILES_ACTIVE: ${STACK_PROFILE:-local-docker}
-    networks:
-      - app-network
-    restart: on-failure
-
-  notification-service:
-    build: ../backend-app/notification-service
-    container_name: notification-service
-    depends_on:
-      postgres-db:
-        condition: service_healthy
-      discovery-service:
-        condition: service_started
-      kafka:
-        condition: service_started
-    ports:
-      - "8085:8085"
-    environment:
-      SPRING_PROFILES_ACTIVE: ${STACK_PROFILE:-local-docker}
-    networks:
-      - app-network
-    restart: on-failure
+    restart: always
 
   user-service:
-    build: ../backend-app/user-service
+    image: fkiani/disaster-response-user-service:latest
     container_name: user-service
-    depends_on:
-      postgres-db:
-        condition: service_healthy
-      discovery-service:
-        condition: service_started
-      kafka:
-        condition: service_started
-    ports:
-      - "8086:8086"
     environment:
-      SPRING_PROFILES_ACTIVE: ${STACK_PROFILE:-local-docker}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/user_db
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
+    depends_on:
+      - discovery-service
+      - postgres-db
     networks:
       - app-network
-    restart: on-failure
+    restart: always
 
-  # ---------- Frontend ----------
-  client-app:
-    build: ../client-app
-    container_name: client-app
+  incident-service:
+    image: fkiani/disaster-response-incident-service:latest
+    container_name: incident-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/incident_db
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
     depends_on:
-      api-gateway:
-        condition: service_started
+      - discovery-service
+      - postgres-db
+    networks:
+      - app-network
+    restart: always
+
+  resource-service:
+    image: fkiani/disaster-response-resource-service:latest
+    container_name: resource-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/resource_db
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
+    depends_on:
+      - discovery-service
+      - postgres-db
+    networks:
+      - app-network
+    restart: always
+
+  department-service:
+    image: fkiani/disaster-response-department-service:latest
+    container_name: department-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/department_db
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
+    depends_on:
+      - discovery-service
+      - postgres-db
+    networks:
+      - app-network
+    restart: always
+
+  municipality-service:
+    image: fkiani/disaster-response-municipality-service:latest
+    container_name: municipality-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/municipality_db
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
+    depends_on:
+      - discovery-service
+      - postgres-db
+    networks:
+      - app-network
+    restart: always
+
+  region-service:
+    image: fkiani/disaster-response-region-service:latest
+    container_name: region-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/region_db
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
+    depends_on:
+      - discovery-service
+      - postgres-db
+    networks:
+      - app-network
+    restart: always
+
+  notification-service:
+    image: fkiani/disaster-response-notification-service:latest
+    container_name: notification-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/notification_db
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+    depends_on:
+      - discovery-service
+      - postgres-db
+      - kafka
+    networks:
+      - app-network
+    restart: always
+
+  frontend:
+    image: fkiani/disaster-response-frontend:latest
+    container_name: disaster-frontend
     ports:
       - "3000:80"
+    depends_on:
+      - api-gateway
     networks:
       - app-network
-    restart: on-failure
+    restart: always
+
+volumes:
+  postgres_data:
 
 networks:
   app-network:
     driver: bridge
-
-volumes:
-  postgres_data:
