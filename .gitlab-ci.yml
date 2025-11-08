@@ -422,7 +422,6 @@ publish:gitlab-release:
       - **Region Service** - Regional management
       - **Resource Service** - Resource allocation and tracking
       - **User Service** - User authentication and management
-      - **Location Service** - Geolocation services
       - **Frontend Application** - React-based web interface
 
       ## 🐳 Docker Images
