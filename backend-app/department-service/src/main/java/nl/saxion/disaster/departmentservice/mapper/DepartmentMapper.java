@@ -96,6 +96,7 @@ public class DepartmentMapper implements BaseMapper<Department, DepartmentDto> {
 
         return Department.builder()
                 .departmentId(dto.departmentId())
+                .municipalityId(dto.municipalityId())
                 .name(dto.name())
                 .image(department.getImage())
                 .resourceIds(resourceIds)
