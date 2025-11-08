@@ -15,7 +15,7 @@ domain-specific microservices.
 
 ---
 
-## 🚀 Quick Start
+## 🧑‍� Developer Quick Start
 
 ### Normal Start (Daily Use)
 
@@ -57,7 +57,7 @@ docker-compose down
 
 ---
 
-## Service URLs
+## Local Service URLs (Developer)
 
 | Service              | URL                   | Port |
 |----------------------|-----------------------|------|

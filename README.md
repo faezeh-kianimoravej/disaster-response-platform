@@ -5,26 +5,44 @@ Built with a microservices backend and a modern React front-end, DRCCS empowers 
 
 ---
 
-## 🌐 Hosted Frontend
-The web portal is live!
-
-**Access via AWS (S3 + CloudFront):**  
-[👉 DRCCS Web Portal](https://d2m24xdy5zz2ti.cloudfront.net/)
+## Who this README is for
+- **Users/operators:** see "User Deployment Guide" below to run a release from Docker Hub.
+- **Developers:** see "Developer Guide" for local development, testing, and releasing.
 
 ---
 
-## 🚧 Current Development State
-- **Status:** Active development (student project for 2025–2026) 🛠️
+## 🚧 Project Status
+- **Status:** Proof of Concept release (student project for 2025–2026) 🛠️
 - **Backend:** Java (Maven) microservices  
     &nbsp;&nbsp;&nbsp;&nbsp;`api-gateway`, `discovery-service`, `department-service`, `incident-service`, `municipality-service`, `notification-service`, `region-service`
 - **Frontend:** React + TypeScript (Vite) in `client-app/`
-- **CI/CD:** GitLab CI placeholders (configure pipelines in your GitLab)
-- **Known work remaining:**  
-    🧪 End‑to‑end tests  
+
     
 ---
 
-## ⚡ Quick Start — Local Development
+## 📦 User Deployment Guide — Run a Release
+Run DRCCS using pre-built images from Docker Hub.
+
+1) Install Docker Desktop and Docker Compose
+2) From the `release/` directory:
+
+```powershell
+cd release
+docker-compose pull
+docker-compose up -d
+```
+
+Services:
+- Frontend: http://localhost:3000
+- API Gateway: http://localhost:8080
+- Eureka: http://localhost:8761
+
+
+**📖 Full deployment documentation:** See [`release/README.md`](release/README.md)
+
+---
+
+## 🧑‍💻 Developer Guide — Local Development
 ### Prerequisites
 - ☕ **Java 21** (for backend builds)
 - 🧰 **Apache Maven 3.8+** (for building the backend services)
@@ -59,6 +77,20 @@ npm run dev
 ```
 
 📖 **Full details:** See `backend-app/README.md` and `client-app/README.md`
+
+---
+
+## 🚀 Developer Release Process (Tag-Based)
+Releases are created via GitLab CI/CD when you push a version tag.
+
+1. Update the `VERSION` file
+2. Commit to `main`
+3. Create and push tag: `git tag -a v1.0.0 -m "Release v1.0.0" && git push origin v1.0.0`
+4. CI builds & publishes all Docker images and creates a GitLab Release
+
+Details: see [`RELEASING.md`](RELEASING.md)
+
+Images: `fkiani/disaster-response-*` on Docker Hub
 
 ---
 

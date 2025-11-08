@@ -2,9 +2,16 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
+# Accept VERSION as build arg
+ARG VERSION=0.0.0-dev
+ENV VITE_APP_VERSION=$VERSION
+
 # Copy dependency manifests first for better layer caching
 COPY package*.json ./
 RUN if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi
+
+# Sync VERSION into package.json
+RUN npm version $VERSION --no-git-tag-version --allow-same-version
 
 # Copy the remaining source code
 COPY . .

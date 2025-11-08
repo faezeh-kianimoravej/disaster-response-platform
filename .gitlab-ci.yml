@@ -1,12 +1,16 @@
 # DRCCS GitLab CI/CD Pipeline
 stages:
+  - validate
   - test
   - build
-  - deploy
-  - smoke
+  - image
+  - scan
+  - publish
 
 variables:
   NODE_VERSION: "20"
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+  DOCKER_TLS_CERTDIR: "/certs"
   # Security scan exclusions
   SAST_EXCLUDED_PATHS: "**/node_modules,**/dist,**/build,**/.next,**/coverage,**/target"
   SECRET_DETECTION_EXCLUDED_PATHS: "**/node_modules,**/dist,**/build,**/.next,**/coverage,**/target"
@@ -17,6 +21,307 @@ include:
   - template: Security/SAST.gitlab-ci.yml
   - template: Security/Secret-Detection.gitlab-ci.yml
 
+# ======================================
+# Version Validation (tags only)
+# ======================================
+validate:version:
+  stage: validate
+  image: alpine:latest
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+(-rc\d+)?$/'
+      when: always
+    - when: never
+  script:
+    - |
+      VERSION_FILE=$(cat VERSION)
+      EXPECTED_TAG="v$VERSION_FILE"
+      echo "VERSION file contains: $VERSION_FILE"
+      echo "Git tag is: $CI_COMMIT_TAG"
+      if [ "$CI_COMMIT_TAG" != "$EXPECTED_TAG" ]; then
+        echo "ERROR: Tag mismatch! Git tag '$CI_COMMIT_TAG' does not match VERSION file '$EXPECTED_TAG'"
+        exit 1
+      fi
+      echo "✓ Version validation passed"
+      echo "VERSION=$VERSION_FILE" >> variables.env
+  artifacts:
+    reports:
+      dotenv: variables.env
+
+# ======================================
+# Backend Image Build Jobs
+# ======================================
+.backend-image-base:
+  stage: image
+  image: docker:latest
+  services:
+    - docker:dind
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+(-rc\d+)?$/'
+      when: on_success
+    - when: never
+  needs:
+    - job: validate:version
+      artifacts: true
+  before_script:
+    - docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_TOKEN"
+    - |
+      if [ -z "$VERSION" ]; then
+        VERSION=$(cat VERSION)
+      fi
+      echo "Building with VERSION=$VERSION"
+
+image:api-gateway:
+  extends: .backend-image-base
+  script:
+    - |
+      IMAGE="$DOCKERHUB_USERNAME/disaster-response-api-gateway"
+      docker build -t "$IMAGE:$VERSION" backend-app/api-gateway
+      if [[ "$VERSION" != *"-rc"* ]]; then
+        docker tag "$IMAGE:$VERSION" "$IMAGE:latest"
+      fi
+      docker push "$IMAGE:$VERSION"
+      if [[ "$VERSION" != *"-rc"* ]]; then
+        docker push "$IMAGE:latest"
+      fi
+      echo "IMAGE_API_GATEWAY=$IMAGE:$VERSION" >> image-refs.env
+  artifacts:
+    reports:
+      dotenv: image-refs.env
+
+image:discovery-service:
+  extends: .backend-image-base
+  script:
+    - |
+      IMAGE="$DOCKERHUB_USERNAME/disaster-response-discovery-service"
+      docker build -t "$IMAGE:$VERSION" backend-app/discovery-service
+      if [[ "$VERSION" != *"-rc"* ]]; then
+        docker tag "$IMAGE:$VERSION" "$IMAGE:latest"
+      fi
+      docker push "$IMAGE:$VERSION"
+      if [[ "$VERSION" != *"-rc"* ]]; then
+        docker push "$IMAGE:latest"
+      fi
+
+image:department-service:
+  extends: .backend-image-base
+  script:
+    - |
+      IMAGE="$DOCKERHUB_USERNAME/disaster-response-department-service"
+      docker build -t "$IMAGE:$VERSION" backend-app/department-service
+      if [[ "$VERSION" != *"-rc"* ]]; then
+        docker tag "$IMAGE:$VERSION" "$IMAGE:latest"
+      fi
+      docker push "$IMAGE:$VERSION"
+      if [[ "$VERSION" != *"-rc"* ]]; then
+        docker push "$IMAGE:latest"
+      fi
+
+image:incident-service:
+  extends: .backend-image-base
+  script:
+    - |
+      IMAGE="$DOCKERHUB_USERNAME/disaster-response-incident-service"
+      docker build -t "$IMAGE:$VERSION" backend-app/incident-service
+      if [[ "$VERSION" != *"-rc"* ]]; then
+        docker tag "$IMAGE:$VERSION" "$IMAGE:latest"
+      fi
+      docker push "$IMAGE:$VERSION"
+      if [[ "$VERSION" != *"-rc"* ]]; then
+        docker push "$IMAGE:latest"
+      fi
+
+image:municipality-service:
+  extends: .backend-image-base
+  script:
+    - |
+      IMAGE="$DOCKERHUB_USERNAME/disaster-response-municipality-service"
+      docker build -t "$IMAGE:$VERSION" backend-app/municipality-service
+      if [[ "$VERSION" != *"-rc"* ]]; then
+        docker tag "$IMAGE:$VERSION" "$IMAGE:latest"
+      fi
+      docker push "$IMAGE:$VERSION"
+      if [[ "$VERSION" != *"-rc"* ]]; then
+        docker push "$IMAGE:latest"
+      fi
+
+image:notification-service:
+  extends: .backend-image-base
+  script:
+    - |
+      IMAGE="$DOCKERHUB_USERNAME/disaster-response-notification-service"
+      docker build -t "$IMAGE:$VERSION" backend-app/notification-service
+      if [[ "$VERSION" != *"-rc"* ]]; then
+        docker tag "$IMAGE:$VERSION" "$IMAGE:latest"
+      fi
+      docker push "$IMAGE:$VERSION"
+      if [[ "$VERSION" != *"-rc"* ]]; then
+        docker push "$IMAGE:latest"
+      fi
+
+image:region-service:
+  extends: .backend-image-base
+  script:
+    - |
+      IMAGE="$DOCKERHUB_USERNAME/disaster-response-region-service"
+      docker build -t "$IMAGE:$VERSION" backend-app/region-service
+      if [[ "$VERSION" != *"-rc"* ]]; then
+        docker tag "$IMAGE:$VERSION" "$IMAGE:latest"
+      fi
+      docker push "$IMAGE:$VERSION"
+      if [[ "$VERSION" != *"-rc"* ]]; then
+        docker push "$IMAGE:latest"
+      fi
+
+image:resource-service:
+  extends: .backend-image-base
+  script:
+    - |
+      IMAGE="$DOCKERHUB_USERNAME/disaster-response-resource-service"
+      docker build -t "$IMAGE:$VERSION" backend-app/resource-service
+      if [[ "$VERSION" != *"-rc"* ]]; then
+        docker tag "$IMAGE:$VERSION" "$IMAGE:latest"
+      fi
+      docker push "$IMAGE:$VERSION"
+      if [[ "$VERSION" != *"-rc"* ]]; then
+        docker push "$IMAGE:latest"
+      fi
+
+image:user-service:
+  extends: .backend-image-base
+  script:
+    - |
+      IMAGE="$DOCKERHUB_USERNAME/disaster-response-user-service"
+      docker build -t "$IMAGE:$VERSION" backend-app/user-service
+      if [[ "$VERSION" != *"-rc"* ]]; then
+        docker tag "$IMAGE:$VERSION" "$IMAGE:latest"
+      fi
+      docker push "$IMAGE:$VERSION"
+      if [[ "$VERSION" != *"-rc"* ]]; then
+        docker push "$IMAGE:latest"
+      fi
+
+# ======================================
+# Frontend Image Build
+# ======================================
+image:frontend:
+  stage: image
+  image: docker:latest
+  services:
+    - docker:dind
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+(-rc\d+)?$/'
+      when: on_success
+    - when: never
+  needs:
+    - job: validate:version
+      artifacts: true
+  before_script:
+    - docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_TOKEN"
+    - |
+      if [ -z "$VERSION" ]; then
+        VERSION=$(cat VERSION)
+      fi
+      echo "Building frontend with VERSION=$VERSION"
+  script:
+    - |
+      IMAGE="$DOCKERHUB_USERNAME/disaster-response-frontend"
+      docker build --build-arg VERSION=$VERSION -t "$IMAGE:$VERSION" client-app
+      if [[ "$VERSION" != *"-rc"* ]]; then
+        docker tag "$IMAGE:$VERSION" "$IMAGE:latest"
+      fi
+      docker push "$IMAGE:$VERSION"
+      if [[ "$VERSION" != *"-rc"* ]]; then
+        docker push "$IMAGE:latest"
+      fi
+
+# ======================================
+# Security Scanning (Trivy)
+# ======================================
+.trivy-scan:
+  stage: scan
+  image: aquasec/trivy:latest
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+(-rc\d+)?$/'
+      when: on_success
+    - when: never
+  allow_failure: true
+  before_script:
+    - |
+      if [ -z "$VERSION" ]; then
+        VERSION=$(cat VERSION)
+      fi
+
+scan:api-gateway:
+  extends: .trivy-scan
+  needs:
+    - job: image:api-gateway
+  script:
+    - trivy image --severity HIGH,CRITICAL --ignore-unfixed "$DOCKERHUB_USERNAME/disaster-response-api-gateway:$VERSION"
+
+scan:frontend:
+  extends: .trivy-scan
+  needs:
+    - job: image:frontend
+  script:
+    - trivy image --severity HIGH,CRITICAL --ignore-unfixed "$DOCKERHUB_USERNAME/disaster-response-frontend:$VERSION"
+
+# ======================================
+# GitLab Release (strict - depends on all image jobs)
+# ======================================
+publish:gitlab-release:
+  stage: publish
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+(-rc\d+)?$/'
+      when: on_success
+    - when: never
+  needs:
+    - validate:version
+    - image:api-gateway
+    - image:discovery-service
+    - image:department-service
+    - image:incident-service
+    - image:municipality-service
+    - image:notification-service
+    - image:region-service
+    - image:resource-service
+    - image:user-service
+    - image:frontend
+  before_script:
+    - |
+      if [ -z "$VERSION" ]; then VERSION=$(cat VERSION); fi
+      echo "Preparing GitLab Release for v$VERSION";
+      # Generate release notes
+      cat > release-notes.md << EOF
+      DRCCS Release $CI_COMMIT_TAG
+
+      This release was built automatically from tag $CI_COMMIT_TAG.
+
+      Images (Docker Hub):
+      - $DOCKERHUB_USERNAME/disaster-response-api-gateway:$VERSION
+      - $DOCKERHUB_USERNAME/disaster-response-discovery-service:$VERSION
+      - $DOCKERHUB_USERNAME/disaster-response-department-service:$VERSION
+      - $DOCKERHUB_USERNAME/disaster-response-incident-service:$VERSION
+      - $DOCKERHUB_USERNAME/disaster-response-municipality-service:$VERSION
+      - $DOCKERHUB_USERNAME/disaster-response-notification-service:$VERSION
+      - $DOCKERHUB_USERNAME/disaster-response-region-service:$VERSION
+      - $DOCKERHUB_USERNAME/disaster-response-resource-service:$VERSION
+      - $DOCKERHUB_USERNAME/disaster-response-user-service:$VERSION
+      - $DOCKERHUB_USERNAME/disaster-response-frontend:$VERSION
+
+      Note: 'latest' tag skipped for RC releases.
+
+      Documentation:
+      - Release process: RELEASING.md
+      - Deployment guide: release/README.md
+      EOF
+  script:
+    - release-cli create --name "DRCCS $CI_COMMIT_TAG" --tag-name "$CI_COMMIT_TAG" --description "$(cat release-notes.md)"
+  allow_failure: false
+
+# ======================================
+# Security Scanning (SAST)
+# ======================================
 semgrep-sast:
   image: returntocorp/semgrep:latest
   stage: test
