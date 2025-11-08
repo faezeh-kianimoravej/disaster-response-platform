@@ -1,0 +1,2564 @@
+{
+  "domain": {
+    "name": "default",
+    "actors": {
+      "Person": "<svg viewBox=\"0 0 24 26\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M12 5.9c1.16 0 2.1.94 2.1 2.1s-.94 2.1-2.1 2.1S9.9 9.16 9.9 8s.94-2.1 2.1-2.1m0 9c2.97 0 6.1 1.46 6.1 2.1v1.1H5.9V17c0-.64 3.13-2.1 6.1-2.1M12 4C9.79 4 8 5.79 8 8s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 9c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4z\"/><path d=\"M0 0h24v24H0z\" fill=\"none\"/></svg>",
+      "System": "<svg viewBox=\"0 0 24 26\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M20,18c1.1,0,2-0.9,2-2V6c0-1.1-0.9-2-2-2H4C2.9,4,2,4.9,2,6v10c0,1.1,0.9,2,2,2H0v2h24v-2H20z M4,6h16v10H4V6z\"/></svg>",
+      "Car": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.85 7h10.29l1.08 3.11H5.77L6.85 7zM19 17H5v-5h14v5z\"/><circle cx=\"7.5\" cy=\"14.5\" r=\"1.5\"/><circle cx=\"16.5\" cy=\"14.5\" r=\"1.5\"/></svg>",
+      "Group": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"48\" viewBox=\"0 0 24 26\"><path d=\"M0 0h24v24H0z\" fill=\"none\"/><path d=\"M16.5 13c-1.2 0-3.07.34-4.5 1-1.43-.67-3.3-1-4.5-1C5.33 13 1 14.08 1 16.25V19h22v-2.75c0-2.17-4.33-3.25-6.5-3.25zm-4 4.5h-10v-1.25c0-.54 2.56-1.75 5-1.75s5 1.21 5 1.75v1.25zm9 0H14v-1.25c0-.46-.2-.86-.52-1.22.88-.3 1.96-.53 3.02-.53 2.44 0 5 1.21 5 1.75v1.25zM7.5 12c1.93 0 3.5-1.57 3.5-3.5S9.43 5 7.5 5 4 6.57 4 8.5 5.57 12 7.5 12zm0-5.5c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm9 5.5c1.93 0 3.5-1.57 3.5-3.5S18.43 5 16.5 5 13 6.57 13 8.5s1.57 3.5 3.5 3.5zm0-5.5c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z\"/></svg>"
+    },
+    "workObjects": {
+      "Document": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M8 16h8v2H8zm0-4h8v2H8zm6-10H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z\"/></svg>",
+      "Folder": "<svg viewBox=\"0 0 24 26\" xmlns=\"http://www.w3.org/2000/svg\"><path fill=\"none\" d=\"M0,0h24v24H0V0z\"/><path d=\"M9.17,6l2,2H20v10L4,18V6H9.17 M10,4H4C2.9,4,2.01,4.9,2.01,6L2,18c0,1.1,0.9,2,2,2h16c1.1,0,2-0.9,2-2V8c0-1.1-0.9-2-2-2 h-8L10,4L10,4z\"/></svg>",
+      "Call": "<svg viewBox=\"0 0 24 26\" xmlns=\"http://www.w3.org/2000/svg\"><path fill=\"none\" d=\"M0,0h24v24H0V0z\"/><path d=\"M6.54,5C6.6,5.89,6.75,6.76,6.99,7.59l-1.2,1.2C5.38,7.59,5.12,6.32,5.03,5H6.54 M16.4,17.02c0.85,0.24,1.72,0.39,2.6,0.45 v1.49c-1.32-0.09-2.59-0.35-3.8-0.75L16.4,17.02 M7.5,3H4C3.45,3,3,3.45,3,4c0,9.39,7.61,17,17,17c0.55,0,1-0.45,1-1v-3.49\tc0-0.55-0.45-1-1-1c-1.24,0-2.45-0.2-3.57-0.57c-0.1-0.04-0.21-0.05-0.31-0.05c-0.26,0-0.51,0.1-0.71,0.29l-2.2,2.2 c-2.83-1.45-5.15-3.76-6.59-6.59l2.2-2.2C9.1,8.31,9.18,7.92,9.07,7.57C8.7,6.45,8.5,5.25,8.5,4C8.5,3.45,8.05,3,7.5,3L7.5,3z\"/></svg>",
+      "Email": "<svg viewBox=\"0 0 24 26\" xmlns=\"http://www.w3.org/2000/svg\"><path fill=\"none\" d=\"M0,0h24v24H0V0z\"/><path fill-opacity=\"0.9\" d=\"M12,1.95c-5.52,0-10,4.48-10,10s4.48,10,10,10h5v-2h-5c-4.34,0-8-3.66-8-8s3.66-8,8-8s8,3.66,8,8v1.43 c0,0.79-0.71,1.57-1.5,1.57S17,14.17,17,13.38v-1.43c0-2.76-2.24-5-5-5s-5,2.24-5,5s2.24,5,5,5c1.38,0,2.64-0.56,3.54-1.47 c0.65,0.89,1.77,1.47,2.96,1.47c1.97,0,3.5-1.6,3.5-3.57v-1.43C22,6.43,17.52,1.95,12,1.95z M12,14.95c-1.66,0-3-1.34-3-3 s1.34-3,3-3s3,1.34,3,3S13.66,14.95,12,14.95z\"/></svg>",
+      "Conversation": "<svg height=\"48\" viewBox=\"0 0 24 26\" width=\"24\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M0 0h24v24H0V0z\" fill=\"none\"/><path d=\"M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z\"/></svg>",
+      "Info": "<svg height=\"48\" viewBox=\"0 0 24 26\" width=\"24\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M0 0h24v24H0z\" fill=\"none\"/><path d=\"M11 17h2v-6h-2v6zm1-15C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zM11 9h2V7h-2v2z\"/></svg>",
+      "Problem": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M12 5.99L19.53 19H4.47L12 5.99M12 2L1 21h22L12 2zm1 14h-2v2h2v-2zm0-6h-2v4h2v-4z\"/></svg>",
+      "Meeting-room": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M19 19V4h-4V3H5v16H3v2h12V6h2v15h4v-2h-2zm-6 0H7V5h6v14zm-3-8h2v2h-2z\"/></svg>",
+      "Calendar": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\" /><path d=\"M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V9h14v10zm0-12H5V5h14v2zM7 11h5v5H7z\" /></svg>",
+      "Place": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zM7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 2.88-2.88 7.19-5 9.88C9.92 16.21 7 11.85 7 9z\"/><circle cx=\"12\" cy=\"9\" r=\"2.5\"/></svg>",
+      "Share": "<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\" viewBox=\"0 0 24 24\" width=\"24px\"><path d=\"M0 0h24v24H0V0z\" fill=\"none\"/><path d=\"M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92zM18 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM6 13c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm12 7.02c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z\"/></svg>",
+      "Business": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z\"/></svg>",
+      "Dashboard": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M19 5v2h-4V5h4M9 5v6H5V5h4m10 8v6h-4v-6h4M9 17v2H5v-2h4M21 3h-8v6h8V3zM11 3H3v10h8V3zm10 8h-8v10h8V11zm-10 4H3v6h8v-6z\"/></svg>",
+      "Security": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 28\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z\"/></svg>",
+      "Search": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z\"/></svg>",
+      "Update": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M11 8v5l4.25 2.52.77-1.28-3.52-2.09V8zm10 2V3l-2.64 2.64C16.74 4.01 14.49 3 12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9h-2c0 3.86-3.14 7-7 7s-7-3.14-7-7 3.14-7 7-7c1.93 0 3.68.79 4.95 2.05L14 10h7z\"/></svg>",
+      "Tablet": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 28\"><path fill=\"none\" d=\"M0 0h24v24H0V0zm0 0h24v24H0V0z\"/><path d=\"M18 0H6C4.34 0 3 1.34 3 3v18c0 1.66 1.34 3 3 3h12c1.66 0 3-1.34 3-3V3c0-1.66-1.34-3-3-3zm-4 22h-4v-1h4v1zm5.25-3H4.75V3h14.5v16z\"/></svg>",
+      "Hotel": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M7 14c1.66 0 3-1.34 3-3S8.66 8 7 8s-3 1.34-3 3 1.34 3 3 3zm0-4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm12-3h-8v8H3V5H1v15h2v-3h18v3h2v-9c0-2.21-1.79-4-4-4zm2 8h-8V9h6c1.1 0 2 .9 2 2v4z\"/></svg>",
+      "Contact-Mail": "<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\" viewBox=\"0 0 24 24\" width=\"24px\"><path d=\"M0 0h24v24H0z\" fill=\"none\"/><path d=\"M22 3H2C.9 3 0 3.9 0 5v14c0 1.1.9 2 2 2h20c1.1 0 1.99-.9 1.99-2L24 5c0-1.1-.9-2-2-2zm0 16H2V5h20v14zM21 6h-7v5h7V6zm-1 2l-2.5 1.75L15 8V7l2.5 1.75L20 7v1zM9 12c1.65 0 3-1.35 3-3s-1.35-3-3-3-3 1.35-3 3 1.35 3 3 3zm0-4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm6 8.59c0-2.5-3.97-3.58-6-3.58s-6 1.08-6 3.58V18h12v-1.41zM5.48 16c.74-.5 2.22-1 3.52-1s2.77.49 3.52 1H5.48z\"/></svg>",
+      "Flight-landing": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M2.5 19h19v2h-19v-2zm16.84-3.15c.8.21 1.62-.26 1.84-1.06.21-.8-.26-1.62-1.06-1.84l-5.31-1.42-2.76-9.02L10.12 2v8.28L5.15 8.95l-.93-2.32-1.45-.39v5.17l16.57 4.44z\"/></svg>",
+      "Flight-takeoff": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M2.5 19h19v2h-19v-2zm19.57-9.36c-.21-.8-1.04-1.28-1.84-1.06L14.92 10l-6.9-6.43-1.93.51 4.14 7.17-4.97 1.33-1.97-1.54-1.45.39 2.59 4.49L21 11.49c.81-.23 1.28-1.05 1.07-1.85z\"/></svg>",
+      "Time": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z\"/></svg>",
+      "Walking": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.56-.89-1.68-1.25-2.65-.84L6 8.3V13h2V9.6l1.8-.7\"/></svg>",
+      "Circle-Arrows": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M19 8l-4 4h3c0 3.31-2.69 6-6 6-1.01 0-1.97-.25-2.8-.7l-1.46 1.46C8.97 19.54 10.43 20 12 20c4.42 0 8-3.58 8-8h3l-4-4zM6 12c0-3.31 2.69-6 6-6 1.01 0 1.97.25 2.8.7l1.46-1.46C15.03 4.46 13.57 4 12 4c-4.42 0-8 3.58-8 8H1l4 4 4-4H6z\"/></svg>",
+      "Gavel": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 28\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M1 21h12v2H1v-2zM5.24 8.07l2.83-2.83 14.14 14.14-2.83 2.83L5.24 8.07zM12.32 1l5.66 5.66-2.83 2.83-5.66-5.66L12.32 1zM3.83 9.48l5.66 5.66-2.83 2.83L1 12.31l2.83-2.83z\"/></svg>",
+      "DNS": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M19 15v4H5v-4h14m1-2H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-6c0-.55-.45-1-1-1zM7 18.5c-.82 0-1.5-.67-1.5-1.5s.68-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM19 5v4H5V5h14m1-2H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1zM7 8.5c-.82 0-1.5-.67-1.5-1.5S6.18 5.5 7 5.5s1.5.68 1.5 1.5S7.83 8.5 7 8.5z\"/></svg>",
+      "Water": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M17 16.99c-1.35 0-2.2.42-2.95.8-.65.33-1.18.6-2.05.6-.9 0-1.4-.25-2.05-.6-.75-.38-1.57-.8-2.95-.8s-2.2.42-2.95.8c-.65.33-1.17.6-2.05.6v1.95c1.35 0 2.2-.42 2.95-.8.65-.33 1.17-.6 2.05-.6s1.4.25 2.05.6c.75.38 1.57.8 2.95.8s2.2-.42 2.95-.8c.65-.33 1.18-.6 2.05-.6.9 0 1.4.25 2.05.6.75.38 1.58.8 2.95.8v-1.95c-.9 0-1.4-.25-2.05-.6-.75-.38-1.6-.8-2.95-.8zm0-4.45c-1.35 0-2.2.43-2.95.8-.65.32-1.18.6-2.05.6-.9 0-1.4-.25-2.05-.6-.75-.38-1.57-.8-2.95-.8s-2.2.43-2.95.8c-.65.32-1.17.6-2.05.6v1.95c1.35 0 2.2-.43 2.95-.8.65-.35 1.15-.6 2.05-.6s1.4.25 2.05.6c.75.38 1.57.8 2.95.8s2.2-.43 2.95-.8c.65-.35 1.15-.6 2.05-.6s1.4.25 2.05.6c.75.38 1.58.8 2.95.8v-1.95c-.9 0-1.4-.25-2.05-.6-.75-.38-1.6-.8-2.95-.8zm2.95-8.08c-.75-.38-1.58-.8-2.95-.8s-2.2.42-2.95.8c-.65.32-1.18.6-2.05.6-.9 0-1.4-.25-2.05-.6-.75-.37-1.57-.8-2.95-.8s-2.2.42-2.95.8c-.65.33-1.17.6-2.05.6v1.93c1.35 0 2.2-.43 2.95-.8.65-.33 1.17-.6 2.05-.6s1.4.25 2.05.6c.75.38 1.57.8 2.95.8s2.2-.43 2.95-.8c.65-.32 1.18-.6 2.05-.6.9 0 1.4.25 2.05.6.75.38 1.58.8 2.95.8V5.04c-.9 0-1.4-.25-2.05-.58zM17 8.09c-1.35 0-2.2.43-2.95.8-.65.35-1.15.6-2.05.6s-1.4-.25-2.05-.6c-.75-.38-1.57-.8-2.95-.8s-2.2.43-2.95.8c-.65.35-1.15.6-2.05.6v1.95c1.35 0 2.2-.43 2.95-.8.65-.32 1.18-.6 2.05-.6s1.4.25 2.05.6c.75.38 1.57.8 2.95.8s2.2-.43 2.95-.8c.65-.32 1.18-.6 2.05-.6.9 0 1.4.25 2.05.6.75.38 1.58.8 2.95.8V9.49c-.9 0-1.4-.25-2.05-.6-.75-.38-1.6-.8-2.95-.8z\"/></svg>",
+      "How-To-Reg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill-rule=\"evenodd\" clip-rule=\"evenodd\" fill=\"none\" d=\"M0 0h24v24H0z\"/><g fill-rule=\"evenodd\" clip-rule=\"evenodd\"><path d=\"M9 17l3-2.94c-.39-.04-.68-.06-1-.06-2.67 0-8 1.34-8 4v2h9l-3-3zm2-5c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4\"/><path d=\"M15.47 20.5L12 17l1.4-1.41 2.07 2.08 5.13-5.17 1.4 1.41z\"/></g></svg>",
+      "Assignment": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24px\" height=\"24px\" viewBox=\"0 0 24 24\"><path d=\"M0 0h24v24H0V0z\" fill=\"none\"/><path d=\"M7 15h7v2H7zm0-4h10v2H7zm0-4h10v2H7zm12-4h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-.14 0-.27.01-.4.04-.39.08-.74.28-1.01.55-.18.18-.33.4-.43.64-.1.23-.16.49-.16.77v14c0 .27.06.54.16.78s.25.45.43.64c.27.27.62.47 1.01.55.13.02.26.03.4.03h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7-.25c.41 0 .75.34.75.75s-.34.75-.75.75-.75-.34-.75-.75.34-.75.75-.75zM19 19H5V5h14v14z\"/></svg>",
+      "Commute": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 26\"><path fill=\"none\" d=\"M0 0h24v24H0V0z\"/><path d=\"M12 4H5C3.34 4 2 5.34 2 7v8c0 1.66 1.34 3 3 3l-1 1v1h1l2-2h2v-5H4V6h9v2h2V7c0-1.66-1.34-3-3-3zM5 14c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm15.57-4.34c-.14-.4-.52-.66-.97-.66h-7.19c-.46 0-.83.26-.98.66l-1.42 4.11v5.51c0 .38.31.72.69.72h.62c.38 0 .68-.38.68-.76V18h8v1.24c0 .38.31.76.69.76h.61c.38 0 .69-.34.69-.72l.01-1.37v-4.14l-1.43-4.11zm-8.16.34h7.19l1.03 3h-9.25l1.03-3zM12 16c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm8 0c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z\"/></svg>",
+      "Bug": "<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\" viewBox=\"0 0 24 24\" width=\"24px\"><path d=\"M0 0h24v24H0V0z\" fill=\"none\"/><path d=\"M20 8h-2.81c-.45-.78-1.07-1.45-1.82-1.96L17 4.41 15.59 3l-2.17 2.17C12.96 5.06 12.49 5 12 5s-.96.06-1.41.17L8.41 3 7 4.41l1.62 1.63C7.88 6.55 7.26 7.22 6.81 8H4v2h2.09c-.05.33-.09.66-.09 1v1H4v2h2v1c0 .34.04.67.09 1H4v2h2.81c1.04 1.79 2.97 3 5.19 3s4.15-1.21 5.19-3H20v-2h-2.09c.05-.33.09-.66.09-1v-1h2v-2h-2v-1c0-.34-.04-.67-.09-1H20V8zm-4 4v3c0 .22-.03.47-.07.7l-.1.65-.37.65c-.72 1.24-2.04 2-3.46 2s-2.74-.77-3.46-2l-.37-.64-.1-.65C8.03 15.48 8 15.23 8 15v-4c0-.23.03-.48.07-.7l.1-.65.37-.65c.3-.52.72-.97 1.21-1.31l.57-.39.74-.18c.31-.08.63-.12.94-.12.32 0 .63.04.95.12l.68.16.61.42c.5.34.91.78 1.21 1.31l.38.65.1.65c.04.22.07.47.07.69v1zm-6 2h4v2h-4zm0-4h4v2h-4z\"/></svg>"
+    }
+  },
+  "dst": [
+    {
+      "type": "domainStory:activity",
+      "name": "make",
+      "id": "connection_0337",
+      "pickedColor": "black",
+      "number": 4,
+      "waypoints": [
+        {
+          "original": {
+            "x": 451,
+            "y": 660
+          },
+          "x": 413,
+          "y": 632
+        },
+        {
+          "original": {
+            "x": 231,
+            "y": 495
+          },
+          "x": 260,
+          "y": 517
+        }
+      ],
+      "source": "shape_5088",
+      "target": "shape_2260",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "via",
+      "id": "connection_0404",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -713,
+            "y": 1860
+          },
+          "x": -746,
+          "y": 1907
+        },
+        {
+          "original": {
+            "x": -808,
+            "y": 1997
+          },
+          "x": -791,
+          "y": 1972
+        }
+      ],
+      "source": "shape_7207",
+      "target": "shape_2444",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "manages & view",
+      "id": "connection_0822",
+      "pickedColor": "black",
+      "number": 3,
+      "waypoints": [
+        {
+          "original": {
+            "x": -1243,
+            "y": 938
+          },
+          "x": -1201,
+          "y": 938
+        },
+        {
+          "original": {
+            "x": -866,
+            "y": 936
+          },
+          "x": -884,
+          "y": 936
+        }
+      ],
+      "source": "shape_2521",
+      "target": "shape_2007",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "monitors",
+      "id": "connection_0886",
+      "pickedColor": "black",
+      "number": 27,
+      "waypoints": [
+        {
+          "original": {
+            "x": -1569,
+            "y": 2485
+          },
+          "x": -1544,
+          "y": 2468
+        },
+        {
+          "original": {
+            "x": -1220,
+            "y": 2250
+          },
+          "x": -1258,
+          "y": 2276
+        }
+      ],
+      "source": "shape_2271",
+      "target": "shape_0755",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "in",
+      "id": "connection_0956",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -826,
+            "y": 1823
+          },
+          "x": -806,
+          "y": 1801
+        },
+        {
+          "original": {
+            "x": -436,
+            "y": 1394
+          },
+          "x": -451,
+          "y": 1411
+        }
+      ],
+      "source": "shape_2540",
+      "target": "shape_9969",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "in",
+      "id": "connection_0957",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -307,
+            "y": 495
+          },
+          "x": -345,
+          "y": 521
+        },
+        {
+          "original": {
+            "x": -509,
+            "y": 635
+          },
+          "x": -502,
+          "y": 630
+        }
+      ],
+      "source": "shape_0697",
+      "target": "shape_2771",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "",
+      "id": "connection_1110",
+      "pickedColor": "black",
+      "number": 31,
+      "waypoints": [
+        {
+          "original": {
+            "x": 627,
+            "y": 2485
+          },
+          "x": 589,
+          "y": 2455
+        },
+        {
+          "original": {
+            "x": 362,
+            "y": 2278
+          },
+          "x": 391,
+          "y": 2301
+        }
+      ],
+      "source": "shape_4196",
+      "target": "shape_1770"
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "in",
+      "id": "connection_1542",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": 50,
+            "y": 1570
+          },
+          "x": 50,
+          "y": 1532
+        },
+        {
+          "original": {
+            "x": 50,
+            "y": 1364
+          },
+          "x": 50,
+          "y": 1411
+        }
+      ],
+      "source": "shape_9086",
+      "target": "shape_6451",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "send",
+      "id": "connection_1723",
+      "pickedColor": "black",
+      "number": 29,
+      "waypoints": [
+        {
+          "original": {
+            "x": -410,
+            "y": 2485
+          },
+          "x": -368,
+          "y": 2484
+        },
+        {
+          "original": {
+            "x": 97,
+            "y": 2475
+          },
+          "x": 59,
+          "y": 2476
+        }
+      ],
+      "source": "shape_8086",
+      "target": "shape_6335",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "vai",
+      "id": "connection_2033",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -182,
+            "y": 660
+          },
+          "x": -139,
+          "y": 660
+        },
+        {
+          "original": {
+            "x": 105,
+            "y": 660
+          },
+          "x": 67,
+          "y": 660
+        }
+      ],
+      "source": "shape_3565",
+      "target": "shape_3229",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "in",
+      "id": "connection_2045",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -846,
+            "y": 691
+          },
+          "x": -807,
+          "y": 687
+        },
+        {
+          "original": {
+            "x": -514,
+            "y": 660
+          },
+          "x": -552,
+          "y": 664
+        }
+      ],
+      "source": "shape_7703",
+      "target": "shape_2771",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "to",
+      "id": "connection_2089",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": 105,
+            "y": 660
+          },
+          "x": 148,
+          "y": 660
+        },
+        {
+          "original": {
+            "x": 451,
+            "y": 660
+          },
+          "x": 413,
+          "y": 660
+        }
+      ],
+      "source": "shape_3229",
+      "target": "shape_5088",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "assigns",
+      "id": "connection_2126",
+      "pickedColor": "black",
+      "number": 16,
+      "waypoints": [
+        {
+          "original": {
+            "x": -435,
+            "y": 1868
+          },
+          "x": -471,
+          "y": 1915
+        },
+        {
+          "original": {
+            "x": -618,
+            "y": 2108
+          },
+          "x": -600,
+          "y": 2084
+        }
+      ],
+      "source": "shape_4300",
+      "target": "shape_2655",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "push",
+      "id": "connection_2425",
+      "pickedColor": "black",
+      "number": 8,
+      "waypoints": [
+        {
+          "original": {
+            "x": -435,
+            "y": 1364
+          },
+          "x": -473,
+          "y": 1349
+        },
+        {
+          "original": {
+            "x": -835,
+            "y": 1207
+          },
+          "x": -798,
+          "y": 1222
+        }
+      ],
+      "source": "shape_9969",
+      "target": "shape_7542",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "shares",
+      "id": "connection_2432",
+      "pickedColor": "black",
+      "number": 14,
+      "waypoints": [
+        {
+          "original": {
+            "x": -435,
+            "y": 1364
+          },
+          "x": -416,
+          "y": 1406
+        },
+        {
+          "original": {
+            "x": -275,
+            "y": 1631
+          },
+          "x": -298,
+          "y": 1593
+        }
+      ],
+      "source": "shape_9969",
+      "target": "shape_0780",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "provides",
+      "id": "connection_2505",
+      "pickedColor": "black",
+      "number": 6,
+      "waypoints": [
+        {
+          "original": {
+            "x": -514,
+            "y": 660
+          },
+          "x": -481,
+          "y": 679
+        },
+        {
+          "original": {
+            "x": -182,
+            "y": 853
+          },
+          "x": -220,
+          "y": 831
+        }
+      ],
+      "source": "shape_2771",
+      "target": "shape_0287",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "via",
+      "id": "connection_2692",
+      "pickedColor": "black",
+      "number": 21,
+      "waypoints": [
+        {
+          "original": {
+            "x": 945,
+            "y": 1346
+          },
+          "x": 907,
+          "y": 1335
+        },
+        {
+          "original": {
+            "x": 438,
+            "y": 1204
+          },
+          "x": 470,
+          "y": 1213
+        }
+      ],
+      "source": "shape_8198",
+      "target": "shape_5848",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "sends",
+      "id": "connection_3170",
+      "pickedColor": "black",
+      "number": 20,
+      "waypoints": [
+        {
+          "original": {
+            "x": 50,
+            "y": 1823
+          },
+          "x": 50,
+          "y": 1785
+        },
+        {
+          "original": {
+            "x": 50,
+            "y": 1570
+          },
+          "x": 50,
+          "y": 1617
+        }
+      ],
+      "source": "shape_7452",
+      "target": "shape_9086",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "via",
+      "id": "connection_3246",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -835,
+            "y": 1207
+          },
+          "x": -873,
+          "y": 1207
+        },
+        {
+          "original": {
+            "x": -1229,
+            "y": 1207
+          },
+          "x": -1186,
+          "y": 1207
+        }
+      ],
+      "source": "shape_7542",
+      "target": "shape_2811",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "receives",
+      "id": "connection_3435",
+      "pickedColor": "black",
+      "number": 24,
+      "waypoints": [
+        {
+          "original": {
+            "x": 945,
+            "y": 1346
+          },
+          "x": 907,
+          "y": 1364
+        },
+        {
+          "original": {
+            "x": 482,
+            "y": 1563
+          },
+          "x": 485,
+          "y": 1562
+        }
+      ],
+      "source": "shape_8198",
+      "target": "shape_5416",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "in",
+      "id": "connection_3552",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -856,
+            "y": 2485
+          },
+          "x": -813,
+          "y": 2485
+        },
+        {
+          "original": {
+            "x": -410,
+            "y": 2485
+          },
+          "x": -448,
+          "y": 2485
+        }
+      ],
+      "source": "shape_3201",
+      "target": "shape_8086",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "allocate",
+      "id": "connection_3716",
+      "pickedColor": "black",
+      "number": 12,
+      "waypoints": [
+        {
+          "original": {
+            "x": -1655,
+            "y": 1345
+          },
+          "x": -1630,
+          "y": 1438
+        },
+        {
+          "original": {
+            "x": -1220,
+            "y": 1823
+          },
+          "x": -1255,
+          "y": 1785
+        }
+      ],
+      "source": "shape_8427",
+      "target": "shape_0974",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "",
+      "id": "connection_3780",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": 1104,
+            "y": 2474
+          },
+          "x": 1148,
+          "y": 2475
+        },
+        {
+          "original": {
+            "x": 1562,
+            "y": 2485
+          },
+          "x": 1524,
+          "y": 2484
+        }
+      ],
+      "source": "shape_0368",
+      "target": "shape_4833"
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "of",
+      "id": "connection_3872",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": 958,
+            "y": 1593
+          },
+          "x": 959,
+          "y": 1555
+        },
+        {
+          "original": {
+            "x": 963,
+            "y": 1375
+          },
+          "x": 963,
+          "y": 1380
+        }
+      ],
+      "source": "shape_9896",
+      "target": "shape_8198",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "checks",
+      "id": "connection_4232",
+      "pickedColor": "black",
+      "number": 30,
+      "waypoints": [
+        {
+          "original": {
+            "x": 627,
+            "y": 2485
+          },
+          "x": 669,
+          "y": 2484
+        },
+        {
+          "original": {
+            "x": 1104,
+            "y": 2474
+          },
+          "x": 1066,
+          "y": 2475
+        }
+      ],
+      "source": "shape_4196",
+      "target": "shape_0368",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "join",
+      "id": "connection_4384",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": 424,
+            "y": 1207
+          },
+          "x": 386,
+          "y": 1223
+        },
+        {
+          "original": {
+            "x": 50,
+            "y": 1364
+          },
+          "x": 80,
+          "y": 1351
+        }
+      ],
+      "source": "shape_5848",
+      "target": "shape_6451",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "sends",
+      "id": "connection_4511",
+      "pickedColor": "black",
+      "number": 23,
+      "waypoints": [
+        {
+          "original": {
+            "x": 945,
+            "y": 1346
+          },
+          "x": 907,
+          "y": 1347
+        },
+        {
+          "original": {
+            "x": 451,
+            "y": 1360
+          },
+          "x": 475,
+          "y": 1359
+        }
+      ],
+      "source": "shape_8198",
+      "target": "shape_5550",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "forwards",
+      "id": "connection_4669",
+      "pickedColor": "black",
+      "number": 19,
+      "waypoints": [
+        {
+          "original": {
+            "x": -435,
+            "y": 1868
+          },
+          "x": -473,
+          "y": 1868
+        },
+        {
+          "original": {
+            "x": -747,
+            "y": 1871
+          },
+          "x": -672,
+          "y": 1870
+        }
+      ],
+      "source": "shape_4300",
+      "target": "shape_7207",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "to",
+      "id": "connection_4762",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": 105,
+            "y": 853
+          },
+          "x": 134,
+          "y": 840
+        },
+        {
+          "original": {
+            "x": 466,
+            "y": 685
+          },
+          "x": 419,
+          "y": 707
+        }
+      ],
+      "source": "shape_5398",
+      "target": "shape_5088",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "at",
+      "id": "connection_4825",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": 1225,
+            "y": 1336
+          },
+          "x": 1265,
+          "y": 1334
+        },
+        {
+          "original": {
+            "x": 1436,
+            "y": 1324
+          },
+          "x": 1398,
+          "y": 1326
+        }
+      ],
+      "source": "shape_7216",
+      "target": "shape_5602",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "manages",
+      "id": "connection_4866",
+      "pickedColor": "black",
+      "number": 2,
+      "waypoints": [
+        {
+          "original": {
+            "x": -1243,
+            "y": 681
+          },
+          "x": -1199,
+          "y": 682
+        },
+        {
+          "original": {
+            "x": -866,
+            "y": 690
+          },
+          "x": -884,
+          "y": 690
+        }
+      ],
+      "source": "shape_5718",
+      "target": "shape_7703",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "assigns",
+      "id": "connection_4878",
+      "pickedColor": "black",
+      "number": 10,
+      "waypoints": [
+        {
+          "original": {
+            "x": -1655,
+            "y": 1345
+          },
+          "x": -1618,
+          "y": 1360
+        },
+        {
+          "original": {
+            "x": -1229,
+            "y": 1512
+          },
+          "x": -1267,
+          "y": 1497
+        }
+      ],
+      "source": "shape_8427",
+      "target": "shape_0576",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "creates",
+      "id": "connection_4976",
+      "pickedColor": "black",
+      "number": 15,
+      "waypoints": [
+        {
+          "original": {
+            "x": -435,
+            "y": 1364
+          },
+          "x": -393,
+          "y": 1363
+        },
+        {
+          "original": {
+            "x": 40,
+            "y": 1356
+          },
+          "x": 12,
+          "y": 1356
+        }
+      ],
+      "source": "shape_9969",
+      "target": "shape_6451",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "to",
+      "id": "connection_5032",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -1229,
+            "y": 1512
+          },
+          "x": -1186,
+          "y": 1512
+        },
+        {
+          "original": {
+            "x": -835,
+            "y": 1512
+          },
+          "x": -873,
+          "y": 1512
+        }
+      ],
+      "source": "shape_0576",
+      "target": "shape_6603",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "from",
+      "id": "connection_5049",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": 451,
+            "y": 1570
+          },
+          "x": 413,
+          "y": 1550
+        },
+        {
+          "original": {
+            "x": 50,
+            "y": 1364
+          },
+          "x": 84,
+          "y": 1381
+        }
+      ],
+      "source": "shape_5416",
+      "target": "shape_6451",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "in",
+      "id": "connection_5214",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -846,
+            "y": 938
+          },
+          "x": -823,
+          "y": 919
+        },
+        {
+          "original": {
+            "x": -514,
+            "y": 660
+          },
+          "x": -552,
+          "y": 692
+        }
+      ],
+      "source": "shape_2007",
+      "target": "shape_2771",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "to",
+      "id": "connection_5268",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": 231,
+            "y": 495
+          },
+          "x": 193,
+          "y": 495
+        },
+        {
+          "original": {
+            "x": -6,
+            "y": 495
+          },
+          "x": 37,
+          "y": 495
+        }
+      ],
+      "source": "shape_2260",
+      "target": "shape_9252",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "",
+      "id": "connection_5302",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": 437,
+            "y": 1364
+          },
+          "x": 399,
+          "y": 1364
+        },
+        {
+          "original": {
+            "x": 50,
+            "y": 1364
+          },
+          "x": 93,
+          "y": 1364
+        }
+      ],
+      "source": "shape_5550",
+      "target": "shape_6451"
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "",
+      "id": "connection_5529",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": 362,
+            "y": 2278
+          },
+          "x": 324,
+          "y": 2278
+        },
+        {
+          "original": {
+            "x": -133,
+            "y": 2278
+          },
+          "x": -90,
+          "y": 2278
+        }
+      ],
+      "source": "shape_1770",
+      "target": "shape_4580"
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "to",
+      "id": "connection_5535",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": 61,
+            "y": 1051
+          },
+          "x": 23,
+          "y": 1075
+        },
+        {
+          "original": {
+            "x": -435,
+            "y": 1364
+          },
+          "x": -409,
+          "y": 1348
+        }
+      ],
+      "source": "shape_2646",
+      "target": "shape_9969",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "using",
+      "id": "connection_5541",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -835,
+            "y": 1084
+          },
+          "x": -873,
+          "y": 1084
+        },
+        {
+          "original": {
+            "x": -1229,
+            "y": 1084
+          },
+          "x": -1186,
+          "y": 1084
+        }
+      ],
+      "source": "shape_8355",
+      "target": "shape_8492",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "add/enters",
+      "id": "connection_5735",
+      "pickedColor": "black",
+      "number": 1,
+      "waypoints": [
+        {
+          "original": {
+            "x": -1244,
+            "y": 495
+          },
+          "x": -1202,
+          "y": 495
+        },
+        {
+          "original": {
+            "x": -870,
+            "y": 493
+          },
+          "x": -873,
+          "y": 493
+        }
+      ],
+      "source": "shape_4382",
+      "target": "shape_0682",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "",
+      "id": "connection_6240",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -275,
+            "y": 1631
+          },
+          "x": -305,
+          "y": 1678
+        },
+        {
+          "original": {
+            "x": -425,
+            "y": 1867
+          },
+          "x": -413,
+          "y": 1848
+        }
+      ],
+      "source": "shape_0780",
+      "target": "shape_4300"
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "updates",
+      "id": "connection_6494",
+      "pickedColor": "black",
+      "number": 11,
+      "waypoints": [
+        {
+          "original": {
+            "x": -1655,
+            "y": 1345
+          },
+          "x": -1626,
+          "y": 1367
+        },
+        {
+          "original": {
+            "x": -1229,
+            "y": 1674
+          },
+          "x": -1267,
+          "y": 1645
+        }
+      ],
+      "source": "shape_8427",
+      "target": "shape_4518",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "to",
+      "id": "connection_6575",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -1229,
+            "y": 1084
+          },
+          "x": -1267,
+          "y": 1107
+        },
+        {
+          "original": {
+            "x": -1655,
+            "y": 1345
+          },
+          "x": -1629,
+          "y": 1329
+        }
+      ],
+      "source": "shape_8492",
+      "target": "shape_8427",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "of",
+      "id": "connection_6631",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -1229,
+            "y": 1674
+          },
+          "x": -1186,
+          "y": 1674
+        },
+        {
+          "original": {
+            "x": -835,
+            "y": 1674
+          },
+          "x": -873,
+          "y": 1674
+        }
+      ],
+      "source": "shape_4518",
+      "target": "shape_5835",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "decides",
+      "id": "connection_6664",
+      "pickedColor": "black",
+      "number": 9,
+      "waypoints": [
+        {
+          "original": {
+            "x": -1655,
+            "y": 1345
+          },
+          "x": -1611,
+          "y": 1347
+        },
+        {
+          "original": {
+            "x": -1229,
+            "y": 1364
+          },
+          "x": -1267,
+          "y": 1362
+        }
+      ],
+      "source": "shape_8427",
+      "target": "shape_2480",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "sends",
+      "id": "connection_6690",
+      "pickedColor": "black",
+      "number": 13,
+      "waypoints": [
+        {
+          "original": {
+            "x": -435,
+            "y": 1364
+          },
+          "x": -435,
+          "y": 1411
+        },
+        {
+          "original": {
+            "x": -435,
+            "y": 1622
+          },
+          "x": -435,
+          "y": 1584
+        }
+      ],
+      "source": "shape_9969",
+      "target": "shape_9067",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "send",
+      "id": "connection_6788",
+      "pickedColor": "black",
+      "number": 5,
+      "waypoints": [
+        {
+          "original": {
+            "x": -514,
+            "y": 660
+          },
+          "x": -471,
+          "y": 660
+        },
+        {
+          "original": {
+            "x": -182,
+            "y": 660
+          },
+          "x": -220,
+          "y": 660
+        }
+      ],
+      "source": "shape_2771",
+      "target": "shape_3565",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "to",
+      "id": "connection_6799",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -1229,
+            "y": 1364
+          },
+          "x": -1186,
+          "y": 1364
+        },
+        {
+          "original": {
+            "x": -835,
+            "y": 1364
+          },
+          "x": -873,
+          "y": 1364
+        }
+      ],
+      "source": "shape_2480",
+      "target": "shape_4878",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "on",
+      "id": "connection_6809",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -1229,
+            "y": 2485
+          },
+          "x": -1186,
+          "y": 2485
+        },
+        {
+          "original": {
+            "x": -856,
+            "y": 2485
+          },
+          "x": -894,
+          "y": 2485
+        }
+      ],
+      "source": "shape_7915",
+      "target": "shape_3201",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "Performs",
+      "id": "connection_6849",
+      "pickedColor": "black",
+      "number": 26,
+      "waypoints": [
+        {
+          "original": {
+            "x": 945,
+            "y": 1346
+          },
+          "x": 988,
+          "y": 1346
+        },
+        {
+          "original": {
+            "x": 1201,
+            "y": 1346
+          },
+          "x": 1187,
+          "y": 1346
+        }
+      ],
+      "source": "shape_8198",
+      "target": "shape_7216",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "registers",
+      "id": "connection_6951",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -6,
+            "y": 495
+          },
+          "x": -44,
+          "y": 495
+        },
+        {
+          "original": {
+            "x": -307,
+            "y": 495
+          },
+          "x": -264,
+          "y": 495
+        }
+      ],
+      "source": "shape_9252",
+      "target": "shape_0697",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "in",
+      "id": "connection_6978",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -133,
+            "y": 2278
+          },
+          "x": -171,
+          "y": 2306
+        },
+        {
+          "original": {
+            "x": -410,
+            "y": 2485
+          },
+          "x": -386,
+          "y": 2467
+        }
+      ],
+      "source": "shape_4580",
+      "target": "shape_8086",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "shares",
+      "id": "connection_6993",
+      "pickedColor": "black",
+      "number": 22,
+      "waypoints": [
+        {
+          "original": {
+            "x": 945,
+            "y": 1346
+          },
+          "x": 907,
+          "y": 1321
+        },
+        {
+          "original": {
+            "x": 491,
+            "y": 1045
+          },
+          "x": 533,
+          "y": 1073
+        }
+      ],
+      "source": "shape_8198",
+      "target": "shape_2359",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "for",
+      "id": "connection_7331",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -1220,
+            "y": 1823
+          },
+          "x": -1177,
+          "y": 1823
+        },
+        {
+          "original": {
+            "x": -826,
+            "y": 1823
+          },
+          "x": -864,
+          "y": 1823
+        }
+      ],
+      "source": "shape_0974",
+      "target": "shape_2540",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "allocates",
+      "id": "connection_7357",
+      "pickedColor": "black",
+      "number": 17,
+      "waypoints": [
+        {
+          "original": {
+            "x": -435,
+            "y": 1868
+          },
+          "x": -415,
+          "y": 1938
+        },
+        {
+          "original": {
+            "x": -275,
+            "y": 2127
+          },
+          "x": -298,
+          "y": 2089
+        }
+      ],
+      "source": "shape_4300",
+      "target": "shape_4361",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "leads",
+      "id": "connection_7512",
+      "pickedColor": "black",
+      "number": 25,
+      "waypoints": [
+        {
+          "original": {
+            "x": 958,
+            "y": 1812
+          },
+          "x": 958,
+          "y": 1774
+        },
+        {
+          "original": {
+            "x": 958,
+            "y": 1593
+          },
+          "x": 958,
+          "y": 1640
+        }
+      ],
+      "source": "shape_6263",
+      "target": "shape_9896",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "via",
+      "id": "connection_7711",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": 504,
+            "y": 1051
+          },
+          "x": 466,
+          "y": 1051
+        },
+        {
+          "original": {
+            "x": 61,
+            "y": 1051
+          },
+          "x": 104,
+          "y": 1051
+        }
+      ],
+      "source": "shape_2359",
+      "target": "shape_2646",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "in",
+      "id": "connection_7761",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -835,
+            "y": 1512
+          },
+          "x": -804,
+          "y": 1501
+        },
+        {
+          "original": {
+            "x": -435,
+            "y": 1364
+          },
+          "x": -473,
+          "y": 1378
+        }
+      ],
+      "source": "shape_6603",
+      "target": "shape_9969",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "in",
+      "id": "connection_8006",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -856,
+            "y": 2250
+          },
+          "x": -822,
+          "y": 2268
+        },
+        {
+          "original": {
+            "x": -410,
+            "y": 2485
+          },
+          "x": -448,
+          "y": 2465
+        }
+      ],
+      "source": "shape_3943",
+      "target": "shape_8086",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "in",
+      "id": "connection_8089",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -835,
+            "y": 1674
+          },
+          "x": -811,
+          "y": 1655
+        },
+        {
+          "original": {
+            "x": -435,
+            "y": 1364
+          },
+          "x": -473,
+          "y": 1393
+        }
+      ],
+      "source": "shape_5835",
+      "target": "shape_9969",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "on",
+      "id": "connection_8346",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -1220,
+            "y": 2250
+          },
+          "x": -1177,
+          "y": 2250
+        },
+        {
+          "original": {
+            "x": -856,
+            "y": 2250
+          },
+          "x": -894,
+          "y": 2250
+        }
+      ],
+      "source": "shape_0755",
+      "target": "shape_3943",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "to",
+      "id": "connection_8349",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -1229,
+            "y": 1207
+          },
+          "x": -1267,
+          "y": 1219
+        },
+        {
+          "original": {
+            "x": -1655,
+            "y": 1345
+          },
+          "x": -1623,
+          "y": 1335
+        }
+      ],
+      "source": "shape_2811",
+      "target": "shape_8427",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "to",
+      "id": "connection_8358",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": 97,
+            "y": 2475
+          },
+          "x": 140,
+          "y": 2476
+        },
+        {
+          "original": {
+            "x": 627,
+            "y": 2485
+          },
+          "x": 589,
+          "y": 2484
+        }
+      ],
+      "source": "shape_6335",
+      "target": "shape_4196",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "to",
+      "id": "connection_8504",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -435,
+            "y": 1622
+          },
+          "x": -434,
+          "y": 1687.75
+        },
+        {
+          "original": {
+            "x": -431,
+            "y": 1858
+          },
+          "x": -431,
+          "y": 1830
+        }
+      ],
+      "source": "shape_9067",
+      "target": "shape_4300",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "sends",
+      "id": "connection_8511",
+      "pickedColor": "black",
+      "number": 7,
+      "waypoints": [
+        {
+          "original": {
+            "x": -435,
+            "y": 1364
+          },
+          "x": -473,
+          "y": 1337
+        },
+        {
+          "original": {
+            "x": -835,
+            "y": 1084
+          },
+          "x": -805,
+          "y": 1105
+        }
+      ],
+      "source": "shape_9969",
+      "target": "shape_8355",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "registers",
+      "id": "connection_9044",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -5,
+            "y": 393
+          },
+          "x": -43,
+          "y": 393
+        },
+        {
+          "x": -307,
+          "y": 393
+        },
+        {
+          "original": {
+            "x": -307,
+            "y": 474
+          },
+          "x": -307,
+          "y": 457
+        }
+      ],
+      "source": "shape_5254",
+      "target": "shape_0697",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "in",
+      "id": "connection_9354",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -835,
+            "y": 495
+          },
+          "x": -801,
+          "y": 512
+        },
+        {
+          "original": {
+            "x": -514,
+            "y": 660
+          },
+          "x": -552,
+          "y": 640
+        }
+      ],
+      "source": "shape_0682",
+      "target": "shape_2771",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "to",
+      "id": "connection_9392",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -808,
+            "y": 1997
+          },
+          "x": -775,
+          "y": 2016
+        },
+        {
+          "original": {
+            "x": -618,
+            "y": 2108
+          },
+          "x": -656,
+          "y": 2086
+        }
+      ],
+      "source": "shape_2444",
+      "target": "shape_2655",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "in",
+      "id": "connection_9593",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -835,
+            "y": 1364
+          },
+          "x": -792,
+          "y": 1364
+        },
+        {
+          "original": {
+            "x": -435,
+            "y": 1364
+          },
+          "x": -473,
+          "y": 1364
+        }
+      ],
+      "source": "shape_4878",
+      "target": "shape_9969",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "through",
+      "id": "connection_9903",
+      "pickedColor": "black",
+      "number": null,
+      "waypoints": [
+        {
+          "original": {
+            "x": -182,
+            "y": 853
+          },
+          "x": -139,
+          "y": 853
+        },
+        {
+          "original": {
+            "x": 105,
+            "y": 853
+          },
+          "x": 67,
+          "y": 853
+        }
+      ],
+      "source": "shape_0287",
+      "target": "shape_5398",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "closes/accomplish",
+      "id": "connection_9923",
+      "pickedColor": "black",
+      "number": 28,
+      "waypoints": [
+        {
+          "original": {
+            "x": -1569,
+            "y": 2485
+          },
+          "x": -1526,
+          "y": 2485
+        },
+        {
+          "original": {
+            "x": -1229,
+            "y": 2485
+          },
+          "x": -1267,
+          "y": 2485
+        }
+      ],
+      "source": "shape_2271",
+      "target": "shape_7915",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:activity",
+      "name": "provides",
+      "id": "connection_9941",
+      "pickedColor": "black",
+      "number": 18,
+      "waypoints": [
+        {
+          "original": {
+            "x": -435,
+            "y": 1868
+          },
+          "x": -435,
+          "y": 1934
+        },
+        {
+          "original": {
+            "x": -435,
+            "y": 2127
+          },
+          "x": -435,
+          "y": 2089
+        }
+      ],
+      "source": "shape_4300",
+      "target": "shape_1309",
+      "multipleNumberAllowed": false
+    },
+    {
+      "type": "domainStory:workObjectPlace",
+      "name": "Shelter Locattions",
+      "id": "shape_0287",
+      "x": -220,
+      "y": 815
+    },
+    {
+      "type": "domainStory:workObjectFlight-landing",
+      "name": "Arrival",
+      "id": "shape_0368",
+      "x": 1066,
+      "y": 2436
+    },
+    {
+      "type": "domainStory:workObjectDNS",
+      "name": "GRIP Level",
+      "id": "shape_0576",
+      "x": -1267,
+      "y": 1474
+    },
+    {
+      "type": "domainStory:workObjectHow-To-Reg",
+      "name": "Resources (Vehicles, ManPower, Equpment)",
+      "id": "shape_0682",
+      "x": -873,
+      "y": 457
+    },
+    {
+      "type": "domainStory:workObjectDocument",
+      "name": "Incident",
+      "id": "shape_0697",
+      "x": -345,
+      "y": 457
+    },
+    {
+      "type": "domainStory:workObjectDocument",
+      "name": "Incident",
+      "id": "shape_0755",
+      "x": -1258,
+      "y": 2212
+    },
+    {
+      "type": "domainStory:workObjectShare",
+      "name": "Group Link",
+      "id": "shape_0780",
+      "x": -313,
+      "y": 1593
+    },
+    {
+      "type": "domainStory:workObjectBusiness",
+      "name": "Respondent Departments",
+      "id": "shape_0974",
+      "x": -1258,
+      "y": 1785
+    },
+    {
+      "type": "domainStory:workObjectBug",
+      "name": "Equipment",
+      "id": "shape_1309",
+      "x": -473,
+      "y": 2089
+    },
+    {
+      "type": "domainStory:workObjectCircle-Arrows",
+      "name": "Update",
+      "id": "shape_1770",
+      "x": 324,
+      "y": 2240
+    },
+    {
+      "type": "domainStory:workObjectHow-To-Reg",
+      "name": "Municipalities , Departments & Ressources",
+      "id": "shape_2007",
+      "x": -884,
+      "y": 900
+    },
+    {
+      "type": "domainStory:workObjectCall",
+      "name": "Call",
+      "id": "shape_2260",
+      "x": 193,
+      "y": 457
+    },
+    {
+      "name": "Calamity Coordinator (CaCo)",
+      "id": "shape_2271",
+      "type": "domainStory:actorPerson",
+      "x": -1607,
+      "y": 2447
+    },
+    {
+      "name": "Location",
+      "id": "shape_2359",
+      "type": "domainStory:workObjectPlace",
+      "x": 466,
+      "y": 1013
+    },
+    {
+      "type": "domainStory:workObjectTablet",
+      "name": "Field App",
+      "id": "shape_2444",
+      "x": -846,
+      "y": 1959
+    },
+    {
+      "type": "domainStory:workObjectInfo",
+      "name": "Priority",
+      "id": "shape_2480",
+      "x": -1267,
+      "y": 1326
+    },
+    {
+      "name": "Regio Admin",
+      "id": "shape_2521",
+      "type": "domainStory:actorPerson",
+      "x": -1281,
+      "y": 900
+    },
+    {
+      "type": "domainStory:workObjectDocument",
+      "name": "Incident",
+      "id": "shape_2540",
+      "x": -864,
+      "y": 1785
+    },
+    {
+      "type": "domainStory:workObjectTablet",
+      "name": "Field App",
+      "id": "shape_2646",
+      "x": 23,
+      "y": 1013
+    },
+    {
+      "type": "domainStory:workObjectWalking",
+      "name": "Respondent Team (Manpower)",
+      "id": "shape_2655",
+      "x": -656,
+      "y": 2070
+    },
+    {
+      "type": "domainStory:actorSystem",
+      "name": "DDRCS",
+      "id": "shape_2771",
+      "x": -552,
+      "y": 622
+    },
+    {
+      "type": "domainStory:workObjectDashboard",
+      "name": "Dashboard",
+      "id": "shape_2811",
+      "x": -1267,
+      "y": 1169
+    },
+    {
+      "type": "domainStory:workObjectDashboard",
+      "name": "Dashboard",
+      "id": "shape_3201",
+      "x": -894,
+      "y": 2447
+    },
+    {
+      "type": "domainStory:workObjectTablet",
+      "name": "Mobile App",
+      "id": "shape_3229",
+      "x": 67,
+      "y": 622
+    },
+    {
+      "type": "domainStory:workObjectInfo",
+      "name": "Notification (Status, Blocked Roads etc)",
+      "id": "shape_3565",
+      "x": -220,
+      "y": 622
+    },
+    {
+      "type": "domainStory:workObjectDashboard",
+      "name": "Dashboard",
+      "id": "shape_3943",
+      "x": -894,
+      "y": 2212
+    },
+    {
+      "name": "Officer on Duty (OvD)",
+      "id": "shape_4196",
+      "type": "domainStory:actorPerson",
+      "x": 589,
+      "y": 2447
+    },
+    {
+      "type": "domainStory:actorPerson",
+      "name": "Officer on Duty (OvD)",
+      "id": "shape_4300",
+      "x": -473,
+      "y": 1830
+    },
+    {
+      "type": "domainStory:workObjectCommute",
+      "name": "Transportation",
+      "id": "shape_4361",
+      "x": -313,
+      "y": 2089
+    },
+    {
+      "type": "domainStory:actorPerson",
+      "name": "Department Admin",
+      "id": "shape_4382",
+      "x": -1282,
+      "y": 457
+    },
+    {
+      "type": "domainStory:workObjectAssignment",
+      "name": "Plan",
+      "id": "shape_4518",
+      "x": -1267,
+      "y": 1636
+    },
+    {
+      "type": "domainStory:workObjectEmail",
+      "name": "Resources",
+      "id": "shape_4580",
+      "x": -171,
+      "y": 2240
+    },
+    {
+      "type": "domainStory:actorGroup",
+      "name": "Respondent Team",
+      "id": "shape_4833",
+      "x": 1524,
+      "y": 2447
+    },
+    {
+      "type": "domainStory:workObjectDocument",
+      "name": "Incident",
+      "id": "shape_4878",
+      "x": -873,
+      "y": 1326
+    },
+    {
+      "name": "Citizens",
+      "id": "shape_5088",
+      "type": "domainStory:actorPerson",
+      "x": 413,
+      "y": 622
+    },
+    {
+      "name": "Institutions (Seismic, Ranger etc)",
+      "id": "shape_5254",
+      "type": "domainStory:workObjectBusiness",
+      "x": -43,
+      "y": 355
+    },
+    {
+      "type": "domainStory:workObjectTablet",
+      "name": "Mobile App",
+      "id": "shape_5398",
+      "x": 67,
+      "y": 815
+    },
+    {
+      "type": "domainStory:workObjectAssignment",
+      "name": "Instructions",
+      "id": "shape_5416",
+      "x": 413,
+      "y": 1532
+    },
+    {
+      "type": "domainStory:workObjectInfo",
+      "name": "Field Information (Arrival, Progress, Obstacles etc)",
+      "id": "shape_5550",
+      "x": 399,
+      "y": 1326
+    },
+    {
+      "type": "domainStory:workObjectPlace",
+      "name": "Location",
+      "id": "shape_5602",
+      "x": 1398,
+      "y": 1286
+    },
+    {
+      "name": "Municipality Admin",
+      "id": "shape_5718",
+      "type": "domainStory:actorPerson",
+      "x": -1281,
+      "y": 643
+    },
+    {
+      "type": "domainStory:workObjectDocument",
+      "name": "Incident",
+      "id": "shape_5835",
+      "x": -873,
+      "y": 1636
+    },
+    {
+      "type": "domainStory:workObjectShare",
+      "name": "Link",
+      "id": "shape_5848",
+      "x": 386,
+      "y": 1169
+    },
+    {
+      "name": "Officer on Duty (OvD)",
+      "id": "shape_6263",
+      "type": "domainStory:actorPerson",
+      "x": 920,
+      "y": 1774
+    },
+    {
+      "type": "domainStory:workObjectEmail",
+      "name": "Resource Release Command",
+      "id": "shape_6335",
+      "x": 59,
+      "y": 2437
+    },
+    {
+      "name": "Chat Group",
+      "id": "shape_6451",
+      "type": "domainStory:workObjectConversation",
+      "x": 12,
+      "y": 1326
+    },
+    {
+      "type": "domainStory:workObjectDocument",
+      "name": "Incident",
+      "id": "shape_6603",
+      "x": -873,
+      "y": 1474
+    },
+    {
+      "name": "Group Link",
+      "id": "shape_7207",
+      "type": "domainStory:workObjectShare",
+      "x": -751,
+      "y": 1822
+    },
+    {
+      "type": "domainStory:workObjectGavel",
+      "name": "Actions",
+      "id": "shape_7216",
+      "x": 1187,
+      "y": 1298
+    },
+    {
+      "name": "Calamity Coordinator (CaCo)",
+      "id": "shape_7452",
+      "type": "domainStory:actorPerson",
+      "x": 12,
+      "y": 1785
+    },
+    {
+      "type": "domainStory:workObjectProblem",
+      "name": "Alerts",
+      "id": "shape_7542",
+      "x": -873,
+      "y": 1169
+    },
+    {
+      "type": "domainStory:workObjectHow-To-Reg",
+      "name": "Departments & Ressources",
+      "id": "shape_7703",
+      "x": -884,
+      "y": 653
+    },
+    {
+      "type": "domainStory:workObjectDocument",
+      "name": "Incident",
+      "id": "shape_7915",
+      "x": -1267,
+      "y": 2447
+    },
+    {
+      "type": "domainStory:actorSystem",
+      "name": "DDRCS",
+      "id": "shape_8086",
+      "x": -448,
+      "y": 2447
+    },
+    {
+      "type": "domainStory:actorGroup",
+      "name": "Responder Team",
+      "id": "shape_8198",
+      "x": 907,
+      "y": 1308
+    },
+    {
+      "type": "domainStory:workObjectDocument",
+      "name": "Incident Info",
+      "id": "shape_8355",
+      "x": -873,
+      "y": 1046
+    },
+    {
+      "name": "Calamity Coordinator (CaCo)",
+      "id": "shape_8427",
+      "type": "domainStory:actorPerson",
+      "x": -1693,
+      "y": 1307
+    },
+    {
+      "type": "domainStory:workObjectDashboard",
+      "name": "Dashboard",
+      "id": "shape_8492",
+      "x": -1267,
+      "y": 1046
+    },
+    {
+      "type": "domainStory:workObjectEmail",
+      "name": "Resources Command",
+      "id": "shape_9067",
+      "x": -473,
+      "y": 1584
+    },
+    {
+      "type": "domainStory:workObjectAssignment",
+      "name": "Instructions",
+      "id": "shape_9086",
+      "x": 12,
+      "y": 1532
+    },
+    {
+      "type": "domainStory:workObjectBusiness",
+      "name": "112",
+      "id": "shape_9252",
+      "x": -44,
+      "y": 457
+    },
+    {
+      "type": "domainStory:workObjectWater",
+      "name": "Task",
+      "id": "shape_9896",
+      "x": 920,
+      "y": 1555
+    },
+    {
+      "name": "DDRCS",
+      "id": "shape_9969",
+      "type": "domainStory:actorSystem",
+      "x": -473,
+      "y": 1326
+    },
+    {
+      "info": ""
+    },
+    {
+      "version": "3.0.0"
+    }
+  ]
+}
