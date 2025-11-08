@@ -17,7 +17,7 @@ docker-compose up -d
 
 **3. Access the application:**
 - **Frontend:** http://localhost:3000
-- **API Gateway:** http://localhost:8080
+- **Service registration:** http://localhost:8761/
 
 That's it! The system is now running.
 
