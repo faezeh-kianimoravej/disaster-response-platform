@@ -78,11 +78,6 @@ When the system starts, the **User Service** automatically creates default admin
 | **Municipality Admins** | `municipality.deventer@disaster.nl`<br>`municipality.enschede@disaster.nl`<br>`municipality.zwolle@disaster.nl` | `Admin@123` | Manage their respective municipalities |
 | **Department Admins** | `dept.fire.deventer@disaster.nl`<br>`dept.police.deventer@disaster.nl`<br>`dept.medical.deventer@disaster.nl`<br>`dept.fire.enschede@disaster.nl`<br>`dept.police.enschede@disaster.nl`<br>`dept.medical.enschede@disaster.nl`<br>`dept.fire.zwolle@disaster.nl`<br>`dept.police.zwolle@disaster.nl`<br>`dept.medical.zwolle@disaster.nl` | `Admin@123` | Manage their local department |
 
-### 🔹 In Production Environment
-| Role | Email | Password | Scope |
-|------|--------|-----------|--------|
-| **Region Admin** | `region.admin@disaster.nl` | `Admin@123` | Manages the entire region |
-
 🧩 All admin users have unique auto-generated phone numbers and are linked to their respective region, municipality, or department IDs.
 
 ---
