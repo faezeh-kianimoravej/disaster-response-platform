@@ -37,6 +37,11 @@ function fromApiDepartments(list: ApiDepartment[]): Department[] {
 	return list.map(fromApiDepartment);
 }
 
+export async function getAllDepartments(): Promise<Department[]> {
+	const data = await departmentApi.get<Department[]>('');
+	return fromApiDepartments(data);
+}
+
 export async function getDepartmentsByMunicipalityId(
 	municipalityId: number
 ): Promise<Department[]> {

@@ -1,6 +1,6 @@
 import { BaseApi } from '@/api/base';
-import type { Resource, ResourceFormData } from '@/types/resource';
-
+import type { Resource, ResourceFormData, ResourceSearchResult } from '@/types/resource';
+import { RESOURCE_TYPES } from '@/utils/resourceUtils';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const resourceApi = new BaseApi(`${API_BASE_URL}/resources`);
@@ -63,4 +63,31 @@ export async function updateResource(updated: Resource): Promise<Resource> {
 
 export async function deleteResource(id: number): Promise<void> {
 	await resourceApi.delete(`/${id}`);
+}
+
+export async function getResourcesByType(type: string): Promise<Resource[]> {
+	return await resourceApi.get<Resource[]>(`/type/${type}`);
+}
+
+export async function searchResources(
+	incidentId: number,
+	resourceType: string,
+	departmentId: string,
+	municipalityId: string
+): Promise<ResourceSearchResult[]> {
+	debugger;
+	const params = new URLSearchParams();
+	const mappedType =
+		Object.keys(RESOURCE_TYPES).find(
+			key => RESOURCE_TYPES[key as keyof typeof RESOURCE_TYPES] === resourceType
+		) || resourceType;
+
+	if (mappedType && mappedType !== 'All') params.append('resourceType', mappedType);
+	if (departmentId && departmentId !== 'All') params.append('departmentId', departmentId);
+	if (municipalityId && municipalityId !== 'All') params.append('municipalityId', municipalityId);
+	if (incidentId) params.append('incidentId', incidentId.toString());
+
+	const queryString = params.toString() ? `?${params.toString()}` : '';
+	debugger;
+	return await resourceApi.get<ResourceSearchResult[]>(`/available/nearest${queryString}`);
 }

@@ -35,3 +35,19 @@ export interface IncidentFormData {
 	longitude: number;
 	regionId: number;
 }
+
+export interface IncidentResourceAllocationRequest {
+	resourceId: number;
+	quantity: number;
+}
+
+export interface IncidentResourceAllocationResponse {
+	incidentId: number;
+	allocatedResources: {
+		resourceId: number;
+		quantity: number;
+	}[];
+	status: string;
+	message?: string;
+	timestamp?: string;
+}

@@ -1,4 +1,11 @@
-import type { Incident, IncidentFormData, IncidentSeverity } from '@/types/incident';
+import type {
+	Incident,
+	IncidentFormData,
+	IncidentSeverity,
+	IncidentResourceAllocationRequest,
+	IncidentResourceAllocationResponse,
+} from '@/types/incident';
+import { ResourceSearchResult } from '@/types/resource';
 import { BaseApi } from './base';
 
 const incidentApi = new BaseApi('/incidents');
@@ -133,6 +140,23 @@ function fromApiIncident(a: ApiIncident): Incident {
 
 function fromApiIncidents(list: ApiIncident[]): Incident[] {
 	return list.map(fromApiIncident);
+}
+
+export async function allocateResourcesToIncident(
+	incidentId: number,
+	allocations: IncidentResourceAllocationRequest[]
+): Promise<IncidentResourceAllocationResponse> {
+	const payload = allocations;
+	debugger;
+
+	// POST /incidents/{incidentId}/resources/allocate
+	return await incidentApi.post<IncidentResourceAllocationResponse>(
+		`/${incidentId}/resources`,
+		payload
+	);
+}
+export async function getAllocatedResources(incidentId: number): Promise<ResourceSearchResult[]> {
+	return await incidentApi.get<ResourceSearchResult[]>(`/${incidentId}/resources`);
 }
 
 function toApiRequest(

@@ -36,7 +36,7 @@ export class BaseApi {
 	async post<T>(endpoint = '', data?: unknown): Promise<T> {
 		try {
 			const response = await axios.post<T>(`${this.baseUrl}${endpoint}`, data);
-			return response.data;
+			return (response.data ?? null) as T;
 		} catch (error) {
 			throw this.handleError(error);
 		}
