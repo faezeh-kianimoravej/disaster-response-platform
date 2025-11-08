@@ -88,7 +88,7 @@
         <dependency>
             <groupId>nl.saxion.disaster</groupId>
             <artifactId>event-common</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.0-rc1</version>
         </dependency>
 
         <!-- Kafka -->
