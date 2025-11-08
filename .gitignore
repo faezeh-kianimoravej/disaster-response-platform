@@ -9,8 +9,9 @@
 .settings/
 
 # Maven specific files
+# Keep the Maven wrapper properties and scripts, only ignore the JAR
 .mvn/wrapper/maven-wrapper.jar
-.mvn/wrapper/maven-wrapper.properties
+!.mvn/wrapper/maven-wrapper.properties
 dependency-reduced-pom.xml
 
 # Maven build output

@@ -5,20 +5,25 @@ WORKDIR /workspace
 # Accept version as build argument
 ARG VERSION=1.0.0-SNAPSHOT
 
-# Install Maven (since this service doesn't use Maven wrapper)
-RUN apk add --no-cache maven
+# Copy Maven wrapper files
+COPY .mvn .mvn
+COPY mvnw ./
+COPY mvnw.cmd ./
+
+# Make Maven wrapper executable
+RUN chmod +x mvnw
 
 # Copy project descriptor
 COPY pom.xml ./
 
 # Download dependencies (cache layer)
-RUN mvn dependency:go-offline -Drevision=${VERSION} -DskipTests || true
+RUN ./mvnw dependency:go-offline -Drevision=${VERSION} -DskipTests || true
 
 # Copy source
 COPY src ./src
 
 # Build the application
-RUN mvn clean package -Drevision=${VERSION} -DskipTests
+RUN ./mvnw clean package -Drevision=${VERSION} -DskipTests
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine

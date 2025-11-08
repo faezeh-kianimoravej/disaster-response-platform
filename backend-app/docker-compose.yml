@@ -174,7 +174,9 @@ services:
   # Incident Service
   # ==============================
   incident-service:
-    build: ./incident-service
+    build:
+      context: .
+      dockerfile: ./incident-service/Dockerfile
     container_name: incident-service
     depends_on:
       postgres-db:
@@ -195,7 +197,9 @@ services:
   # Notification Service
   # ==============================
   notification-service:
-    build: ./notification-service
+    build:
+      context: .
+      dockerfile: ./notification-service/Dockerfile
     container_name: notification-service
     depends_on:
       postgres-db:

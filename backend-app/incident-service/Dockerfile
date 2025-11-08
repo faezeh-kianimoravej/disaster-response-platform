@@ -5,25 +5,35 @@ WORKDIR /workspace
 # Accept version as build argument
 ARG VERSION=1.0.0-SNAPSHOT
 
-# Install Maven (since this service doesn't use Maven wrapper)
-RUN apk add --no-cache maven
+# Copy Maven wrapper files for event-common
+COPY event-common/.mvn event-common/.mvn
+COPY event-common/mvnw event-common/mvnw
+COPY event-common/mvnw.cmd event-common/mvnw.cmd
+
+# Copy Maven wrapper files for incident-service
+COPY incident-service/.mvn .mvn
+COPY incident-service/mvnw ./mvnw
+COPY incident-service/mvnw.cmd ./mvnw.cmd
+
+# Make Maven wrappers executable
+RUN chmod +x event-common/mvnw && chmod +x mvnw
 
 # Copy and build event-common dependency first
 COPY event-common/pom.xml event-common/pom.xml
 COPY event-common/src event-common/src
-RUN cd event-common && mvn clean install -Drevision=${VERSION} -DskipTests
+RUN cd event-common && ./mvnw clean install -Drevision=${VERSION} -DskipTests
 
 # Copy project descriptor
 COPY incident-service/pom.xml ./
 
 # Download dependencies (cache layer)
-RUN mvn dependency:go-offline -Drevision=${VERSION} -DskipTests || true
+RUN ./mvnw dependency:go-offline -Drevision=${VERSION} -DskipTests || true
 
 # Copy source
 COPY incident-service/src ./src
 
 # Build the application
-RUN mvn clean package -Drevision=${VERSION} -DskipTests
+RUN ./mvnw clean package -Drevision=${VERSION} -DskipTests
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine

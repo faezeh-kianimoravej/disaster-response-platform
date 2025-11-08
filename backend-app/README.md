@@ -25,22 +25,10 @@ docker-compose up -d
 
 ### Fresh Rebuild (First Time / After Changes)
 
-**With Maven installed:**
-
-```powershell
-mvn clean package -DskipTests
-docker-compose down -v; docker-compose build --no-cache; docker-compose up -d
-```
-
-**With IntelliJ:**
-
-1. Open Maven sidebar (View → Tool Windows → Maven)
-2. Expand root project → Lifecycle → Run `clean` then `package`
-3. Run in terminal:
-
 ```powershell
 docker-compose down -v; docker-compose build --no-cache; docker-compose up -d
 ```
+
 
 **Use fresh rebuild when:**
 
