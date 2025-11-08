@@ -2,29 +2,20 @@
 FROM eclipse-temurin:21-jdk-alpine AS build
 WORKDIR /workspace
 
-# Copy Maven wrapper if present (for hermetic builds)
-COPY mvnw* ./
-COPY .mvn .mvn
+# Install Maven (since this service doesn't use Maven wrapper)
+RUN apk add --no-cache maven
 
 # Copy project descriptor
 COPY pom.xml ./
 
 # Download dependencies (cache layer)
-RUN if [ -f ./mvnw ]; then \
-      ./mvnw dependency:go-offline -DskipTests || true; \
-    else \
-      mvn dependency:go-offline -DskipTests || true; \
-    fi
+RUN mvn dependency:go-offline -DskipTests || true
 
 # Copy source
 COPY src ./src
 
 # Build the application
-RUN if [ -f ./mvnw ]; then \
-      ./mvnw clean package -DskipTests; \
-    else \
-      mvn clean package -DskipTests; \
-    fi
+RUN mvn clean package -DskipTests
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine

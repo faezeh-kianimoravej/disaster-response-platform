@@ -267,7 +267,9 @@ image:frontend:
 # ======================================
 .trivy-scan:
   stage: scan
-  image: aquasec/trivy:latest
+  image: 
+    name: aquasec/trivy:latest
+    entrypoint: [""]
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+(-rc\d+)?$/'
       when: on_success
@@ -285,6 +287,62 @@ scan:api-gateway:
     - job: image:api-gateway
   script:
     - trivy image --severity HIGH,CRITICAL --ignore-unfixed "$DOCKERHUB_USERNAME/disaster-response-api-gateway:$VERSION"
+
+scan:discovery-service:
+  extends: .trivy-scan
+  needs:
+    - job: image:discovery-service
+  script:
+    - trivy image --severity HIGH,CRITICAL --ignore-unfixed "$DOCKERHUB_USERNAME/disaster-response-discovery-service:$VERSION"
+
+scan:department-service:
+  extends: .trivy-scan
+  needs:
+    - job: image:department-service
+  script:
+    - trivy image --severity HIGH,CRITICAL --ignore-unfixed "$DOCKERHUB_USERNAME/disaster-response-department-service:$VERSION"
+
+scan:incident-service:
+  extends: .trivy-scan
+  needs:
+    - job: image:incident-service
+  script:
+    - trivy image --severity HIGH,CRITICAL --ignore-unfixed "$DOCKERHUB_USERNAME/disaster-response-incident-service:$VERSION"
+
+scan:municipality-service:
+  extends: .trivy-scan
+  needs:
+    - job: image:municipality-service
+  script:
+    - trivy image --severity HIGH,CRITICAL --ignore-unfixed "$DOCKERHUB_USERNAME/disaster-response-municipality-service:$VERSION"
+
+scan:notification-service:
+  extends: .trivy-scan
+  needs:
+    - job: image:notification-service
+  script:
+    - trivy image --severity HIGH,CRITICAL --ignore-unfixed "$DOCKERHUB_USERNAME/disaster-response-notification-service:$VERSION"
+
+scan:region-service:
+  extends: .trivy-scan
+  needs:
+    - job: image:region-service
+  script:
+    - trivy image --severity HIGH,CRITICAL --ignore-unfixed "$DOCKERHUB_USERNAME/disaster-response-region-service:$VERSION"
+
+scan:resource-service:
+  extends: .trivy-scan
+  needs:
+    - job: image:resource-service
+  script:
+    - trivy image --severity HIGH,CRITICAL --ignore-unfixed "$DOCKERHUB_USERNAME/disaster-response-resource-service:$VERSION"
+
+scan:user-service:
+  extends: .trivy-scan
+  needs:
+    - job: image:user-service
+  script:
+    - trivy image --severity HIGH,CRITICAL --ignore-unfixed "$DOCKERHUB_USERNAME/disaster-response-user-service:$VERSION"
 
 scan:frontend:
   extends: .trivy-scan
