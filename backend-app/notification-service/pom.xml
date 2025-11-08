@@ -5,11 +5,11 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- ✅ Inherit from backend-app -->
+    <!--Inherit from backend-app -->
     <parent>
         <groupId>nl.saxion.disaster</groupId>
         <artifactId>backend-app</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.0-rc1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
