@@ -4,15 +4,33 @@ import AccountPanel from '@/components/auth/AccountPanel';
 import { renderWithProviders } from '@/test/utils';
 
 describe('AccountPanel smoke', () => {
-	it('opens panel and shows role controls', () => {
-		renderWithProviders(<AccountPanel />);
+	it('opens panel and shows user roles', () => {
+		renderWithProviders(<AccountPanel />, {
+			auth: {
+				user: {
+					userId: 1,
+					firstName: 'Test',
+					lastName: 'User',
+					email: 'test@example.com',
+					mobile: '000',
+					roles: [
+						{
+							roleType: 'Region Admin',
+							regionId: 1,
+							municipalityId: null,
+							departmentId: null,
+						},
+					],
+					deleted: false,
+				},
+			},
+		});
 		// Open
 		fireEvent.click(screen.getByRole('button', { name: /account/i }));
-		// Updated UI shows headings for current and toggle roles
-		expect(screen.getByText(/Current Roles/i)).toBeInTheDocument();
-		expect(screen.getByText(/Toggle Roles/i)).toBeInTheDocument();
-		// Shows some role checkboxes
-		const roleCheckboxes = screen.getAllByRole('checkbox');
-		expect(roleCheckboxes.length).toBeGreaterThan(0);
+		// Shows user roles (read-only)
+		expect(screen.getByText(/your roles/i)).toBeInTheDocument();
+		expect(screen.getByText(/Region Admin/i)).toBeInTheDocument();
+		// Shows logout button
+		expect(screen.getByRole('button', { name: /logout/i })).toBeInTheDocument();
 	});
 });

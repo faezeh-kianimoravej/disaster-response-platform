@@ -9,7 +9,7 @@ export function useLogin() {
 	const [error, setError] = useState<string | null>(null);
 	const auth = useAuth();
 
-	async function login(email: string, password: string): Promise<boolean> {
+	async function login(email: string, password: string): Promise<User | null> {
 		setLoading(true);
 		setError(null);
 		try {
@@ -37,12 +37,12 @@ export function useLogin() {
 				token: response.token,
 			});
 			setLoading(false);
-			return true;
+			return user;
 		} catch (err) {
 			const apiError = err as ApiError;
 			setError(apiError.message || 'Login failed');
 			setLoading(false);
-			return false;
+			return null;
 		}
 	}
 
