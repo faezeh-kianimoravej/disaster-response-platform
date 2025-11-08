@@ -5,7 +5,6 @@ import nl.saxion.disaster.resourceservice.mapper.ResourceMapper;
 import nl.saxion.disaster.resourceservice.model.entity.Resource;
 import nl.saxion.disaster.resourceservice.model.enums.ResourceType;
 import nl.saxion.disaster.resourceservice.repository.contract.ResourceRepository;
-import nl.saxion.disaster.resourceservice.service.ResourceServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -74,7 +73,7 @@ class ResourceServiceImplTest {
 
     @Test
     void testGetAvailableResources() {
-        when(resourceRepository.findAvailable()).thenReturn(List.of(resource));
+        when(resourceRepository.findAllAvailableResources()).thenReturn(List.of(resource));
         when(resourceMapper.toDto(resource)).thenReturn(resourceDto);
 
         // Act
@@ -83,7 +82,7 @@ class ResourceServiceImplTest {
         // Assert
         assertEquals(1, result.size());
         assertEquals(1, result.get(0).available());
-        verify(resourceRepository, times(1)).findAvailable();
+        verify(resourceRepository, times(1)).findAllAvailableResources();
     }
 
     @Test
@@ -143,4 +142,41 @@ class ResourceServiceImplTest {
 
         verify(resourceRepository, times(1)).deleteById(1L);
     }
+
+    @Test
+    void testGetResourceBasicInfoById_WhenResourceExists() {
+        // Arrange
+        resource.setDepartmentId(10L);
+        resource.setName("Fire Truck");
+
+        when(resourceRepository.findById(1L)).thenReturn(Optional.of(resource));
+
+        // Act
+        var result = resourceService.getResourceBasicInfoById(1L);
+
+        // Assert
+        assertTrue(result.isPresent(), "Expected a non-empty Optional result");
+        var dto = result.get();
+
+        assertEquals(resource.getResourceId(), dto.id());
+        assertEquals(resource.getName(), dto.name());
+        assertEquals(resource.getResourceType().name(), dto.resourceType());
+        assertEquals(resource.getDepartmentId(), dto.departmentId());
+
+        verify(resourceRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void testGetResourceBasicInfoById_WhenResourceNotFound() {
+        // Arrange
+        when(resourceRepository.findById(999L)).thenReturn(Optional.empty());
+
+        // Act
+        var result = resourceService.getResourceBasicInfoById(999L);
+
+        // Assert
+        assertTrue(result.isEmpty(), "Expected an empty Optional result");
+        verify(resourceRepository, times(1)).findById(999L);
+    }
+
 }

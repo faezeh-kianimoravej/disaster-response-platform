@@ -2,12 +2,14 @@ package nl.saxion.disaster.incident_service.incident;
 
 import nl.saxion.disaster.incident_service.dto.IncidentRequest;
 import nl.saxion.disaster.incident_service.dto.IncidentResponse;
+import nl.saxion.disaster.incident_service.dto.ResourceAllocationItemDto;
 import nl.saxion.disaster.incident_service.exception.ResourceNotFoundException;
 import nl.saxion.disaster.incident_service.model.entity.Incident;
 import nl.saxion.disaster.incident_service.model.enums.GripLevel;
 import nl.saxion.disaster.incident_service.model.enums.Severity;
 import nl.saxion.disaster.incident_service.model.enums.Status;
-import nl.saxion.disaster.incident_service.repository.IncidentRepository;
+import nl.saxion.disaster.incident_service.repository.contract.IncidentRepository;
+import nl.saxion.disaster.incident_service.repository.contract.IncidentResourceRepository;
 import nl.saxion.disaster.incident_service.service.IncidentServiceImp;
 import nl.saxion.disaster.incident_service.service.messaging.IncidentEventProducer;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,14 +27,16 @@ import static org.mockito.Mockito.*;
 class IncidentServiceImpTest {
 
     private IncidentRepository repository;
+    private IncidentResourceRepository incidentResourceRepository;
     private IncidentEventProducer eventProducer;
     private IncidentServiceImp service;
 
     @BeforeEach
     void setup() {
         repository = mock(IncidentRepository.class);
+        incidentResourceRepository = mock(IncidentResourceRepository.class);
         eventProducer = mock(IncidentEventProducer.class);
-        service = new IncidentServiceImp(repository, eventProducer);
+        service = new IncidentServiceImp(repository, incidentResourceRepository, eventProducer);
     }
 
     private Incident sampleIncident(Long id) {
@@ -54,32 +58,29 @@ class IncidentServiceImpTest {
     }
 
     private IncidentRequest sampleRequest() {
-    return new IncidentRequest(
-        "112",
-        "Fire in building",
-        "Fire at main street",
-        Severity.HIGH,
-        GripLevel.LEVEL_2,
-        Status.OPEN,
-        OffsetDateTime.now(),
-        "Main Street 12",
-        52.0,
-        5.0,
-        1L // regionId
-    );
+        return new IncidentRequest(
+                "112",
+                "Fire in building",
+                "Fire at main street",
+                Severity.HIGH,
+                GripLevel.LEVEL_2,
+                Status.OPEN,
+                OffsetDateTime.now(),
+                "Main Street 12",
+                52.0,
+                5.0,
+                1L // regionId
+        );
     }
 
     @Test
     void createIncident_ShouldSaveAndReturnResponse() {
-        // given
         IncidentRequest req = sampleRequest();
         Incident incident = sampleIncident(1L);
         when(repository.save(any(Incident.class))).thenReturn(incident);
 
-        // when
         IncidentResponse response = service.createIncident(req);
 
-        // then
         assertThat(response.incidentId()).isEqualTo(1L);
         assertThat(response.title()).isEqualTo(req.title());
 
@@ -87,21 +88,16 @@ class IncidentServiceImpTest {
         verify(repository).save(captor.capture());
         Incident savedEntity = captor.getValue();
         assertThat(savedEntity.getReportedBy()).isEqualTo(req.reportedBy());
-
-        // Verify event producer called
         verify(eventProducer, times(1)).sendIncidentEvent(any());
     }
 
     @Test
     void getById_ShouldReturnIncidentResponse_WhenFound() {
-        // given
         Incident incident = sampleIncident(10L);
         when(repository.findById(10L)).thenReturn(Optional.of(incident));
 
-        // when
         IncidentResponse result = service.getById(10L);
 
-        // then
         assertThat(result.incidentId()).isEqualTo(10L);
         verify(repository).findById(10L);
     }
@@ -142,19 +138,19 @@ class IncidentServiceImpTest {
         when(repository.findById(5L)).thenReturn(Optional.of(existing));
         when(repository.save(any(Incident.class))).thenAnswer(inv -> inv.getArgument(0));
 
-    IncidentRequest newReq = new IncidentRequest(
-        "Bob",
-        "Explosion",
-        "Gas leak explosion",
-        Severity.CRITICAL,
-        GripLevel.LEVEL_3,
-        Status.IN_PROGRESS,
-        OffsetDateTime.now(),
-        "Industrial Area",
-        53.0,
-        6.0,
-        1L // regionId
-    );
+        IncidentRequest newReq = new IncidentRequest(
+                "Bob",
+                "Explosion",
+                "Gas leak explosion",
+                Severity.CRITICAL,
+                GripLevel.LEVEL_3,
+                Status.IN_PROGRESS,
+                OffsetDateTime.now(),
+                "Industrial Area",
+                53.0,
+                6.0,
+                1L
+        );
 
         IncidentResponse updated = service.update(5L, newReq);
 
@@ -184,5 +180,89 @@ class IncidentServiceImpTest {
         assertThatThrownBy(() -> service.delete(99L))
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("99");
+    }
+
+    @Test
+    void getIncidentBasicInfoById_ShouldReturnBasicInfo_WhenIncidentExists() {
+        Incident incident = sampleIncident(7L);
+        when(repository.findById(7L)).thenReturn(Optional.of(incident));
+
+        var result = service.getIncidentBasicInfoById(7L);
+
+        assertThat(result).isPresent();
+        var dto = result.get();
+        assertThat(dto.incidentId()).isEqualTo(7L);
+        assertThat(dto.title()).isEqualTo(incident.getTitle());
+        assertThat(dto.status()).isEqualTo(incident.getStatus().name());
+
+        verify(repository).findById(7L);
+    }
+
+    @Test
+    void getIncidentBasicInfoById_ShouldReturnEmpty_WhenNotFound() {
+        when(repository.findById(99L)).thenReturn(Optional.empty());
+
+        var result = service.getIncidentBasicInfoById(99L);
+
+        assertThat(result).isEmpty();
+        verify(repository).findById(99L);
+    }
+
+    @Test
+    void getIncidentLocation_ShouldReturnCoordinates_WhenIncidentExists() {
+        Incident incident = sampleIncident(8L);
+        incident.setLatitude(52.5);
+        incident.setLongitude(5.5);
+        when(repository.findById(8L)).thenReturn(Optional.of(incident));
+
+        var result = service.getIncidentLocation(8L);
+
+        assertThat(result).isPresent();
+        var loc = result.get();
+        assertThat(loc.latitude()).isEqualTo(52.5);
+        assertThat(loc.longitude()).isEqualTo(5.5);
+        verify(repository).findById(8L);
+    }
+
+    @Test
+    void getIncidentLocation_ShouldReturnEmpty_WhenIncidentNotFound() {
+        when(repository.findById(999L)).thenReturn(Optional.empty());
+
+        var result = service.getIncidentLocation(999L);
+
+        assertThat(result).isEmpty();
+        verify(repository).findById(999L);
+    }
+
+    @Test
+    void assignResourcesToIncident_ShouldUpdateIncident_WhenFound() {
+        Incident incident = sampleIncident(10L);
+        when(repository.findById(10L)).thenReturn(Optional.of(incident));
+
+        List<ResourceAllocationItemDto> allocations = List.of(
+                new ResourceAllocationItemDto(101L, 2),
+                new ResourceAllocationItemDto(102L, 1)
+        );
+
+        service.assignResourcesToIncident(10L, allocations);
+
+        verify(repository).findById(10L);
+        verify(incidentResourceRepository).updateIncidentAfterResourceAssignment(incident, allocations);
+    }
+
+    @Test
+    void assignResourcesToIncident_ShouldThrow_WhenIncidentNotFound() {
+        when(repository.findById(404L)).thenReturn(Optional.empty());
+
+        List<ResourceAllocationItemDto> allocations = List.of(
+                new ResourceAllocationItemDto(201L, 2)
+        );
+
+        assertThatThrownBy(() -> service.assignResourcesToIncident(404L, allocations))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("404");
+
+        verify(repository).findById(404L);
+        verifyNoInteractions(incidentResourceRepository);
     }
 }

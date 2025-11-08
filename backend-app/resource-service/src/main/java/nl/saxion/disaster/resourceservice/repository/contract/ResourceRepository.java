@@ -12,11 +12,13 @@ public interface ResourceRepository {
 
     Optional<Resource> findById(Long id);
 
-    List<Resource> findAvailable();
+    List<Resource> findAllAvailableResources();
 
     List<Resource> findByType(ResourceType type);
 
     List<Resource> findByDepartment(Long departmentId);
+
+    List<Resource> findAvailableResourcesByTypeAndDepartment(String resourceType, Long departmentId, List<Long> departmentIds);
 
     Resource save(Resource resource);
 

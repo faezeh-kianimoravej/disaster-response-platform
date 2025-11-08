@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Repository
@@ -26,9 +27,9 @@ public class ResourceRepositoryImpl implements ResourceRepository {
     }
 
     @Override
-    public List<Resource> findAvailable() {
+    public List<Resource> findAllAvailableResources() {
         return entityManager.createQuery(
-                        "SELECT r FROM Resource r WHERE r.available = 1", Resource.class)
+                        "SELECT resource FROM Resource resource WHERE resource.available > 0", Resource.class)
                 .getResultList();
     }
 
@@ -47,6 +48,52 @@ public class ResourceRepositoryImpl implements ResourceRepository {
                 .setParameter("deptId", departmentId)
                 .getResultList();
     }
+
+    /*
+     * Fetches all available resources that match the given filters.
+     * - Only returns resources with available > 0 (at least one unit free).
+     * - Filters by resource type if provided.
+     * - Filters by a single departmentId OR by multiple departmentIds (from a municipality), if provided.
+     * - If no filters are provided, returns all available resources.
+     */
+    @Override
+    public List<Resource> findAvailableResourcesByTypeAndDepartment(
+            String resourceType,
+            Long departmentId,
+            List<Long> departmentIds) {
+
+        List<Long> safeDepartmentIds = (departmentIds == null)
+                ? List.of()
+                : departmentIds.stream().filter(Objects::nonNull).distinct().toList();
+
+        String queryStr = """
+        SELECT r FROM Resource r
+        WHERE r.available > 0
+          AND (:resourceType IS NULL OR r.resourceType = :resourceType)
+        """;
+
+        if (departmentId != null) {
+            queryStr += " AND r.departmentId = :departmentId";
+        } else if (!safeDepartmentIds.isEmpty()) {
+            queryStr += " AND r.departmentId IN :departmentIds";
+        }
+
+        var query = entityManager.createQuery(queryStr, Resource.class);
+
+        // Set parameters safely
+        query.setParameter("resourceType",
+                (resourceType != null && !resourceType.isBlank()) ? ResourceType.valueOf(resourceType) : null);
+
+        if (departmentId != null) {
+            query.setParameter("departmentId", departmentId);
+        } else if (!safeDepartmentIds.isEmpty()) {
+            query.setParameter("departmentIds", safeDepartmentIds);
+        }
+
+        return query.getResultList();
+    }
+
+
 
     @Override
     public Resource save(Resource resource) {

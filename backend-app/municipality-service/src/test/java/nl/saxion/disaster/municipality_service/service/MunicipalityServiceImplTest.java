@@ -166,4 +166,84 @@ class MunicipalityServiceImplTest {
         assertThat(result.get(0).name()).isEqualTo("Fire Department");
         verify(departmentClient).getDepartmentsByMunicipality(1L);
     }
+
+    @Test
+    void getMunicipalityBasicInfoById_shouldReturnBasicInfo_whenExists() {
+        when(repository.findMunicipalityById(1L)).thenReturn(Optional.of(sampleMunicipality));
+
+        var result = service.getMunicipalityBasicInfoById(1L);
+
+        assertThat(result).isPresent();
+        var dto = result.get();
+        assertThat(dto.id()).isEqualTo(sampleMunicipality.getMunicipalityId());
+        assertThat(dto.name()).isEqualTo(sampleMunicipality.getName());
+        assertThat(dto.departmentIds()).containsExactlyElementsOf(sampleMunicipality.getDepartmentIds());
+        verify(repository).findMunicipalityById(1L);
+    }
+
+    @Test
+    void getMunicipalityBasicInfoById_shouldReturnEmpty_whenNotFound() {
+        when(repository.findMunicipalityById(99L)).thenReturn(Optional.empty());
+
+        var result = service.getMunicipalityBasicInfoById(99L);
+
+        assertThat(result).isEmpty();
+        verify(repository).findMunicipalityById(99L);
+    }
+
+    @Test
+    void getMunicipalitySummaryListByRegionId_shouldReturnList_whenExists() {
+        when(repository.findMunicipalitiesByRegionId(10L)).thenReturn(List.of(sampleMunicipality));
+        MunicipalitySummaryDto summaryDto = new MunicipalitySummaryDto(1L, 10L, "Deventer", null);
+        when(mapper.toSummaryDto(sampleMunicipality)).thenReturn(summaryDto);
+
+        var result = service.getMunicipalitySummaryListByRegionId(10L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).name()).isEqualTo("Deventer");
+        verify(repository).findMunicipalitiesByRegionId(10L);
+    }
+
+    @Test
+    void getMunicipalitySummaryListByRegionId_shouldReturnEmptyList_whenNoneFound() {
+        when(repository.findMunicipalitiesByRegionId(99L)).thenReturn(Collections.emptyList());
+
+        var result = service.getMunicipalitySummaryListByRegionId(99L);
+
+        assertThat(result).isEmpty();
+        verify(repository).findMunicipalitiesByRegionId(99L);
+    }
+
+    @Test
+    void getMunicipalityDtoListByRegionId_shouldReturnList() {
+        when(repository.findMunicipalitiesByRegionId(10L)).thenReturn(List.of(sampleMunicipality));
+        when(mapper.toDto(sampleMunicipality)).thenReturn(sampleDto);
+
+        var result = service.getMunicipalityDtoListByRegionId(10L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).name()).isEqualTo("Deventer");
+        verify(repository).findMunicipalitiesByRegionId(10L);
+    }
+
+    @Test
+    void getDepartmentIdsByMunicipalityId_shouldReturnList_whenExists() {
+        when(repository.findMunicipalityById(1L)).thenReturn(Optional.of(sampleMunicipality));
+
+        var result = service.getDepartmentIdsByMunicipalityId(1L);
+
+        assertThat(result).containsExactlyElementsOf(sampleMunicipality.getDepartmentIds());
+        verify(repository).findMunicipalityById(1L);
+    }
+
+    @Test
+    void getDepartmentIdsByMunicipalityId_shouldThrow404_whenNotFound() {
+        when(repository.findMunicipalityById(404L)).thenReturn(Optional.empty());
+
+        assertThrows(org.springframework.web.server.ResponseStatusException.class, () ->
+                service.getDepartmentIdsByMunicipalityId(404L)
+        );
+
+        verify(repository).findMunicipalityById(404L);
+    }
 }

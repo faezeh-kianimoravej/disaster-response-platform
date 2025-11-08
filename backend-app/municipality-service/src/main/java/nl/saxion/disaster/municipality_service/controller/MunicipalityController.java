@@ -1,9 +1,12 @@
 package nl.saxion.disaster.municipality_service.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import nl.saxion.disaster.municipality_service.dto.DepartmentSummaryDto;
+import nl.saxion.disaster.municipality_service.dto.MunicipalityBasicDto;
 import nl.saxion.disaster.municipality_service.dto.MunicipalityDto;
 import nl.saxion.disaster.municipality_service.dto.MunicipalitySummaryDto;
 import nl.saxion.disaster.municipality_service.model.entity.Municipality;
@@ -12,7 +15,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 @Tag(
         name = "Municipality Management",
@@ -100,5 +105,60 @@ public class MunicipalityController {
     public ResponseEntity<List<MunicipalitySummaryDto>> getMunicipalitiesByRegion(@PathVariable Long regionId) {
         List<MunicipalitySummaryDto> municipalities = municipalityService.getMunicipalitySummaryListByRegionId(regionId);
         return ResponseEntity.ok(municipalities);
+    }
+
+
+    /**
+     * Returns basic municipality info including department IDs.
+     * <p>
+     * Used by other microservices such as <b>resource-service</b>
+     * to fetch minimal data (ID, name, and department IDs)
+     * for filtering resources or showing basic details.
+     * </p>
+     *
+     * @param id municipality ID
+     * @return {@link MunicipalityBasicDto} if found, otherwise 404 Not Found
+     */
+    @GetMapping("/{id}/basic")
+    @Operation(
+            summary = "Get basic municipality information (ID, name, department IDs)",
+            description = """
+                    Returns a lightweight DTO containing:
+                    - Municipality ID
+                    - Municipality name
+                    - List of department IDs
+                    
+                    Used for inter-service communication, e.g., by the Resource-Service
+                    when filtering resources by municipality.
+                    """
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Municipality basic information retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Municipality not found")
+    })
+    public ResponseEntity<MunicipalityBasicDto> getMunicipalityBasicInfo(@PathVariable Long id) {
+        MunicipalityDto municipalityDto = municipalityService.getMunicipalityById(id);
+
+        if (municipalityDto == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Extract only department IDs from DepartmentSummaryDto list
+        List<Long> departmentIds = municipalityDto.departments() != null
+                ? municipalityDto.departments().stream()
+                .map(DepartmentSummaryDto::departmentId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList()
+                : Collections.emptyList();
+
+        // Build a lightweight DTO for inter-service communication
+        var dto = new MunicipalityBasicDto(
+                municipalityDto.municipalityId(),
+                municipalityDto.name(),
+                departmentIds
+        );
+
+        return ResponseEntity.ok(dto);
     }
 }

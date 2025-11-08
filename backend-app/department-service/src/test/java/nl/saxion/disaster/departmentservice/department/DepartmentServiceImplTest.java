@@ -133,7 +133,7 @@ class DepartmentServiceImplTest {
     @Test
     void testGetResourcesOfDepartment_ShouldReturnList() {
         List<ResourceSummaryDto> mockResources = List.of(
-                new ResourceSummaryDto(1L, "Truck", null )
+                new ResourceSummaryDto(1L, "Truck", null)
         );
 
         when(departmentRepository.findDepartmentById(1L)).thenReturn(Optional.of(department));
@@ -153,5 +153,58 @@ class DepartmentServiceImplTest {
         assertThrows(DepartmentNotFoundException.class, () ->
                 departmentService.getResourcesOfDepartment(99L)
         );
+    }
+
+    @Test
+    void testGetDepartmentBasicInfoById_ShouldReturnBasicInfo_WhenExists() {
+        when(departmentRepository.findDepartmentById(1L)).thenReturn(Optional.of(department));
+
+        var result = departmentService.getDepartmentBasicInfoById(1L);
+
+        assertTrue(result.isPresent());
+        var dto = result.get();
+        assertEquals(department.getDepartmentId(), dto.departmentId());
+        assertEquals(department.getName(), dto.name());
+        assertEquals(department.getMunicipalityId(), dto.municipalityId());
+
+        verify(departmentRepository, times(1)).findDepartmentById(1L);
+    }
+
+    @Test
+    void testGetDepartmentBasicInfoById_ShouldReturnEmpty_WhenNotFound() {
+        when(departmentRepository.findDepartmentById(99L)).thenReturn(Optional.empty());
+
+        var result = departmentService.getDepartmentBasicInfoById(99L);
+
+        assertTrue(result.isEmpty());
+        verify(departmentRepository, times(1)).findDepartmentById(99L);
+    }
+
+    @Test
+    void testGetDepartmentsBasicInfoByMunicipalityId_ShouldReturnList() {
+        when(departmentRepository.findDepartmentByMunicipalityId(10L))
+                .thenReturn(List.of(department));
+
+        var result = departmentService.getDepartmentsBasicInfoByMunicipalityId(10L);
+
+        assertEquals(1, result.size());
+        var dto = result.get(0);
+        assertEquals(department.getDepartmentId(), dto.departmentId());
+        assertEquals(department.getName(), dto.name());
+        assertEquals(department.getMunicipalityId(), dto.municipalityId());
+
+        verify(departmentRepository, times(1)).findDepartmentByMunicipalityId(10L);
+    }
+
+    @Test
+    void testGetDepartmentsBasicInfoByMunicipalityId_ShouldReturnEmptyList_WhenNoneFound() {
+        when(departmentRepository.findDepartmentByMunicipalityId(999L))
+                .thenReturn(List.of());
+
+        var result = departmentService.getDepartmentsBasicInfoByMunicipalityId(999L);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(departmentRepository, times(1)).findDepartmentByMunicipalityId(999L);
     }
 }
