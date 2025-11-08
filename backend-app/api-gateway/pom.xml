@@ -5,19 +5,22 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <!--Inherit version and dependency management from backend-app -->
+    <!-- Use Spring Boot parent directly for independent microservice -->
     <parent>
-        <groupId>nl.saxion.disaster</groupId>
-        <artifactId>backend-app</artifactId>
-        <version>1.0.0-rc1</version>
-        <relativePath>../pom.xml</relativePath>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.5</version>
+        <relativePath/>
     </parent>
 
+    <groupId>nl.saxion.disaster</groupId>
     <artifactId>api-gateway</artifactId>
+    <version>${revision}</version>
     <name>API Gateway</name>
     <description>Gateway for routing requests and service discovery in DRCCS</description>
 
     <properties>
+        <revision>1.0.0-rc5</revision>
         <java.version>21</java.version>
         <spring-cloud.version>2023.0.3</spring-cloud.version>
     </properties>

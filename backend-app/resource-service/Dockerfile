@@ -2,6 +2,9 @@
 FROM eclipse-temurin:21-jdk-alpine AS build
 WORKDIR /workspace
 
+# Accept version as build argument
+ARG VERSION=1.0.0-SNAPSHOT
+
 # Install Maven (since this service doesn't use Maven wrapper)
 RUN apk add --no-cache maven
 
@@ -9,13 +12,13 @@ RUN apk add --no-cache maven
 COPY pom.xml ./
 
 # Download dependencies (cache layer)
-RUN mvn dependency:go-offline -DskipTests || true
+RUN mvn dependency:go-offline -Drevision=${VERSION} -DskipTests || true
 
 # Copy source
 COPY src ./src
 
 # Build the application
-RUN mvn clean package -DskipTests
+RUN mvn clean package -Drevision=${VERSION} -DskipTests
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine

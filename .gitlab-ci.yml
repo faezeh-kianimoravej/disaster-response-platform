@@ -89,7 +89,7 @@ image:api-gateway:
   script:
     - |
       IMAGE="$DOCKERHUB_USERNAME/disaster-response-api-gateway"
-      docker build -t "$IMAGE:$VERSION" backend-app/api-gateway
+      docker build --build-arg VERSION=$VERSION -t "$IMAGE:$VERSION" backend-app/api-gateway
       if [[ "$VERSION" != *"-rc"* ]]; then
         docker tag "$IMAGE:$VERSION" "$IMAGE:latest"
       fi
@@ -107,7 +107,7 @@ image:discovery-service:
   script:
     - |
       IMAGE="$DOCKERHUB_USERNAME/disaster-response-discovery-service"
-      docker build -t "$IMAGE:$VERSION" backend-app/discovery-service
+      docker build --build-arg VERSION=$VERSION -t "$IMAGE:$VERSION" backend-app/discovery-service
       if [[ "$VERSION" != *"-rc"* ]]; then
         docker tag "$IMAGE:$VERSION" "$IMAGE:latest"
       fi
@@ -121,7 +121,7 @@ image:department-service:
   script:
     - |
       IMAGE="$DOCKERHUB_USERNAME/disaster-response-department-service"
-      docker build -t "$IMAGE:$VERSION" backend-app/department-service
+      docker build --build-arg VERSION=$VERSION -t "$IMAGE:$VERSION" backend-app/department-service
       if [[ "$VERSION" != *"-rc"* ]]; then
         docker tag "$IMAGE:$VERSION" "$IMAGE:latest"
       fi
@@ -135,7 +135,7 @@ image:incident-service:
   script:
     - |
       IMAGE="$DOCKERHUB_USERNAME/disaster-response-incident-service"
-      docker build -t "$IMAGE:$VERSION" backend-app/incident-service
+      docker build --build-arg VERSION=$VERSION -t "$IMAGE:$VERSION" backend-app/incident-service
       if [[ "$VERSION" != *"-rc"* ]]; then
         docker tag "$IMAGE:$VERSION" "$IMAGE:latest"
       fi
@@ -149,7 +149,7 @@ image:municipality-service:
   script:
     - |
       IMAGE="$DOCKERHUB_USERNAME/disaster-response-municipality-service"
-      docker build -t "$IMAGE:$VERSION" backend-app/municipality-service
+      docker build --build-arg VERSION=$VERSION -t "$IMAGE:$VERSION" backend-app/municipality-service
       if [[ "$VERSION" != *"-rc"* ]]; then
         docker tag "$IMAGE:$VERSION" "$IMAGE:latest"
       fi
@@ -163,7 +163,7 @@ image:notification-service:
   script:
     - |
       IMAGE="$DOCKERHUB_USERNAME/disaster-response-notification-service"
-      docker build -t "$IMAGE:$VERSION" backend-app/notification-service
+      docker build --build-arg VERSION=$VERSION -t "$IMAGE:$VERSION" backend-app/notification-service
       if [[ "$VERSION" != *"-rc"* ]]; then
         docker tag "$IMAGE:$VERSION" "$IMAGE:latest"
       fi
@@ -177,7 +177,7 @@ image:region-service:
   script:
     - |
       IMAGE="$DOCKERHUB_USERNAME/disaster-response-region-service"
-      docker build -t "$IMAGE:$VERSION" backend-app/region-service
+      docker build --build-arg VERSION=$VERSION -t "$IMAGE:$VERSION" backend-app/region-service
       if [[ "$VERSION" != *"-rc"* ]]; then
         docker tag "$IMAGE:$VERSION" "$IMAGE:latest"
       fi
@@ -191,7 +191,7 @@ image:resource-service:
   script:
     - |
       IMAGE="$DOCKERHUB_USERNAME/disaster-response-resource-service"
-      docker build -t "$IMAGE:$VERSION" backend-app/resource-service
+      docker build --build-arg VERSION=$VERSION -t "$IMAGE:$VERSION" backend-app/resource-service
       if [[ "$VERSION" != *"-rc"* ]]; then
         docker tag "$IMAGE:$VERSION" "$IMAGE:latest"
       fi
@@ -205,7 +205,7 @@ image:user-service:
   script:
     - |
       IMAGE="$DOCKERHUB_USERNAME/disaster-response-user-service"
-      docker build -t "$IMAGE:$VERSION" backend-app/user-service
+      docker build --build-arg VERSION=$VERSION -t "$IMAGE:$VERSION" backend-app/user-service
       if [[ "$VERSION" != *"-rc"* ]]; then
         docker tag "$IMAGE:$VERSION" "$IMAGE:latest"
       fi
