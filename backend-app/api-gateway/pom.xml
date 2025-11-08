@@ -2,18 +2,20 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
+
+    <!--Inherit version and dependency management from backend-app -->
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.3</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <groupId>nl.saxion.disaster</groupId>
+        <artifactId>backend-app</artifactId>
+        <version>1.0.0</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>nl.saxion.disaster</groupId>
     <artifactId>api-gateway</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>api-gateway</name>
+    <name>API Gateway</name>
+    <description>Gateway for routing requests and service discovery in DRCCS</description>
 
     <properties>
         <java.version>21</java.version>
@@ -49,8 +51,7 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
-        <!-- LoadBalancer is brought transitively by SCG; keep Eureka client for discovery -->
-        
+
         <!-- Circuit Breaker for resilience -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>

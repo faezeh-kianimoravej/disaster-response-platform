@@ -2,18 +2,20 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
+
+    <!-- Inherit from backend-app -->
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.3</version>
-        <relativePath/>
+        <groupId>nl.saxion.disaster</groupId>
+        <artifactId>backend-app</artifactId>
+        <version>1.0.0</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>nl.saxion.disaster</groupId>
     <artifactId>discovery-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>discovery-service</name>
+    <name>Discovery Service</name>
+    <description>Service registry (Eureka Server) for DRCCS microservices.</description>
 
     <properties>
         <java.version>21</java.version>
@@ -33,14 +35,19 @@
     </dependencyManagement>
 
     <dependencies>
+        <!-- Eureka Server -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
         </dependency>
+
+        <!-- Actuator for health checks -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
+
+        <!-- Web starter -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
