@@ -34,6 +34,13 @@ export default function ResourceView({ resource, onEdit, onDelete, onBack }: Res
 							<strong>Type:</strong>{' '}
 							{RESOURCE_TYPES[resource.resourceType as keyof typeof RESOURCE_TYPES]}
 						</p>
+						<p>
+							<strong>Latitude:</strong> {resource.latitude != null ? resource.latitude : 'Not set'}
+						</p>
+						<p>
+							<strong>Longitude:</strong>{' '}
+							{resource.longitude != null ? resource.longitude : 'Not set'}
+						</p>
 					</div>
 				</div>
 			</div>

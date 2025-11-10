@@ -19,6 +19,8 @@ export interface ResourceFormData {
 	resourceType: string;
 	departmentId: number;
 	image: string;
+	latitude?: number | null;
+	longitude?: number | null;
 }
 
 export interface ResourceSearchResult extends Resource {
