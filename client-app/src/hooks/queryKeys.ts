@@ -11,16 +11,25 @@ export const MUNICIPALITY_QUERY_KEYS = {
 export const DEPARTMENT_QUERY_KEYS = {
 	list: (municipalityId: number) => ['departments', municipalityId] as const,
 	item: (departmentId: number) => ['department', departmentId] as const,
+	all: ['departments', 'all'] as const,
 };
 
 export const INCIDENT_QUERY_KEYS = {
 	list: (regionId: number) => ['incidents', regionId] as const,
 	item: (incidentId: number) => ['incident', incidentId] as const,
+	allocatedResources: (incidentId: number) =>
+		['incident', incidentId, 'allocated-resources'] as const,
 };
 
 export const RESOURCE_QUERY_KEYS = {
 	list: (departmentId: number) => ['resources', departmentId] as const,
 	item: (resourceId: number) => ['resource', resourceId] as const,
+	search: (
+		incidentId: number,
+		resourceType: string,
+		departmentId: string,
+		municipalityId: string
+	) => ['resources', 'search', incidentId, resourceType, departmentId, municipalityId] as const,
 };
 
 export const USER_QUERY_KEYS = {
