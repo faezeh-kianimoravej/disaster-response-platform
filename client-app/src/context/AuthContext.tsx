@@ -269,36 +269,56 @@ export function useUserHasAccessToRegion(regionId: number | null | undefined): b
 
 /**
  * Hook: useUserHasAccessToMunicipality
- * - Returns true if the current user has access to the given municipality either directly
- *   or via their region.
+ * - Returns access check result and loading state for the given municipality.
  */
-export function useUserHasAccessToMunicipality(municipalityId: number | null | undefined): boolean {
+export function useUserHasAccessToMunicipality(municipalityId: number | null | undefined): {
+	hasAccess: boolean;
+	loading: boolean;
+} {
 	const auth = useAuth();
-	const { municipality } = useMunicipality(municipalityId ?? undefined);
-	return userHasAccessToMunicipality(auth ?? null, municipalityId, municipality);
+	const { municipality, loading } = useMunicipality(municipalityId ?? undefined);
+	const hasAccess = userHasAccessToMunicipality(auth ?? null, municipalityId, municipality);
+	return { hasAccess, loading };
 }
 
 /**
  * Hook: useUserHasAccessToDepartment
- * - Returns true if the current user has access to the given department directly,
- *   via municipality ownership, or via region ownership.
+ * - Returns access check result and loading state for the given department.
  */
-export function useUserHasAccessToDepartment(departmentId: number | null | undefined): boolean {
+export function useUserHasAccessToDepartment(departmentId: number | null | undefined): {
+	hasAccess: boolean;
+	loading: boolean;
+} {
 	const auth = useAuth();
-	const { department } = useDepartment(departmentId ?? undefined);
-	const { municipality } = useMunicipality(department?.municipalityId ?? undefined);
-	return userHasAccessToDepartment(auth ?? null, departmentId, department, municipality);
+	const { department, loading: deptLoading } = useDepartment(departmentId ?? undefined);
+	const { municipality, loading: muniLoading } = useMunicipality(
+		department?.municipalityId ?? undefined
+	);
+	const hasAccess = userHasAccessToDepartment(auth ?? null, departmentId, department, municipality);
+	const loading = deptLoading || muniLoading;
+	return { hasAccess, loading };
 }
 
 /**
  * Hook: useUserHasAccessToResource
- * - Returns true if the current user has access to the given resource
- *   via department ownership, municipality ownership, or via region ownership.
+ * - Returns access check result and loading state for the given resource.
  */
-export function useUserHasAccessToResource(resourceId: number | null | undefined): boolean {
+export function useUserHasAccessToResource(resourceId: number | null | undefined): {
+	hasAccess: boolean;
+	loading: boolean;
+} {
 	const auth = useAuth();
-	const { resource } = useResource(resourceId ?? undefined);
-	const { department } = useDepartment(resource?.departmentId ?? undefined);
-	const { municipality } = useMunicipality(department?.municipalityId ?? undefined);
-	return userHasAccessToResource(auth ?? null, resource, department ?? null, municipality ?? null);
+	const { resource, loading: resLoading } = useResource(resourceId ?? undefined);
+	const { department, loading: deptLoading } = useDepartment(resource?.departmentId ?? undefined);
+	const { municipality, loading: muniLoading } = useMunicipality(
+		department?.municipalityId ?? undefined
+	);
+	const hasAccess = userHasAccessToResource(
+		auth ?? null,
+		resource,
+		department ?? null,
+		municipality ?? null
+	);
+	const loading = resLoading || deptLoading || muniLoading;
+	return { hasAccess, loading };
 }

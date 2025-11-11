@@ -10,6 +10,7 @@ import {
 	useUserHasAccessToResource,
 } from '@/context/AuthContext';
 import NotAuthorizedPage from '@/pages/NotAuthorizedPage';
+import LoadingPanel from '@/components/ui/LoadingPanel';
 import { Role, RoleType } from '@/types/role';
 import { routes } from '@/routes';
 
@@ -44,52 +45,48 @@ export default function AuthGuard({ children, ...opts }: Props) {
 	const isLoggedIn = useIsUserLoggedIn();
 	const location = useLocation();
 
+	const required = opts.requireRoles ?? [];
+	const hasAnyRole = useUserHasAnyRole(required);
+	const hasAllRoles = useUserHasAllRoles(required);
+	const hasRegionAccess = useUserHasAccessToRegion(opts.requireAccessToRegion);
+	const municipalityCheck = useUserHasAccessToMunicipality(opts.requireAccessToMunicipality);
+	const departmentCheck = useUserHasAccessToDepartment(opts.requireAccessToDepartment);
+	const resourceCheck = useUserHasAccessToResource(opts.requireAccessToResource);
+
 	if (!isLoggedIn) {
 		return (<Navigate to={routes.login()} replace state={{ from: location }} />) as JSX.Element;
 	}
 
-	const required = opts.requireRoles ?? [];
+	const isLoading = municipalityCheck.loading || departmentCheck.loading || resourceCheck.loading;
+
+	if (isLoading) {
+		return (<LoadingPanel text="Authenticating" />) as JSX.Element;
+	}
+
 	if (required.length > 0) {
 		const mode = opts.roleMode ?? 'any';
-		const hasAny = useUserHasAnyRole(required);
-		const hasAll = useUserHasAllRoles(required);
-		if (mode === 'all') {
-			if (!hasAll) {
-				return (<NotAuthorizedPage />) as JSX.Element;
-			}
-		} else {
-			if (!hasAny) {
-				return (<NotAuthorizedPage />) as JSX.Element;
-			}
+		if (mode === 'all' && !hasAllRoles) {
+			return (<NotAuthorizedPage />) as JSX.Element;
 		}
-	}
-
-	if (opts.requireAccessToRegion !== undefined) {
-		const hasRegionAccess = useUserHasAccessToRegion(opts.requireAccessToRegion);
-		if (!hasRegionAccess) {
+		if (mode === 'any' && !hasAnyRole) {
 			return (<NotAuthorizedPage />) as JSX.Element;
 		}
 	}
 
-	if (opts.requireAccessToMunicipality !== undefined) {
-		const hasMunicipalityAccess = useUserHasAccessToMunicipality(opts.requireAccessToMunicipality);
-		if (!hasMunicipalityAccess) {
-			return (<NotAuthorizedPage />) as JSX.Element;
-		}
+	if (opts.requireAccessToRegion !== undefined && !hasRegionAccess) {
+		return (<NotAuthorizedPage />) as JSX.Element;
 	}
 
-	if (opts.requireAccessToDepartment !== undefined) {
-		const hasDepartmentAccess = useUserHasAccessToDepartment(opts.requireAccessToDepartment);
-		if (!hasDepartmentAccess) {
-			return (<NotAuthorizedPage />) as JSX.Element;
-		}
+	if (opts.requireAccessToMunicipality !== undefined && !municipalityCheck.hasAccess) {
+		return (<NotAuthorizedPage />) as JSX.Element;
 	}
 
-	if (opts.requireAccessToResource !== undefined) {
-		const hasResourceAccess = useUserHasAccessToResource(opts.requireAccessToResource);
-		if (!hasResourceAccess) {
-			return (<NotAuthorizedPage />) as JSX.Element;
-		}
+	if (opts.requireAccessToDepartment !== undefined && !departmentCheck.hasAccess) {
+		return (<NotAuthorizedPage />) as JSX.Element;
+	}
+
+	if (opts.requireAccessToResource !== undefined && !resourceCheck.hasAccess) {
+		return (<NotAuthorizedPage />) as JSX.Element;
 	}
 
 	return children as JSX.Element;
