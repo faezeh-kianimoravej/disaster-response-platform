@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import FormInput from '@/components/forms/base/FormInput';
 import { getReadableResourceType } from '@/utils/resourceUtils';
 import { ResourceSearchResult } from '@/types/resource';
 
@@ -84,10 +85,10 @@ const ResourceTable: React.FC<ResourceTableProps> = ({
 							</td>
 							<td className="px-3 py-1 border-b border-gray-100 align-middle text-right">
 								<div className="flex flex-col items-end">
-									<input
+									<FormInput
+										label=""
+										name={`resource-${resource.resourceId}`}
 										type="number"
-										min={0}
-										max={resource.available}
 										value={allocationQuantities[String(resource.resourceId)] || ''}
 										onChange={e =>
 											handleChange(
@@ -96,18 +97,13 @@ const ResourceTable: React.FC<ResourceTableProps> = ({
 												resource.available
 											)
 										}
-										className={`w-16 border rounded px-1 py-0.5 text-right focus:outline-none focus:ring-2 ${
-											errors[String(resource.resourceId)]
-												? 'border-red-500 focus:ring-red-500'
-												: 'border-gray-300 focus:ring-blue-500'
-										}`}
-										style={{ height: '1.8rem' }}
+										min={0}
+										max={resource.available}
+										placeholder="0"
+										error={errors[String(resource.resourceId)]}
+										showValidation={!!errors[String(resource.resourceId)]}
+										className="w-16 text-sm"
 									/>
-									{errors[String(resource.resourceId)] && (
-										<span className="text-xs text-red-500 mt-1 text-right">
-											{errors[String(resource.resourceId)]}
-										</span>
-									)}
 								</div>
 							</td>
 						</tr>

@@ -12,6 +12,7 @@ import ResourceSearchForm from '@/components/views/ResourceSearchForm';
 import ResourceTable from '@/components/views/ResourceTable';
 import AllocationSummary from '@/components/views/AllocationSummary';
 import AuthGuard from '@/components/auth/AuthGuard';
+import LoadingPanel from '@/components/ui/LoadingPanel';
 import { useAuth } from '@/context/AuthContext';
 
 import { useParams, useNavigate } from 'react-router-dom';
@@ -170,11 +171,25 @@ const IncidentAllocateResourcePage = () => {
 			return false;
 		}
 
+		// Validate that quantities don't exceed available resources
+		const exceedsAvailableEntries = entries.filter(([resourceId, qty]) => {
+			const resource = searchResults.find(r => r.resourceId.toString() === resourceId);
+			return resource && qty > resource.available;
+		});
+
+		if (exceedsAvailableEntries.length > 0) {
+			showToast('Some quantities exceed available resources. Please check and try again.', 'error');
+			return false;
+		}
+
 		return true;
 	};
 
 	const handleFinalize = async () => {
-		if (!incidentIdNumber) return;
+		if (!incidentIdNumber) {
+			showToast('Invalid incident ID. Please try again.', 'error');
+			return;
+		}
 
 		if (!validateAllocations()) return;
 
@@ -205,8 +220,16 @@ const IncidentAllocateResourcePage = () => {
 		}
 	};
 
-	if (loading) return <div className="p-6">Loading...</div>;
-	if (!incident) return <div className="p-6">Incident not found</div>;
+	if (loading) return <LoadingPanel className="min-h-screen" text="Loading incident details..." />;
+	if (!incident)
+		return (
+			<div className="min-h-screen bg-gray-50 flex items-center justify-center">
+				<div className="text-center">
+					<h2 className="text-xl font-semibold text-gray-700 mb-2">Incident not found</h2>
+					<p className="text-gray-500">The requested incident could not be found.</p>
+				</div>
+			</div>
+		);
 
 	return (
 		<AuthGuard requireRoles={[...REGION_ROLES]} requireAccessToRegion={incident?.regionId}>
@@ -249,6 +272,21 @@ const IncidentAllocateResourcePage = () => {
 						</div>
 					</div>
 
+					{!hasExistingAllocations && (
+						<ResourceSearchForm
+							resourceTypes={resourceTypes}
+							departments={departments}
+							municipalities={municipalities}
+							selectedType={selectedType}
+							setSelectedType={setSelectedType}
+							selectedDepartment={selectedDepartment}
+							setSelectedDepartment={setSelectedDepartment}
+							selectedMunicipality={selectedMunicipality}
+							setSelectedMunicipality={setSelectedMunicipality}
+							onSearch={handleSearch}
+						/>
+					)}
+
 					<form
 						onSubmit={e => {
 							e.preventDefault();
@@ -284,23 +322,10 @@ const IncidentAllocateResourcePage = () => {
 							</>
 						) : (
 							<>
-								<ResourceSearchForm
-									resourceTypes={resourceTypes}
-									departments={departments}
-									municipalities={municipalities}
-									selectedType={selectedType}
-									setSelectedType={setSelectedType}
-									selectedDepartment={selectedDepartment}
-									setSelectedDepartment={setSelectedDepartment}
-									selectedMunicipality={selectedMunicipality}
-									setSelectedMunicipality={setSelectedMunicipality}
-									onSearch={handleSearch}
-								/>
-
 								<div className="flex flex-col md:flex-row gap-6 items-start w-full">
 									<div className="flex-1">
 										{searchResourcesLoading ? (
-											<p>Loading...</p>
+											<LoadingPanel text="Searching resources..." className="py-8" />
 										) : (
 											<ResourceTable
 												results={searchResults}
@@ -325,16 +350,30 @@ const IncidentAllocateResourcePage = () => {
 						<div className="mt-6 flex justify-end space-x-4">
 							<Button
 								type="submit"
-								variant={allocateResourcesMutation.isPending ? 'disabled' : 'success'}
-								className="px-4"
-								disabled={allocateResourcesMutation.isPending}
+								variant={
+									hasExistingAllocations || allocateResourcesMutation.isPending
+										? 'disabled'
+										: 'success'
+								}
+								className="px-6 py-2"
+								disabled={hasExistingAllocations || allocateResourcesMutation.isPending}
 							>
-								{allocateResourcesMutation.isPending ? 'Processing...' : 'Finalize Allocation'}
+								{allocateResourcesMutation.isPending ? (
+									<>
+										<span className="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></span>
+										Processing...
+									</>
+								) : hasExistingAllocations ? (
+									'Update Allocation'
+								) : (
+									'Finalize Allocation'
+								)}
 							</Button>
 							<Button
 								type="button"
 								variant="outline"
 								onClick={() => navigate(`/incidents/${incidentIdNumber}`)}
+								disabled={allocateResourcesMutation.isPending}
 							>
 								Cancel
 							</Button>

@@ -35,24 +35,13 @@ const ResourceSearchForm: React.FC<ResourceSearchFormProps> = ({
 		department?: string;
 	}>({});
 
-	const validateForm = () => {
-		const newErrors: typeof errors = {};
-
-		if (!selectedType && !selectedMunicipality && !selectedDepartment) {
-			newErrors.resourceType = 'Please select at least one filter';
-		}
-
-		setErrors(newErrors);
-		return Object.keys(newErrors).length === 0;
+	const handleSearch = (e?: React.MouseEvent<HTMLButtonElement>) => {
+		e?.preventDefault();
+		onSearch();
 	};
 
-	const handleSearch = () => {
-		if (validateForm()) {
-			onSearch();
-		}
-	};
 	return (
-		<div className="flex flex-col md:flex-row gap-4 mb-6 items-end">
+		<form className="flex flex-col md:flex-row gap-4 mb-6 items-end">
 			<div className="flex-1">
 				<FormInput
 					label="Resource Type"
@@ -61,7 +50,6 @@ const ResourceSearchForm: React.FC<ResourceSearchFormProps> = ({
 					value={selectedType}
 					onChange={e => {
 						setSelectedType(e.target.value);
-						// Clear errors when user makes a selection
 						if (e.target.value && errors.resourceType) {
 							setErrors(prev => {
 								const newErrors = { ...prev };
@@ -78,6 +66,7 @@ const ResourceSearchForm: React.FC<ResourceSearchFormProps> = ({
 					]}
 				/>
 			</div>
+
 			<div className="flex-1">
 				<FormInput
 					label="Municipality"
@@ -86,7 +75,6 @@ const ResourceSearchForm: React.FC<ResourceSearchFormProps> = ({
 					value={selectedMunicipality}
 					onChange={e => {
 						setSelectedMunicipality(e.target.value);
-						// Clear errors when user makes a selection
 						if (e.target.value && errors.municipality) {
 							setErrors(prev => {
 								const newErrors = { ...prev };
@@ -95,17 +83,16 @@ const ResourceSearchForm: React.FC<ResourceSearchFormProps> = ({
 							});
 						}
 					}}
-					error={errors.municipality}
-					showValidation={!!errors.municipality}
 					options={[
 						{ value: '', label: 'All' },
-						...municipalities.map((muni: Municipality) => ({
-							value: muni.municipalityId,
-							label: muni.name,
+						...municipalities.map((m: Municipality) => ({
+							value: m.municipalityId,
+							label: m.name,
 						})),
 					]}
 				/>
 			</div>
+
 			<div className="flex-1">
 				<FormInput
 					label="Department"
@@ -114,7 +101,6 @@ const ResourceSearchForm: React.FC<ResourceSearchFormProps> = ({
 					value={selectedDepartment}
 					onChange={e => {
 						setSelectedDepartment(e.target.value);
-						// Clear errors when user makes a selection
 						if (e.target.value && errors.department) {
 							setErrors(prev => {
 								const newErrors = { ...prev };
@@ -123,23 +109,22 @@ const ResourceSearchForm: React.FC<ResourceSearchFormProps> = ({
 							});
 						}
 					}}
-					error={errors.department}
-					showValidation={!!errors.department}
 					options={[
 						{ value: '', label: 'All' },
-						...departments.map((dept: Department) => ({
-							value: dept.departmentId,
-							label: dept.name,
+						...departments.map((d: Department) => ({
+							value: d.departmentId,
+							label: d.name,
 						})),
 					]}
 				/>
 			</div>
+
 			<div className="flex-shrink-0">
 				<Button type="button" variant="primary" className="w-full md:w-auto" onClick={handleSearch}>
 					Search
 				</Button>
 			</div>
-		</div>
+		</form>
 	);
 };
 

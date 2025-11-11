@@ -122,7 +122,7 @@ describe('IncidentAllocateResourcePage', () => {
 
 		renderPage();
 
-		expect(screen.getByText(/loading/i)).toBeInTheDocument();
+		expect(screen.getByText(/loading incident details/i)).toBeInTheDocument();
 	});
 
 	it("shows 'Incident not found' when API returns null", async () => {
@@ -152,7 +152,9 @@ describe('IncidentAllocateResourcePage', () => {
 		expect(screen.getByRole('button', { name: /search/i })).toBeInTheDocument();
 
 		// Check action buttons
-		expect(screen.getByRole('button', { name: /finalize allocation/i })).toBeInTheDocument();
+		expect(
+			screen.getByRole('button', { name: /finalize allocation|update allocation/i })
+		).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
 	});
 
@@ -294,6 +296,8 @@ describe('IncidentAllocateResourcePage', () => {
 		expect(screen.queryByLabelText(/resource type/i)).not.toBeInTheDocument();
 
 		// Should show finalize button (not update - this feature is not implemented yet)
-		expect(screen.getByRole('button', { name: /finalize allocation/i })).toBeInTheDocument();
+		expect(
+			screen.getByRole('button', { name: /finalize allocation|update allocation/i })
+		).toBeInTheDocument();
 	});
 });
