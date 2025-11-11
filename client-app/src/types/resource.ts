@@ -1,30 +1,48 @@
+export const RESOURCE_CATEGORIES = ['vehicle', 'equipment', 'consumable'] as const;
+export type ResourceCategory = (typeof RESOURCE_CATEGORIES)[number];
+
+export const RESOURCE_STATUSES = [
+	'available',
+	'deployed',
+	'maintenance',
+	'out_of_service',
+] as const;
+export type ResourceStatus = (typeof RESOURCE_STATUSES)[number];
+
 export interface Resource {
 	resourceId: number;
 	departmentId: number;
 	name: string;
 	description?: string;
-	quantity: number;
-	available: number;
+	category: ResourceCategory;
 	resourceType: string;
+
+	status: ResourceStatus;
+
+	totalQuantity?: number;
+	availableQuantity?: number;
+	unit?: 'pieces' | 'liters' | 'sets' | 'units';
+
+	isTrackable: boolean;
 	latitude?: number;
 	longitude?: number;
-	image: string;
+	lastLocationUpdate?: Date;
+
+	currentDeploymentId?: number;
+	deployedQuantity?: number;
+
+	image?: string;
 }
 
 export interface ResourceFormData {
 	name: string;
 	description?: string | null;
-	quantity: number;
-	available: number;
+	category: ResourceCategory;
 	resourceType: string;
 	departmentId: number;
-	image: string;
-	latitude?: number | null;
-	longitude?: number | null;
-}
-
-export interface ResourceSearchResult extends Resource {
-	department: string;
-	municipality: string;
-	distance: string;
+	totalQuantity?: number;
+	availableQuantity?: number;
+	unit?: string;
+	isTrackable: boolean;
+	image?: string;
 }
