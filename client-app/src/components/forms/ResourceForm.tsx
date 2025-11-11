@@ -51,6 +51,8 @@ export default function ResourceForm({
 			image:
 				initialData?.image ??
 				getImageForResourceType(initialData?.resourceType ?? 'FIELD_OPERATOR'),
+			latitude: initialData?.latitude ?? 52.16,
+			longitude: initialData?.longitude ?? 4.53,
 		}),
 		[initialData, departmentId]
 	);
@@ -149,17 +151,14 @@ export default function ResourceForm({
 		try {
 			const imageDataUrl = await toDataUrlIfDefault(values.image ?? '');
 			const payload: ResourceRequestValues = { ...values, image: imageDataUrl };
-			const payloadForApi = { ...payload, description: payload.description ?? null };
+
 			if (isNewResource) {
-				const created = await createMutation.mutateAsync({
-					...payloadForApi,
-					departmentId,
-				});
+				const created = await createMutation.mutateAsync(payload);
 				showSuccess(`Resource "${created.name}" has been created successfully!`);
 				navigate(routes.resources(departmentId));
 			} else if (initialData && (initialData.resourceId ?? null) !== null) {
 				const id = initialData.resourceId as number;
-				const updated = await updateMutation.mutateAsync({ id, data: payloadForApi });
+				const updated = await updateMutation.mutateAsync({ id, data: payload });
 				showSuccess(`Resource "${updated.name}" has been updated successfully!`);
 				onSaved?.();
 			}
@@ -194,6 +193,11 @@ export default function ResourceForm({
 							type="select"
 							options={createOptionsFromObject(RESOURCE_TYPES)}
 						/>
+					</div>
+
+					<div className="grid grid-cols-2 gap-3">
+						<RHFInput name="latitude" label="Latitude" type="number" placeholder="-90 to 90" />
+						<RHFInput name="longitude" label="Longitude" type="number" placeholder="-180 to 180" />
 					</div>
 
 					<div className="grid grid-cols-2 gap-3">

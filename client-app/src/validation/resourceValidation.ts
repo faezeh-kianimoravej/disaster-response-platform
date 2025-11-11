@@ -12,6 +12,16 @@ export const resourceRequestSchema = z
 		}),
 		departmentId: z.coerce.number().int().min(1, 'Department is required'),
 		image: z.string().min(1, 'Image is required'),
+		latitude: z
+			.number({ invalid_type_error: 'Latitude must be a number' })
+			.min(-90, 'Latitude must be >= -90')
+			.max(90, 'Latitude must be <= 90')
+			.optional(),
+		longitude: z
+			.number({ invalid_type_error: 'Longitude must be a number' })
+			.min(-180, 'Longitude must be >= -180')
+			.max(180, 'Longitude must be <= 180')
+			.optional(),
 	})
 	.superRefine((val, ctx) => {
 		if (val.available < 0 || val.available > val.quantity) {
