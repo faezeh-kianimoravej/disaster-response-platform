@@ -25,6 +25,31 @@ services:
       start_period: 20s
 
   # ==============================
+  # Keycloak Identity Server
+  # ==============================
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: keycloak
+    command: start-dev
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: disaster-admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: AdminSecure123!
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres-db:5432/postgres
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: 1234
+      KC_HEALTH_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
+    ports:
+      - "9090:8080"   # Use 9090 to avoid conflict with API Gateway on 8080
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    networks:
+      - backend-network
+    restart: always
+
+  # ==============================
   # Zookeeper
   # ==============================
   zookeeper:
@@ -331,3 +356,5 @@ networks:
 
 volumes:
   postgres_data:
+
+
