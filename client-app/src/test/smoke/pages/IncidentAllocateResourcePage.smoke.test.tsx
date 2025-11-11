@@ -122,7 +122,7 @@ describe('IncidentAllocateResourcePage', () => {
 
 		renderPage();
 
-		expect(screen.getByText(/loading incident details/i)).toBeInTheDocument();
+		expect(screen.getByText(/loading incident allocation details/i)).toBeInTheDocument();
 	});
 
 	it("shows 'Incident not found' when API returns null", async () => {

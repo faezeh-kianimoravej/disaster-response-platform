@@ -220,7 +220,8 @@ const IncidentAllocateResourcePage = () => {
 		}
 	};
 
-	if (loading) return <LoadingPanel className="min-h-screen" text="Loading incident details..." />;
+	if (loading)
+		return <LoadingPanel className="min-h-screen" text="Loading incident allocation details..." />;
 	if (!incident)
 		return (
 			<div className="min-h-screen bg-gray-50 flex items-center justify-center">
