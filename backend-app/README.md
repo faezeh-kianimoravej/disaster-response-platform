@@ -15,7 +15,7 @@ domain-specific microservices.
 
 ---
 
-## 🧑‍� Developer Quick Start
+## 🧑‍ Developer Quick Start
 
 ### Normal Start (Daily Use)
 
@@ -26,9 +26,9 @@ docker-compose up -d
 ### Fresh Rebuild (First Time / After Changes)
 
 ```powershell
+mvn clean package -DskipTests
 docker-compose down -v; docker-compose build --no-cache; docker-compose up -d
 ```
-
 
 **Use fresh rebuild when:**
 
@@ -36,6 +36,22 @@ docker-compose down -v; docker-compose build --no-cache; docker-compose up -d
 - After pulling changes
 - Old/stale Docker images
 - Database issues
+
+### After Making Code Changes
+
+**Option A: Rebuild and restart a specific service**
+
+```powershell
+mvn package -DskipTests -pl incident-service
+docker-compose restart incident-service
+```
+
+**Option B: Rebuild all services**
+
+```powershell
+mvn package -DskipTests
+docker-compose restart
+```
 
 ### Stop Services
 

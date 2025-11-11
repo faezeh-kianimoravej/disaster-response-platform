@@ -62,7 +62,7 @@ services:
   # Eureka Discovery Service
   # ==============================
   discovery-service:
-    build: ./discovery-service
+    image: eclipse-temurin:21-jre-alpine
     container_name: discovery-service
     ports:
       - "8761:8761"
@@ -71,13 +71,17 @@ services:
     depends_on:
       postgres-db:
         condition: service_healthy
+    volumes:
+      - ./discovery-service/target/discovery-service-1.0.0-dev.jar:/app/app.jar:ro
+    working_dir: /app
+    entrypoint: ["java", "-jar", "app.jar"]
     restart: on-failure
 
   # ==============================
   # API Gateway
   # ==============================
   api-gateway:
-    build: ./api-gateway
+    image: eclipse-temurin:21-jre-alpine
     container_name: api-gateway
     depends_on:
       discovery-service:
@@ -88,13 +92,17 @@ services:
       SPRING_PROFILES_ACTIVE: ${STACK_PROFILE:-local-docker}
     networks:
       - backend-network
+    volumes:
+      - ./api-gateway/target/api-gateway-1.0.0-dev.jar:/app/app.jar:ro
+    working_dir: /app
+    entrypoint: ["java", "-jar", "app.jar"]
     restart: on-failure
 
   # ==============================
   # Resource Service
   # ==============================
   resource-service:
-    build: ./resource-service
+    image: eclipse-temurin:21-jre-alpine
     container_name: resource-service
     depends_on:
       postgres-db:
@@ -107,13 +115,17 @@ services:
       SPRING_PROFILES_ACTIVE: ${STACK_PROFILE:-local-docker}
     networks:
       - backend-network
+    volumes:
+      - ./resource-service/target/resource-service-1.0.0-dev.jar:/app/app.jar:ro
+    working_dir: /app
+    entrypoint: ["java", "-jar", "app.jar"]
     restart: on-failure
 
   # ==============================
   # Department Service
   # ==============================
   department-service:
-    build: ./department-service
+    image: eclipse-temurin:21-jre-alpine
     container_name: department-service
     depends_on:
       postgres-db:
@@ -126,13 +138,17 @@ services:
       SPRING_PROFILES_ACTIVE: ${STACK_PROFILE:-local-docker}
     networks:
       - backend-network
+    volumes:
+      - ./department-service/target/department-service-1.0.0-dev.jar:/app/app.jar:ro
+    working_dir: /app
+    entrypoint: ["java", "-jar", "app.jar"]
     restart: on-failure
 
   # ==============================
   # Municipality Service
   # ==============================
   municipality-service:
-    build: ./municipality-service
+    image: eclipse-temurin:21-jre-alpine
     container_name: municipality-service
     depends_on:
       postgres-db:
@@ -147,13 +163,17 @@ services:
       SPRING_PROFILES_ACTIVE: ${STACK_PROFILE:-local-docker}
     networks:
       - backend-network
+    volumes:
+      - ./municipality-service/target/municipality-service-1.0.0-dev.jar:/app/app.jar:ro
+    working_dir: /app
+    entrypoint: ["java", "-jar", "app.jar"]
     restart: on-failure
 
   # ==============================
   # Region Service
   # ==============================
   region-service:
-    build: ./region-service
+    image: eclipse-temurin:21-jre-alpine
     container_name: region-service
     depends_on:
       postgres-db:
@@ -168,15 +188,17 @@ services:
       SPRING_PROFILES_ACTIVE: ${STACK_PROFILE:-local-docker}
     networks:
       - backend-network
+    volumes:
+      - ./region-service/target/region-service-1.0.0-dev.jar:/app/app.jar:ro
+    working_dir: /app
+    entrypoint: ["java", "-jar", "app.jar"]
     restart: on-failure
 
   # ==============================
   # Incident Service
   # ==============================
   incident-service:
-    build:
-      context: .
-      dockerfile: ./incident-service/Dockerfile
+    image: eclipse-temurin:21-jre-alpine
     container_name: incident-service
     depends_on:
       postgres-db:
@@ -191,15 +213,17 @@ services:
       SPRING_PROFILES_ACTIVE: ${STACK_PROFILE:-local-docker}
     networks:
       - backend-network
+    volumes:
+      - ./incident-service/target/incident-service-1.0.0-dev.jar:/app/app.jar:ro
+    working_dir: /app
+    entrypoint: ["java", "-jar", "app.jar"]
     restart: on-failure
 
   # ==============================
   # Notification Service
   # ==============================
   notification-service:
-    build:
-      context: .
-      dockerfile: ./notification-service/Dockerfile
+    image: eclipse-temurin:21-jre-alpine
     container_name: notification-service
     depends_on:
       postgres-db:
@@ -214,13 +238,17 @@ services:
       SPRING_PROFILES_ACTIVE: ${STACK_PROFILE:-local-docker}
     networks:
       - backend-network
+    volumes:
+      - ./notification-service/target/notification-service-1.0.0-dev.jar:/app/app.jar:ro
+    working_dir: /app
+    entrypoint: ["java", "-jar", "app.jar"]
     restart: on-failure
 
   # ==============================
   # User Service (WITH Eureka)
   # ==============================
   user-service:
-    build: ./user-service
+    image: eclipse-temurin:21-jre-alpine
     container_name: user-service
     depends_on:
       postgres-db:
@@ -235,6 +263,10 @@ services:
       SPRING_PROFILES_ACTIVE: ${STACK_PROFILE:-local-docker}
     networks:
       - backend-network
+    volumes:
+      - ./user-service/target/user-service-1.0.0-dev.jar:/app/app.jar:ro
+    working_dir: /app
+    entrypoint: ["java", "-jar", "app.jar"]
     restart: on-failure
 
 # ==============================

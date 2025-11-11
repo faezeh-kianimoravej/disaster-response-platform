@@ -3,7 +3,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Accept VERSION as build arg
-ARG VERSION=0.0.0-dev
+ARG VERSION=1.0.0-dev
 ENV VITE_APP_VERSION=$VERSION
 
 # Copy dependency manifests first for better layer caching

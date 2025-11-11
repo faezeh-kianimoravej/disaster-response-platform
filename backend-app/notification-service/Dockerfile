@@ -3,7 +3,7 @@ FROM eclipse-temurin:21-jdk-alpine AS build
 WORKDIR /workspace
 
 # Accept version as build argument
-ARG VERSION=1.0.0-SNAPSHOT
+ARG VERSION=1.0.0-dev
 
 # Copy Maven wrapper files for event-common
 COPY event-common/.mvn event-common/.mvn
