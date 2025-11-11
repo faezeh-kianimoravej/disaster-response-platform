@@ -147,18 +147,38 @@ const IncidentAllocateResourcePage = () => {
 		}
 	}, [allocatedResources]);
 
-	const handleFinalize = async () => {
-		if (!incidentIdNumber) return;
-
-		const entries = Object.entries(allocationQuantities).filter(([, qty]) => qty && qty > 0);
-
-		if (entries.length === 0) {
+	const validateAllocations = () => {
+		const entries = Object.entries(allocationQuantities);
+		const validEntries = entries.filter(([, qty]) => qty && qty > 0);
+		
+		// Check if we have any allocations
+		if (validEntries.length === 0) {
 			const message = hasExistingAllocations
 				? 'Please maintain at least one resource allocation.'
 				: 'Please allocate at least one resource before finalizing.';
 			showToast(message, 'error');
-			return;
+			return false;
 		}
+
+		// Check if all quantities are valid numbers
+		const invalidEntries = entries.filter(([, qty]) => 
+			qty && (isNaN(qty) || qty < 1 || !Number.isInteger(qty))
+		);
+		
+		if (invalidEntries.length > 0) {
+			showToast('Please enter valid quantities for all resources.', 'error');
+			return false;
+		}
+
+		return true;
+	};
+
+	const handleFinalize = async () => {
+		if (!incidentIdNumber) return;
+
+		if (!validateAllocations()) return;
+
+		const entries = Object.entries(allocationQuantities).filter(([, qty]) => qty && qty > 0);
 
 		const payload = entries.map(([resourceId, qty]) => ({
 			resourceId: Number(resourceId),

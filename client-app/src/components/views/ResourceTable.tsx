@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { getReadableResourceType } from '@/utils/resourceUtils';
 import { ResourceSearchResult } from '@/types/resource';
 
@@ -13,9 +13,30 @@ const ResourceTable: React.FC<ResourceTableProps> = ({
 	allocationQuantities,
 	setAllocationQuantities,
 }) => {
+	const [errors, setErrors] = useState<Record<string, string>>({});
+
 	const handleChange = (id: string, value: number, max: number) => {
-		const safeValue = Math.min(value, max);
-		setAllocationQuantities({ ...allocationQuantities, [id]: safeValue });
+		// Validation
+		let error = '';
+		if (isNaN(value) || value < 0) {
+			error = 'Must be a positive number';
+		} else if (value > max) {
+			error = `Cannot exceed available (${max})`;
+		} else if (!Number.isInteger(value)) {
+			error = 'Must be a whole number';
+		}
+
+		// Update errors
+		setErrors(prev => ({
+			...prev,
+			[id]: error,
+		}));
+
+		// Only update quantity if it's valid
+		if (!error) {
+			const safeValue = Math.max(0, Math.min(Math.floor(value), max));
+			setAllocationQuantities({ ...allocationQuantities, [id]: safeValue });
+		}
 	};
 
 	return (
@@ -62,21 +83,32 @@ const ResourceTable: React.FC<ResourceTableProps> = ({
 								{resource.distance}
 							</td>
 							<td className="px-3 py-1 border-b border-gray-100 align-middle text-right">
-								<input
-									type="number"
-									min={0}
-									max={resource.available}
-									value={allocationQuantities[String(resource.resourceId)] || ''}
-									onChange={e =>
-										handleChange(
-											String(resource.resourceId),
-											Number(e.target.value),
-											resource.available
-										)
-									}
-									className="w-12 border border-gray-300 rounded px-1 py-0.5 text-right focus:outline-none focus:ring-2 focus:ring-blue-500"
-									style={{ height: '1.8rem' }}
-								/>
+								<div className="flex flex-col items-end">
+									<input
+										type="number"
+										min={0}
+										max={resource.available}
+										value={allocationQuantities[String(resource.resourceId)] || ''}
+										onChange={e =>
+											handleChange(
+												String(resource.resourceId),
+												Number(e.target.value),
+												resource.available
+											)
+										}
+										className={`w-16 border rounded px-1 py-0.5 text-right focus:outline-none focus:ring-2 ${
+											errors[String(resource.resourceId)]
+												? 'border-red-500 focus:ring-red-500'
+												: 'border-gray-300 focus:ring-blue-500'
+										}`}
+										style={{ height: '1.8rem' }}
+									/>
+									{errors[String(resource.resourceId)] && (
+										<span className="text-xs text-red-500 mt-1 text-right">
+											{errors[String(resource.resourceId)]}
+										</span>
+									)}
+								</div>
 							</td>
 						</tr>
 					))}
