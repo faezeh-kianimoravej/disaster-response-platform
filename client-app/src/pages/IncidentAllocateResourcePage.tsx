@@ -150,7 +150,7 @@ const IncidentAllocateResourcePage = () => {
 	const validateAllocations = () => {
 		const entries = Object.entries(allocationQuantities);
 		const validEntries = entries.filter(([, qty]) => qty && qty > 0);
-		
+
 		// Check if we have any allocations
 		if (validEntries.length === 0) {
 			const message = hasExistingAllocations
@@ -161,10 +161,10 @@ const IncidentAllocateResourcePage = () => {
 		}
 
 		// Check if all quantities are valid numbers
-		const invalidEntries = entries.filter(([, qty]) => 
-			qty && (isNaN(qty) || qty < 1 || !Number.isInteger(qty))
+		const invalidEntries = entries.filter(
+			([, qty]) => qty && (isNaN(qty) || qty < 1 || !Number.isInteger(qty))
 		);
-		
+
 		if (invalidEntries.length > 0) {
 			showToast('Please enter valid quantities for all resources.', 'error');
 			return false;
@@ -331,7 +331,11 @@ const IncidentAllocateResourcePage = () => {
 							>
 								{allocateResourcesMutation.isPending ? 'Processing...' : 'Finalize Allocation'}
 							</Button>
-							<Button type="button" variant="outline" onClick={() => navigate(-1)}>
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => navigate(`/incidents/${incidentIdNumber}`)}
+							>
 								Cancel
 							</Button>
 						</div>

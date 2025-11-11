@@ -147,7 +147,6 @@ export async function allocateResourcesToIncident(
 	allocations: IncidentResourceAllocationRequest[]
 ): Promise<IncidentResourceAllocationResponse> {
 	const payload = allocations;
-	debugger;
 
 	// POST /incidents/{incidentId}/resources/allocate
 	return await incidentApi.post<IncidentResourceAllocationResponse>(

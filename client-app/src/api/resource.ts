@@ -75,7 +75,6 @@ export async function searchResources(
 	departmentId: string,
 	municipalityId: string
 ): Promise<ResourceSearchResult[]> {
-	debugger;
 	const params = new URLSearchParams();
 	const mappedType =
 		Object.keys(RESOURCE_TYPES).find(
@@ -88,6 +87,5 @@ export async function searchResources(
 	if (incidentId) params.append('incidentId', incidentId.toString());
 
 	const queryString = params.toString() ? `?${params.toString()}` : '';
-	debugger;
 	return await resourceApi.get<ResourceSearchResult[]>(`/available/nearest${queryString}`);
 }
