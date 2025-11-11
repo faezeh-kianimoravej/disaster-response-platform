@@ -1,7 +1,60 @@
-﻿import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import { renderWithProviders } from '@/test/utils';
 import AuthGuard from '@/components/auth/AuthGuard';
+
+// Mock the data-fetching hooks to prevent loading states
+vi.mock('@/hooks/useMunicipality', () => ({
+	useMunicipality: () => ({
+		municipality: null,
+		loading: false,
+		isFetching: false,
+		error: null,
+		refetch: vi.fn(),
+	}),
+	useMunicipalities: () => ({
+		municipalities: [],
+		loading: false,
+		isFetching: false,
+		error: null,
+		refetch: vi.fn(),
+		ensureMunicipalities: vi.fn(),
+	}),
+}));
+
+vi.mock('@/hooks/useDepartment', () => ({
+	useDepartment: () => ({
+		department: null,
+		loading: false,
+		error: null,
+		refetch: vi.fn(),
+		fetchDepartment: vi.fn(),
+	}),
+	useDepartments: () => ({
+		departments: [],
+		loading: false,
+		isFetching: false,
+		error: null,
+		refetch: vi.fn(),
+	}),
+}));
+
+vi.mock('@/hooks/useResource', () => ({
+	useResource: () => ({
+		resource: null,
+		loading: false,
+		error: null,
+		refetch: vi.fn(),
+		fetchResource: vi.fn(),
+	}),
+	useResources: () => ({
+		resources: [],
+		loading: false,
+		isFetching: false,
+		error: null,
+		refetch: vi.fn(),
+	}),
+}));
 
 describe('AuthGuard', () => {
 	describe('Basic Authentication', () => {
