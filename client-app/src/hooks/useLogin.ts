@@ -13,6 +13,8 @@ export function useLogin() {
 		setLoading(true);
 		setError(null);
 		try {
+			localStorage.removeItem('auth_token');
+			localStorage.removeItem('user_data');
 			const response = await apiLogin(email, password);
 
 			// Create a User object from the login response

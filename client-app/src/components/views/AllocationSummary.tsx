@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import FormInput from '@/components/forms/base/FormInput';
+import Button from '@/components/ui/Button';
 import { getReadableResourceType } from '@/utils/resourceUtils';
 
 interface AllocationSummaryProps {
@@ -95,9 +97,10 @@ const AllocationSummary: React.FC<AllocationSummaryProps> = ({
 								<div className="flex items-center justify-center">
 									{editable ? (
 										<>
-											<input
+											<FormInput
+												label=""
+												name={`allocation-${resourceId}`}
 												type="number"
-												min="0"
 												value={qty || ''}
 												onChange={e => {
 													const value = e.target.value;
@@ -106,11 +109,14 @@ const AllocationSummary: React.FC<AllocationSummaryProps> = ({
 													const numValue = value === '' ? 0 : parseInt(value, 10);
 													handleQuantityChange(resourceId, isNaN(numValue) ? 0 : numValue);
 												}}
-												className="w-12 text-xs border border-gray-300 rounded px-1 py-0.5 text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
+												min={0}
+												className="w-12 text-xs"
 											/>
-											<button
+											<Button
+												type="button"
+												variant="outline"
 												onClick={() => handleDelete(resourceId)}
-												className="text-red-500 hover:text-red-700 ml-1 p-0.5"
+												className="text-red-500 hover:text-red-700 ml-1 p-0.5 min-w-0 w-6 h-6"
 												title="Delete resource"
 											>
 												<svg
@@ -126,7 +132,7 @@ const AllocationSummary: React.FC<AllocationSummaryProps> = ({
 														d="M6 18L18 6M6 6l12 12"
 													/>
 												</svg>
-											</button>
+											</Button>
 										</>
 									) : (
 										<span className="font-medium text-center">{qty}</span>
@@ -137,12 +143,14 @@ const AllocationSummary: React.FC<AllocationSummaryProps> = ({
 					</ul>
 					{editable && hasChanges && (
 						<div className="mt-3 pt-3 border-t border-gray-300">
-							<button
+							<Button
+								type="button"
+								variant="primary"
 								onClick={handleSave}
-								className="w-full px-3 py-1.5 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+								className="w-full px-3 py-1.5 text-xs"
 							>
 								Save Changes
-							</button>
+							</Button>
 						</div>
 					)}
 				</>

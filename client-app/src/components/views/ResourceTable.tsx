@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import FormInput from '@/components/forms/base/FormInput';
 import { getReadableResourceType } from '@/utils/resourceUtils';
 import { ResourceSearchResult } from '@/types/resource';
 
@@ -13,9 +14,30 @@ const ResourceTable: React.FC<ResourceTableProps> = ({
 	allocationQuantities,
 	setAllocationQuantities,
 }) => {
+	const [errors, setErrors] = useState<Record<string, string>>({});
+
 	const handleChange = (id: string, value: number, max: number) => {
-		const safeValue = Math.min(value, max);
-		setAllocationQuantities({ ...allocationQuantities, [id]: safeValue });
+		// Validation
+		let error = '';
+		if (isNaN(value) || value < 0) {
+			error = 'Must be a positive number';
+		} else if (value > max) {
+			error = `Cannot exceed available (${max})`;
+		} else if (!Number.isInteger(value)) {
+			error = 'Must be a whole number';
+		}
+
+		// Update errors
+		setErrors(prev => ({
+			...prev,
+			[id]: error,
+		}));
+
+		// Only update quantity if it's valid
+		if (!error) {
+			const safeValue = Math.max(0, Math.min(Math.floor(value), max));
+			setAllocationQuantities({ ...allocationQuantities, [id]: safeValue });
+		}
 	};
 
 	return (
@@ -62,21 +84,27 @@ const ResourceTable: React.FC<ResourceTableProps> = ({
 								{resource.distance}
 							</td>
 							<td className="px-3 py-1 border-b border-gray-100 align-middle text-right">
-								<input
-									type="number"
-									min={0}
-									max={resource.available}
-									value={allocationQuantities[String(resource.resourceId)] || ''}
-									onChange={e =>
-										handleChange(
-											String(resource.resourceId),
-											Number(e.target.value),
-											resource.available
-										)
-									}
-									className="w-12 border border-gray-300 rounded px-1 py-0.5 text-right focus:outline-none focus:ring-2 focus:ring-blue-500"
-									style={{ height: '1.8rem' }}
-								/>
+								<div className="flex flex-col items-end">
+									<FormInput
+										label=""
+										name={`resource-${resource.resourceId}`}
+										type="number"
+										value={allocationQuantities[String(resource.resourceId)] || ''}
+										onChange={e =>
+											handleChange(
+												String(resource.resourceId),
+												Number(e.target.value),
+												resource.available
+											)
+										}
+										min={0}
+										max={resource.available}
+										placeholder="0"
+										error={errors[String(resource.resourceId)]}
+										showValidation={!!errors[String(resource.resourceId)]}
+										className="w-16 text-sm"
+									/>
+								</div>
 							</td>
 						</tr>
 					))}

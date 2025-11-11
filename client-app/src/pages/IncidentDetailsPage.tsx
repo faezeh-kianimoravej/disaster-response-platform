@@ -35,7 +35,7 @@ export default function IncidentDetailsPage() {
 						<div>
 							<h1 className="text-2xl font-bold">Incident details</h1>
 						</div>
-						<Button variant="outline" onClick={() => navigate(routes.home())}>
+						<Button variant="outline" onClick={() => navigate(routes.dashboard())}>
 							Back
 						</Button>
 					</div>

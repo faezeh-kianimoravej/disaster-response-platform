@@ -6,6 +6,7 @@ import {
 	addDepartment,
 	updateDepartment,
 	deleteDepartment,
+	getAllDepartments,
 } from '@/api/department';
 import type { Department, DepartmentFormData } from '@/types/department';
 import { DEPARTMENT_QUERY_KEYS } from '@/hooks/queryKeys';
@@ -114,4 +115,28 @@ export function useDeleteDepartment() {
 			queryClient.removeQueries({ queryKey: itemKey });
 		},
 	});
+}
+
+export function useAllDepartments(options?: { enabled?: boolean }) {
+	const enabled = options?.enabled ?? true;
+
+	const allQuery = useQuery<Department[], Error>({
+		queryKey: DEPARTMENT_QUERY_KEYS.all,
+		queryFn: () => getAllDepartments(),
+		enabled: enabled,
+		staleTime: 1000 * 60 * 10, // 10 minutes - departments don't change often
+	});
+
+	const { data, isLoading, isFetching, error, refetch } = allQuery;
+
+	return useMemo(
+		() => ({
+			departments: data ?? [],
+			loading: isLoading,
+			isFetching,
+			error: error?.message ?? null,
+			refetch,
+		}),
+		[data, isLoading, isFetching, error, refetch]
+	);
 }
