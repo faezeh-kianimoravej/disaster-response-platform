@@ -35,30 +35,12 @@ export interface DeploymentRequest {
 	targetDepartmentId: number;
 	priority: IncidentSeverity;
 
-	// Standard request: Request by unit type (default)
-	requestedUnitType?: ResponseUnitType;
-	requestedQuantity?: number;
-
-	// Custom request: Request specific resources/personnel (for non-standard incidents)
-	customResourceRequest?: {
-		resourceId: number;
-		quantity: number;
-	}[];
-	customPersonnelRequest?: {
-		specialization: ResponderSpecialization;
-		quantity: number;
-	}[];
+	// Request by unit type
+	requestedUnitType: ResponseUnitType;
+	requestedQuantity: number;
 
 	// Assignment by department officer
 	assignedUnitId?: number;
-	assignedCustomResources?: {
-		resourceId: number;
-		quantity: number;
-	}[];
-	assignedCustomPersonnel?: {
-		userId: number;
-		specialization: ResponderSpecialization;
-	}[];
 	assignedBy?: number;
 	assignedAt?: Date;
 
@@ -134,16 +116,8 @@ export interface DeploymentOrderFormData {
 	deploymentRequests: {
 		targetDepartmentId: number;
 		priority: IncidentSeverity;
-		requestedUnitType?: string;
-		requestedQuantity?: number;
-		customResourceRequest?: {
-			resourceId: number;
-			quantity: number;
-		}[];
-		customPersonnelRequest?: {
-			specialization: ResponderSpecialization;
-			quantity: number;
-		}[];
+		requestedUnitType: string;
+		requestedQuantity: number;
 		notes?: string;
 	}[];
 }
@@ -151,6 +125,6 @@ export interface DeploymentOrderFormData {
 // Cancel deployment
 export interface DeploymentCancellation {
 	deploymentId: number;
-	cancelledBy: number; // userId
+	cancelledBy: number;
 	reason: string;
 }
