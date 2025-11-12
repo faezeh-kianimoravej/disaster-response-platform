@@ -1,0 +1,35 @@
+# Retro 08 - Nov 12, 2025
+
+[**583984’s Team**](https://action.parabol.co/team/KRmYdIYySB) **— Nov 12, 2025**
+
+9 Topics - 0 New Tasks - 11 Reflections - 4 Participants
+
+- 🥇 **Prioritize Work-Life Balance**: The team raised concerns about weekend work impacting well-being. Senior management should consider revisiting project timelines and resource allocation to ensure the team isn’t overburdened, thereby sustaining team morale and long-term productivity.
+- 🥈 **Model-First User Stories**: There’s a recommendation to define a domain model or flow before crafting user stories. Facilitating structured planning sessions can enhance clarity and reduce ambiguity in requirements, potentially leading to more efficient development cycles.
+- 🥉 **Refine and Limit System Refactoring**: While iterative improvements are acknowledged, the team noted the need to “limit” continuous refactoring. Establishing clear guidelines or dedicated sprints for technical debt management could balance the pursuit of quality with progress on new features.
+
+## 7 Voted Topics
+
+- [**Successful Project Launch**](https://action.parabol.co/meet/LyJU2qN72g/discuss/1)\
+  4 Votes, 0 Tasks, 0 Comments, 3 Reflections
+- [**Refine and Limit**](https://action.parabol.co/meet/LyJU2qN72g/discuss/2)\
+  4 Votes, 0 Tasks, 0 Comments, 1 Reflection
+- [**Prioritize Work-Life Balance**](https://action.parabol.co/meet/LyJU2qN72g/discuss/3)\
+  3 Votes, 0 Tasks, 0 Comments, 1 Reflection
+- [**Model-First User Stories**](https://action.parabol.co/meet/LyJU2qN72g/discuss/4)\
+  3 Votes, 0 Tasks, 0 Comments, 1 Reflection
+- [**Centralized Artifact Management**](https://action.parabol.co/meet/LyJU2qN72g/discuss/5)\
+  2 Votes, 0 Tasks, 0 Comments, 1 Reflection
+- [**Clarity through Gherkin**](https://action.parabol.co/meet/LyJU2qN72g/discuss/6)\
+  2 Votes, 0 Tasks, 0 Comments, 1 Reflection
+- [**Domain Validation Strategies**](https://action.parabol.co/meet/LyJU2qN72g/discuss/7)\
+  2 Votes, 0 Tasks, 0 Comments, 1 Reflection
+
+## 4 Participants
+
+- Ben Vos
+- Furqan Malik
+- Faezeh Kiani
+- 583984
+
+# 
