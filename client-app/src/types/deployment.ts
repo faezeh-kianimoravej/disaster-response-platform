@@ -68,7 +68,7 @@ export interface Deployment {
 	deploymentId: number;
 	incidentId: number;
 	deploymentRequestId: number;
-	unitId?: number; // specific unit assigned by department officer (null for custom deployments)
+	responseUnitId: number;
 	status: DeploymentStatus;
 
 	// Actual deployed composition (may differ from unit defaults)
