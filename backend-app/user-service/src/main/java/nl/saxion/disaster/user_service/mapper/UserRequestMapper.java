@@ -6,6 +6,8 @@ import nl.saxion.disaster.user_service.mapper.contract.RequestMapper;
 import nl.saxion.disaster.user_service.model.entity.User;
 import nl.saxion.disaster.user_service.model.entity.UserRole;
 import org.springframework.stereotype.Component;
+import nl.saxion.disaster.user_service.dto.ResponderProfileDto;
+import nl.saxion.disaster.user_service.model.entity.ResponderProfile;
 
 import java.util.Collections;
 import java.util.List;
@@ -22,8 +24,8 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class UserRequestMapper implements RequestMapper<User, UserRequestDto> {
-
     private final RoleMapper roleMapper;
+    private final ResponderProfileMapper responderProfileMapper;
 
     @Override
     public Optional<User> toEntity(UserRequestDto dto) {
@@ -36,17 +38,29 @@ public class UserRequestMapper implements RequestMapper<User, UserRequestDto> {
                 .peek(role -> role.setDeleted(false))
                 .collect(Collectors.toSet());
 
-        User user = User.builder()
-                .firstName(dto.firstName())
-                .lastName(dto.lastName())
-                .email(dto.email())
-                .mobile(dto.mobile())
-                .password(dto.password())
-                .roles(userRoles)
-                .deleted(false)
-                .build();
+        boolean hasResponderRole = userRoles.stream().anyMatch(r -> r.getRoleType() != null && r.getRoleType().name().equals("RESPONDER"));
+        if (hasResponderRole && dto.responderProfile() == null) {
+            throw new IllegalArgumentException("A responder profile is required when assigning the RESPONDER role.");
+        }
 
-        userRoles.forEach(r -> r.setUser(user));
+        User user = User.builder()
+            .firstName(dto.firstName())
+            .lastName(dto.lastName())
+            .email(dto.email())
+            .mobile(dto.mobile())
+            .password(dto.password())
+            .roles(userRoles)
+            .deleted(false)
+            .build();
+
+    userRoles.forEach(r -> r.setUser(user));
+
+        ResponderProfileDto profileDto = dto.responderProfile();
+        if (profileDto != null) {
+            ResponderProfile profile = responderProfileMapper.toEntity(profileDto, user);
+            user.setResponderProfile(profile);
+        }
+
         return Optional.of(user);
     }
 

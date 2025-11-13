@@ -45,7 +45,17 @@ public class UserResponseMapper implements ResponseMapper<User, UserResponseDto>
                 roles,
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),
-                entity.getPasswordUpdatedAt()
+                entity.getPasswordUpdatedAt(),
+                entity.getResponderProfile() != null
+                    ? new nl.saxion.disaster.user_service.dto.ResponderProfileDto(
+                        entity.getResponderProfile().getUser() != null ? entity.getResponderProfile().getUser().getId() : null,
+                        entity.getResponderProfile().getDepartmentId(),
+                        entity.getResponderProfile().getPrimarySpecialization(),
+                        entity.getResponderProfile().getSecondarySpecializations(),
+                        entity.getResponderProfile().isAvailable(),
+                        entity.getResponderProfile().getCurrentDeploymentId()
+                    )
+                    : null
         ));
     }
 

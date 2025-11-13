@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -68,6 +69,10 @@ public class User {
      */
     @Column(name = "password_updated_at")
     private OffsetDateTime passwordUpdatedAt;
+
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private ResponderProfile responderProfile;
 
     @Transient
     private String previousPassword;

@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import nl.saxion.disaster.user_service.validation.OnCreate;
 import nl.saxion.disaster.user_service.validation.OnUpdate;
+import nl.saxion.disaster.user_service.dto.ResponderProfileDto;
 
 import java.util.Set;
 
@@ -46,6 +47,8 @@ public record UserRequestDto(
         String mobile,
 
         Set<RoleDto> roles,
+
+        ResponderProfileDto responderProfile,
 
         @NotBlank(message = "Password is required", groups = OnCreate.class)
         @Pattern.List({
