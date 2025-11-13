@@ -1,5 +1,7 @@
 package nl.saxion.disaster.deploymentservice.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -12,10 +14,12 @@ import java.util.List;
 public class DeploymentOrderCreateDTO {
     @NotNull
     @Min(1)
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long incidentId;
 
     @NotNull
     @Min(1)
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long orderedBy;
 
     @NotNull
@@ -30,6 +34,7 @@ public class DeploymentOrderCreateDTO {
     public static class Request {
         @NotNull
         @Min(1)
+        @JsonSerialize(using = ToStringSerializer.class)
         private Long targetDepartmentId;
 
         @NotNull

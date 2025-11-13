@@ -1,5 +1,7 @@
 package nl.saxion.disaster.deploymentservice.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -17,6 +19,7 @@ public class ResponseUnitCreateDTO {
 
     @NotNull
     @Min(1)
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long departmentId;
 
     @NotNull
@@ -28,13 +31,11 @@ public class ResponseUnitCreateDTO {
     @NotBlank
     private String status;
 
-    private Double latitude;
-    private Double longitude;
-
     @Data
     public static class DefaultResourceDTO {
         @NotNull
         @Min(1)
+        @JsonSerialize(using = ToStringSerializer.class)
         private Long resourceId;
 
         @NotNull
@@ -49,6 +50,7 @@ public class ResponseUnitCreateDTO {
     public static class DefaultPersonnelDTO {
         @NotNull
         @Min(1)
+        @JsonSerialize(using = ToStringSerializer.class)
         private Long userId;
 
         @NotNull

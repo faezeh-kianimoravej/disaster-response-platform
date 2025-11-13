@@ -1,5 +1,7 @@
 package nl.saxion.disaster.deploymentservice.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.Data;
 import nl.saxion.disaster.deploymentservice.enums.DeploymentStatus;
 import nl.saxion.disaster.deploymentservice.enums.ResponderSpecialization;
@@ -10,9 +12,13 @@ import java.util.List;
 @Data
 public class DeploymentDTO {
 
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long deploymentId;
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long incidentId;
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long deploymentRequestId;
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long responseUnitId;
     private DeploymentStatus status;
 
@@ -35,18 +41,21 @@ public class DeploymentDTO {
 
     @Data
     public static class DeployedResourceDTO {
+        @JsonSerialize(using = ToStringSerializer.class)
         private Long resourceId;
         private int quantity;
     }
 
     @Data
     public static class DeployedPersonnelDTO {
+        @JsonSerialize(using = ToStringSerializer.class)
         private Long userId;
         private ResponderSpecialization specialization;
     }
 
     @Data
     public static class ConsumedResourceDTO {
+        @JsonSerialize(using = ToStringSerializer.class)
         private Long resourceId;
         private int quantityUsed;
     }
