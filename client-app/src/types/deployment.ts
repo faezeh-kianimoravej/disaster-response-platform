@@ -45,7 +45,6 @@ export interface DeploymentRequest {
 	assignedAt?: Date;
 
 	status: DeploymentRequestStatus;
-	notes?: string;
 }
 
 // Deployment Order - Coordinator's overall deployment plan for an incident
@@ -59,8 +58,7 @@ export interface DeploymentOrder {
 	deploymentRequests: DeploymentRequest[];
 
 	incidentSeverity: IncidentSeverity;
-	gripLevel: number;
-	instructions?: string;
+	notes?: string;
 }
 
 // Deployment - Active deployment of a specific response unit (after assignment)
@@ -109,16 +107,13 @@ export interface DeploymentOrderFormData {
 	incidentId: number;
 	orderedBy: number;
 	incidentSeverity: IncidentSeverity;
-	gripLevel: number;
-	instructions?: string;
+	notes?: string;
 
 	// List of requests to departments
 	deploymentRequests: {
 		targetDepartmentId: number;
-		priority: IncidentSeverity;
 		requestedUnitType: string;
 		requestedQuantity: number;
-		notes?: string;
 	}[];
 }
 

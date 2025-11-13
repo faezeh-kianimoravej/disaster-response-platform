@@ -2,6 +2,7 @@ package nl.saxion.disaster.deploymentservice.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import nl.saxion.disaster.deploymentservice.enums.DeploymentStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,8 +25,9 @@ public class Deployment {
     @Column(nullable = false)
     private Long responseUnitId;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status;
+    private DeploymentStatus status;
 
     @ElementCollection
     @CollectionTable(name = "deployment_deployed_resources", joinColumns = @JoinColumn(name = "deployment_id"))

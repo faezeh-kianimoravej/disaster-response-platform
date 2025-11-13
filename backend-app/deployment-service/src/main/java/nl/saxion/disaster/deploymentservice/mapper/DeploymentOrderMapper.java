@@ -27,8 +27,7 @@ public class DeploymentOrderMapper implements BaseMapper<DeploymentOrder, Deploy
         dto.setOrderedBy(entity.getOrderedBy());
         dto.setOrderedAt(entity.getOrderedAt());
         dto.setIncidentSeverity(entity.getIncidentSeverity());
-        dto.setGripLevel(entity.getGripLevel());
-        dto.setInstructions(entity.getInstructions());
+        dto.setNotes(entity.getNotes());
 
         List<DeploymentRequest> reqs = entity.getDeploymentRequests();
         dto.setDeploymentRequests(reqs == null
@@ -47,8 +46,7 @@ public class DeploymentOrderMapper implements BaseMapper<DeploymentOrder, Deploy
         entity.setOrderedBy(dto.getOrderedBy());
         entity.setOrderedAt(dto.getOrderedAt());
         entity.setIncidentSeverity(dto.getIncidentSeverity());
-        entity.setGripLevel(dto.getGripLevel());
-        entity.setInstructions(dto.getInstructions());
+        entity.setNotes(dto.getNotes());
 
         List<DeploymentRequestDTO> reqDtos = dto.getDeploymentRequests();
         entity.setDeploymentRequests(reqDtos == null

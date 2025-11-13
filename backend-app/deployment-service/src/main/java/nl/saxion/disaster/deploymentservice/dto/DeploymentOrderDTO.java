@@ -1,6 +1,7 @@
 package nl.saxion.disaster.deploymentservice.dto;
 
 import lombok.Data;
+import nl.saxion.disaster.deploymentservice.enums.IncidentSeverity;
 
 import java.util.Date;
 import java.util.List;
@@ -14,7 +15,6 @@ public class DeploymentOrderDTO {
     private Date orderedAt;
 
     private List<DeploymentRequestDTO> deploymentRequests;
-    private String incidentSeverity;
-    private int gripLevel;
-    private String instructions;
+    private IncidentSeverity incidentSeverity;
+    private String notes;
 }

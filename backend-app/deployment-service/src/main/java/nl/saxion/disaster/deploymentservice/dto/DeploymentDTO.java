@@ -1,6 +1,7 @@
 package nl.saxion.disaster.deploymentservice.dto;
 
 import lombok.Data;
+import nl.saxion.disaster.deploymentservice.enums.DeploymentStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,7 +13,7 @@ public class DeploymentDTO {
     private Long incidentId;
     private Long deploymentRequestId;
     private Long responseUnitId;
-    private String status;
+    private DeploymentStatus status;
 
     private List<DeployedResourceDTO> deployedResources;
     private List<DeployedPersonnelDTO> deployedPersonnel;

@@ -1,27 +1,27 @@
 package nl.saxion.disaster.deploymentservice.dto;
 
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import nl.saxion.disaster.deploymentservice.enums.IncidentSeverity;
+import nl.saxion.disaster.deploymentservice.enums.ResponseUnitType;
 
 import java.util.List;
 
 @Data
 public class DeploymentOrderCreateDTO {
     @NotNull
+    @Min(1)
     private Long incidentId;
 
     @NotNull
+    @Min(1)
     private Long orderedBy;
 
-    @NotBlank
-    private String incidentSeverity;
+    @NotNull
+    private IncidentSeverity incidentSeverity;
 
-    @Min(0)
-    private int gripLevel;
-
-    private String instructions;
+    private String notes;
 
     @NotNull
     private List<Request> deploymentRequests;
@@ -29,17 +29,13 @@ public class DeploymentOrderCreateDTO {
     @Data
     public static class Request {
         @NotNull
+        @Min(1)
         private Long targetDepartmentId;
 
-        @NotBlank
-        private String priority;
-
-        @NotBlank
-        private String requestedUnitType;
+        @NotNull
+        private ResponseUnitType requestedUnitType;
 
         @Min(1)
         private int requestedQuantity;
-
-        private String notes;
     }
 }

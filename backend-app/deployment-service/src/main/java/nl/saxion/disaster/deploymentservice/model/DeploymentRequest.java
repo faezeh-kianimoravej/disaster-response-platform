@@ -2,6 +2,9 @@ package nl.saxion.disaster.deploymentservice.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import nl.saxion.disaster.deploymentservice.enums.DeploymentRequestStatus;
+import nl.saxion.disaster.deploymentservice.enums.IncidentSeverity;
+import nl.saxion.disaster.deploymentservice.enums.ResponseUnitType;
 
 import java.util.Date;
 
@@ -31,11 +34,13 @@ public class DeploymentRequest {
     @Column(nullable = false)
     private Long targetDepartmentId;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String priority;
+    private IncidentSeverity priority;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String requestedUnitType;
+    private ResponseUnitType requestedUnitType;
 
     @Column(nullable = false)
     private int requestedQuantity;
@@ -44,8 +49,9 @@ public class DeploymentRequest {
     private Long assignedBy;
     private Date assignedAt;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status;
+    private DeploymentRequestStatus status;
 
     private String notes;
 }

@@ -1,4 +1,4 @@
-package nl.saxion.disaster.deploymentservice.repository.impl;
+package nl.saxion.disaster.deploymentservice.repository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;

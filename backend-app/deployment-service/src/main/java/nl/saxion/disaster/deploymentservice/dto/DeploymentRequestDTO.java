@@ -1,6 +1,9 @@
 package nl.saxion.disaster.deploymentservice.dto;
 
 import lombok.Data;
+import nl.saxion.disaster.deploymentservice.enums.DeploymentRequestStatus;
+import nl.saxion.disaster.deploymentservice.enums.IncidentSeverity;
+import nl.saxion.disaster.deploymentservice.enums.ResponseUnitType;
 
 import java.util.Date;
 
@@ -14,14 +17,14 @@ public class DeploymentRequestDTO {
     private Date requestedAt;
 
     private Long targetDepartmentId;
-    private String priority;
-    private String requestedUnitType;
+    private IncidentSeverity priority;
+    private ResponseUnitType requestedUnitType;
     private int requestedQuantity;
 
     private Long assignedUnitId;
     private Long assignedBy;
     private Date assignedAt;
 
-    private String status;
+    private DeploymentRequestStatus status;
     private String notes;
 }

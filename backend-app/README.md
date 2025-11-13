@@ -71,6 +71,10 @@ docker-compose down
 | Municipality Service | http://localhost:8082 | 8082 |
 | Region Service       | http://localhost:8083 | 8083 |
 | Incident Service     | http://localhost:8084 | 8084 |
+| Notification Service | http://localhost:8085 | 8085 |
+| User Service         | http://localhost:8086 | 8086 |
+| Resource Service     | http://localhost:8087 | 8087 |
+| Deployment Service   | http://localhost:8088 | 8088 |
 | PostgreSQL           | localhost:5432        | 5432 |
 
 ---

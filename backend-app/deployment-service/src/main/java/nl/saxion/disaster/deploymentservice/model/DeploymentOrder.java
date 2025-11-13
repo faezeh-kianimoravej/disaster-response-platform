@@ -2,6 +2,7 @@ package nl.saxion.disaster.deploymentservice.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import nl.saxion.disaster.deploymentservice.enums.IncidentSeverity;
 
 import java.util.Date;
 import java.util.List;
@@ -27,11 +28,9 @@ public class DeploymentOrder {
     @OneToMany(mappedBy = "deploymentOrder", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DeploymentRequest> deploymentRequests;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String incidentSeverity;
+    private IncidentSeverity incidentSeverity;
 
-    @Column(nullable = false)
-    private int gripLevel;
-
-    private String instructions;
+    private String notes;
 }

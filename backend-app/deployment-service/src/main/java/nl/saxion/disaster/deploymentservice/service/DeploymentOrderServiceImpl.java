@@ -1,4 +1,4 @@
-package nl.saxion.disaster.deploymentservice.service.impl;
+package nl.saxion.disaster.deploymentservice.service;
 
 import lombok.RequiredArgsConstructor;
 import nl.saxion.disaster.deploymentservice.dto.DeploymentOrderCreateDTO;
@@ -6,7 +6,8 @@ import nl.saxion.disaster.deploymentservice.dto.DeploymentOrderDTO;
 import nl.saxion.disaster.deploymentservice.mapper.DeploymentOrderMapper;
 import nl.saxion.disaster.deploymentservice.model.DeploymentOrder;
 import nl.saxion.disaster.deploymentservice.model.DeploymentRequest;
-import nl.saxion.disaster.deploymentservice.repository.contract.DeploymentOrderRepository; // changed import
+import nl.saxion.disaster.deploymentservice.enums.DeploymentRequestStatus;
+import nl.saxion.disaster.deploymentservice.repository.contract.DeploymentOrderRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,8 +30,7 @@ public class DeploymentOrderServiceImpl implements nl.saxion.disaster.deployment
         order.setOrderedBy(dto.getOrderedBy());
         order.setOrderedAt(new Date());
         order.setIncidentSeverity(dto.getIncidentSeverity());
-        order.setGripLevel(dto.getGripLevel());
-        order.setInstructions(dto.getInstructions());
+        order.setNotes(dto.getNotes());
 
         List<DeploymentRequest> requests = new ArrayList<>();
         Date now = new Date();
@@ -41,11 +41,11 @@ public class DeploymentOrderServiceImpl implements nl.saxion.disaster.deployment
             r.setRequestedBy(dto.getOrderedBy());
             r.setRequestedAt(now);
             r.setTargetDepartmentId(rq.getTargetDepartmentId());
-            r.setPriority(rq.getPriority());
+            r.setPriority(dto.getIncidentSeverity());
             r.setRequestedUnitType(rq.getRequestedUnitType());
             r.setRequestedQuantity(rq.getRequestedQuantity());
-            r.setStatus("pending");
-            r.setNotes(rq.getNotes());
+            r.setStatus(DeploymentRequestStatus.PENDING);
+            r.setNotes(dto.getNotes());
             requests.add(r);
         });
         order.setDeploymentRequests(requests);
