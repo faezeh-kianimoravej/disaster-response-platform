@@ -60,8 +60,9 @@ docker-compose up -d
 **Fresh rebuild** (first time / after changes):
 ```powershell
 cd backend-app
+docker-compose down -v
 mvn clean package -DskipTests
-docker-compose down -v; docker-compose build --no-cache; docker-compose up -d
+docker-compose build --no-cache; docker-compose up -d
 ```
 
 Access services:

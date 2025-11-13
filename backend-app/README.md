@@ -26,8 +26,9 @@ docker-compose up -d
 ### Fresh Rebuild (First Time / After Changes)
 
 ```powershell
+docker-compose down -v
 mvn clean package -DskipTests
-docker-compose down -v; docker-compose build --no-cache; docker-compose up -d
+docker-compose build --no-cache; docker-compose up -d
 ```
 
 **Use fresh rebuild when:**

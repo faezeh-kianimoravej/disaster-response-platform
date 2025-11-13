@@ -14,9 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 @Tag(
         name = "Resource Management",
@@ -29,18 +27,6 @@ import java.util.Map;
 public class ResourceController {
 
     private final ResourceService resourceService;
-
-    @Operation(
-            summary = "Get all resource types",
-            description = "Retrieve the list of available resource types with their names and descriptions. Useful for dropdowns or selection lists in the UI."
-    )
-    @GetMapping("/resource-types")
-    public ResponseEntity<List<Map<String, String>>> getAllResourceTypes() {
-        List<Map<String, String>> resourceTypes = Arrays.stream(ResourceType.values())
-                .map(type -> Map.of("name", type.name(), "description", type.getDescription()))
-                .toList();
-        return ResponseEntity.ok(resourceTypes);
-    }
 
     @Operation(
             summary = "Get resource by ID",
@@ -75,6 +61,15 @@ public class ResourceController {
     @GetMapping("/available")
     public ResponseEntity<List<ResourceDto>> getAvailableResources() {
         return ResponseEntity.ok(resourceService.getAvailableResources());
+    }
+
+    @Operation(
+        summary = "Get available resources by department",
+        description = "Retrieve all resources that are currently available for a specific department."
+    )
+    @GetMapping("/available/department/{departmentId}")
+    public ResponseEntity<List<ResourceDto>> getAvailableResourcesByDepartment(@PathVariable Long departmentId) {
+        return ResponseEntity.ok(resourceService.getAvailableResourcesByDepartment(departmentId));
     }
 
     @Operation(
@@ -124,58 +119,7 @@ public class ResourceController {
         resourceService.deleteResource(id);
         return ResponseEntity.noContent().build();
     }
-    // ----------------------------------------------------------------------------------------
-    // Get the 10 closest resources to the specified incident
-    // ----------------------------------------------------------------------------------------
 
-    @GetMapping("/available/nearest")
-    @Operation(
-            summary = "Search nearest available resources for an incident",
-            description = """
-                    Returns up to 10 nearest available resources of the specified type for a given incident.
-                    You can optionally filter by municipality or department.
-                    Results are sorted by distance.
-                    """
-    )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Available resources retrieved successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid parameters provided")
-    })
-    public ResponseEntity<List<ResourceSearchResponseDto>> getNearestResourcesForIncident(
-            @RequestParam(required = false) String resourceType,
-            @RequestParam Long incidentId,
-            @RequestParam(required = false) Long municipalityId,
-            @RequestParam(required = false) Long departmentId
-    ) {
-        var request = new ResourceSearchRequestDto(resourceType, incidentId, municipalityId, departmentId);
-        List<ResourceSearchResponseDto> results = resourceService.getNearestResourcesForIncident(request);
-        return ResponseEntity.ok(results);
-    }
-
-    // ----------------------------------------------------------------------------------------
-    // Allocate a list of resources to an incident
-    // ----------------------------------------------------------------------------------------
-
-    @PostMapping("/allocate")
-    @Operation(
-            summary = "Finalize resource allocation for an incident",
-            description = """
-                    Allocates selected resources to a given incident.
-                    Decreases their availability and notifies incident-service.
-                    """
-    )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Resources allocated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid data or unavailable resources")
-    })
-    public ResponseEntity<Void> allocateResourcesToIncident(@RequestBody ResourceAllocationRequestDto request) {
-        resourceService.allocateResourcesToIncident(request);
-        return ResponseEntity.ok().build();
-    }
-
-    // ----------------------------------------------------------------------------------------
-// Get basic information of a resource (for inter-service use)
-// ----------------------------------------------------------------------------------------
     @GetMapping("/{id}/basic")
     @Operation(
             summary = "Get basic resource info by ID (for inter-service use)",
@@ -190,17 +134,13 @@ public class ResourceController {
             @ApiResponse(responseCode = "404", description = "Resource not found")
     })
     public ResponseEntity<ResourceBasicDto> getResourceBasicInfoById(@PathVariable Long id) {
-        // Log the request for traceability
-        // Example: fetching resource info for cross-service communication
         log.info("Fetching basic info for resource ID: {}", id);
 
-        // Delegate the call to the service layer
         return resourceService.getResourceBasicInfoById(id)
-                .map(ResponseEntity::ok) // If found → return 200 OK with the DTO
+                .map(ResponseEntity::ok)
                 .orElseGet(() -> {
                     log.warn("Resource with ID {} not found", id);
-                    return ResponseEntity.notFound().build(); // If not found → return 404
+                    return ResponseEntity.notFound().build();
                 });
     }
-
 }

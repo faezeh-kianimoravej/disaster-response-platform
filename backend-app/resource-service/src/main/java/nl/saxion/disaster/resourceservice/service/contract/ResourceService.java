@@ -7,10 +7,12 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ResourceService {
-
+    
     Optional<ResourceDto> getResourceById(Long id);
-
+    
     List<ResourceDto> getAvailableResources();
+    
+    List<ResourceDto> getAvailableResourcesByDepartment(Long departmentId);
 
     List<ResourceDto> getResourcesByType(ResourceType type);
 
@@ -21,10 +23,6 @@ public interface ResourceService {
     ResourceDto editResource(Long id, ResourceDto resourceDetails);
 
     void deleteResource(Long id);
-
-    List<ResourceSearchResponseDto> getNearestResourcesForIncident(ResourceSearchRequestDto resourceSearchRequestDto);
-
-    void allocateResourcesToIncident(ResourceAllocationRequestDto request);
 
     Optional<ResourceBasicDto> getResourceBasicInfoById(Long id);
 
