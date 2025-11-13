@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.Data;
 import nl.saxion.disaster.deploymentservice.enums.ResponderSpecialization;
+import nl.saxion.disaster.deploymentservice.enums.ResponseUnitStatus;
 import nl.saxion.disaster.deploymentservice.enums.ResponseUnitType;
 
 import java.time.LocalDateTime;
@@ -24,7 +25,7 @@ public class ResponseUnitDTO {
     private List<CurrentResourceDTO> currentResources;
     private List<CurrentPersonnelDTO> currentPersonnel;
 
-    private String status;
+    private ResponseUnitStatus status;
     @JsonSerialize(using = ToStringSerializer.class)
     private Long currentDeploymentId;
 

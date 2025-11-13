@@ -3,6 +3,7 @@ package nl.saxion.disaster.deploymentservice.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import nl.saxion.disaster.deploymentservice.enums.ResponderSpecialization;
+import nl.saxion.disaster.deploymentservice.enums.ResponseUnitStatus;
 import nl.saxion.disaster.deploymentservice.enums.ResponseUnitType;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -45,8 +46,9 @@ public class ResponseUnit {
     @CollectionTable(name = "response_unit_current_personnel", joinColumns = @JoinColumn(name = "unit_id"))
     private List<CurrentPersonnel> currentPersonnel;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 40)
-    private String status;
+    private ResponseUnitStatus status;
 
     private Long currentDeploymentId;
 

@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import nl.saxion.disaster.deploymentservice.enums.ResponderSpecialization;
+import nl.saxion.disaster.deploymentservice.enums.ResponseUnitStatus;
 import nl.saxion.disaster.deploymentservice.enums.ResponseUnitType;
 
 import java.util.List;
@@ -28,8 +29,8 @@ public class ResponseUnitCreateDTO {
     private List<DefaultResourceDTO> defaultResources;
     private List<DefaultPersonnelDTO> defaultPersonnel;
 
-    @NotBlank
-    private String status;
+    @NotNull
+    private ResponseUnitStatus status;
 
     @Data
     public static class DefaultResourceDTO {

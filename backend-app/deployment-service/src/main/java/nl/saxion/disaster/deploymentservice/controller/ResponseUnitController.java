@@ -1,9 +1,14 @@
 package nl.saxion.disaster.deploymentservice.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import nl.saxion.disaster.deploymentservice.dto.ResponseUnitCreateDTO;
 import nl.saxion.disaster.deploymentservice.dto.ResponseUnitDTO;
+import nl.saxion.disaster.deploymentservice.dto.ResponseUnitSearchRequestDTO;
+import nl.saxion.disaster.deploymentservice.dto.ResponseUnitSearchResponseDTO;
 import nl.saxion.disaster.deploymentservice.service.contract.ResponseUnitService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -55,4 +60,24 @@ public class ResponseUnitController {
         responseUnitService.delete(unitId);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/search")
+    @Operation(
+            summary = "Search for available response units",
+            description = """
+                    Search for available response units based on unit type, location, and availability.
+                    Returns the closest 10 available units to the incident location, sorted by distance.
+                    Can filter by specific department or municipality.
+                    """
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Available units retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid search parameters")
+    })
+    public ResponseEntity<List<ResponseUnitSearchResponseDTO>> searchAvailableUnits(
+            @Valid @RequestBody ResponseUnitSearchRequestDTO request) {
+        List<ResponseUnitSearchResponseDTO> units = responseUnitService.searchAvailableUnits(request);
+        return ResponseEntity.ok(units);
+    }
 }
+

@@ -53,4 +53,12 @@ public class DeploymentOrderServiceImpl implements nl.saxion.disaster.deployment
         DeploymentOrder saved = orderRepository.save(order);
         return orderMapper.toDto(saved);
     }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public DeploymentOrderDTO getByIncidentId(Long incidentId) {
+        DeploymentOrder order = orderRepository.findByIncidentId(incidentId)
+                .orElseThrow(() -> new IllegalArgumentException("Deployment order not found for incident ID: " + incidentId));
+        return orderMapper.toDto(order);
+    }
 }

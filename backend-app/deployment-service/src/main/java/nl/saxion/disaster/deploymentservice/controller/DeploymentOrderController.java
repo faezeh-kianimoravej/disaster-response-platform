@@ -25,4 +25,11 @@ public class DeploymentOrderController {
         DeploymentOrderDTO created = deploymentOrderService.create(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
+
+    @Operation(summary = "Get deployment order by incident ID")
+    @GetMapping("/incident/{incidentId}")
+    public ResponseEntity<DeploymentOrderDTO> getByIncidentId(@PathVariable Long incidentId) {
+        DeploymentOrderDTO order = deploymentOrderService.getByIncidentId(incidentId);
+        return ResponseEntity.ok(order);
+    }
 }
