@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import FormShell from '@/components/forms/base/FormShell';
 import RHFInput from '@/components/forms/rhf/RHFInput';
 import { useToast } from '@/components/toast/ToastProvider';
+import ResponderProfileForm from '@/components/forms/ResponderProfileForm';
 
 import { useCreateUser, useUpdateUser } from '@/hooks/useUser';
 import { useMunicipalities } from '@/hooks/useMunicipality';
@@ -372,6 +373,12 @@ export default function UserForm({
 							<p className="text-red-500 text-sm mt-1">At least one role is required</p>
 						)}
 					</div>
+					{/* Responder Profile Section: only show if user has a Responder role */}
+					{selectedRoles.some(r => r.roleType === 'Responder') && (
+						<div className="mt-6">
+							<ResponderProfileForm />
+						</div>
+					)}
 				</div>
 			</div>
 		</FormShell>

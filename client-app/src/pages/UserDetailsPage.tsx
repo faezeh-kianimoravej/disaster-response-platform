@@ -139,6 +139,31 @@ function UserDetailsPageContent() {
 												</div>
 											</div>
 										</div>
+										{/* Responder Specialization */}
+										{user.responderProfile && (
+											<div className="md:col-span-2 mb-4">
+												<div className="text-gray-500 text-xs uppercase mb-2">
+													Responder Specialization
+												</div>
+												<div className="space-y-1">
+													<div>
+														<span className="font-medium">Primary:</span>{' '}
+														<span className="text-blue-800">
+															{user.responderProfile.primarySpecialization}
+														</span>
+													</div>
+													{user.responderProfile.secondarySpecializations &&
+														user.responderProfile.secondarySpecializations.length > 0 && (
+															<div>
+																<span className="font-medium">Secondary:</span>{' '}
+																<span className="text-blue-800">
+																	{user.responderProfile.secondarySpecializations.join(', ')}
+																</span>
+															</div>
+														)}
+												</div>
+											</div>
+										)}
 										<div className="flex flex-wrap gap-2 justify-end mt-8">
 											<Button variant="outline" onClick={() => navigate(-1)}>
 												Back

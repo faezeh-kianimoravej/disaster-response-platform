@@ -57,24 +57,24 @@ class DeploymentOrderServiceImplTest {
 
     @Test
     void testCreate() {
-        when(deploymentOrderRepository.save(any(DeploymentOrder.class))).thenReturn(deploymentOrder);
+        when(deploymentOrderRepository.saveDeploymentOrder(any(DeploymentOrder.class))).thenReturn(deploymentOrder);
         when(deploymentOrderMapper.toDto(deploymentOrder)).thenReturn(deploymentOrderDTO);
 
-        DeploymentOrderDTO result = deploymentOrderService.create(createDTO);
+        DeploymentOrderDTO result = deploymentOrderService.createDeploymentOrder(createDTO);
         assertThat(result).isNotNull();
         assertThat(result.getDeploymentOrderId()).isEqualTo(1L);
-        verify(deploymentOrderRepository).save(any(DeploymentOrder.class));
+        verify(deploymentOrderRepository).saveDeploymentOrder(any(DeploymentOrder.class));
     }
 
 
     @Test
     void testGetByIncidentId() {
-        when(deploymentOrderRepository.findByIncidentId(100L)).thenReturn(Optional.of(deploymentOrder));
+        when(deploymentOrderRepository.findDeploymentOrderByIncidentId(100L)).thenReturn(Optional.of(deploymentOrder));
         when(deploymentOrderMapper.toDto(deploymentOrder)).thenReturn(deploymentOrderDTO);
 
-        DeploymentOrderDTO result = deploymentOrderService.getByIncidentId(100L);
+        DeploymentOrderDTO result = deploymentOrderService.getDeploymentOrderByIncidentId(100L);
         assertThat(result).isNotNull();
         assertThat(result.getIncidentId()).isEqualTo(100L);
-        verify(deploymentOrderRepository).findByIncidentId(100L);
+        verify(deploymentOrderRepository).findDeploymentOrderByIncidentId(100L);
     }
 }

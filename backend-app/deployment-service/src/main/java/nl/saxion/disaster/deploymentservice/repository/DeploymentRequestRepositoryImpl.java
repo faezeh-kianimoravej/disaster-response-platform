@@ -18,7 +18,7 @@ public class DeploymentRequestRepositoryImpl implements DeploymentRequestReposit
     private EntityManager em;
 
     @Override
-    public DeploymentRequest save(DeploymentRequest request) {
+    public DeploymentRequest saveDeploymentRequest(DeploymentRequest request) {
         if (request.getRequestId() == null || request.getRequestId() == 0) {
             em.persist(request);
             return request;
@@ -27,7 +27,7 @@ public class DeploymentRequestRepositoryImpl implements DeploymentRequestReposit
     }
 
     @Override
-    public List<DeploymentRequest> saveAll(List<DeploymentRequest> requests) {
+    public List<DeploymentRequest> saveAllDeploymentRequests(List<DeploymentRequest> requests) {
         for (DeploymentRequest r : requests) {
             if (r.getRequestId() == null || r.getRequestId() == 0) {
                 em.persist(r);
@@ -39,12 +39,12 @@ public class DeploymentRequestRepositoryImpl implements DeploymentRequestReposit
     }
 
     @Override
-    public Optional<DeploymentRequest> findById(Long id) {
+    public Optional<DeploymentRequest> findDeploymentRequestById(Long id) {
         return Optional.ofNullable(em.find(DeploymentRequest.class, id));
     }
 
     @Override
-    public List<DeploymentRequest> findAllByOrderId(Long deploymentOrderId) {
+    public List<DeploymentRequest> findAllDeploymentRequestsByOrderId(Long deploymentOrderId) {
         return em.createQuery(
                 "SELECT r FROM DeploymentRequest r WHERE r.deploymentOrder.deploymentOrderId = :orderId",
                 DeploymentRequest.class)

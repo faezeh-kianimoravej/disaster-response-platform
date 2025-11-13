@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface ResponseUnitRepository extends JpaRepository<ResponseUnit, Long> {
-    List<ResponseUnit> findByDepartmentId(Long departmentId);
+    List<ResponseUnit> findResponseUnitByDepartmentId(Long departmentId);
 }

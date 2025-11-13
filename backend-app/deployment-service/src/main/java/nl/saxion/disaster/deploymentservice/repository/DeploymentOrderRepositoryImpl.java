@@ -18,7 +18,7 @@ public class DeploymentOrderRepositoryImpl implements DeploymentOrderRepository 
     private EntityManager em;
 
     @Override
-    public DeploymentOrder save(DeploymentOrder order) {
+    public DeploymentOrder saveDeploymentOrder(DeploymentOrder order) {
         if (order.getDeploymentOrderId() == null || order.getDeploymentOrderId() == 0) {
             em.persist(order);
             em.flush();
@@ -28,23 +28,23 @@ public class DeploymentOrderRepositoryImpl implements DeploymentOrderRepository 
     }
 
     @Override
-    public Optional<DeploymentOrder> findById(Long id) {
+    public Optional<DeploymentOrder> findDeploymentOrderById(Long id) {
         return Optional.ofNullable(em.find(DeploymentOrder.class, id));
     }
 
     @Override
-    public List<DeploymentOrder> findAll() {
+    public List<DeploymentOrder> findAllDeploymentOrders() {
         return em.createQuery("SELECT o FROM DeploymentOrder o", DeploymentOrder.class).getResultList();
     }
 
     @Override
-    public void deleteById(Long id) {
+    public void deleteDeploymentOrderById(Long id) {
         DeploymentOrder found = em.find(DeploymentOrder.class, id);
         if (found != null) em.remove(found);
     }
     
     @Override
-    public Optional<DeploymentOrder> findByIncidentId(Long incidentId) {
+    public Optional<DeploymentOrder> findDeploymentOrderByIncidentId(Long incidentId) {
         List<DeploymentOrder> results = em.createQuery(
                 "SELECT o FROM DeploymentOrder o WHERE o.incidentId = :incidentId",
                 DeploymentOrder.class)

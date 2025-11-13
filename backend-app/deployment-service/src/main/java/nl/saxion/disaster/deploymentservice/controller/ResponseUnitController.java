@@ -26,38 +26,38 @@ public class ResponseUnitController {
     private final ResponseUnitService responseUnitService;
 
     @PostMapping
-    public ResponseEntity<ResponseUnitDTO> create(@Valid @RequestBody ResponseUnitCreateDTO dto) {
-        ResponseUnitDTO created = responseUnitService.create(dto);
+    public ResponseEntity<ResponseUnitDTO> createResponseUnit(@Valid @RequestBody ResponseUnitCreateDTO dto) {
+        ResponseUnitDTO created = responseUnitService.createResponseUnit(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @GetMapping("/{unitId}")
-    public ResponseEntity<ResponseUnitDTO> getById(@PathVariable Long unitId) {
-        ResponseUnitDTO unit = responseUnitService.getById(unitId);
+    public ResponseEntity<ResponseUnitDTO> getResponseUnitById(@PathVariable Long unitId) {
+        ResponseUnitDTO unit = responseUnitService.getResponseUnitById(unitId);
         return ResponseEntity.ok(unit);
     }
 
     @GetMapping("/department/{departmentId}")
-    public ResponseEntity<List<ResponseUnitDTO>> getByDepartmentId(@PathVariable Long departmentId) {
-        List<ResponseUnitDTO> units = responseUnitService.getByDepartmentId(departmentId);
+    public ResponseEntity<List<ResponseUnitDTO>> getResponseUnitByDepartmentId(@PathVariable Long departmentId) {
+        List<ResponseUnitDTO> units = responseUnitService.getResponseUnitByDepartmentId(departmentId);
         return ResponseEntity.ok(units);
     }
 
     @GetMapping
-    public ResponseEntity<List<ResponseUnitDTO>> getAll() {
-        List<ResponseUnitDTO> units = responseUnitService.getAll();
+    public ResponseEntity<List<ResponseUnitDTO>> getAllResponseUnits() {
+        List<ResponseUnitDTO> units = responseUnitService.getAllResponseUnits();
         return ResponseEntity.ok(units);
     }
 
     @PutMapping("/{unitId}")
-    public ResponseEntity<ResponseUnitDTO> update(@PathVariable Long unitId, @Valid @RequestBody ResponseUnitCreateDTO dto) {
-        ResponseUnitDTO updated = responseUnitService.update(unitId, dto);
+    public ResponseEntity<ResponseUnitDTO> updateResponseUnit(@PathVariable Long unitId, @Valid @RequestBody ResponseUnitCreateDTO dto) {
+        ResponseUnitDTO updated = responseUnitService.updateResponseUnit(unitId, dto);
         return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{unitId}")
-    public ResponseEntity<Void> delete(@PathVariable Long unitId) {
-        responseUnitService.delete(unitId);
+    public ResponseEntity<Void> deleteResponseUnit(@PathVariable Long unitId) {
+        responseUnitService.deleteResponseUnit(unitId);
         return ResponseEntity.noContent().build();
     }
 
@@ -74,7 +74,7 @@ public class ResponseUnitController {
             @ApiResponse(responseCode = "200", description = "Available units retrieved successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid search parameters")
     })
-    public ResponseEntity<List<ResponseUnitSearchResponseDTO>> searchAvailableUnits(
+    public ResponseEntity<List<ResponseUnitSearchResponseDTO>> searchAvailableResponseUnits(
             @Valid @RequestBody ResponseUnitSearchRequestDTO request) {
         List<ResponseUnitSearchResponseDTO> units = responseUnitService.searchAvailableUnits(request);
         return ResponseEntity.ok(units);

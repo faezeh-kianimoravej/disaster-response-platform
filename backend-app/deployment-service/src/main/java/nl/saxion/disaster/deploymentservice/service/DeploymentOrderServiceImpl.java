@@ -24,7 +24,7 @@ public class DeploymentOrderServiceImpl implements nl.saxion.disaster.deployment
 
     @Override
     @Transactional
-    public DeploymentOrderDTO create(DeploymentOrderCreateDTO dto) {
+    public DeploymentOrderDTO createDeploymentOrder(DeploymentOrderCreateDTO dto) {
         DeploymentOrder order = new DeploymentOrder();
         order.setIncidentId(dto.getIncidentId());
         order.setOrderedBy(dto.getOrderedBy());
@@ -50,14 +50,14 @@ public class DeploymentOrderServiceImpl implements nl.saxion.disaster.deployment
         });
         order.setDeploymentRequests(requests);
 
-        DeploymentOrder saved = orderRepository.save(order);
+        DeploymentOrder saved = orderRepository.saveDeploymentOrder(order);
         return orderMapper.toDto(saved);
     }
     
     @Override
     @Transactional(readOnly = true)
-    public DeploymentOrderDTO getByIncidentId(Long incidentId) {
-        DeploymentOrder order = orderRepository.findByIncidentId(incidentId)
+    public DeploymentOrderDTO getDeploymentOrderByIncidentId(Long incidentId) {
+        DeploymentOrder order = orderRepository.findDeploymentOrderByIncidentId(incidentId)
                 .orElseThrow(() -> new IllegalArgumentException("Deployment order not found for incident ID: " + incidentId));
         return orderMapper.toDto(order);
     }

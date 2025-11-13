@@ -13,6 +13,62 @@ vi.mock('@/lib/axios', () => ({
 }));
 
 describe('User API (contract)', () => {
+	it('createUser - POST /users with responderProfile', async () => {
+		const payload: UserCreateFormData & {
+			responderProfile?: import('@/types/responderSpecialization').ResponderProfile;
+		} = {
+			firstName: 'Responder',
+			lastName: 'User',
+			email: 'responder@user.com',
+			mobile: '321',
+			password: 'StrongPw1!',
+			roles: [{ roleType: 'Responder', departmentId: 2, municipalityId: null, regionId: null }],
+			responderProfile: {
+				userId: 123,
+				departmentId: 2,
+				primarySpecialization: 'firefighter',
+				secondarySpecializations: ['paramedic', 'driver'],
+				isAvailable: true,
+				currentDeploymentId: 42,
+			},
+		};
+		// Simulate backend echoing responderProfile in response
+		vi.mocked(axios.post).mockResolvedValueOnce({ data: { ...payload, userId: 123 } });
+		const result = await createUser(payload);
+		const postCall = vi.mocked(axios.post).mock.calls[0];
+		expect(postCall).toBeDefined();
+		expect(result.responderProfile).toBeDefined();
+		expect(result.responderProfile?.primarySpecialization).toBe('firefighter');
+		expect(result.responderProfile?.secondarySpecializations).toContain('paramedic');
+	});
+
+	it('updateUser - PUT /users/:id with responderProfile', async () => {
+		const formData: UserEditFormData & {
+			responderProfile?: import('@/types/responderSpecialization').ResponderProfile;
+		} = {
+			userId: 55,
+			firstName: 'Upd',
+			lastName: 'Responder',
+			email: 'upd@responder.com',
+			mobile: '555',
+			password: 'StrongPw1!',
+			roles: [{ roleType: 'Responder', departmentId: 2, municipalityId: null, regionId: null }],
+			responderProfile: {
+				userId: 55,
+				departmentId: 2,
+				primarySpecialization: 'paramedic',
+				secondarySpecializations: ['firefighter'],
+				isAvailable: false,
+			},
+		};
+		vi.mocked(axios.put).mockResolvedValueOnce({ data: { id: 55, ...formData, deleted: false } });
+		const result = await updateUser(formData);
+		const putCall = vi.mocked(axios.put).mock.calls[0];
+		expect(putCall).toBeDefined();
+		expect(result.responderProfile).toBeDefined();
+		expect(result.responderProfile?.primarySpecialization).toBe('paramedic');
+		expect(result.responderProfile?.secondarySpecializations).toContain('firefighter');
+	});
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});

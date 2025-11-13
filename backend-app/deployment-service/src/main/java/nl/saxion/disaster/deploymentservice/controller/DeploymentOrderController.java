@@ -21,15 +21,15 @@ public class DeploymentOrderController {
 
     @Operation(summary = "Create a new deployment order")
     @PostMapping
-    public ResponseEntity<DeploymentOrderDTO> create(@Valid @RequestBody DeploymentOrderCreateDTO dto) {
-        DeploymentOrderDTO created = deploymentOrderService.create(dto);
+    public ResponseEntity<DeploymentOrderDTO> createDeploymentOrder(@Valid @RequestBody DeploymentOrderCreateDTO dto) {
+        DeploymentOrderDTO created = deploymentOrderService.createDeploymentOrder(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @Operation(summary = "Get deployment order by incident ID")
     @GetMapping("/incident/{incidentId}")
     public ResponseEntity<DeploymentOrderDTO> getByIncidentId(@PathVariable Long incidentId) {
-        DeploymentOrderDTO order = deploymentOrderService.getByIncidentId(incidentId);
+        DeploymentOrderDTO order = deploymentOrderService.getDeploymentOrderByIncidentId(incidentId);
         return ResponseEntity.ok(order);
     }
 }

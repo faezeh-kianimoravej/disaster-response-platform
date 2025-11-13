@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface DeploymentOrderRepository {
-    DeploymentOrder save(DeploymentOrder order);
-    Optional<DeploymentOrder> findById(Long id);
-    List<DeploymentOrder> findAll();
-    void deleteById(Long id);
-    Optional<DeploymentOrder> findByIncidentId(Long incidentId);
+    DeploymentOrder saveDeploymentOrder(DeploymentOrder order);
+    Optional<DeploymentOrder> findDeploymentOrderById(Long id);
+    List<DeploymentOrder> findAllDeploymentOrders();
+    void deleteDeploymentOrderById(Long id);
+    Optional<DeploymentOrder> findDeploymentOrderByIncidentId(Long incidentId);
 }

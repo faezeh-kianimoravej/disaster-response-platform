@@ -8,11 +8,11 @@ import nl.saxion.disaster.deploymentservice.dto.ResponseUnitSearchResponseDTO;
 import java.util.List;
 
 public interface ResponseUnitService {
-    ResponseUnitDTO create(ResponseUnitCreateDTO dto);
-    ResponseUnitDTO getById(Long unitId);
-    List<ResponseUnitDTO> getByDepartmentId(Long departmentId);
-    List<ResponseUnitDTO> getAll();
-    ResponseUnitDTO update(Long unitId, ResponseUnitCreateDTO dto);
-    void delete(Long unitId);
+    ResponseUnitDTO createResponseUnit(ResponseUnitCreateDTO dto);
+    ResponseUnitDTO getResponseUnitById(Long unitId);
+    List<ResponseUnitDTO> getResponseUnitByDepartmentId(Long departmentId);
+    List<ResponseUnitDTO> getAllResponseUnits();
+    ResponseUnitDTO updateResponseUnit(Long unitId, ResponseUnitCreateDTO dto);
+    void deleteResponseUnit(Long unitId);
     List<ResponseUnitSearchResponseDTO> searchAvailableUnits(ResponseUnitSearchRequestDTO request);
 }

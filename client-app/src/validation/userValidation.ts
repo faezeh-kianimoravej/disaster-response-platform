@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { ALL_ROLES, DEPARTMENT_ROLES, MUNICIPALITY_ROLES, REGION_ROLES } from '@/types/role';
+import { responderProfileSchema } from '@/validation/responderProfileValidation';
 
-// Validation schema for Role object
 const roleSchema = z
 	.object({
 		roleType: z.enum(ALL_ROLES),
@@ -97,16 +97,30 @@ const roleSchema = z
 		}
 	});
 
-// Shared base schema (without password) for user form
 const userBaseSchema = z.object({
 	firstName: z.string().min(2, 'First name must be at least 2 characters').max(50),
 	lastName: z.string().min(2, 'Last name must be at least 2 characters').max(50),
 	email: z.string().email('Invalid email address'),
 	mobile: z.string().regex(/^(\+\d{1,3})?\d{9,15}$/, 'Invalid mobile number format'),
 	roles: z.array(roleSchema).min(1, 'At least one role is required'),
+	responderProfile: responderProfileSchema.optional(),
 });
 
-// Strong password requirements used when a new password is provided
+function addResponderProfileCheck<T extends z.ZodTypeAny>(schema: T) {
+	return schema.superRefine((data: z.infer<T>, ctx) => {
+		const hasResponderRole =
+			Array.isArray(data.roles) &&
+			data.roles.some((r: { roleType: string }) => r.roleType === 'Responder');
+		if (hasResponderRole && !data.responderProfile) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: 'Responder profile is required for users with the Responder role',
+				path: ['responderProfile'],
+			});
+		}
+	});
+}
+
 const strongPassword = z
 	.string()
 	.min(8, 'Password must be at least 8 characters')
@@ -115,15 +129,16 @@ const strongPassword = z
 		'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
 	);
 
-// Schema for creating a user (password required)
-export const userCreateFormSchema = userBaseSchema.extend({
-	password: strongPassword,
-});
+export const userCreateFormSchema = addResponderProfileCheck(
+	userBaseSchema.extend({
+		password: strongPassword,
+	})
+);
 
-// Schema for editing a user (password optional; empty string allowed to keep current)
-export const userEditFormSchema = userBaseSchema.extend({
-	password: z.union([z.literal(''), strongPassword]),
-});
+export const userEditFormSchema = addResponderProfileCheck(
+	userBaseSchema.extend({
+		password: z.union([z.literal(''), strongPassword]),
+	})
+);
 
-// Type inference for the form (password is string in both cases)
 export type UserFormValues = z.infer<typeof userCreateFormSchema>;

@@ -38,7 +38,7 @@ public class ResponseUnitServiceImpl implements ResponseUnitService {
 
     @Override
     @Transactional
-    public ResponseUnitDTO create(ResponseUnitCreateDTO dto) {
+    public ResponseUnitDTO createResponseUnit(ResponseUnitCreateDTO dto) {
         ResponseUnit unit = new ResponseUnit();
         unit.setUnitName(dto.getUnitName());
         unit.setDepartmentId(dto.getDepartmentId());
@@ -96,7 +96,7 @@ public class ResponseUnitServiceImpl implements ResponseUnitService {
 
     @Override
     @Transactional(readOnly = true)
-    public ResponseUnitDTO getById(Long unitId) {
+    public ResponseUnitDTO getResponseUnitById(Long unitId) {
         ResponseUnit unit = responseUnitRepository.findById(unitId)
                 .orElseThrow(() -> new ResourceNotFoundException("Response unit", unitId));
         return responseUnitMapper.toDto(unit);
@@ -104,8 +104,8 @@ public class ResponseUnitServiceImpl implements ResponseUnitService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ResponseUnitDTO> getByDepartmentId(Long departmentId) {
-        List<ResponseUnit> units = responseUnitRepository.findByDepartmentId(departmentId);
+    public List<ResponseUnitDTO> getResponseUnitByDepartmentId(Long departmentId) {
+        List<ResponseUnit> units = responseUnitRepository.findResponseUnitByDepartmentId(departmentId);
         return units.stream()
                 .map(responseUnitMapper::toDto)
                 .collect(Collectors.toList());
@@ -113,7 +113,7 @@ public class ResponseUnitServiceImpl implements ResponseUnitService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ResponseUnitDTO> getAll() {
+    public List<ResponseUnitDTO> getAllResponseUnits() {
         List<ResponseUnit> units = responseUnitRepository.findAll();
         return units.stream()
                 .map(responseUnitMapper::toDto)
@@ -122,7 +122,7 @@ public class ResponseUnitServiceImpl implements ResponseUnitService {
 
     @Override
     @Transactional
-    public ResponseUnitDTO update(Long unitId, ResponseUnitCreateDTO dto) {
+    public ResponseUnitDTO updateResponseUnit(Long unitId, ResponseUnitCreateDTO dto) {
         ResponseUnit unit = responseUnitRepository.findById(unitId)
                 .orElseThrow(() -> new ResourceNotFoundException("Response unit", unitId));
 
@@ -163,7 +163,7 @@ public class ResponseUnitServiceImpl implements ResponseUnitService {
 
     @Override
     @Transactional
-    public void delete(Long unitId) {
+    public void deleteResponseUnit(Long unitId) {
         if (!responseUnitRepository.existsById(unitId)) {
             throw new ResourceNotFoundException("Response unit", unitId);
         }
@@ -201,7 +201,7 @@ public class ResponseUnitServiceImpl implements ResponseUnitService {
         List<ResponseUnit> units;
         if (!departmentIds.isEmpty()) {
             units = departmentIds.stream()
-                    .flatMap(deptId -> responseUnitRepository.findByDepartmentId(deptId).stream())
+                    .flatMap(deptId -> responseUnitRepository.findResponseUnitByDepartmentId(deptId).stream())
                     .filter(unit -> unit.getUnitType().equals(request.getUnitType()))
                     .filter(unit -> ResponseUnitStatus.AVAILABLE.equals(unit.getStatus()))
                     .collect(Collectors.toList());

@@ -18,17 +18,20 @@ type RHFSelectProps<
 	label: string;
 	options: Option<V>[];
 	valueType?: 'string' | 'number';
+	multiple?: boolean;
 } & Partial<
 	Omit<
 		Parameters<typeof FormInput>[0],
-		'label' | 'name' | 'value' | 'onChange' | 'options' | 'type'
+		'label' | 'name' | 'value' | 'onChange' | 'options' | 'type' | 'multiple'
 	>
 >;
 
 export default function RHFSelect<
 	TFormValues extends FieldValues,
 	V extends string | number = string | number,
->({ name, label, options, valueType, ...rest }: RHFSelectProps<TFormValues, V>) {
+>(props: RHFSelectProps<TFormValues, V>) {
+	const { name, label, options, valueType, multiple, ...rest } = props;
+	const multi = multiple ?? false;
 	const { control } = useFormContext<TFormValues>();
 	const inferredType = valueType ?? (typeof options?.[0]?.value === 'number' ? 'number' : 'string');
 
@@ -46,15 +49,29 @@ export default function RHFSelect<
 				<FormInput
 					label={label}
 					name={String(name)}
-					value={field.value as unknown as string | number}
+					value={
+						multi
+							? Array.isArray(field.value)
+								? field.value.map(String)
+								: []
+							: (field.value as unknown as string | number)
+					}
 					onChange={e => {
-						const raw = (e.target as HTMLSelectElement).value;
-						field.onChange(inferredType === 'number' ? Number(raw) : raw);
+						if (multi) {
+							const selected = Array.from((e.target as HTMLSelectElement).selectedOptions).map(
+								o => o.value
+							);
+							field.onChange(selected);
+						} else {
+							const raw = (e.target as HTMLSelectElement).value;
+							field.onChange(inferredType === 'number' ? Number(raw) : raw);
+						}
 					}}
 					type="select"
 					options={options as Array<{ value: string | number; label: string }>}
 					error={fieldState.error?.message ?? undefined}
 					showValidation={Boolean(fieldState.error)}
+					multiple={multi}
 					{...rest}
 				/>
 			)}

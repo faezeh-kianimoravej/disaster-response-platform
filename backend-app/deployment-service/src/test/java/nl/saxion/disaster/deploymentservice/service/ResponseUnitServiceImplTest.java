@@ -56,7 +56,7 @@ class ResponseUnitServiceImplTest {
         ResponseUnitCreateDTO createDTO = new ResponseUnitCreateDTO();
         when(responseUnitRepository.save(any(ResponseUnit.class))).thenReturn(responseUnit);
         when(responseUnitMapper.toDto(responseUnit)).thenReturn(responseUnitDTO);
-        ResponseUnitDTO result = responseUnitService.create(createDTO);
+        ResponseUnitDTO result = responseUnitService.createResponseUnit(createDTO);
         assertThat(result).isNotNull();
         assertThat(result.getUnitId()).isEqualTo(1L);
         verify(responseUnitRepository).save(any(ResponseUnit.class));
@@ -66,7 +66,7 @@ class ResponseUnitServiceImplTest {
     void testGetById() {
         when(responseUnitRepository.findById(1L)).thenReturn(Optional.of(responseUnit));
         when(responseUnitMapper.toDto(responseUnit)).thenReturn(responseUnitDTO);
-        ResponseUnitDTO result = responseUnitService.getById(1L);
+        ResponseUnitDTO result = responseUnitService.getResponseUnitById(1L);
         assertThat(result).isNotNull();
         assertThat(result.getUnitId()).isEqualTo(1L);
         verify(responseUnitRepository).findById(1L);
@@ -74,18 +74,18 @@ class ResponseUnitServiceImplTest {
 
     @Test
     void testGetByDepartmentId() {
-        when(responseUnitRepository.findByDepartmentId(10L)).thenReturn(List.of(responseUnit));
+        when(responseUnitRepository.findResponseUnitByDepartmentId(10L)).thenReturn(List.of(responseUnit));
         when(responseUnitMapper.toDto(responseUnit)).thenReturn(responseUnitDTO);
-        List<ResponseUnitDTO> result = responseUnitService.getByDepartmentId(10L);
+        List<ResponseUnitDTO> result = responseUnitService.getResponseUnitByDepartmentId(10L);
         assertThat(result).hasSize(1);
-        verify(responseUnitRepository).findByDepartmentId(10L);
+        verify(responseUnitRepository).findResponseUnitByDepartmentId(10L);
     }
 
     @Test
     void testGetAll() {
         when(responseUnitRepository.findAll()).thenReturn(List.of(responseUnit));
         when(responseUnitMapper.toDto(responseUnit)).thenReturn(responseUnitDTO);
-        List<ResponseUnitDTO> result = responseUnitService.getAll();
+        List<ResponseUnitDTO> result = responseUnitService.getAllResponseUnits();
         assertThat(result).hasSize(1);
         verify(responseUnitRepository).findAll();
     }
@@ -96,7 +96,7 @@ class ResponseUnitServiceImplTest {
         when(responseUnitRepository.findById(1L)).thenReturn(Optional.of(responseUnit));
         when(responseUnitRepository.save(any(ResponseUnit.class))).thenReturn(responseUnit);
         when(responseUnitMapper.toDto(responseUnit)).thenReturn(responseUnitDTO);
-        ResponseUnitDTO result = responseUnitService.update(1L, updateDTO);
+        ResponseUnitDTO result = responseUnitService.updateResponseUnit(1L, updateDTO);
         assertThat(result).isNotNull();
         assertThat(result.getUnitId()).isEqualTo(1L);
         verify(responseUnitRepository).save(any(ResponseUnit.class));
@@ -106,7 +106,7 @@ class ResponseUnitServiceImplTest {
     void testDelete() {
         when(responseUnitRepository.existsById(1L)).thenReturn(true);
         doNothing().when(responseUnitRepository).deleteById(1L);
-        responseUnitService.delete(1L);
+        responseUnitService.deleteResponseUnit(1L);
         verify(responseUnitRepository).deleteById(1L);
     }
 }
