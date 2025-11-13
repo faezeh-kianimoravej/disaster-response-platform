@@ -299,5 +299,15 @@ public class ResourceServiceImpl implements ResourceService {
                         resource.getDepartmentId()             // Department ID (Long)
                 ));
     }
+
+    @Override
+    public Optional<ResourceLocationDto> getResourceLocationById(Long id) {
+        return resourceRepository.findById(id)
+                .map(resource -> new ResourceLocationDto(
+                        resource.getResourceId(),
+                        resource.getLatitude() != null ? resource.getLatitude() : 0.0,
+                        resource.getLongitude() != null ? resource.getLongitude() : 0.0
+                ));
+    }
 }
 

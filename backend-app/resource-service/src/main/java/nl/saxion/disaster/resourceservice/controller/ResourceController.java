@@ -54,6 +54,21 @@ public class ResourceController {
     }
 
     @Operation(
+            summary = "Get resource location by ID",
+            description = "Retrieve only the location (latitude, longitude) of a specific resource by ID."
+    )
+    @GetMapping("/{id}/location")
+    public ResponseEntity<ResourceLocationDto> getResourceLocationById(@PathVariable Long id) {
+        log.info("Fetching location for resource ID: {}", id);
+        return resourceService.getResourceLocationById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> {
+                    log.warn("Resource with ID {} not found", id);
+                    return ResponseEntity.notFound().build();
+                });
+    }
+
+    @Operation(
             summary = "Get all available resources",
             description = "Retrieve all resources that are currently available and not assigned to any ongoing operation."
     )

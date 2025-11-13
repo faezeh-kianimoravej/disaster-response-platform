@@ -2,6 +2,8 @@ package nl.saxion.disaster.deploymentservice.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import nl.saxion.disaster.deploymentservice.enums.ResponderSpecialization;
+import nl.saxion.disaster.deploymentservice.enums.ResponseUnitType;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -23,8 +25,9 @@ public class ResponseUnit {
     @Column(nullable = false)
     private Long departmentId;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 60)
-    private String unitType;
+    private ResponseUnitType unitType;
 
     @ElementCollection
     @CollectionTable(name = "response_unit_default_resources", joinColumns = @JoinColumn(name = "unit_id"))
@@ -77,8 +80,9 @@ public class ResponseUnit {
     public static class DefaultPersonnelSlot {
         private Long userId;
 
+        @Enumerated(EnumType.STRING)
         @Column(nullable = false, length = 80)
-        private String specialization;
+        private ResponderSpecialization specialization;
 
         @Column(nullable = false)
         private Boolean isRequired;
@@ -103,7 +107,8 @@ public class ResponseUnit {
         @Column(nullable = false)
         private Long userId;
 
+        @Enumerated(EnumType.STRING)
         @Column(nullable = false, length = 80)
-        private String specialization;
+        private ResponderSpecialization specialization;
     }
 }

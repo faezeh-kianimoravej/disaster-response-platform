@@ -27,4 +27,6 @@ public interface ResourceService {
     void allocateResourcesToIncident(ResourceAllocationRequestDto request);
 
     Optional<ResourceBasicDto> getResourceBasicInfoById(Long id);
+
+    Optional<ResourceLocationDto> getResourceLocationById(Long id);
 }

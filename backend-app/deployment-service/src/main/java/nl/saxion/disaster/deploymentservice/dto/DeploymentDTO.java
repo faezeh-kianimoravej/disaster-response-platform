@@ -2,6 +2,7 @@ package nl.saxion.disaster.deploymentservice.dto;
 
 import lombok.Data;
 import nl.saxion.disaster.deploymentservice.enums.DeploymentStatus;
+import nl.saxion.disaster.deploymentservice.enums.ResponderSpecialization;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -41,7 +42,7 @@ public class DeploymentDTO {
     @Data
     public static class DeployedPersonnelDTO {
         private Long userId;
-        private String specialization;
+        private ResponderSpecialization specialization;
     }
 
     @Data

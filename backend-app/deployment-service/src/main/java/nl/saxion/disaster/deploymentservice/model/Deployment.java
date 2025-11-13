@@ -3,6 +3,7 @@ package nl.saxion.disaster.deploymentservice.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import nl.saxion.disaster.deploymentservice.enums.DeploymentStatus;
+import nl.saxion.disaster.deploymentservice.enums.ResponderSpecialization;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -74,8 +75,9 @@ public class Deployment {
         @Column(nullable = false)
         private Long userId;
 
+        @Enumerated(EnumType.STRING)
         @Column(nullable = false, length = 80)
-        private String specialization;
+        private ResponderSpecialization specialization;
     }
 
     @Embeddable

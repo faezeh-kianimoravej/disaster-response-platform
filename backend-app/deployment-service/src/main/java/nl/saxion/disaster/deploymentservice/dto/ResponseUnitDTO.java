@@ -1,6 +1,8 @@
 package nl.saxion.disaster.deploymentservice.dto;
 
 import lombok.Data;
+import nl.saxion.disaster.deploymentservice.enums.ResponderSpecialization;
+import nl.saxion.disaster.deploymentservice.enums.ResponseUnitType;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -10,7 +12,7 @@ public class ResponseUnitDTO {
     private Long unitId;
     private String unitName;
     private Long departmentId;
-    private String unitType;
+    private ResponseUnitType unitType;
 
     private List<DefaultResourceDTO> defaultResources;
     private List<DefaultPersonnelSlotDTO> defaultPersonnel;
@@ -38,7 +40,7 @@ public class ResponseUnitDTO {
     @Data
     public static class DefaultPersonnelSlotDTO {
         private Long userId;
-        private String specialization;
+        private ResponderSpecialization specialization;
         private Boolean isRequired;
     }
 
@@ -52,6 +54,6 @@ public class ResponseUnitDTO {
     @Data
     public static class CurrentPersonnelDTO {
         private Long userId;
-        private String specialization;
+        private ResponderSpecialization specialization;
     }
 }
