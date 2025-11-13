@@ -60,10 +60,10 @@ function DashboardPageContent(): JSX.Element {
 	};
 
 	const severityOrder: Record<Incident['severity'], number> = {
-		Critical: 4,
-		High: 3,
-		Medium: 2,
-		Low: 1,
+		CRITICAL: 4,
+		HIGH: 3,
+		MEDIUM: 2,
+		LOW: 1,
 	};
 
 	const visibleIncidents = (filteredIncidents ?? [])

@@ -6,16 +6,8 @@ import {
 	createIncident,
 	updateIncident,
 	deleteIncident,
-	getAllocatedResources,
-	allocateResourcesToIncident,
 } from '@/api/incident';
-import type {
-	Incident,
-	IncidentFormData,
-	IncidentResourceAllocationRequest,
-	IncidentResourceAllocationResponse,
-} from '@/types/incident';
-import type { ResourceSearchResult } from '@/types/resource';
+import type { Incident, IncidentFormData } from '@/types/incident';
 import { INCIDENT_QUERY_KEYS } from '@/hooks/queryKeys';
 
 export function useIncidents(regionId?: number, options?: { enabled?: boolean }) {
@@ -111,37 +103,3 @@ export function useDeleteIncident(regionId: number) {
 	});
 	return mutation;
 }
-
-// Hooks don't validate; forms do. Remove form-level validation helper in favor of zodResolver in forms.
-
-export const useAllocatedResources = (incidentId: number) => {
-	return useQuery<ResourceSearchResult[]>({
-		queryKey: INCIDENT_QUERY_KEYS.allocatedResources(incidentId),
-		queryFn: () => getAllocatedResources(incidentId),
-		staleTime: 5 * 60 * 1000, // 5 minutes
-		enabled: !!incidentId,
-	});
-};
-
-export const useAllocateResources = () => {
-	const queryClient = useQueryClient();
-
-	return useMutation<
-		IncidentResourceAllocationResponse,
-		Error,
-		{ incidentId: number; allocations: IncidentResourceAllocationRequest[] }
-	>({
-		mutationFn: ({ incidentId, allocations }) =>
-			allocateResourcesToIncident(incidentId, allocations),
-		onSuccess: (_, variables) => {
-			// Invalidate allocated resources for this incident
-			queryClient.invalidateQueries({
-				queryKey: INCIDENT_QUERY_KEYS.allocatedResources(variables.incidentId),
-			});
-			// Also invalidate the incident details to reflect any changes
-			queryClient.invalidateQueries({
-				queryKey: INCIDENT_QUERY_KEYS.item(variables.incidentId),
-			});
-		},
-	});
-};

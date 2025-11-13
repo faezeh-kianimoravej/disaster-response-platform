@@ -31,11 +31,19 @@ public class ResponseUnit {
     private ResponseUnitType unitType;
 
     @ElementCollection
-    @CollectionTable(name = "response_unit_default_resources", joinColumns = @JoinColumn(name = "unit_id"))
+    @CollectionTable(
+        name = "response_unit_default_resources",
+        joinColumns = @JoinColumn(name = "unit_id"),
+        uniqueConstraints = @UniqueConstraint(columnNames = {"unit_id", "resource_id"})
+    )
     private List<DefaultResource> defaultResources;
 
     @ElementCollection
-    @CollectionTable(name = "response_unit_default_personnel", joinColumns = @JoinColumn(name = "unit_id"))
+    @CollectionTable(
+        name = "response_unit_default_personnel",
+        joinColumns = @JoinColumn(name = "unit_id"),
+        uniqueConstraints = @UniqueConstraint(columnNames = {"id"})
+    )
     private List<DefaultPersonnelSlot> defaultPersonnel;
 
     @ElementCollection
@@ -80,6 +88,9 @@ public class ResponseUnit {
     @Embeddable
     @Data
     public static class DefaultPersonnelSlot {
+        @Column(name = "id")
+        private Long id;
+
         private Long userId;
 
         @Enumerated(EnumType.STRING)

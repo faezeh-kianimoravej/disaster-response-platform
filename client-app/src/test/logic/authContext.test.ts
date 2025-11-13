@@ -64,13 +64,18 @@ describe('AuthContext pure predicates', () => {
 		};
 		const resource: Resource = {
 			resourceId: 1000,
-			name: 'R',
 			departmentId: 100,
+			name: 'R',
 			description: '',
-			quantity: 1,
-			available: 1,
+			category: 'VEHICLE',
+			resourceType: 'COMMAND_VEHICLE',
+			resourceKind: 'UNIQUE',
+			status: 'AVAILABLE',
+			totalQuantity: 1,
+			availableQuantity: 1,
+			unit: 'UNITS',
+			isTrackable: false,
 			image: '/x.png',
-			resourceType: 'Field Operator',
 		};
 
 		// Direct region access via role with regionId

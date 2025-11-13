@@ -83,7 +83,7 @@ describe('Incident API (contract)', () => {
 			reportedBy: 'test@example.com',
 			title: 'New Incident',
 			description: 'Test',
-			severity: 'Medium',
+			severity: 'MEDIUM',
 			gripLevel: 2,
 			status: 'Open',
 			reportedAt: new Date('2025-01-01'),
@@ -142,7 +142,7 @@ describe('Incident API (contract)', () => {
 
 		vi.mocked(axios.put).mockResolvedValueOnce(mockResponse);
 
-		await updateIncident(5, { severity: 'Critical', gripLevel: 5 });
+		await updateIncident(5, { severity: 'CRITICAL', gripLevel: 5 });
 
 		// Verify PUT was called with correct ID
 		expect(axios.put).toHaveBeenCalledWith('/incidents/5', expect.any(Object));

@@ -1,11 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { routes } from '@/routes';
 import { useResources } from '@/hooks/useResource';
 import { useDepartment } from '@/hooks/useDepartment';
 import Button from '@/components/ui/Button';
+import Tabs from '@/components/ui/Tabs';
 import { getImageForResourceType } from '@/utils/resourceUtils';
-import { RESOURCE_TYPES } from '@/types/resource';
 import LoadingPanel from '@/components/ui/LoadingPanel';
 import { ErrorRetryBlock } from '@/components/ui/ErrorRetry';
 import useSingleErrorToast from '@/hooks/useSingleErrorToast';
@@ -39,6 +39,7 @@ function ResourcesPageContent({
 }): JSX.Element {
 	const navigate = useNavigate();
 	const showSingleError = useSingleErrorToast();
+	const [activeTab, setActiveTab] = useState<'resources' | 'responseUnits'>('resources');
 
 	const { resources, loading, refetch, error } = useResources(departmentId, {
 		enabled: !!departmentId,
@@ -86,51 +87,80 @@ function ResourcesPageContent({
 					</div>
 				</div>
 
-				<section aria-busy={loading} aria-live="polite">
-					{loading && <LoadingPanel text="Loading resources..." />}
+				<Tabs
+					tabs={[
+						{ key: 'resources', label: 'Resources' },
+						{ key: 'responseUnits', label: 'Response Units' },
+					]}
+					activeKey={activeTab}
+					onChange={key => setActiveTab(key as 'resources' | 'responseUnits')}
+				/>
 
-					{error && !loading && (
-						<div className="mb-6">
-							<ErrorRetryBlock message="Unable to load resources." onRetry={() => refetch()} />
+				{activeTab === 'resources' && (
+					<section aria-busy={loading} aria-live="polite">
+						{loading && <LoadingPanel text="Loading resources..." />}
+
+						{error && !loading && (
+							<div className="mb-6">
+								<ErrorRetryBlock message="Unable to load resources." onRetry={() => refetch()} />
+							</div>
+						)}
+
+						{!loading && !error && (
+							<>
+								{resources.length === 0 ? (
+									<p className="text-center text-gray-600">No resources available.</p>
+								) : (
+									<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+										{resources.map(r => (
+											<Link
+												key={r.resourceId}
+												to={routes.resource(r.resourceId)}
+												className="block bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition"
+											>
+												<img
+													src={getImageForResourceType(r.resourceType)}
+													alt={r.name}
+													className="h-24 w-24 object-contain mx-auto mb-4"
+												/>
+												<h3 className="text-lg font-semibold text-gray-800 mb-2">{r.name}</h3>
+												<p className="text-sm text-gray-500 mb-2">{r.description}</p>
+												<p className="text-gray-700">
+													<strong>Category:</strong> {r.category}
+												</p>
+												<p className="text-gray-700">
+													<strong>Kind:</strong> {r.resourceKind}
+												</p>
+												<p className="text-gray-700">
+													<strong>Status:</strong> {r.status}
+												</p>
+												<p className="text-gray-700">
+													<strong>Total Quantity:</strong> {r.totalQuantity ?? '-'}
+												</p>
+												<p className="text-gray-700">
+													<strong>Available:</strong> {r.availableQuantity ?? '-'}
+												</p>
+												<p className="text-gray-700">
+													<strong>Type:</strong> {r.resourceType}
+												</p>
+											</Link>
+										))}
+									</div>
+								)}
+							</>
+						)}
+					</section>
+				)}
+
+				{activeTab === 'responseUnits' && (
+					<section>
+						<div className="py-12 text-center text-gray-500">
+							<h2 className="text-xl font-semibold mb-2">Response Units</h2>
+							<p>Manage and define response units for this department here.</p>
+							{/* TODO: Implement response unit management UI */}
 						</div>
-					)}
-
-					{!loading && !error && (
-						<>
-							{resources.length === 0 ? (
-								<p className="text-center text-gray-600">No resources available.</p>
-							) : (
-								<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-									{resources.map(r => (
-										<Link
-											key={r.resourceId}
-											to={routes.resource(r.resourceId)}
-											className="block bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition"
-										>
-											<img
-												src={getImageForResourceType(r.resourceType)}
-												alt={r.name}
-												className="h-24 w-24 object-contain mx-auto mb-4"
-											/>
-											<h3 className="text-lg font-semibold text-gray-800 mb-2">{r.name}</h3>
-											<p className="text-sm text-gray-500 mb-2">{r.description}</p>
-											<p className="text-gray-700">
-												<strong>Quantity:</strong> {r.quantity}
-											</p>
-											<p className="text-gray-700">
-												<strong>Available:</strong> {r.available}
-											</p>
-											<p className="text-gray-700">
-												<strong>Type:</strong>{' '}
-												{RESOURCE_TYPES[r.resourceType as keyof typeof RESOURCE_TYPES]}
-											</p>
-										</Link>
-									))}
-								</div>
-							)}
-						</>
-					)}
-				</section>
+					</section>
+				)}
 			</div>
 		</div>
 	);

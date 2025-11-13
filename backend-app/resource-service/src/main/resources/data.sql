@@ -287,6 +287,28 @@ VALUES (
         NULL,
         NOW(),
         NOW()
+    ),
+    (
+        13,
+        3,
+        'Medical Kit',
+        'Portable medical kit for emergency response',
+        20,
+        20,
+        'MEDICAL_KIT',
+        'EQUIPMENT',
+        'STACKABLE',
+        'AVAILABLE',
+        'KITS',
+        false,
+        52.2235,
+        6.8880,
+        NOW(),
+        NULL,
+        0,
+        NULL,
+        NOW(),
+        NOW()
     ) ON CONFLICT (resource_id) DO NOTHING;
 -- Prevent duplicate inserts if script runs multiple times
 -- Reset sequence to avoid conflicts

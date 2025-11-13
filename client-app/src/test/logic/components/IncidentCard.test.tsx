@@ -11,7 +11,7 @@ function makeIncident(overrides: Partial<Incident> = {}): Incident {
 		reportedBy: 'Tester',
 		title: 'Warehouse Fire',
 		description: 'A fire broke out in the warehouse',
-		severity: 'High',
+		severity: 'HIGH',
 		gripLevel: 2,
 		status: 'Open',
 		reportedAt: new Date(Date.now() - 10 * 60 * 1000), // 10 min ago
@@ -39,7 +39,7 @@ describe('IncidentCard', () => {
 		expect(link).toHaveAttribute('href', `/incidents/${incident.incidentId}`);
 
 		// Priority badge text and color (High -> orange classes)
-		const priority = screen.getByText(/Priority:\s*High/i);
+		const priority = screen.getByText(/Priority:\s*HIGH/i);
 		expect(priority).toBeInTheDocument();
 		expect(priority.className).toContain('bg-orange-100');
 
@@ -53,8 +53,8 @@ describe('IncidentCard', () => {
 	});
 
 	it('maps Critical -> red and Low -> green badge variants', () => {
-		const critical = makeIncident({ severity: 'Critical' });
-		const low = makeIncident({ severity: 'Low', title: 'Minor Incident' });
+		const critical = makeIncident({ severity: 'CRITICAL' });
+		const low = makeIncident({ severity: 'LOW', title: 'Minor Incident' });
 
 		renderWithRouter(
 			<>
@@ -63,8 +63,8 @@ describe('IncidentCard', () => {
 			</>
 		);
 
-		expect(screen.getByText(/Priority:\s*Critical/i).className).toContain('bg-red-100');
-		expect(screen.getByText(/Priority:\s*Low/i).className).toContain('bg-green-100');
+		expect(screen.getByText(/Priority:\s*CRITICAL/i).className).toContain('bg-red-100');
+		expect(screen.getByText(/Priority:\s*LOW/i).className).toContain('bg-green-100');
 	});
 
 	it('fires callbacks for Details and Chat buttons', async () => {

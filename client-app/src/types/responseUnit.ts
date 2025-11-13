@@ -85,7 +85,7 @@ export interface AvailableResponseUnitSearchResult {
 	departmentId: number;
 	departmentName: string;
 	unitType: ResponseUnitType;
-	distanceToIncident: number;
+	distanceKm: number | null;
 }
 
 export interface ResponseUnitFormData {

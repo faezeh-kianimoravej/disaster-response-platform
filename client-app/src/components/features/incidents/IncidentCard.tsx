@@ -11,13 +11,13 @@ interface IncidentCardProps {
 
 const getSeverityVariant = (severity: IncidentSeverity): 'critical' | 'high' | 'medium' | 'low' => {
 	switch (severity) {
-		case 'Critical':
+		case 'CRITICAL':
 			return 'critical';
-		case 'High':
+		case 'HIGH':
 			return 'high';
-		case 'Medium':
+		case 'MEDIUM':
 			return 'medium';
-		case 'Low':
+		case 'LOW':
 			return 'low';
 		default:
 			return 'medium';

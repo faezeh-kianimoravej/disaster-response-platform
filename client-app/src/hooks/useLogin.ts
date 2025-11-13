@@ -17,22 +17,38 @@ export function useLogin() {
 			localStorage.removeItem('user_data');
 			const response = await apiLogin(email, password);
 
-			// Create a User object from the login response
-			const user: User = {
-				userId: 0, // We don't get userId from login response, will be set when fetching user details
-				firstName: '',
-				lastName: '',
-				email: response.email,
-				mobile: '',
-				roles: response.roles,
-				deleted: false,
-			};
-
-			// Store token and user in localStorage
+			// Store token in localStorage
 			localStorage.setItem('auth_token', response.token);
-			localStorage.setItem('user_data', JSON.stringify(user));
 
-			// Update auth state with the token and user info
+			// Fetch full user profile by matching email from listUsers
+			let user: User | null = null;
+			try {
+				const users = await import('@/api/user').then(m => m.listUsers());
+				user = users.find(u => u.email === response.email) || null;
+			} catch {
+				// fallback to minimal user object
+				user = {
+					userId: 0,
+					firstName: '',
+					lastName: '',
+					email: response.email,
+					mobile: '',
+					roles: response.roles,
+					deleted: false,
+				};
+			}
+			if (!user) {
+				user = {
+					userId: 0,
+					firstName: '',
+					lastName: '',
+					email: response.email,
+					mobile: '',
+					roles: response.roles,
+					deleted: false,
+				};
+			}
+			localStorage.setItem('user_data', JSON.stringify(user));
 			auth?.setAuth?.({
 				isLoggedIn: true,
 				user,
