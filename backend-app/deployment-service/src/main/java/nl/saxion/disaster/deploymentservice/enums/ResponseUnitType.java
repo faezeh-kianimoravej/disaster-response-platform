@@ -27,7 +27,6 @@ public enum ResponseUnitType {
     // Specialized
     RESCUE_VEHICLE,
     WATER_TANKER,
-    HAZMAT_VEHICLE,
     COASTGUARD_VESSEL,
 
     // Other

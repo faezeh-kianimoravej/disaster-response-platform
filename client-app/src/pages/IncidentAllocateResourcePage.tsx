@@ -7,7 +7,7 @@ import { REGION_ROLES } from '@/types/role';
 
 import { getDepartmentsByMunicipalityId } from '@/api/department';
 import { getMunicipalitiesByRegionId } from '@/api/municipality';
-import { RESOURCE_TYPES } from '@/utils/resourceUtils';
+import { RESOURCE_TYPES } from '@/types/resource';
 import ResourceSearchForm from '@/components/views/ResourceSearchForm';
 import ResourceTable from '@/components/views/ResourceTable';
 import AllocationSummary from '@/components/views/AllocationSummary';

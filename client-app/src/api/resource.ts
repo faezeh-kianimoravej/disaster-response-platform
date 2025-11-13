@@ -1,6 +1,5 @@
 import { BaseApi } from '@/api/base';
-import type { Resource, ResourceFormData, ResourceSearchResult } from '@/types/resource';
-import { RESOURCE_TYPES } from '@/utils/resourceUtils';
+import type { Resource, ResourceFormData } from '@/types/resource';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const resourceApi = new BaseApi(`${API_BASE_URL}/resources`);
@@ -10,27 +9,48 @@ type ApiResource = {
 	departmentId: number | string;
 	name: string;
 	description?: string | null;
-	quantity: number | string;
-	available: number | string;
+	category: string;
 	resourceType: string;
-	latitude?: number;
-	longitude?: number;
-	image?: string;
+	resourceKind: string;
+	status: string;
+	totalQuantity?: number | string | null;
+	availableQuantity?: number | string | null;
+	unit?: string | null;
+	isTrackable: boolean;
+	latitude?: number | null;
+	longitude?: number | null;
+	lastLocationUpdate?: string | null;
+	currentDeploymentId?: number | null;
+	deployedQuantity?: number | string | null;
+	image?: string | null;
 };
 
 function fromApiResource(a: ApiResource): Resource {
+	const allowedUnits = ['PIECES', 'LITERS', 'SETS', 'UNITS'] as const;
+	function isAllowedUnit(val: unknown): val is Resource['unit'] {
+		return typeof val === 'string' && (allowedUnits as readonly string[]).includes(val);
+	}
+	const unit = isAllowedUnit(a.unit) ? a.unit : undefined;
 	return {
 		resourceId: Number(a.resourceId),
 		departmentId: Number(a.departmentId),
 		name: a.name,
-		description: a.description ?? undefined,
-		quantity: Number(a.quantity),
-		available: Number(a.available),
-		resourceType: a.resourceType,
-		latitude: a.latitude,
-		longitude: a.longitude,
-		image: a.image,
-	} as Resource;
+		category: a.category as Resource['category'],
+		resourceType: a.resourceType as Resource['resourceType'],
+		resourceKind: a.resourceKind as Resource['resourceKind'],
+		status: a.status as Resource['status'],
+		isTrackable: Boolean(a.isTrackable),
+		...(a.description != null ? { description: a.description } : {}),
+		...(a.totalQuantity != null ? { totalQuantity: Number(a.totalQuantity) } : {}),
+		...(a.availableQuantity != null ? { availableQuantity: Number(a.availableQuantity) } : {}),
+		...(unit ? { unit } : {}),
+		...(a.latitude != null ? { latitude: a.latitude } : {}),
+		...(a.longitude != null ? { longitude: a.longitude } : {}),
+		...(a.lastLocationUpdate ? { lastLocationUpdate: new Date(a.lastLocationUpdate) } : {}),
+		...(a.currentDeploymentId != null ? { currentDeploymentId: a.currentDeploymentId } : {}),
+		...(a.deployedQuantity != null ? { deployedQuantity: Number(a.deployedQuantity) } : {}),
+		...(a.image != null ? { image: a.image } : {}),
+	};
 }
 
 function fromApiResources(list: ApiResource[]): Resource[] {
@@ -67,25 +87,4 @@ export async function deleteResource(id: number): Promise<void> {
 
 export async function getResourcesByType(type: string): Promise<Resource[]> {
 	return await resourceApi.get<Resource[]>(`/type/${type}`);
-}
-
-export async function searchResources(
-	incidentId: number,
-	resourceType: string,
-	departmentId: string,
-	municipalityId: string
-): Promise<ResourceSearchResult[]> {
-	const params = new URLSearchParams();
-	const mappedType =
-		Object.keys(RESOURCE_TYPES).find(
-			key => RESOURCE_TYPES[key as keyof typeof RESOURCE_TYPES] === resourceType
-		) || resourceType;
-
-	if (mappedType && mappedType !== 'All') params.append('resourceType', mappedType);
-	if (departmentId && departmentId !== 'All') params.append('departmentId', departmentId);
-	if (municipalityId && municipalityId !== 'All') params.append('municipalityId', municipalityId);
-	if (incidentId) params.append('incidentId', incidentId.toString());
-
-	const queryString = params.toString() ? `?${params.toString()}` : '';
-	return await resourceApi.get<ResourceSearchResult[]>(`/available/nearest${queryString}`);
 }

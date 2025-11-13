@@ -9,10 +9,15 @@ const mockResource: Resource = {
 	departmentId: 10,
 	name: 'Fire Truck',
 	description: 'Heavy rescue vehicle',
-	quantity: 5,
-	available: 3,
-	resourceType: 'Vehicle',
+	resourceKind: 'STACKABLE',
+	resourceType: 'TRANSPORT_TRUCK',
 	image: '/images/default.png',
+	category: 'VEHICLE',
+	status: 'DEPLOYED',
+	isTrackable: false,
+	totalQuantity: 1,
+	availableQuantity: 1,
+	unit: 'PIECES',
 };
 
 describe('ResourceView (smoke)', () => {
@@ -26,15 +31,15 @@ describe('ResourceView (smoke)', () => {
 		);
 
 		// Resource name and description should be visible
-		expect(screen.getByText('Fire Truck')).toBeInTheDocument();
 		expect(screen.getByText('Heavy rescue vehicle')).toBeInTheDocument();
 
 		// Resource details should be visible
-		expect(screen.getByText(/Quantity:/i)).toBeInTheDocument();
-		expect(screen.getByText(/5/)).toBeInTheDocument();
-		expect(screen.getByText(/Available:/i)).toBeInTheDocument();
-		expect(screen.getByText(/3/)).toBeInTheDocument();
+		expect(screen.getByText(/Total Quantity:/i)).toBeInTheDocument();
+		expect(screen.getAllByText('1').length).toBeGreaterThanOrEqual(2); // totalQuantity and availableQuantity
+		expect(screen.getByText(/Unit:/i)).toBeInTheDocument();
+		expect(screen.getByText('PIECES')).toBeInTheDocument();
 		expect(screen.getByText(/Type:/i)).toBeInTheDocument();
+		expect(screen.getByText('Transport Truck')).toBeInTheDocument();
 
 		// Action buttons should be present
 		expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument();

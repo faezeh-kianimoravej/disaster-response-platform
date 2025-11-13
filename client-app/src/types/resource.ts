@@ -36,7 +36,6 @@ export const RESOURCE_TYPES = [
 	// Specialized
 	'RESCUE_VEHICLE',
 	'WATER_TANKER',
-	'HAZMAT_VEHICLE',
 	'COASTGUARD_VESSEL',
 
 	// EQUIPMENT
@@ -65,7 +64,6 @@ export const RESOURCE_TYPE_CATEGORY: Record<ResourceType, ResourceCategory> = {
 	TRANSPORT_TRUCK: 'VEHICLE',
 	RESCUE_VEHICLE: 'VEHICLE',
 	WATER_TANKER: 'VEHICLE',
-	HAZMAT_VEHICLE: 'VEHICLE',
 	COASTGUARD_VESSEL: 'VEHICLE',
 	DEFIBRILLATOR: 'EQUIPMENT',
 	GENERATOR: 'EQUIPMENT',
@@ -73,7 +71,8 @@ export const RESOURCE_TYPE_CATEGORY: Record<ResourceType, ResourceCategory> = {
 	MEDICAL_KIT: 'CONSUMABLE',
 };
 
-export type ResourceKind = 'UNIQUE' | 'STACKABLE' | 'CONSUMABLE';
+export const RESOURCE_KINDS = ['UNIQUE', 'STACKABLE', 'CONSUMABLE'] as const;
+export type ResourceKind = (typeof RESOURCE_KINDS)[number];
 
 export interface Resource {
 	resourceId: number;
@@ -108,9 +107,11 @@ export interface ResourceFormData {
 	resourceType: ResourceType;
 	resourceKind: ResourceKind;
 	departmentId: number;
-	totalQuantity?: number;
-	availableQuantity?: number;
-	unit?: string;
+	totalQuantity?: number | null;
+	availableQuantity?: number | null;
+	unit?: string | null;
 	isTrackable: boolean;
 	image?: string;
+	latitude?: number | null;
+	longitude?: number | null;
 }

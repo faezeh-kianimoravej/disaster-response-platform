@@ -27,7 +27,6 @@ public enum ResourceType {
     // Specialized
     RESCUE_VEHICLE(ResourceCategory.VEHICLE),
     WATER_TANKER(ResourceCategory.VEHICLE),
-    HAZMAT_VEHICLE(ResourceCategory.VEHICLE),
     COASTGUARD_VESSEL(ResourceCategory.VEHICLE),
 
     // Equipment

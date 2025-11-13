@@ -6,7 +6,7 @@ describe('resourceUtils', () => {
 		expect(getImageForResourceType('AMBULANCE')).toBe(RESOURCE_TYPE_IMAGES.AMBULANCE);
 	});
 
-	it('falls back to FIELD_OPERATOR for unknown type', () => {
-		expect(getImageForResourceType('WHATEVER')).toBe(RESOURCE_TYPE_IMAGES.FIELD_OPERATOR);
+	it('falls back to default image for unknown type', () => {
+		expect(getImageForResourceType('WHATEVER')).toBe('/images/default.png');
 	});
 });
