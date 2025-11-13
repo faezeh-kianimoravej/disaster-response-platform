@@ -23,16 +23,4 @@ public interface IncidentService {
     void delete(Long id);
 
     Optional<IncidentLocationDto> getIncidentLocation(Long id);
-
-    /**
-     * Assigns a list of resources to an existing incident.
-     * <p>
-     * This method is called by the <b>resource-service</b> once the user finalizes
-     * the resource allocation process. It links the allocated resources to the specified incident.
-     * </p>
-     *
-     * @param incidentId  the unique identifier of the incident
-     * @param allocations list of allocated resources (resourceId + quantity)
-     */
-    void assignResourcesToIncident(Long incidentId, List<ResourceAllocationItemDto> allocations);
 }

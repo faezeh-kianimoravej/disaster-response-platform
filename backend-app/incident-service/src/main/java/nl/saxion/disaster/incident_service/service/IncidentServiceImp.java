@@ -7,7 +7,6 @@ import nl.saxion.disaster.incident_service.dto.*;
 import nl.saxion.disaster.incident_service.exception.ResourceNotFoundException;
 import nl.saxion.disaster.incident_service.model.entity.Incident;
 import nl.saxion.disaster.incident_service.repository.contract.IncidentRepository;
-import nl.saxion.disaster.incident_service.repository.contract.IncidentResourceRepository;
 import nl.saxion.disaster.incident_service.service.contract.IncidentService;
 import nl.saxion.disaster.incident_service.service.messaging.IncidentEventProducer;
 import nl.saxion.disaster.shared.event.IncidentEvent;
@@ -25,7 +24,6 @@ import java.util.stream.Collectors;
 public class IncidentServiceImp implements IncidentService {
 
     private final IncidentRepository repository;
-    private final IncidentResourceRepository incidentResourceRepository;
     private final IncidentEventProducer incidentEventProducer;
 
     @Override
@@ -165,17 +163,5 @@ public class IncidentServiceImp implements IncidentService {
                         incident.getLongitude()
                 ));
     }
-
-    @Override
-    public void assignResourcesToIncident(Long incidentId, List<ResourceAllocationItemDto> allocations) {
-        var incident = repository.findById(incidentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Incident not found with ID: " + incidentId));
-
-        log.info("Assigning {} resources to incident {}", allocations.size(), incidentId);
-
-        // Delegate DB update to repository (transaction handled there)
-        incidentResourceRepository.updateIncidentAfterResourceAssignment(incident, allocations);
-    }
-
 }
 
