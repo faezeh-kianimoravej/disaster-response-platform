@@ -19,10 +19,11 @@ public class KafkaProducerConfig {
     public ProducerFactory<String, Object> producerFactory() {
         Map<String, Object> config = new HashMap<>();
 
+        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka:9092");
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
 
-        // optional but useful
+        // Optional but recommended
         config.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, false);
 
         return new DefaultKafkaProducerFactory<>(config);
@@ -32,4 +33,5 @@ public class KafkaProducerConfig {
     public KafkaTemplate<String, Object> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
+
 }

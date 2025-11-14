@@ -12,8 +12,6 @@ import nl.saxion.disaster.deploymentservice.repository.contract.DeploymentOrderR
 import nl.saxion.disaster.shared.event.NewDeploymentRequestEvent;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -57,39 +55,35 @@ public class DeploymentOrderServiceImpl implements nl.saxion.disaster.deployment
             deploymentRequest.setRequestedQuantity(request.getRequestedQuantity());
             deploymentRequest.setStatus(DeploymentRequestStatus.PENDING);
             deploymentRequest.setNotes(dto.getNotes());
+
             requests.add(deploymentRequest);
         });
 
         order.setDeploymentRequests(requests);
+        
+        DeploymentOrder savedOrder = orderRepository.saveDeploymentOrder(order);
 
         // ------------------------------
-        // 2) Save to DB (inside transaction)
+        // 3) Publish events
         // ------------------------------
-        DeploymentOrder savedDeploymentOrder = orderRepository.saveDeploymentOrder(order);
+        savedOrder.getDeploymentRequests().forEach(req -> {
 
-        // ------------------------------
-        // 3) Publish events AFTER COMMIT
-        // ------------------------------
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
+            NewDeploymentRequestEvent event = NewDeploymentRequestEvent.builder()
+                    .deploymentRequestId(req.getRequestId())
+                    .departmentId(req.getTargetDepartmentId())
+                    .incidentId(savedOrder.getIncidentId())
+                    .createdAt(Instant.now())
+                    .build();
 
-                savedDeploymentOrder.getDeploymentRequests().forEach(req -> {
-                    NewDeploymentRequestEvent event = NewDeploymentRequestEvent.builder()
-                            .deploymentRequestId(req.getRequestId())
-                            .departmentId(req.getTargetDepartmentId())
-                            .incidentId(savedDeploymentOrder.getIncidentId())
-                            .createdAt(Instant.now())
-                            .build();
-
-                    eventPublisher.publish(event);
-                });
-            }
+            eventPublisher.publish(event);
         });
 
-        // Return response
-        return orderMapper.toDto(savedDeploymentOrder);
+        // ------------------------------
+        // 4) Return response
+        // ------------------------------
+        return orderMapper.toDto(savedOrder);
     }
+
 
     @Override
     @Transactional(readOnly = true)

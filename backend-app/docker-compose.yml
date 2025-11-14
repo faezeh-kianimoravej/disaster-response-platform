@@ -292,7 +292,7 @@ services:
       - ./deployment-service/target/deployment-service-1.0.0-dev.jar:/app/app.jar:ro
     working_dir: /app
     # ====== ONLY CHANGE ADDED ======
-    entrypoint: [ "sh", "-c", "until nc -z kafka 9092; do echo 'Waiting for Kafka...'; sleep 2; done; java -jar app.jar" ]
+    entrypoint: [ "java", "-jar", "app.jar" ]
     # =================================
     restart: on-failure
 
