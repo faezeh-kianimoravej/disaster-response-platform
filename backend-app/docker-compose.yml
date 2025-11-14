@@ -1,6 +1,7 @@
-version: '3.9'
-
 services:
+  # ==============================
+  # PostgreSQL Database (shared)
+  # ==============================
   postgres-db:
     image: postgres:16
     container_name: postgres-db
@@ -23,10 +24,12 @@ services:
       retries: 10
       start_period: 20s
 
+  # ==============================
+  # Zookeeper
+  # ==============================
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: zookeeper
-    hostname: zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -35,10 +38,12 @@ services:
     networks:
       - backend-network
 
+  # ==============================
+  # Kafka Broker
+  # ==============================
   kafka:
     image: confluentinc/cp-kafka:7.5.0
     container_name: kafka
-    hostname: kafka
     depends_on:
       - zookeeper
     ports:
@@ -52,20 +57,15 @@ services:
     networks:
       - backend-network
     restart: on-failure
-    healthcheck:
-      test: [ "CMD-SHELL", "nc -z localhost 9092" ]
-      interval: 5s
-      timeout: 5s
-      retries: 10
 
+  # ==============================
+  # Eureka Discovery Service
+  # ==============================
   discovery-service:
     image: eclipse-temurin:21-jre-alpine
     container_name: discovery-service
-    hostname: discovery-service
     ports:
       - "8761:8761"
-    environment:
-      SPRING_PROFILES_ACTIVE: local-docker
     networks:
       - backend-network
     depends_on:
@@ -73,6 +73,148 @@ services:
         condition: service_healthy
     volumes:
       - ./discovery-service/target/discovery-service-1.0.0-dev.jar:/app/app.jar:ro
+    working_dir: /app
+    entrypoint: [ "java", "-jar", "app.jar" ]
+    restart: on-failure
+
+  # ==============================
+  # API Gateway
+  # ==============================
+  api-gateway:
+    image: eclipse-temurin:21-jre-alpine
+    container_name: api-gateway
+    depends_on:
+      discovery-service:
+        condition: service_started
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${STACK_PROFILE:-local-docker}
+    networks:
+      - backend-network
+    volumes:
+      - ./api-gateway/target/api-gateway-1.0.0-dev.jar:/app/app.jar:ro
+    working_dir: /app
+    entrypoint: [ "java", "-jar", "app.jar" ]
+    restart: on-failure
+
+  # ==============================
+  # Resource Service
+  # ==============================
+  resource-service:
+    image: eclipse-temurin:21-jre-alpine
+    container_name: resource-service
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      discovery-service:
+        condition: service_started
+    ports:
+      - "8087:8087"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${STACK_PROFILE:-local-docker}
+    networks:
+      - backend-network
+    volumes:
+      - ./resource-service/target/resource-service-1.0.0-dev.jar:/app/app.jar:ro
+    working_dir: /app
+    entrypoint: [ "java", "-jar", "app.jar" ]
+    restart: on-failure
+
+  # ==============================
+  # Department Service
+  # ==============================
+  department-service:
+    image: eclipse-temurin:21-jre-alpine
+    container_name: department-service
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      discovery-service:
+        condition: service_started
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${STACK_PROFILE:-local-docker}
+    networks:
+      - backend-network
+    volumes:
+      - ./department-service/target/department-service-1.0.0-dev.jar:/app/app.jar:ro
+    working_dir: /app
+    entrypoint: [ "java", "-jar", "app.jar" ]
+    restart: on-failure
+
+  # ==============================
+  # Municipality Service
+  # ==============================
+  municipality-service:
+    image: eclipse-temurin:21-jre-alpine
+    container_name: municipality-service
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      discovery-service:
+        condition: service_started
+      department-service:
+        condition: service_started
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${STACK_PROFILE:-local-docker}
+    networks:
+      - backend-network
+    volumes:
+      - ./municipality-service/target/municipality-service-1.0.0-dev.jar:/app/app.jar:ro
+    working_dir: /app
+    entrypoint: [ "java", "-jar", "app.jar" ]
+    restart: on-failure
+
+  # ==============================
+  # Region Service
+  # ==============================
+  region-service:
+    image: eclipse-temurin:21-jre-alpine
+    container_name: region-service
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      discovery-service:
+        condition: service_started
+      municipality-service:
+        condition: service_started
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${STACK_PROFILE:-local-docker}
+    networks:
+      - backend-network
+    volumes:
+      - ./region-service/target/region-service-1.0.0-dev.jar:/app/app.jar:ro
+    working_dir: /app
+    entrypoint: [ "java", "-jar", "app.jar" ]
+    restart: on-failure
+
+  # ==============================
+  # Incident Service
+  # ==============================
+  incident-service:
+    image: eclipse-temurin:21-jre-alpine
+    container_name: incident-service
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      discovery-service:
+        condition: service_started
+      kafka:
+        condition: service_started
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${STACK_PROFILE:-local-docker}
+    networks:
+      - backend-network
+    volumes:
+      - ./incident-service/target/incident-service-1.0.0-dev.jar:/app/app.jar:ro
     working_dir: /app
     entrypoint: [ "java", "-jar", "app.jar" ]
     restart: on-failure
@@ -89,17 +231,42 @@ services:
       discovery-service:
         condition: service_started
       kafka:
-        condition: service_healthy
+        condition: service_started
     ports:
       - "8085:8085"
     environment:
-      SPRING_PROFILES_ACTIVE: local-docker
+      SPRING_PROFILES_ACTIVE: ${STACK_PROFILE:-local-docker}
     networks:
       - backend-network
     volumes:
       - ./notification-service/target/notification-service-1.0.0-dev.jar:/app/app.jar:ro
     working_dir: /app
-    entrypoint: [ "sh","-c","until nc -z kafka 9092; do echo 'Waiting for Kafka...'; sleep 2; done; java -jar app.jar" ]
+    entrypoint: [ "java", "-jar", "app.jar" ]
+    restart: on-failure
+
+  # ==============================
+  # User Service (WITH Eureka)
+  # ==============================
+  user-service:
+    image: eclipse-temurin:21-jre-alpine
+    container_name: user-service
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      discovery-service:
+        condition: service_started
+      kafka:
+        condition: service_started
+    ports:
+      - "8086:8086"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${STACK_PROFILE:-local-docker}
+    networks:
+      - backend-network
+    volumes:
+      - ./user-service/target/user-service-1.0.0-dev.jar:/app/app.jar:ro
+    working_dir: /app
+    entrypoint: [ "java", "-jar", "app.jar" ]
     restart: on-failure
 
   # ==============================
@@ -114,19 +281,25 @@ services:
       discovery-service:
         condition: service_started
       kafka:
-        condition: service_healthy
+        condition: service_started
     ports:
       - "8088:8088"
     environment:
-      SPRING_PROFILES_ACTIVE: local-docker
+      SPRING_PROFILES_ACTIVE: ${STACK_PROFILE:-local-docker}
     networks:
       - backend-network
     volumes:
       - ./deployment-service/target/deployment-service-1.0.0-dev.jar:/app/app.jar:ro
     working_dir: /app
-    entrypoint: [ "sh","-c","until nc -z kafka 9092; do echo 'Waiting for Kafka...'; sleep 2; done; java -jar app.jar" ]
+    # ====== ONLY CHANGE ADDED ======
+    entrypoint: [ "sh", "-c", "until nc -z kafka 9092; do echo 'Waiting for Kafka...'; sleep 2; done; java -jar app.jar" ]
+    # =================================
     restart: on-failure
 
+
+# ==============================
+# Network & Volumes
+# ==============================
 networks:
   backend-network:
     driver: bridge
