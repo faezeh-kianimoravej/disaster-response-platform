@@ -1,4 +1,5 @@
-import type { Role } from './role';
+import type { Role } from '@/types/role';
+import type { ResponderProfile } from '@/types/responderSpecialization';
 
 export interface User {
 	userId: number;
@@ -11,6 +12,9 @@ export interface User {
 	createdAt?: string;
 	updatedAt?: string;
 	passwordUpdatedAt?: string;
+
+	// Responder profile (only if user has Responder role)
+	responderProfile?: ResponderProfile;
 }
 
 export interface UserCreateFormData {

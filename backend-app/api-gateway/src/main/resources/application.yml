@@ -139,6 +139,28 @@ spring:
                 name: userServiceCircuitBreaker
                 fallbackUri: forward:/fallback
 
+        # Deployment service: /api/deployment-orders/** -> deployment-service/api/deployments/**
+        - id: deployment-order
+          uri: lb://deployment-service
+          predicates:
+            - Path=/api/deployment-orders/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: deploymentServiceCircuitBreaker
+                fallbackUri: forward:/fallback
+
+        # Deployment service: /api/response-units/** -> deployment-service/api/response-units/**
+        - id: response-unit
+          uri: lb://deployment-service
+          predicates:
+            - Path=/api/response-units/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: deploymentServiceCircuitBreaker
+                fallbackUri: forward:/fallback
+
 eureka:
   client:
     serviceUrl:

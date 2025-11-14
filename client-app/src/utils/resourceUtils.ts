@@ -1,23 +1,30 @@
-export const RESOURCE_TYPES = {
-	FIELD_OPERATOR: 'Field Operator',
-	TRANSPORT_VEHICLE: 'Transport Vehicle',
-	FIRE_TRUCK: 'Fire Truck',
-	AMBULANCE: 'Ambulance',
-	RIOT_CAR: 'Riot Car',
-} as const;
-
-export type ResourceType = keyof typeof RESOURCE_TYPES;
-
+import { RESOURCE_TYPES, ResourceType } from '@/types/resource';
 export const RESOURCE_TYPE_IMAGES: Record<ResourceType, string> = {
-	FIELD_OPERATOR: '/images/fieldoperator.png',
-	TRANSPORT_VEHICLE: '/images/transportvehicle.png',
+	COMMAND_VEHICLE: '/images/commandvehicle.png',
+	TEAM: '/images/team.png',
+	BOAT: '/images/boat.png',
+	HELICOPTER: '/images/helicopter.png',
+	DRONE: '/images/drone.png',
 	FIRE_TRUCK: '/images/firetruck.png',
+	LADDER_TRUCK: '/images/laddertruck.png',
 	AMBULANCE: '/images/ambulance.png',
-	RIOT_CAR: '/images/riotcar.png',
+	TRAUMA_HELICOPTER: '/images/traumahelicopter.png',
+	PATROL_CAR: '/images/patrolcar.png',
+	SWAT_CAR: '/images/swatcar.png',
+	ARMORED_VEHICLE: '/images/armoredvehicle.png',
+	TRANSPORT_TRUCK: '/images/transporttruck.png',
+	RESCUE_VEHICLE: '/images/rescuevehicle.png',
+	WATER_TANKER: '/images/watertanker.png',
+	COASTGUARD_VESSEL: '/images/coastguardvessel.png',
+	DEFIBRILLATOR: '/images/defibrillator.png',
+	GENERATOR: '/images/generator.png',
+	WATER_BOTTLE: '/images/waterbottle.png',
+	MEDICAL_KIT: '/images/medicalkit.png',
 };
+const GENERIC_IMAGE = '/images/default.png';
 
 export function getImageForResourceType(resourceType: string): string {
-	return RESOURCE_TYPE_IMAGES[resourceType as ResourceType] || RESOURCE_TYPE_IMAGES.FIELD_OPERATOR;
+	return RESOURCE_TYPE_IMAGES[resourceType as ResourceType] || GENERIC_IMAGE;
 }
 
 export function getDisplayImageSrc(image?: string | null): string | undefined {
@@ -32,5 +39,12 @@ export function getDisplayImageSrc(image?: string | null): string | undefined {
 	return `data:${mime};base64,${val}`;
 }
 export function getReadableResourceType(type: string): string {
-	return RESOURCE_TYPES[type as keyof typeof RESOURCE_TYPES] || type;
+	if ((RESOURCE_TYPES as readonly string[]).includes(type)) {
+		return type
+			.toLowerCase()
+			.split('_')
+			.map(word => word.charAt(0).toUpperCase() + word.slice(1))
+			.join(' ');
+	}
+	return type;
 }

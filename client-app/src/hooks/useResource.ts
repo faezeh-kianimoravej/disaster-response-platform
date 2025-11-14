@@ -6,9 +6,8 @@ import {
 	addResource,
 	updateResource,
 	deleteResource,
-	searchResources,
 } from '@/api/resource';
-import type { Resource, ResourceSearchResult } from '@/types/resource';
+import type { Resource } from '@/types/resource';
 import { RESOURCE_QUERY_KEYS } from '@/hooks/queryKeys';
 import type { ResourceFormData } from '@/types/resource';
 
@@ -115,37 +114,3 @@ export function useDeleteResource() {
 		},
 	});
 }
-
-export const useSearchResources = (
-	incidentId?: number,
-	resourceType?: string,
-	departmentId?: string,
-	municipalityId?: string,
-	options?: { enabled?: boolean }
-) => {
-	const isEnabled = options?.enabled ?? true;
-
-	return useQuery<ResourceSearchResult[]>({
-		queryKey: isEnabled
-			? RESOURCE_QUERY_KEYS.search(
-					incidentId as number,
-					resourceType as string,
-					departmentId as string,
-					municipalityId as string
-				)
-			: ['resources', 'search', 'disabled'],
-		queryFn: () => {
-			if (!incidentId) {
-				return Promise.resolve([]);
-			}
-			return searchResources(
-				incidentId as number,
-				resourceType as string,
-				departmentId as string,
-				municipalityId as string
-			);
-		},
-		staleTime: 2 * 60 * 1000, // 2 minutes
-		enabled: isEnabled && !!incidentId,
-	});
-};

@@ -1,0 +1,28 @@
+package nl.saxion.disaster.user_service.model.enums;
+
+public enum ResponderSpecialization {
+    DRIVER,
+    OPERATOR,
+    TEAM_LEADER,
+    COMMANDER,
+
+    FIREFIGHTER,
+    FIRE_ENGINEER,
+    FIRE_CAPTAIN,
+
+    PARAMEDIC,
+    EMT_BASIC,
+    EMT_ADVANCED,
+    NURSE,
+    DOCTOR,
+
+    HAZMAT_SPECIALIST,
+    RESCUE_SPECIALIST,
+    BOMB_TECHNICIAN,
+    DIVER,
+    SEARCH_AND_RESCUE,
+    INCIDENT_COMMANDER,
+
+    COMMUNICATIONS_SPECIALIST,
+    LOGISTICS_COORDINATOR
+}

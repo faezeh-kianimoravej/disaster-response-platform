@@ -3,7 +3,7 @@ import { useState } from 'react';
 export interface FormInputProps {
 	label: string;
 	name: string;
-	value: string | number;
+	value: string | number | string[];
 	onChange: (
 		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
 	) => void;
@@ -22,6 +22,7 @@ export interface FormInputProps {
 	accept?: string;
 	showPreview?: boolean;
 	previewClassName?: string;
+	multiple?: boolean;
 }
 
 export default function FormInput({
@@ -44,6 +45,7 @@ export default function FormInput({
 	accept,
 	showPreview = false,
 	previewClassName = 'h-32 w-32 object-cover border rounded-md',
+	multiple = false,
 }: FormInputProps) {
 	const hasError = Boolean(showValidation && error);
 	const inputId = `${name}-input`;
@@ -79,10 +81,11 @@ export default function FormInput({
 					<select
 						id={inputId}
 						name={name}
-						value={value}
+						value={Array.isArray(value) ? value.map(String) : value}
 						onChange={onChange}
 						disabled={disabled}
 						className={baseClasses}
+						multiple={!!multiple}
 					>
 						{options.map(option => (
 							<option key={option.value} value={option.value}>

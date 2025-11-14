@@ -2,14 +2,12 @@ package nl.saxion.disaster.incident_service.incident;
 
 import nl.saxion.disaster.incident_service.dto.IncidentRequest;
 import nl.saxion.disaster.incident_service.dto.IncidentResponse;
-import nl.saxion.disaster.incident_service.dto.ResourceAllocationItemDto;
 import nl.saxion.disaster.incident_service.exception.ResourceNotFoundException;
 import nl.saxion.disaster.incident_service.model.entity.Incident;
 import nl.saxion.disaster.incident_service.model.enums.GripLevel;
 import nl.saxion.disaster.incident_service.model.enums.Severity;
 import nl.saxion.disaster.incident_service.model.enums.Status;
 import nl.saxion.disaster.incident_service.repository.contract.IncidentRepository;
-import nl.saxion.disaster.incident_service.repository.contract.IncidentResourceRepository;
 import nl.saxion.disaster.incident_service.service.IncidentServiceImp;
 import nl.saxion.disaster.incident_service.service.messaging.IncidentEventProducer;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,16 +25,14 @@ import static org.mockito.Mockito.*;
 class IncidentServiceImpTest {
 
     private IncidentRepository repository;
-    private IncidentResourceRepository incidentResourceRepository;
     private IncidentEventProducer eventProducer;
     private IncidentServiceImp service;
 
     @BeforeEach
     void setup() {
         repository = mock(IncidentRepository.class);
-        incidentResourceRepository = mock(IncidentResourceRepository.class);
         eventProducer = mock(IncidentEventProducer.class);
-        service = new IncidentServiceImp(repository, incidentResourceRepository, eventProducer);
+        service = new IncidentServiceImp(repository, eventProducer);
     }
 
     private Incident sampleIncident(Long id) {
@@ -234,35 +230,5 @@ class IncidentServiceImpTest {
         verify(repository).findById(999L);
     }
 
-    @Test
-    void assignResourcesToIncident_ShouldUpdateIncident_WhenFound() {
-        Incident incident = sampleIncident(10L);
-        when(repository.findById(10L)).thenReturn(Optional.of(incident));
-
-        List<ResourceAllocationItemDto> allocations = List.of(
-                new ResourceAllocationItemDto(101L, 2),
-                new ResourceAllocationItemDto(102L, 1)
-        );
-
-        service.assignResourcesToIncident(10L, allocations);
-
-        verify(repository).findById(10L);
-        verify(incidentResourceRepository).updateIncidentAfterResourceAssignment(incident, allocations);
-    }
-
-    @Test
-    void assignResourcesToIncident_ShouldThrow_WhenIncidentNotFound() {
-        when(repository.findById(404L)).thenReturn(Optional.empty());
-
-        List<ResourceAllocationItemDto> allocations = List.of(
-                new ResourceAllocationItemDto(201L, 2)
-        );
-
-        assertThatThrownBy(() -> service.assignResourcesToIncident(404L, allocations))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessageContaining("404");
-
-        verify(repository).findById(404L);
-        verifyNoInteractions(incidentResourceRepository);
-    }
+    // Resource allocation tests removed: allocation is no longer part of incident service
 }

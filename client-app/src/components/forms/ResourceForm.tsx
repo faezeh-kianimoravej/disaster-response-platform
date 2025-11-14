@@ -7,15 +7,13 @@ import RHFInput from '@/components/forms/rhf/RHFInput';
 import RHFImageInput from '@/components/forms/rhf/RHFImageInput';
 import { resourceRequestSchema, type ResourceRequestValues } from '@/validation/resourceValidation';
 import { createOptionsFromObject } from '@/components/forms/base/FormInput';
-import {
-	RESOURCE_TYPES,
-	RESOURCE_TYPE_IMAGES,
-	getImageForResourceType,
-} from '@/utils/resourceUtils';
-import type { Resource } from '@/types/resource';
+import { RESOURCE_TYPE_IMAGES, getImageForResourceType } from '@/utils/resourceUtils';
+import { RESOURCE_TYPES, RESOURCE_CATEGORIES, RESOURCE_KINDS } from '@/types/resource';
+import type { Resource, ResourceFormData } from '@/types/resource';
 import { useToast } from '@/components/toast/ToastProvider';
 import { useCreateResource, useUpdateResource } from '@/hooks/useResource';
 import { routes } from '@/routes';
+import { RESOURCE_TYPE_CATEGORY } from '@/types/resource';
 
 type ResourceFormProps = {
 	initialData?: Partial<Resource>;
@@ -43,16 +41,20 @@ export default function ResourceForm({
 	const defaultValues: ResourceRequestValues = useMemo(
 		() => ({
 			name: initialData?.name ?? '',
-			description: initialData?.description ?? undefined,
-			quantity: initialData?.quantity ?? 1,
-			available: initialData?.available ?? 0,
-			resourceType: initialData?.resourceType ?? 'FIELD_OPERATOR',
+			description: initialData?.description ?? null,
+			category: initialData?.category ?? RESOURCE_CATEGORIES[0],
+			resourceType: initialData?.resourceType ?? RESOURCE_TYPES[0],
+			resourceKind: initialData?.resourceKind ?? RESOURCE_KINDS[0],
 			departmentId: initialData?.departmentId ?? departmentId ?? -1,
+			totalQuantity: initialData?.totalQuantity ?? null,
+			availableQuantity: initialData?.availableQuantity ?? null,
+			unit: initialData?.unit ?? null,
+			isTrackable: initialData?.isTrackable ?? false,
 			image:
 				initialData?.image ??
-				getImageForResourceType(initialData?.resourceType ?? 'FIELD_OPERATOR'),
-			latitude: initialData?.latitude ?? 52.16,
-			longitude: initialData?.longitude ?? 4.53,
+				getImageForResourceType(initialData?.resourceType ?? RESOURCE_TYPES[0]),
+			latitude: initialData?.latitude ?? null,
+			longitude: initialData?.longitude ?? null,
 		}),
 		[initialData, departmentId]
 	);
@@ -82,7 +84,7 @@ export default function ResourceForm({
 			if (name !== 'resourceType') return;
 			if (!useDefaultImage) return;
 
-			const selectedType = (value.resourceType as string) ?? 'FIELD_OPERATOR';
+			const selectedType = (value.resourceType as string) ?? RESOURCE_TYPES[0];
 			const defaultForType = getImageForResourceType(selectedType);
 			const currentImage = value.image as string | undefined;
 
@@ -150,7 +152,23 @@ export default function ResourceForm({
 	async function handleSubmit(values: ResourceRequestValues) {
 		try {
 			const imageDataUrl = await toDataUrlIfDefault(values.image ?? '');
-			const payload: ResourceRequestValues = { ...values, image: imageDataUrl };
+			const payload: ResourceFormData = {
+				name: values.name ?? '',
+				description: values.description !== undefined ? values.description : null,
+				category: values.category ?? RESOURCE_CATEGORIES[0],
+				resourceType: values.resourceType ?? RESOURCE_TYPES[0],
+				resourceKind: values.resourceKind ?? RESOURCE_KINDS[0],
+				departmentId: values.departmentId ?? departmentId ?? -1,
+				isTrackable: values.isTrackable ?? false,
+				image: imageDataUrl || '',
+				...(values.totalQuantity !== undefined && { totalQuantity: values.totalQuantity }),
+				...(values.availableQuantity !== undefined && {
+					availableQuantity: values.availableQuantity,
+				}),
+				...(values.unit !== undefined && { unit: values.unit }),
+				...(values.latitude !== undefined && { latitude: values.latitude }),
+				...(values.longitude !== undefined && { longitude: values.longitude }),
+			};
 
 			if (isNewResource) {
 				const created = await createMutation.mutateAsync(payload);
@@ -174,6 +192,14 @@ export default function ResourceForm({
 		}
 	}
 
+	// Get current values for conditional rendering
+	const category = methods.watch('category');
+	const resourceKind = methods.watch('resourceKind');
+	const isTrackable = methods.watch('isTrackable');
+
+	// Filter resource types by selected category
+	const filteredResourceTypes = RESOURCE_TYPES.filter(t => RESOURCE_TYPE_CATEGORY[t] === category);
+
 	return (
 		<FormShell methods={methods} onSubmit={handleSubmit} footer={{ onCancel }}>
 			<div>
@@ -183,27 +209,80 @@ export default function ResourceForm({
 
 				<div className="space-y-3">
 					<RHFInput name="name" label="Name" required />
-
 					<RHFInput name="description" label="Description" type="textarea" />
 
 					<div className="grid grid-cols-2 gap-3">
 						<RHFInput
+							name="category"
+							label="Category"
+							type="select"
+							options={createOptionsFromObject({
+								VEHICLE: 'VEHICLE',
+								EQUIPMENT: 'EQUIPMENT',
+								CONSUMABLE: 'CONSUMABLE',
+							})}
+						/>
+						<RHFInput
 							name="resourceType"
 							label="Resource Type"
 							type="select"
-							options={createOptionsFromObject(RESOURCE_TYPES)}
+							options={createOptionsFromObject(
+								Object.fromEntries(filteredResourceTypes.map(t => [t, t]))
+							)}
 						/>
+						<RHFInput
+							name="resourceKind"
+							label="Kind"
+							type="select"
+							options={createOptionsFromObject({
+								UNIQUE: 'UNIQUE',
+								STACKABLE: 'STACKABLE',
+								CONSUMABLE: 'CONSUMABLE',
+							})}
+						/>
+						{/* Only show unit if not UNIQUE */}
+						{resourceKind !== 'UNIQUE' && (
+							<RHFInput
+								name="unit"
+								label="Unit"
+								type="select"
+								options={createOptionsFromObject({
+									PIECES: 'PIECES',
+									LITERS: 'LITERS',
+									SETS: 'SETS',
+									UNITS: 'UNITS',
+								})}
+							/>
+						)}
+						{/* Use a dedicated checkbox for isTrackable */}
+						<div className="flex items-center gap-2">
+							<input type="checkbox" id="isTrackable" {...methods.register('isTrackable')} />
+							<label htmlFor="isTrackable" className="text-sm text-gray-700">
+								Trackable?
+							</label>
+						</div>
 					</div>
 
-					<div className="grid grid-cols-2 gap-3">
-						<RHFInput name="latitude" label="Latitude" type="number" placeholder="-90 to 90" />
-						<RHFInput name="longitude" label="Longitude" type="number" placeholder="-180 to 180" />
-					</div>
+					{/* Only show location if trackable */}
+					{isTrackable && (
+						<div className="grid grid-cols-2 gap-3">
+							<RHFInput name="latitude" label="Latitude" type="number" placeholder="-90 to 90" />
+							<RHFInput
+								name="longitude"
+								label="Longitude"
+								type="number"
+								placeholder="-180 to 180"
+							/>
+						</div>
+					)}
 
-					<div className="grid grid-cols-2 gap-3">
-						<RHFInput name="quantity" label="Quantity" type="number" />
-						<RHFInput name="available" label="Available" type="number" />
-					</div>
+					{/* Only show quantity fields if not UNIQUE */}
+					{resourceKind !== 'UNIQUE' && (
+						<div className="grid grid-cols-2 gap-3">
+							<RHFInput name="totalQuantity" label="Total Quantity" type="number" />
+							<RHFInput name="availableQuantity" label="Available Quantity" type="number" />
+						</div>
+					)}
 
 					<div className="space-y-2">
 						<label className="block text-sm font-medium text-gray-700">Image Source</label>

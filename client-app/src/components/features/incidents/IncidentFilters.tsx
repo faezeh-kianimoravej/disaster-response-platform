@@ -34,7 +34,7 @@ export default function IncidentFilters({
 	const statusOptions: IncidentStatus[] = hideClosedOption
 		? (baseStatusOptions.filter(s => s !== 'Closed') as IncidentStatus[])
 		: baseStatusOptions;
-	const priorityOptions: IncidentSeverity[] = ['Low', 'Medium', 'High', 'Critical'];
+	const priorityOptions: IncidentSeverity[] = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
 	const gripOptions = [1, 2, 3, 4, 5];
 	const timeOptions = [
 		{ value: 'last15', label: 'Last 15 min' },

@@ -21,7 +21,7 @@ const makeIncident = (overrides: Partial<Incident> = {}): Incident => ({
 	reportedBy: 'user@example.com',
 	title: 'Test Incident',
 	description: 'Test description',
-	severity: 'Medium',
+	severity: 'MEDIUM',
 	gripLevel: 2,
 	status: 'Open',
 	reportedAt: new Date('2025-01-01'),
@@ -41,27 +41,27 @@ describe('IncidentPriorityForm', () => {
 	});
 
 	it('renders with initial severity and GRIP level from incident', () => {
-		const incident = makeIncident({ severity: 'High', gripLevel: 4 });
+		const incident = makeIncident({ severity: 'HIGH', gripLevel: 4 });
 		renderWithProviders(<IncidentPriorityForm incident={incident} />);
 
 		const severitySelect = screen.getByLabelText(/severity/i) as HTMLSelectElement;
 		const gripSelect = screen.getByLabelText(/grip level/i) as HTMLSelectElement;
 
-		expect(severitySelect.value).toBe('High');
+		expect(severitySelect.value).toBe('HIGH');
 		expect(gripSelect.value).toBe('4');
 	});
 
 	it('submits successfully and calls onSuccess with toast', async () => {
 		const incident = makeIncident();
 		const onSuccess = vi.fn();
-		const updated = makeIncident({ severity: 'Critical', gripLevel: 5 });
+		const updated = makeIncident({ severity: 'CRITICAL', gripLevel: 5 });
 
 		mockUpdate.mutateAsync.mockResolvedValueOnce(updated);
 
 		renderWithProviders(<IncidentPriorityForm incident={incident} onSuccess={onSuccess} />);
 
 		// Change severity and GRIP level
-		await userEvent.selectOptions(screen.getByLabelText(/severity/i), 'Critical');
+		await userEvent.selectOptions(screen.getByLabelText(/severity/i), 'CRITICAL');
 		await userEvent.selectOptions(screen.getByLabelText(/grip level/i), '5');
 
 		// Submit
@@ -72,7 +72,7 @@ describe('IncidentPriorityForm', () => {
 				id: 1,
 				data: {
 					...incident,
-					severity: 'Critical',
+					severity: 'CRITICAL',
 					gripLevel: 5,
 				},
 			});
@@ -92,7 +92,7 @@ describe('IncidentPriorityForm', () => {
 
 		renderWithProviders(<IncidentPriorityForm incident={incident} onFailure={onFailure} />);
 
-		await userEvent.selectOptions(screen.getByLabelText(/severity/i), 'Low');
+		await userEvent.selectOptions(screen.getByLabelText(/severity/i), 'LOW');
 		await userEvent.click(screen.getByRole('button', { name: /save/i }));
 
 		await waitFor(() => {
@@ -130,7 +130,7 @@ describe('IncidentPriorityForm', () => {
 		const severitySelect = screen.getByLabelText(/severity/i) as HTMLSelectElement;
 		const options = Array.from(severitySelect.options).map(opt => opt.value);
 
-		expect(options).toEqual(['Low', 'Medium', 'High', 'Critical']);
+		expect(options).toEqual(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']);
 	});
 
 	it('renders GRIP level options 0-5', () => {

@@ -43,10 +43,16 @@ describe('ResourcePage (smoke)', () => {
 				departmentId: 3,
 				name: 'Fire Truck',
 				description: 'Large vehicle',
-				quantity: 2,
-				available: 1,
+				totalQuantity: 2,
+				availableQuantity: 1,
+				unit: 'PIECES',
 				image: '',
-				resourceType: 'VEHICLE',
+				resourceType: 'FIRE_TRUCK',
+				resourceKind: 'STACKABLE',
+				category: 'VEHICLE',
+				isTrackable: false,
+				latitude: null,
+				longitude: null,
 			},
 			loading: false,
 			error: null,
@@ -57,7 +63,12 @@ describe('ResourcePage (smoke)', () => {
 			route: '/resource/10',
 			routePath: '/resource/:resourceId',
 		});
-		expect(screen.getByText('Fire Truck')).toBeInTheDocument();
+		// Check the heading for the resource name
+		const headings = screen.getAllByRole('heading', { name: 'Fire Truck' });
+		expect(headings.length).toBeGreaterThanOrEqual(1);
+		// Check the type label and value
+		expect(screen.getByText(/Type:/i)).toBeInTheDocument();
+		expect(screen.getAllByText('Fire Truck').length).toBeGreaterThanOrEqual(2);
 		expect(screen.getByRole('button', { name: /Edit/i })).toBeInTheDocument();
 	});
 });

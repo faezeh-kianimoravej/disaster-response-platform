@@ -1,9 +1,21 @@
 import { BaseApi } from '@/api/base';
 import type { User, UserCreateFormData, UserEditFormData, LoginResponse } from '@/types/user';
 import type { Role } from '@/types/role';
+import type { ResponderProfile } from '@/types/responderSpecialization';
+import type { ResponderSpecialization } from '@/types/responderSpecialization';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const userApi = new BaseApi(`${API_BASE_URL}/users`);
+
+// Backend responder profile structure (ResponderProfileDto)
+type ApiResponderProfile = {
+	userId: number;
+	departmentId: number;
+	primarySpecialization: string;
+	secondarySpecializations?: string[];
+	isAvailable: boolean;
+	currentDeploymentId?: number;
+};
 
 // Backend response structure (UserResponseDto)
 type ApiUser = {
@@ -17,6 +29,7 @@ type ApiUser = {
 	createdAt?: string;
 	updatedAt?: string;
 	passwordUpdatedAt?: string;
+	responderProfile?: ApiResponderProfile;
 };
 
 // Backend request structure (UserRequestDto)
@@ -44,7 +57,24 @@ function fromApiUser(a: ApiUser): User {
 	if (a.createdAt) user.createdAt = a.createdAt;
 	if (a.updatedAt) user.updatedAt = a.updatedAt;
 	if (a.passwordUpdatedAt) user.passwordUpdatedAt = a.passwordUpdatedAt;
-
+	// Map responderProfile if present
+	const apiProfile = (a as { responderProfile?: ApiResponderProfile }).responderProfile;
+	if (apiProfile) {
+		const responderProfile: ResponderProfile = {
+			userId: apiProfile.userId,
+			departmentId: apiProfile.departmentId,
+			primarySpecialization: apiProfile.primarySpecialization as ResponderSpecialization,
+			isAvailable: apiProfile.isAvailable,
+		};
+		if (apiProfile.secondarySpecializations) {
+			responderProfile.secondarySpecializations =
+				apiProfile.secondarySpecializations as ResponderSpecialization[];
+		}
+		if (typeof apiProfile.currentDeploymentId === 'number') {
+			responderProfile.currentDeploymentId = apiProfile.currentDeploymentId;
+		}
+		user.responderProfile = responderProfile;
+	}
 	return user;
 }
 

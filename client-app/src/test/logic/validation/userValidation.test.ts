@@ -197,3 +197,111 @@ describe('userValidation (password complexity)', () => {
 		expect(res.success).toBe(false);
 	});
 });
+
+// --- Responder Profile validation tests ---
+describe('userValidation (responderProfile business rules)', () => {
+	const responderRole = {
+		roleType: 'Responder',
+		departmentId: 1,
+		municipalityId: null,
+		regionId: null,
+	};
+	const validResponderProfile = {
+		userId: 1,
+		departmentId: 1,
+		primarySpecialization: 'firefighter',
+		secondarySpecializations: ['paramedic', 'driver'],
+		isAvailable: true,
+		currentDeploymentId: undefined,
+	};
+
+	it('requires responderProfile for Responder role', () => {
+		const res = userCreateFormSchema.safeParse({
+			...base,
+			roles: [responderRole],
+			responderProfile: undefined,
+		});
+		expect(res.success).toBe(false);
+		if (!res.success) {
+			expect(res.error.issues.some(i => (i.path ?? []).includes('responderProfile'))).toBe(true);
+			expect(res.error.issues.some(i => i.message.includes('Responder profile is required'))).toBe(
+				true
+			);
+		}
+	});
+
+	it('accepts valid responderProfile for Responder role', () => {
+		const res = userCreateFormSchema.safeParse({
+			...base,
+			roles: [responderRole],
+			responderProfile: validResponderProfile,
+		});
+		expect(res.success).toBe(true);
+	});
+
+	it('rejects responderProfile with invalid primarySpecialization', () => {
+		const res = userCreateFormSchema.safeParse({
+			...base,
+			roles: [responderRole],
+			responderProfile: {
+				...validResponderProfile,
+				primarySpecialization: 'not_a_specialization',
+			},
+		});
+		expect(res.success).toBe(false);
+		if (!res.success) {
+			expect(res.error.issues.some(i => (i.path ?? []).includes('primarySpecialization'))).toBe(
+				true
+			);
+		}
+	});
+
+	it('accepts responderProfile with empty secondarySpecializations', () => {
+		const res = userCreateFormSchema.safeParse({
+			...base,
+			roles: [responderRole],
+			responderProfile: {
+				...validResponderProfile,
+				secondarySpecializations: [],
+			},
+		});
+		expect(res.success).toBe(true);
+	});
+
+	it('accepts responderProfile with omitted secondarySpecializations', () => {
+		const profileNoSecondary = { ...validResponderProfile };
+		profileNoSecondary.secondarySpecializations = [];
+		const res = userCreateFormSchema.safeParse({
+			...base,
+			roles: [responderRole],
+			responderProfile: profileNoSecondary,
+		});
+		expect(res.success).toBe(true);
+	});
+
+	it('rejects responderProfile with invalid secondarySpecializations', () => {
+		const res = userCreateFormSchema.safeParse({
+			...base,
+			roles: [responderRole],
+			responderProfile: {
+				...validResponderProfile,
+				secondarySpecializations: ['not_a_specialization'],
+			},
+		});
+		expect(res.success).toBe(false);
+		if (!res.success) {
+			expect(res.error.issues.some(i => (i.path ?? []).includes('secondarySpecializations'))).toBe(
+				true
+			);
+		}
+	});
+
+	it('does not require responderProfile for non-Responder roles', () => {
+		const res = userCreateFormSchema.safeParse({
+			...base,
+			roles: [{ roleType: 'Citizen', departmentId: null, municipalityId: null, regionId: null }],
+			responderProfile: undefined,
+		});
+		expect(res.success).toBe(true);
+	});
+});

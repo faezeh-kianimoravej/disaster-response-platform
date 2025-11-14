@@ -8,6 +8,8 @@ import nl.saxion.disaster.user_service.mapper.contract.RequestMapper;
 import nl.saxion.disaster.user_service.mapper.contract.ResponseMapper;
 import nl.saxion.disaster.user_service.model.entity.User;
 import nl.saxion.disaster.user_service.repository.contract.UserRepository;
+import nl.saxion.disaster.user_service.repository.contract.ResponderProfileRepository;
+import nl.saxion.disaster.user_service.mapper.ResponderProfileMapper;
 import nl.saxion.disaster.user_service.service.contract.UserService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,8 @@ public class UserServiceImpl implements UserService {
     private final RequestMapper<User, UserRequestDto> userRequestMapper;
     private final ResponseMapper<User, UserResponseDto> userResponseMapper;
     private final PasswordEncoder passwordEncoder;
+    private final ResponderProfileRepository responderProfileRepository;
+    private final ResponderProfileMapper responderProfileMapper;
 
     // --------------------------------------------------------------------------------------------
     // CREATE USER
@@ -46,10 +50,14 @@ public class UserServiceImpl implements UserService {
         user.setPasswordUpdatedAt(OffsetDateTime.now());
 
         User savedUser = userRepository.createUser(user);
+        if (user.getResponderProfile() != null) {
+            user.getResponderProfile().setUser(savedUser);
+            responderProfileRepository.save(user.getResponderProfile());
+        }
         log.info("User successfully saved with ID: {}", savedUser.getId());
 
         return userResponseMapper.toDto(savedUser)
-                .orElseThrow(() -> new IllegalStateException("Failed to map user entity to response"));
+            .orElseThrow(() -> new IllegalStateException("Failed to map user entity to response"));
     }
 
     // --------------------------------------------------------------------------------------------
@@ -113,6 +121,16 @@ public class UserServiceImpl implements UserService {
             existingUser.getRoles().addAll(newRoles);
         }
 
+        if (requestDto.responderProfile() != null) {
+            var profile = responderProfileMapper.toEntity(requestDto.responderProfile(), existingUser);
+            profile.setUser(existingUser);
+            responderProfileRepository.save(profile);
+            existingUser.setResponderProfile(profile);
+        } else {
+            responderProfileRepository.deleteByUserId(existingUser.getId());
+            existingUser.setResponderProfile(null);
+        }
+
         User updatedUser = userRepository.createUser(existingUser);
         log.info("User updated successfully with ID: {}", updatedUser.getId());
 
@@ -132,6 +150,9 @@ public class UserServiceImpl implements UserService {
 
         user.setDeleted(true);
         user.setUpdatedAt(OffsetDateTime.now());
+
+        responderProfileRepository.deleteByUserId(user.getId());
+        user.setResponderProfile(null);
 
         userRepository.createUser(user);
         log.info("User with ID {} marked as deleted.", id);

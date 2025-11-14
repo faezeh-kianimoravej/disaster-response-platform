@@ -1,3 +1,7 @@
+export const DEPLOYMENT_ORDER_QUERY_KEYS = {
+	byIncident: (incidentId: number) => ['deployment-order', 'incident', incidentId] as const,
+};
+
 export const REGION_QUERY_KEYS = {
 	list: ['regions'] as const,
 	item: (regionId: number) => ['region', regionId] as const,
@@ -17,8 +21,6 @@ export const DEPARTMENT_QUERY_KEYS = {
 export const INCIDENT_QUERY_KEYS = {
 	list: (regionId: number) => ['incidents', regionId] as const,
 	item: (incidentId: number) => ['incident', incidentId] as const,
-	allocatedResources: (incidentId: number) =>
-		['incident', incidentId, 'allocated-resources'] as const,
 };
 
 export const RESOURCE_QUERY_KEYS = {
@@ -38,4 +40,10 @@ export const USER_QUERY_KEYS = {
 	byRegion: (regionId: number) => ['users', 'region', regionId] as const,
 	byMunicipality: (municipalityId: number) => ['users', 'municipality', municipalityId] as const,
 	byDepartment: (departmentId: number) => ['users', 'department', departmentId] as const,
+};
+
+export const RESPONSE_UNIT_QUERY_KEYS = {
+	all: ['response-units'] as const,
+	list: (departmentId: number) => ['response-units', 'list', departmentId] as const,
+	item: (unitId: number) => ['response-units', 'item', unitId] as const,
 };

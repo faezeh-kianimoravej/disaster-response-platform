@@ -8,14 +8,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.saxion.disaster.incident_service.dto.*;
-import nl.saxion.disaster.incident_service.exception.ResourceNotFoundException;
-import nl.saxion.disaster.incident_service.service.contract.IncidentResourceService;
 import nl.saxion.disaster.incident_service.service.contract.IncidentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,7 +28,6 @@ import java.util.Optional;
 public class IncidentController {
 
     private final IncidentService incidentService;
-    private final IncidentResourceService incidentResourceService;
 
     // ----------------------------------------------------------------------------------------
     // Create a new incident
@@ -95,23 +91,8 @@ public class IncidentController {
     }
 
     // ----------------------------------------------------------------------------------------
-    // Get incident location (used by resource-service)
+    // Get incident location
     // ----------------------------------------------------------------------------------------
-
-    /**
-     * Returns the geographic location (latitude and longitude) of a specific incident.
-     * <p>
-     * This endpoint is primarily used by the <b>resource-service</b> to retrieve
-     * an incident’s location when allocating or filtering available resources
-     * based on proximity.
-     * </p>
-     * <p>
-     * Example:
-     * GET /api/incidents/42/location → { "latitude": 52.266, "longitude": 6.157 }
-     *
-     * @param id the unique identifier of the incident
-     * @return {@link IncidentLocationDto} if the incident exists, otherwise 404 Not Found
-     */
     @GetMapping("/{id}/location")
     @Operation(summary = "Get location of an incident", description = "Fetch latitude and longitude for a specific incident.")
     @ApiResponses({
@@ -124,28 +105,9 @@ public class IncidentController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    /**
-     * Retrieves a lightweight view of an incident (ID, title, status) by its unique identifier.
-     * <p>
-     * This endpoint is designed for inter-service communication and is primarily called
-     * by the <b>resource-service</b> to validate that an incident exists before
-     * finalizing resource allocation.
-     * </p>
-     * <p>
-     * Example usage:
-     * <pre>
-     *   GET /api/incidents/15/basic
-     *   Response:
-     *   {
-     *       "incidentId": 15,
-     *       "title": "Flood in Deventer",
-     *       "status": "ACTIVE"
-     *   }
-     * </pre>
-     *
-     * @param id the unique identifier of the incident
-     * @return {@link IncidentResponseDto} if found, otherwise 404 (Not Found)
-     */
+    // ----------------------------------------------------------------------------------------
+    // Get basic incident info for other microservices
+    // ----------------------------------------------------------------------------------------
     @GetMapping("/{id}/basic")
     @Operation(
             summary = "Get basic incident information",
@@ -163,66 +125,5 @@ public class IncidentController {
         return incidentService.getIncidentBasicInfoById(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @PostMapping("/{id}/resources")
-    @Operation(
-            summary = "Assign resources to an incident",
-            description = """
-                    Receives a list of allocated resources from the resource-service 
-                    when an incident is finalized. 
-                    This endpoint updates the incident with the allocated resources.
-                    """
-    )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Resources successfully assigned to the incident"),
-            @ApiResponse(responseCode = "404", description = "Incident not found")
-    })
-    public ResponseEntity<Void> assignResourcesToIncident(
-            @PathVariable Long id,
-            @RequestBody List<ResourceAllocationItemDto> allocations
-    ) {
-        incidentService.assignResourcesToIncident(id, allocations);
-        return ResponseEntity.ok().build();
-    }
-
-    // ----------------------------------------------------------------------------------------
-// Get allocated resources of an incident
-// ----------------------------------------------------------------------------------------
-    @GetMapping("/{id}/resources")
-    @Operation(
-            summary = "Get allocated resources of an incident",
-            description = """
-                    Returns all resources currently assigned to a specific incident.
-                    The response includes resource type, department, municipality, and quantity.
-                    Used by the frontend to reload previous allocations when reopening
-                    the Resource Allocation form.
-                    """
-    )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Allocated resources retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "Incident not found")
-    })
-    public ResponseEntity<List<IncidentResourceResponseDto>> getAllocatedResources(@PathVariable Long id) {
-        log.info("Fetching allocated resources for Incident ID {}", id);
-
-        // Check if the incident exists
-        IncidentResponse incidentResponse = incidentService.getById(id);
-        if (incidentResponse == null) {
-            throw new ResourceNotFoundException("Incident with ID " + id + " not found");
-        }
-
-        // Retrieve all allocated resources for the given incident
-        List<IncidentResourceResponseDto> resources = incidentResourceService.getResourcesByIncidentId(id);
-
-        // If no resources are allocated, return an empty list with status 200 (OK)
-        if (resources.isEmpty()) {
-            log.info("Incident {} has no allocated resources yet.", id);
-            return ResponseEntity.ok(Collections.emptyList());
-        }
-
-        // Return all allocated resources
-        log.info("Returning {} allocated resources for Incident ID {}", resources.size(), id);
-        return ResponseEntity.ok(resources);
     }
 }

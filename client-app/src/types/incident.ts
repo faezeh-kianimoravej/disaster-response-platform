@@ -1,4 +1,4 @@
-export const INCIDENT_SEVERITIES = ['Low', 'Medium', 'High', 'Critical'] as const;
+export const INCIDENT_SEVERITIES = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as const;
 export const INCIDENT_STATUS = ['Open', 'In Progress', 'Resolved', 'Closed'] as const;
 
 export type IncidentSeverity = (typeof INCIDENT_SEVERITIES)[number];
@@ -34,20 +34,4 @@ export interface IncidentFormData {
 	latitude: number;
 	longitude: number;
 	regionId: number;
-}
-
-export interface IncidentResourceAllocationRequest {
-	resourceId: number;
-	quantity: number;
-}
-
-export interface IncidentResourceAllocationResponse {
-	incidentId: number;
-	allocatedResources: {
-		resourceId: number;
-		quantity: number;
-	}[];
-	status: string;
-	message?: string;
-	timestamp?: string;
 }

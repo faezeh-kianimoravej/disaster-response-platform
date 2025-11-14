@@ -18,8 +18,6 @@ public interface ResourceRepository {
 
     List<Resource> findByDepartment(Long departmentId);
 
-    List<Resource> findAvailableResourcesByTypeAndDepartment(String resourceType, Long departmentId, List<Long> departmentIds);
-
     Resource save(Resource resource);
 
     Resource edit(Long id, Resource updatedResource);

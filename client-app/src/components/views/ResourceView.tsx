@@ -1,6 +1,7 @@
+import { ResourceType } from '@/types/resource';
 import Button from '@/components/ui/Button';
 import type { Resource } from '@/types/resource';
-import { RESOURCE_TYPES, getDisplayImageSrc } from '@/utils/resourceUtils';
+import { getDisplayImageSrc, getReadableResourceType } from '@/utils/resourceUtils';
 
 interface ResourceViewProps {
 	resource: Resource;
@@ -25,14 +26,17 @@ export default function ResourceView({ resource, onEdit, onDelete, onBack }: Res
 					<p className="text-gray-600 mt-2">{resource.description}</p>
 					<div className="mt-4 text-gray-700">
 						<p>
-							<strong>Quantity:</strong> {resource.quantity}
+							<strong>Total Quantity:</strong> {resource.totalQuantity ?? 'N/A'}
 						</p>
 						<p>
-							<strong>Available:</strong> {resource.available}
+							<strong>Available Quantity:</strong> {resource.availableQuantity ?? 'N/A'}
+						</p>
+						<p>
+							<strong>Unit:</strong> {resource.unit ?? 'N/A'}
 						</p>
 						<p>
 							<strong>Type:</strong>{' '}
-							{RESOURCE_TYPES[resource.resourceType as keyof typeof RESOURCE_TYPES]}
+							{getReadableResourceType(resource.resourceType as ResourceType)}
 						</p>
 						<p>
 							<strong>Latitude:</strong> {resource.latitude != null ? resource.latitude : 'Not set'}

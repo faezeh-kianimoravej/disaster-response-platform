@@ -61,11 +61,11 @@ export default function IncidentDetailsPage() {
 								<div className="flex gap-3 items-center">
 									<Badge
 										variant={
-											incident.severity === 'Critical'
+											incident.severity === 'CRITICAL'
 												? 'critical'
-												: incident.severity === 'High'
+												: incident.severity === 'HIGH'
 													? 'high'
-													: incident.severity === 'Medium'
+													: incident.severity === 'MEDIUM'
 														? 'medium'
 														: 'low'
 										}
@@ -89,10 +89,10 @@ export default function IncidentDetailsPage() {
 										<span className="mx-2 text-gray-300">|</span>
 
 										<Link
-											to={`/incidents/${incident.incidentId}/allocate-resources`}
+											to={routes.incidentDeploymentOrder(incident.incidentId)}
 											className="hover:text-blue-800 hover:underline"
 										>
-											Allocate Resources
+											Order Deployment
 										</Link>
 										<span className="mx-2 text-gray-300">|</span>
 										<a href="#" className="hover:text-blue-800 hover:underline">

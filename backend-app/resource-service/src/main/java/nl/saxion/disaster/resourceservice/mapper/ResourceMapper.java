@@ -3,11 +3,9 @@ package nl.saxion.disaster.resourceservice.mapper;
 
 import nl.saxion.disaster.resourceservice.dto.ResourceDto;
 import nl.saxion.disaster.resourceservice.model.entity.Resource;
-import nl.saxion.disaster.resourceservice.model.enums.ResourceType;
 import org.springframework.stereotype.Component;
 
 import java.util.Base64;
-import java.util.Locale;
 import java.util.Optional;
 
 @Component
@@ -23,18 +21,24 @@ public class ResourceMapper implements BaseMapper<Resource, ResourceDto> {
 
                     return new ResourceDto(
                             res.getResourceId(),
+                            res.getDepartmentId(),
                             res.getName(),
                             res.getDescription(),
-                            res.getAvailable(),
-                            res.getQuantity(),
-                            Optional.ofNullable(res.getResourceType())
-                                    .map(Enum::name)
-                                    .orElse(null),
-                            res.getDepartmentId(),
+                            res.getCategory(),
+                            res.getResourceType(),
+                            res.getResourceKind(),
+                            res.getStatus(),
+                            res.getTotalQuantity(),
+                            res.getAvailableQuantity(),
+                            res.getUnit(),
+                            res.getIsTrackable(),
                             res.getLatitude(),
                             res.getLongitude(),
+                            res.getLastLocationUpdate(),
+                            res.getCurrentDeploymentId(),
+                            res.getDeployedQuantity(),
                             imageBase64
-                    );
+                                );
                 })
                 .orElse(null);
     }
@@ -54,33 +58,24 @@ public class ResourceMapper implements BaseMapper<Resource, ResourceDto> {
         }
         Resource resource = new Resource();
         resource.setResourceId(resourceDto.resourceId());
+        resource.setDepartmentId(resourceDto.departmentId());
         resource.setName(resourceDto.name());
         resource.setDescription(resourceDto.description());
-        resource.setAvailable(resourceDto.available());
-        resource.setQuantity(Optional.ofNullable(resourceDto.quantity()).orElse(1)
-        );
+        resource.setCategory(resourceDto.category());
+        resource.setResourceType(resourceDto.resourceType());
+        resource.setResourceKind(resourceDto.resourceKind());
+        resource.setStatus(resourceDto.status());
+        resource.setTotalQuantity(resourceDto.totalQuantity());
+        resource.setAvailableQuantity(resourceDto.availableQuantity());
+        resource.setUnit(resourceDto.unit());
+        resource.setIsTrackable(resourceDto.isTrackable());
         resource.setLatitude(resourceDto.latitude());
         resource.setLongitude(resourceDto.longitude());
+        resource.setLastLocationUpdate(resourceDto.lastLocationUpdate());
+        resource.setCurrentDeploymentId(resourceDto.currentDeploymentId());
+        resource.setDeployedQuantity(resourceDto.deployedQuantity());
         resource.setImage(imageBytes);
-        resource.setDepartmentId(resourceDto.departmentId());
-        mapResourceType(resourceDto, resource);
-
         return resource;
-    }
-
-    private static void mapResourceType(ResourceDto resourceDto, Resource resource) {
-        String typeStr = resourceDto.resourceType();
-        if (typeStr != null && !typeStr.isBlank()) {
-            try {
-                String normalized = typeStr.trim().replace(' ', '_').toUpperCase(Locale.ROOT);
-                resource.setResourceType(ResourceType.valueOf(normalized));
-            } catch (IllegalArgumentException ex) {
-                System.err.println("⚠ Invalid resource resourceType: " + typeStr);
-                resource.setResourceType(null);
-            }
-        } else {
-            resource.setResourceType(null);
-        }
     }
 
 }

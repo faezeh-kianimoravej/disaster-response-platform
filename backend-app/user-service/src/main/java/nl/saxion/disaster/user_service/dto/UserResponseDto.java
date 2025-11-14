@@ -2,6 +2,7 @@ package nl.saxion.disaster.user_service.dto;
 
 import java.time.OffsetDateTime;
 import java.util.Set;
+import nl.saxion.disaster.user_service.dto.ResponderProfileDto;
 
 public record UserResponseDto(
         Long id,
@@ -13,6 +14,9 @@ public record UserResponseDto(
         Set<RoleDto> roles,
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt,
-        OffsetDateTime passwordUpdatedAt
+        OffsetDateTime passwordUpdatedAt,
+
+        // Optional: Only for responder users
+        ResponderProfileDto responderProfile
 ) {
 }

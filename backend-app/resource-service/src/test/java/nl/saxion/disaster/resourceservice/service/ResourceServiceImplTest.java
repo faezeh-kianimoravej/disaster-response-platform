@@ -4,6 +4,9 @@ import nl.saxion.disaster.resourceservice.dto.ResourceDto;
 import nl.saxion.disaster.resourceservice.mapper.ResourceMapper;
 import nl.saxion.disaster.resourceservice.model.entity.Resource;
 import nl.saxion.disaster.resourceservice.model.enums.ResourceType;
+import nl.saxion.disaster.resourceservice.model.enums.ResourceKind;
+import nl.saxion.disaster.resourceservice.model.enums.ResourceCategory;
+import nl.saxion.disaster.resourceservice.model.enums.ResourceStatus;
 import nl.saxion.disaster.resourceservice.repository.contract.ResourceRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,24 +40,42 @@ class ResourceServiceImplTest {
 
         resource = new Resource();
         resource.setResourceId(1L);
+        resource.setDepartmentId(5L);
         resource.setName("Fire Truck");
         resource.setDescription("Used for firefighting operations");
-        resource.setAvailable(5);
-        resource.setQuantity(2);
+        resource.setCategory(ResourceCategory.VEHICLE);
         resource.setResourceType(ResourceType.FIRE_TRUCK);
+        resource.setResourceKind(ResourceKind.UNIQUE);
+        resource.setStatus(ResourceStatus.AVAILABLE);
+        resource.setTotalQuantity(10);
+        resource.setAvailableQuantity(5);
+        resource.setUnit("unit");
+        resource.setIsTrackable(true);
         resource.setLatitude(52.37);
         resource.setLongitude(4.89);
+        resource.setLastLocationUpdate(null);
+        resource.setCurrentDeploymentId(null);
+        resource.setDeployedQuantity(2);
+        resource.setImage(null);
 
         resourceDto = new ResourceDto(
                 1L,
+                5L,
                 "Fire Truck",
                 "Used for firefighting operations",
-                1,
-                2,
-                "FIRE_TRUCK",
-                5L,  // departmentId
+                ResourceCategory.VEHICLE,
+                ResourceType.FIRE_TRUCK,
+                ResourceKind.UNIQUE,
+                ResourceStatus.AVAILABLE,
+                10,
+                5,
+                "unit",
+                true,
                 52.37,
                 4.89,
+                null,
+                null,
+                2,
                 null
         );
     }
@@ -81,7 +102,7 @@ class ResourceServiceImplTest {
 
         // Assert
         assertEquals(1, result.size());
-        assertEquals(1, result.get(0).available());
+        assertEquals(5, result.get(0).availableQuantity());
         verify(resourceRepository, times(1)).findAllAvailableResources();
     }
 
@@ -93,7 +114,7 @@ class ResourceServiceImplTest {
         List<ResourceDto> result = resourceService.getResourcesByType(ResourceType.FIRE_TRUCK);
 
         assertEquals(1, result.size());
-        assertEquals("FIRE_TRUCK", result.get(0).resourceType());
+        assertEquals(ResourceType.FIRE_TRUCK, result.get(0).resourceType());
         verify(resourceRepository, times(1)).findByType(ResourceType.FIRE_TRUCK);
     }
 
@@ -130,7 +151,7 @@ class ResourceServiceImplTest {
         ResourceDto edited = resourceService.editResource(1L, resourceDto);
 
         assertNotNull(edited);
-        assertEquals(2, edited.quantity());
+        assertEquals(2, edited.deployedQuantity());
         verify(resourceRepository, times(1)).edit(1L, resource);
     }
 
@@ -160,7 +181,7 @@ class ResourceServiceImplTest {
 
         assertEquals(resource.getResourceId(), dto.id());
         assertEquals(resource.getName(), dto.name());
-        assertEquals(resource.getResourceType().name(), dto.resourceType());
+        assertEquals(resource.getResourceType(), dto.resourceType());
         assertEquals(resource.getDepartmentId(), dto.departmentId());
 
         verify(resourceRepository, times(1)).findById(1L);
@@ -177,6 +198,81 @@ class ResourceServiceImplTest {
         // Assert
         assertTrue(result.isEmpty(), "Expected an empty Optional result");
         verify(resourceRepository, times(1)).findById(999L);
+    }
+
+    @Test
+    void testGetAvailableResourcesByDepartment() {
+        // Setup two resources with different departmentIds
+        Resource resource2 = new Resource();
+        resource2.setResourceId(2L);
+        resource2.setDepartmentId(99L);
+        resource2.setName("Ambulance");
+        resource2.setDescription("Medical transport");
+        resource2.setCategory(ResourceCategory.VEHICLE);
+        resource2.setResourceType(ResourceType.AMBULANCE);
+        resource2.setResourceKind(ResourceKind.UNIQUE);
+        resource2.setStatus(ResourceStatus.AVAILABLE);
+        resource2.setTotalQuantity(3);
+        resource2.setAvailableQuantity(2);
+        resource2.setUnit("unit");
+        resource2.setIsTrackable(true);
+        resource2.setLatitude(51.0);
+        resource2.setLongitude(5.0);
+        resource2.setLastLocationUpdate(null);
+        resource2.setCurrentDeploymentId(null);
+        resource2.setDeployedQuantity(1);
+        resource2.setImage(null);
+
+        ResourceDto resourceDto2 = new ResourceDto(
+                2L,
+                99L,
+                "Ambulance",
+                "Medical transport",
+                ResourceCategory.VEHICLE,
+                ResourceType.AMBULANCE,
+                ResourceKind.UNIQUE,
+                ResourceStatus.AVAILABLE,
+                3,
+                2,
+                "unit",
+                true,
+                51.0,
+                5.0,
+                null,
+                null,
+                1,
+                null
+        );
+
+        when(resourceRepository.findAllAvailableResources()).thenReturn(List.of(resource, resource2));
+        when(resourceMapper.toDto(resource)).thenReturn(resourceDto);
+        when(resourceMapper.toDto(resource2)).thenReturn(resourceDto2);
+
+        // Only resource with departmentId 5L should be returned
+        List<ResourceDto> result = resourceService.getAvailableResourcesByDepartment(5L);
+        assertEquals(1, result.size());
+        assertEquals(5L, result.get(0).departmentId());
+        assertEquals("Fire Truck", result.get(0).name());
+    }
+
+    @Test
+    void testGetResourceLocationById_WhenResourceExists() {
+        resource.setLatitude(52.37);
+        resource.setLongitude(4.89);
+        when(resourceRepository.findById(1L)).thenReturn(Optional.of(resource));
+        var result = resourceService.getResourceLocationById(1L);
+        assertTrue(result.isPresent());
+        var dto = result.get();
+        assertEquals(resource.getResourceId(), dto.resourceId());
+        assertEquals(resource.getLatitude(), dto.latitude());
+        assertEquals(resource.getLongitude(), dto.longitude());
+    }
+
+    @Test
+    void testGetResourceLocationById_WhenResourceNotFound() {
+        when(resourceRepository.findById(999L)).thenReturn(Optional.empty());
+        var result = resourceService.getResourceLocationById(999L);
+        assertTrue(result.isEmpty());
     }
 
 }

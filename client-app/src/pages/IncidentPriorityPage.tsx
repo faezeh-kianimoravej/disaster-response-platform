@@ -55,11 +55,11 @@ export default function IncidentPriorityPage() {
 								<div className="flex gap-3 items-center mb-3">
 									<Badge
 										variant={
-											incident.severity === 'Critical'
+											incident.severity === 'CRITICAL'
 												? 'critical'
-												: incident.severity === 'High'
+												: incident.severity === 'HIGH'
 													? 'high'
-													: incident.severity === 'Medium'
+													: incident.severity === 'MEDIUM'
 														? 'medium'
 														: 'low'
 										}

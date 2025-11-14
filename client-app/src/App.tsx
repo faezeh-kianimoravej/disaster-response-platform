@@ -15,7 +15,7 @@ import DepartmentsPage from './pages/DepartmentsPage';
 import MunicipalitiesPage from './pages/MunicipalitiesPage';
 import IncidentDetailsPage from './pages/IncidentDetailsPage';
 import IncidentPriorityPage from './pages/IncidentPriorityPage';
-import IncidentAllocateResourcePage from './pages/IncidentAllocateResourcePage';
+import IncidentDeploymentOrder from './pages/IncidentDeploymentOrder';
 import { AppProviders } from './context/AppProviders';
 
 function App() {
@@ -31,8 +31,8 @@ function App() {
 						<Route path="/incidents/:incidentId" element={<IncidentDetailsPage />} />
 						<Route path="/incidents/:incidentId/prioritize" element={<IncidentPriorityPage />} />
 						<Route
-							path="/incidents/:incidentId/allocate-resources"
-							element={<IncidentAllocateResourcePage />}
+							path="/incidents/:incidentId/deployment-order"
+							element={<IncidentDeploymentOrder />}
 						/>
 						<Route path="/resources" element={<ResourcesPage />} />
 						<Route path="/resources/:departmentId" element={<ResourcesPage />} />
