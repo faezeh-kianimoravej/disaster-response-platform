@@ -6,16 +6,16 @@ import java.util.List;
 
 public interface NotificationRepository {
 
-    void createNotification(Notification notification);
-    
+    Notification createNotification(Notification notification);
+
     List<Notification> findAllNotifications();
-    
+
     Notification findNotificationById(Long id);
-    
+
     List<Notification> findNotificationsByType(String type);
-    
+
     void updateNotificationStatus(Notification notification);
-    
+
     /**
      * Finds notifications by region ID.
      *
