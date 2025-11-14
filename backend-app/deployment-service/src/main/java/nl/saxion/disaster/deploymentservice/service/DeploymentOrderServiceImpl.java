@@ -12,6 +12,8 @@ import nl.saxion.disaster.deploymentservice.repository.contract.DeploymentOrderR
 import nl.saxion.disaster.shared.event.NewDeploymentRequestEvent;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -29,6 +31,10 @@ public class DeploymentOrderServiceImpl implements nl.saxion.disaster.deployment
     @Override
     @Transactional
     public DeploymentOrderDTO createDeploymentOrder(DeploymentOrderCreateDTO dto) {
+
+        // ------------------------------
+        // 1) Build DeploymentOrder object
+        // ------------------------------
         DeploymentOrder order = new DeploymentOrder();
         order.setIncidentId(dto.getIncidentId());
         order.setOrderedBy(dto.getOrderedBy());
@@ -37,13 +43,14 @@ public class DeploymentOrderServiceImpl implements nl.saxion.disaster.deployment
         order.setNotes(dto.getNotes());
 
         List<DeploymentRequest> requests = new ArrayList<>();
-        Date now = new Date();
+        Date currentDate = new Date();
+
         dto.getDeploymentRequests().forEach(rq -> {
             DeploymentRequest r = new DeploymentRequest();
             r.setIncidentId(dto.getIncidentId());
             r.setDeploymentOrder(order);
             r.setRequestedBy(dto.getOrderedBy());
-            r.setRequestedAt(now);
+            r.setRequestedAt(currentDate);
             r.setTargetDepartmentId(rq.getTargetDepartmentId());
             r.setPriority(dto.getIncidentSeverity());
             r.setRequestedUnitType(rq.getRequestedUnitType());
@@ -52,38 +59,45 @@ public class DeploymentOrderServiceImpl implements nl.saxion.disaster.deployment
             r.setNotes(dto.getNotes());
             requests.add(r);
         });
+
         order.setDeploymentRequests(requests);
 
-        DeploymentOrder saved = orderRepository.saveDeploymentOrder(order);
+        // ------------------------------
+        // 2) Save to DB (inside transaction)
+        // ------------------------------
+        DeploymentOrder savedDeploymentOrder = orderRepository.saveDeploymentOrder(order);
 
-        // ---------------------------------------------------------
-        // Publish "New Deployment Request" events
-        // After saving the DeploymentOrder and its DeploymentRequests,
-        // we publish one event per request to notify other services
-        // (e.g., notification-service) that a department-specific
-        // deployment request has been created.
-        //
-        // This fulfills the AC requirement:
-        // "When the deployment relates to my department,
-        //  Then I should receive a notification"
-        saved.getDeploymentRequests().forEach(req -> {
-            NewDeploymentRequestEvent event = NewDeploymentRequestEvent.builder()
-                    .deploymentRequestId(req.getRequestId())
-                    .departmentId(req.getTargetDepartmentId())
-                    .incidentId(saved.getIncidentId())
-                    .createdAt(Instant.now())
-                    .build();
+        // ------------------------------
+        // 3) Publish events AFTER COMMIT
+        // ------------------------------
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
 
-            eventPublisher.publish(event);
+                savedDeploymentOrder.getDeploymentRequests().forEach(req -> {
+                    NewDeploymentRequestEvent event = NewDeploymentRequestEvent.builder()
+                            .deploymentRequestId(req.getRequestId())
+                            .departmentId(req.getTargetDepartmentId())
+                            .incidentId(savedDeploymentOrder.getIncidentId())
+                            .createdAt(Instant.now())
+                            .build();
+
+                    eventPublisher.publish(event);
+                });
+            }
         });
-        return orderMapper.toDto(saved);
+
+        // Return response
+        return orderMapper.toDto(savedDeploymentOrder);
     }
 
     @Override
     @Transactional(readOnly = true)
     public DeploymentOrderDTO getDeploymentOrderByIncidentId(Long incidentId) {
         DeploymentOrder order = orderRepository.findDeploymentOrderByIncidentId(incidentId)
-                .orElseThrow(() -> new IllegalArgumentException("Deployment order not found for incident ID: " + incidentId));
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Deployment order not found for incident ID: " + incidentId));
+
         return orderMapper.toDto(order);
     }
 }
