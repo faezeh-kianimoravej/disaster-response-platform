@@ -17,8 +17,10 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     private EntityManager entityManager;
 
     @Override
-    public void createNotification(Notification notification) {
+    public Notification createNotification(Notification notification) {
         entityManager.persist(notification);
+        entityManager.flush();
+        return notification;
     }
 
     @Override
@@ -26,6 +28,7 @@ public class NotificationRepositoryImpl implements NotificationRepository {
         String jpql = "SELECT notification FROM Notification notification ORDER BY notification.createdAt DESC";
         return entityManager.createQuery(jpql, Notification.class).getResultList();
     }
+
     public List<Notification> findNotificationsByRegionId(Long regionId) {
         String jpql = "SELECT notification FROM Notification notification WHERE notification.regionId = :regionId ORDER BY notification.createdAt DESC";
         return entityManager.createQuery(jpql, Notification.class)
