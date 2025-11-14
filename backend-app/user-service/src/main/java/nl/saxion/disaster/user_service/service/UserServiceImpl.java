@@ -7,6 +7,7 @@ import nl.saxion.disaster.user_service.dto.UserResponseDto;
 import nl.saxion.disaster.user_service.mapper.contract.RequestMapper;
 import nl.saxion.disaster.user_service.mapper.contract.ResponseMapper;
 import nl.saxion.disaster.user_service.model.entity.User;
+import nl.saxion.disaster.user_service.model.entity.ResponderProfile;
 import nl.saxion.disaster.user_service.repository.contract.UserRepository;
 import nl.saxion.disaster.user_service.repository.contract.ResponderProfileRepository;
 import nl.saxion.disaster.user_service.mapper.ResponderProfileMapper;
@@ -122,10 +123,18 @@ public class UserServiceImpl implements UserService {
         }
 
         if (requestDto.responderProfile() != null) {
-            var profile = responderProfileMapper.toEntity(requestDto.responderProfile(), existingUser);
-            profile.setUser(existingUser);
-            responderProfileRepository.save(profile);
-            existingUser.setResponderProfile(profile);
+            var existingProfileOpt = responderProfileRepository.findByUserId(existingUser.getId());
+            ResponderProfile profileToSave;
+            if (existingProfileOpt.isPresent()) {
+                var existingProfile = existingProfileOpt.get();
+                responderProfileMapper.updateEntity(requestDto.responderProfile(), existingProfile);
+                profileToSave = existingProfile;
+            } else {
+                profileToSave = responderProfileMapper.toEntity(requestDto.responderProfile(), existingUser);
+            }
+            profileToSave.setUser(existingUser);
+            responderProfileRepository.save(profileToSave);
+            existingUser.setResponderProfile(profileToSave);
         } else {
             responderProfileRepository.deleteByUserId(existingUser.getId());
             existingUser.setResponderProfile(null);

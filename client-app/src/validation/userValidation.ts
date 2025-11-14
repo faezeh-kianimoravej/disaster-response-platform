@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import { ALL_ROLES, DEPARTMENT_ROLES, MUNICIPALITY_ROLES, REGION_ROLES } from '@/types/role';
-import { responderProfileSchema } from '@/validation/responderProfileValidation';
+import {
+	responderProfileSchema,
+	responderProfileCreateSchema,
+} from '@/validation/responderProfileValidation';
 
 const roleSchema = z
 	.object({
@@ -131,6 +134,7 @@ const strongPassword = z
 
 export const userCreateFormSchema = addResponderProfileCheck(
 	userBaseSchema.extend({
+		responderProfile: responderProfileCreateSchema.optional(),
 		password: strongPassword,
 	})
 );

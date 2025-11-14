@@ -38,7 +38,17 @@ export default function FormShell<TFormValues extends FieldValues>({
 
 	return (
 		<FormProvider {...methods}>
-			<form onSubmit={methods.handleSubmit(onSubmit)} className={className}>
+			<form
+				onSubmit={methods.handleSubmit(
+					async (values: TFormValues) => {
+						await onSubmit(values as TFormValues);
+					},
+					() => {
+						/* validation errors handled by RHF; no debug logging here */
+					}
+				)}
+				className={className}
+			>
 				{children}
 				{shouldRenderFooter ? <FormFooter {...footerProps} /> : null}
 			</form>

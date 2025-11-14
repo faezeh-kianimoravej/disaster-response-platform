@@ -23,6 +23,7 @@ export interface FormInputProps {
 	showPreview?: boolean;
 	previewClassName?: string;
 	multiple?: boolean;
+	size?: number | undefined;
 }
 
 export default function FormInput({
@@ -46,6 +47,7 @@ export default function FormInput({
 	showPreview = false,
 	previewClassName = 'h-32 w-32 object-cover border rounded-md',
 	multiple = false,
+	size,
 }: FormInputProps) {
 	const hasError = Boolean(showValidation && error);
 	const inputId = `${name}-input`;
@@ -77,18 +79,29 @@ export default function FormInput({
 				);
 
 			case 'select':
+				let selectValue = value;
+				if (multiple) {
+					if (Array.isArray(value)) {
+						selectValue = value.map(String);
+					} else if (typeof value === 'string' && value.length > 0) {
+						selectValue = [value];
+					} else {
+						selectValue = [];
+					}
+				}
 				return (
 					<select
 						id={inputId}
 						name={name}
-						value={Array.isArray(value) ? value.map(String) : value}
+						value={selectValue}
 						onChange={onChange}
 						disabled={disabled}
 						className={baseClasses}
 						multiple={!!multiple}
+						size={typeof size === 'number' ? size : multiple ? 5 : undefined}
 					>
 						{options.map(option => (
-							<option key={option.value} value={option.value}>
+							<option key={option.value} value={String(option.value)}>
 								{option.label}
 							</option>
 						))}
