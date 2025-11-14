@@ -8,6 +8,7 @@ export enum NotificationType {
 	RESOURCE_RETURNED = 'RESOURCE_RETURNED',
 	WEATHER_WARNING = 'WEATHER_WARNING',
 	GENERAL_ALERT = 'GENERAL_ALERT',
+	DEPLOYMENT_REQUEST = 'DEPLOYMENT_REQUEST',
 }
 
 export interface Notification {
@@ -18,6 +19,8 @@ export interface Notification {
 	createdAt: string;
 	read: boolean;
 	notificationType: NotificationType;
+	deploymentRequestId?: number;
+	targetDepartmentId?: string;
 }
 
 export interface NotificationResponse {

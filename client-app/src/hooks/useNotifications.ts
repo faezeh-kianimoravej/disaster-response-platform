@@ -98,6 +98,38 @@ export default function useNotifications(
 
 		eventSource.addEventListener('notification', handleNotificationEvent);
 
+		const handleDeploymentRequestEvent = (event: MessageEvent) => {
+			try {
+				const notification: Notification = JSON.parse(event.data);
+				queryClient.setQueryData<Notification[] | undefined>(['notifications', regionId], prev => {
+					const current = Array.isArray(prev) ? prev : [];
+					const exists = current.some(n => n.notificationId === notification.notificationId);
+					if (exists) return current;
+					return [notification, ...current];
+				});
+
+				const isNew = !initialNotificationIds.has(notification.notificationId);
+				if (isNew) {
+					try {
+						if (
+							typeof window !== 'undefined' &&
+							'Notification' in window &&
+							Notification.permission === 'granted'
+						) {
+							showBrowserNotification(notification.title, { body: notification.description });
+						}
+					} catch {}
+					if (onNewNotification) onNewNotification(notification);
+				}
+				const notifIdNum = Number(notification.notificationId);
+				if (!lastNotificationId || (!isNaN(notifIdNum) && notifIdNum > lastNotificationId)) {
+					setLastNotificationId(notifIdNum);
+				}
+			} catch {}
+		};
+
+		eventSource.addEventListener('deployment_request', handleDeploymentRequestEvent);
+
 		eventSource.onerror = () => {
 			setIsConnected(false);
 			eventSource.close();
@@ -105,6 +137,7 @@ export default function useNotifications(
 
 		return () => {
 			eventSource.removeEventListener('notification', handleNotificationEvent);
+			eventSource.removeEventListener('deployment_request', handleDeploymentRequestEvent);
 			eventSource.close();
 			setIsConnected(false);
 		};
