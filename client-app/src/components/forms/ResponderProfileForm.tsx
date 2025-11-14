@@ -1,40 +1,22 @@
 import RHFSelect from '@/components/forms/rhf/RHFSelect';
+import RHFCheckboxGroup from '@/components/forms/rhf/RHFCheckboxGroup';
 import { RESPONDER_SPECIALIZATIONS } from '@/types/responderSpecialization';
-import { Controller, useFormContext } from 'react-hook-form';
 
 export default function ResponderProfileForm() {
-	const { control } = useFormContext();
-
 	return (
 		<div className="space-y-4 border rounded p-4 bg-gray-50">
 			<h3 className="text-lg font-semibold mb-2">Responder Profile</h3>
-			<Controller
+			<RHFSelect
 				name="responderProfile.primarySpecialization"
-				control={control}
-				render={({ field, fieldState }) => (
-					<RHFSelect
-						{...field}
-						label="Primary Specialization"
-						options={RESPONDER_SPECIALIZATIONS.map(s => ({ label: s, value: s }))}
-						error={fieldState.error?.message}
-						required
-					/>
-				)}
+				label="Primary Specialization"
+				options={RESPONDER_SPECIALIZATIONS.map(s => ({ label: s, value: s }))}
+				required
 			/>
-			<Controller
+			<RHFCheckboxGroup
 				name="responderProfile.secondarySpecializations"
-				control={control}
-				render={({ field, fieldState }) => (
-					<RHFSelect
-						{...field}
-						label="Secondary Specializations"
-						options={RESPONDER_SPECIALIZATIONS.map(s => ({ label: s, value: s }))}
-						error={fieldState.error?.message}
-						valueType="string"
-						helpText="Hold Ctrl (Cmd on Mac) to select multiple."
-						multiple
-					/>
-				)}
+				label="Secondary Specializations"
+				options={RESPONDER_SPECIALIZATIONS.map(s => ({ label: s, value: s }))}
+				className="mt-1"
 			/>
 		</div>
 	);

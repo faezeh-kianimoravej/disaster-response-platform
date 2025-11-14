@@ -33,6 +33,7 @@ export const RESPONDER_SPECIALIZATIONS = [
 export type ResponderSpecialization = (typeof RESPONDER_SPECIALIZATIONS)[number];
 
 export interface ResponderProfile {
+	id?: number | undefined;
 	userId: number;
 	departmentId: number;
 
@@ -44,6 +45,7 @@ export interface ResponderProfile {
 }
 
 export interface ResponderProfileFormData {
+	id?: number | undefined;
 	userId: number;
 	departmentId: number;
 	primarySpecialization: ResponderSpecialization;
