@@ -45,19 +45,19 @@ public class DeploymentOrderServiceImpl implements nl.saxion.disaster.deployment
         List<DeploymentRequest> requests = new ArrayList<>();
         Date currentDate = new Date();
 
-        dto.getDeploymentRequests().forEach(rq -> {
-            DeploymentRequest r = new DeploymentRequest();
-            r.setIncidentId(dto.getIncidentId());
-            r.setDeploymentOrder(order);
-            r.setRequestedBy(dto.getOrderedBy());
-            r.setRequestedAt(currentDate);
-            r.setTargetDepartmentId(rq.getTargetDepartmentId());
-            r.setPriority(dto.getIncidentSeverity());
-            r.setRequestedUnitType(rq.getRequestedUnitType());
-            r.setRequestedQuantity(rq.getRequestedQuantity());
-            r.setStatus(DeploymentRequestStatus.PENDING);
-            r.setNotes(dto.getNotes());
-            requests.add(r);
+        dto.getDeploymentRequests().forEach(request -> {
+            DeploymentRequest deploymentRequest = new DeploymentRequest();
+            deploymentRequest.setIncidentId(dto.getIncidentId());
+            deploymentRequest.setDeploymentOrder(order);
+            deploymentRequest.setRequestedBy(dto.getOrderedBy());
+            deploymentRequest.setRequestedAt(currentDate);
+            deploymentRequest.setTargetDepartmentId(request.getTargetDepartmentId());
+            deploymentRequest.setPriority(dto.getIncidentSeverity());
+            deploymentRequest.setRequestedUnitType(request.getRequestedUnitType());
+            deploymentRequest.setRequestedQuantity(request.getRequestedQuantity());
+            deploymentRequest.setStatus(DeploymentRequestStatus.PENDING);
+            deploymentRequest.setNotes(dto.getNotes());
+            requests.add(deploymentRequest);
         });
 
         order.setDeploymentRequests(requests);
