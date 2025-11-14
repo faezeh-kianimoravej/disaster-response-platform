@@ -20,11 +20,11 @@ public class DeploymentRequestListener {
      */
     @KafkaListener(
             topics = "new-deployment-requests",
-            groupId = "notification-service"
+            groupId = "notification-group"
     )
     public void handleNewDeploymentRequest(NewDeploymentRequestEvent event) {
         log.info("Received NewDeploymentRequestEvent: {}", event);
-        
+
         notificationService.sendDeploymentNotification(
                 event.departmentId(),
                 event.deploymentRequestId(),
