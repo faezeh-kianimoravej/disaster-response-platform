@@ -12,6 +12,7 @@ import useSingleErrorToast from '@/hooks/useSingleErrorToast';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { DEPARTMENT_ROLES, MUNICIPALITY_ROLES, REGION_ROLES, createRoles } from '@/types/role';
 import { useAuth, useUserHasAnyRole } from '@/context/AuthContext';
+import ResponseUnitsOverview from '@/components/views/ResponseUnitsOverview';
 
 export default function ResourcesPage() {
 	const { departmentId } = useParams<{ departmentId?: string }>();
@@ -31,6 +32,8 @@ export default function ResourcesPage() {
 		</AuthGuard>
 	);
 }
+
+// ResponseUnitsOverview moved to a separate view component in components/views
 
 function ResourcesPageContent({
 	departmentId,
@@ -76,14 +79,6 @@ function ResourcesPageContent({
 								Back
 							</Button>
 						)}
-						{departmentId !== undefined && (
-							<Button
-								onClick={() => navigate(routes.resourceNew(), { state: { departmentId } })}
-								variant="primary"
-							>
-								Add New Resource
-							</Button>
-						)}
 					</div>
 				</div>
 
@@ -98,6 +93,17 @@ function ResourcesPageContent({
 
 				{activeTab === 'resources' && (
 					<section aria-busy={loading} aria-live="polite">
+						<div className="flex items-center justify-between mb-6">
+							<p className="text-gray-600">Manage and assign resources for this department.</p>
+							{departmentId !== undefined && (
+								<Button
+									onClick={() => navigate(routes.resourceNew(), { state: { departmentId } })}
+									variant="primary"
+								>
+									Add New Resource
+								</Button>
+							)}
+						</div>
 						{loading && <LoadingPanel text="Loading resources..." />}
 
 						{error && !loading && (
@@ -123,24 +129,26 @@ function ResourcesPageContent({
 													alt={r.name}
 													className="h-24 w-24 object-contain mx-auto mb-4"
 												/>
-												<h3 className="text-lg font-semibold text-gray-800 mb-2">{r.name}</h3>
-												<p className="text-sm text-gray-500 mb-2">{r.description}</p>
-												<p className="text-gray-700">
+												<h3 className="text-lg font-semibold text-gray-800 mb-2 normal-case">
+													{r.name}
+												</h3>
+												<p className="text-sm text-gray-500 mb-2 normal-case">{r.description}</p>
+												<p className="text-gray-700 normal-case">
 													<strong>Category:</strong> {r.category}
 												</p>
-												<p className="text-gray-700">
+												<p className="text-gray-700 normal-case">
 													<strong>Kind:</strong> {r.resourceKind}
 												</p>
-												<p className="text-gray-700">
+												<p className="text-gray-700 normal-case">
 													<strong>Status:</strong> {r.status}
 												</p>
-												<p className="text-gray-700">
+												<p className="text-gray-700 normal-case">
 													<strong>Total Quantity:</strong> {r.totalQuantity ?? '-'}
 												</p>
-												<p className="text-gray-700">
+												<p className="text-gray-700 normal-case">
 													<strong>Available:</strong> {r.availableQuantity ?? '-'}
 												</p>
-												<p className="text-gray-700">
+												<p className="text-gray-700 normal-case">
 													<strong>Type:</strong> {r.resourceType}
 												</p>
 											</Link>
@@ -153,12 +161,23 @@ function ResourcesPageContent({
 				)}
 
 				{activeTab === 'responseUnits' && (
-					<section>
-						<div className="py-12 text-center text-gray-500">
-							<h2 className="text-xl font-semibold mb-2">Response Units</h2>
-							<p>Manage and define response units for this department here.</p>
-							{/* TODO: Implement response unit management UI */}
+					<section aria-live="polite" aria-busy={false}>
+						<div className="flex items-center justify-between mb-6">
+							<p className="text-gray-600">
+								Manage and define response units for this department here.
+							</p>
+							{departmentId !== undefined && (
+								<Button variant="primary" disabled>
+									Add Response Unit
+								</Button>
+							)}
 						</div>
+						{/** Fetch and display response units for this department */}
+						{departmentId === undefined ? (
+							<p className="text-gray-600">No department selected.</p>
+						) : (
+							<ResponseUnitsOverview departmentId={departmentId} />
+						)}
 					</section>
 				)}
 			</div>
