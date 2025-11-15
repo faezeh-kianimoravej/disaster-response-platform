@@ -22,6 +22,7 @@ import {
 	userEditFormSchema,
 	type UserFormValues,
 } from '@/validation/userValidation';
+import { RESPONDER_SPECIALIZATIONS } from '@/types/responderSpecialization';
 
 type UserFormProps = {
 	initialData?: Partial<User>;
@@ -77,17 +78,30 @@ export default function UserForm({
 	}, [currentUserRoles]);
 
 	// Form setup
-	const defaultValues: UserFormValues = useMemo(
-		() => ({
+	const defaultValues: UserFormValues = useMemo(() => {
+		const autoDepartmentId =
+			!loadingDepartments && departments && departments.length > 0 && departments[0]
+				? departments[0].departmentId
+				: (departmentAdminId ?? undefined);
+
+		return {
 			firstName: initialData?.firstName ?? '',
 			lastName: initialData?.lastName ?? '',
 			email: initialData?.email ?? '',
 			mobile: initialData?.mobile ?? '',
 			password: '',
 			roles: initialData?.roles ?? [],
-		}),
-		[initialData]
-	);
+			responderProfile: {
+				userId: initialData?.responderProfile?.userId,
+				departmentId:
+					initialData?.responderProfile?.departmentId ?? (isNewUser ? autoDepartmentId : undefined),
+				primarySpecialization:
+					initialData?.responderProfile?.primarySpecialization ?? RESPONDER_SPECIALIZATIONS[0],
+				secondarySpecializations: initialData?.responderProfile?.secondarySpecializations ?? [],
+				isAvailable: initialData?.responderProfile?.isAvailable ?? true,
+			},
+		} as UserFormValues;
+	}, [initialData, isNewUser, departmentAdminId, departments, loadingDepartments]);
 
 	const schema = isNewUser ? userCreateFormSchema : userEditFormSchema;
 	const methods = useForm<UserFormValues>({
@@ -95,14 +109,10 @@ export default function UserForm({
 		defaultValues,
 		mode: 'onSubmit',
 	});
-	const { reset, setValue } = methods;
+	const { setValue } = methods;
 
 	// Local state for roles UI; keep in sync with RHF for validation/submission
 	const [selectedRoles, setSelectedRoles] = useState<Role[]>(defaultValues.roles);
-	useEffect(() => {
-		setSelectedRoles(defaultValues.roles);
-		reset(defaultValues);
-	}, [defaultValues, reset]);
 	useEffect(() => {
 		setValue('roles', selectedRoles, { shouldValidate: true, shouldDirty: true });
 	}, [selectedRoles, setValue]);
@@ -198,7 +208,7 @@ export default function UserForm({
 					onSuccess?.();
 				}
 			} else {
-				const formData: UserEditFormData = {
+				const formData: UserEditFormData & { responderProfile?: unknown } = {
 					userId: initialData?.userId ?? 0,
 					firstName: values.firstName,
 					lastName: values.lastName,
@@ -210,6 +220,13 @@ export default function UserForm({
 						: {}),
 					roles: selectedRoles,
 				};
+
+				if (selectedRoles.some(r => r.roleType === 'Responder') && values.responderProfile) {
+					formData.responderProfile = {
+						...values.responderProfile,
+						userId: initialData?.userId ?? 0,
+					};
+				}
 				const success = await updateUser(formData);
 				if (success) {
 					toast.showSuccess('User updated successfully');

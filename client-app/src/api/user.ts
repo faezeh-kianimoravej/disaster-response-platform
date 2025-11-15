@@ -9,6 +9,7 @@ const userApi = new BaseApi(`${API_BASE_URL}/users`);
 
 // Backend responder profile structure (ResponderProfileDto)
 type ApiResponderProfile = {
+	id?: number | undefined;
 	userId: number;
 	departmentId: number;
 	primarySpecialization: string;
@@ -16,6 +17,14 @@ type ApiResponderProfile = {
 	isAvailable: boolean;
 	currentDeploymentId?: number;
 };
+
+function normalizeSpecialization(value: string | undefined | null): string | undefined {
+	if (value === undefined || value === null) return undefined;
+	// Convert to uppercase and replace non-alphanumeric runs with underscore
+	return String(value)
+		.toUpperCase()
+		.replace(/[^A-Z0-9]+/gi, '_');
+}
 
 // Backend response structure (UserResponseDto)
 type ApiUser = {
@@ -40,6 +49,7 @@ type ApiUserRequest = {
 	mobile: string;
 	password?: string;
 	roles: Role[];
+	responderProfile?: ApiResponderProfile;
 };
 
 // Convert from backend UserResponseDto to frontend User
@@ -57,18 +67,26 @@ function fromApiUser(a: ApiUser): User {
 	if (a.createdAt) user.createdAt = a.createdAt;
 	if (a.updatedAt) user.updatedAt = a.updatedAt;
 	if (a.passwordUpdatedAt) user.passwordUpdatedAt = a.passwordUpdatedAt;
-	// Map responderProfile if present
 	const apiProfile = (a as { responderProfile?: ApiResponderProfile }).responderProfile;
+	function denormalizeSpecialization(value: string | undefined | null): string | undefined {
+		if (value === undefined || value === null) return undefined;
+		return String(value).toLowerCase();
+	}
+
 	if (apiProfile) {
 		const responderProfile: ResponderProfile = {
+			id: apiProfile.id,
 			userId: apiProfile.userId,
 			departmentId: apiProfile.departmentId,
-			primarySpecialization: apiProfile.primarySpecialization as ResponderSpecialization,
+			primarySpecialization: denormalizeSpecialization(
+				apiProfile.primarySpecialization
+			) as ResponderSpecialization,
 			isAvailable: apiProfile.isAvailable,
 		};
 		if (apiProfile.secondarySpecializations) {
-			responderProfile.secondarySpecializations =
-				apiProfile.secondarySpecializations as ResponderSpecialization[];
+			responderProfile.secondarySpecializations = apiProfile.secondarySpecializations.map(
+				denormalizeSpecialization
+			) as ResponderSpecialization[];
 		}
 		if (typeof apiProfile.currentDeploymentId === 'number') {
 			responderProfile.currentDeploymentId = apiProfile.currentDeploymentId;
@@ -99,8 +117,39 @@ function toApiUserRequest(formData: UserCreateFormData | UserEditFormData): ApiU
 			req.password = pwd;
 		}
 	} else if ((formData as UserCreateFormData).password) {
-		// Create user path: password is required by schema
 		req.password = (formData as UserCreateFormData).password;
+	}
+
+	const maybeProfile = (
+		formData as unknown as {
+			responderProfile?: {
+				id?: number | null;
+				userId?: number | null;
+				departmentId?: number | null;
+				primarySpecialization?: string;
+				secondarySpecializations?: string[];
+				isAvailable?: boolean;
+				currentDeploymentId?: number | null;
+			};
+		}
+	).responderProfile;
+	if (maybeProfile) {
+		const profile: ApiResponderProfile = {
+			id: typeof maybeProfile.id === 'number' ? (maybeProfile.id as number) : undefined,
+			userId: maybeProfile.userId as unknown as number,
+			departmentId: maybeProfile.departmentId as unknown as number,
+			primarySpecialization: normalizeSpecialization(maybeProfile.primarySpecialization) ?? '',
+			isAvailable: Boolean(maybeProfile.isAvailable),
+		};
+		if (maybeProfile.secondarySpecializations && maybeProfile.secondarySpecializations.length > 0) {
+			profile.secondarySpecializations = maybeProfile.secondarySpecializations
+				.map(normalizeSpecialization)
+				.filter((v): v is string => typeof v === 'string');
+		}
+		if (typeof maybeProfile.currentDeploymentId === 'number') {
+			profile.currentDeploymentId = maybeProfile.currentDeploymentId as number;
+		}
+		req.responderProfile = profile;
 	}
 
 	return req;

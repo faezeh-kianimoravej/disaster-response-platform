@@ -30,4 +30,17 @@ public class ResponderProfileMapper {
                 entity.getCurrentDeploymentId()
         );
     }
+
+    /**
+     * Update an existing ResponderProfile entity from a DTO. This centralizes update logic
+     * so callers can avoid manual field copying.
+     */
+    public void updateEntity(ResponderProfileDto dto, ResponderProfile entity) {
+        if (dto == null || entity == null) return;
+        entity.setDepartmentId(dto.departmentId());
+        entity.setPrimarySpecialization(dto.primarySpecialization());
+        entity.setSecondarySpecializations(dto.secondarySpecializations());
+        entity.setAvailable(dto.isAvailable());
+        entity.setCurrentDeploymentId(dto.currentDeploymentId());
+    }
 }
