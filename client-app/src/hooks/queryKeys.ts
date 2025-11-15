@@ -2,6 +2,10 @@ export const DEPLOYMENT_ORDER_QUERY_KEYS = {
 	byIncident: (incidentId: number) => ['deployment-order', 'incident', incidentId] as const,
 };
 
+export const DEPLOYMENT_REQUEST_QUERY_KEYS = {
+	item: (requestId: number) => ['deployment-request', requestId] as const,
+};
+
 export const REGION_QUERY_KEYS = {
 	list: ['regions'] as const,
 	item: (regionId: number) => ['region', regionId] as const,

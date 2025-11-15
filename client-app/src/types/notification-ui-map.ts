@@ -3,7 +3,10 @@ import { NotificationType } from './notification';
 export interface NotificationUIConfig {
 	icon: string;
 	actionLabel?: string;
-	actionUrl?: (notification: { incidentId?: string; deploymentRequestId?: number }) => string | undefined;
+	actionUrl?: (notification: {
+		incidentId?: string;
+		deploymentRequestId?: number;
+	}) => string | undefined;
 }
 
 const GENERIC_CONFIG: NotificationUIConfig = {
@@ -26,6 +29,7 @@ export const NOTIFICATION_UI_MAP: Record<NotificationType, NotificationUIConfig>
 	[NotificationType.DEPLOYMENT_REQUEST]: {
 		icon: 'report',
 		actionLabel: 'View Deployment Request',
-		actionUrl: n => (n.deploymentRequestId ? `/deployment-requests/${n.deploymentRequestId}` : undefined),
+		actionUrl: n =>
+			n.deploymentRequestId ? `/deployment-requests/${n.deploymentRequestId}` : undefined,
 	},
 };
