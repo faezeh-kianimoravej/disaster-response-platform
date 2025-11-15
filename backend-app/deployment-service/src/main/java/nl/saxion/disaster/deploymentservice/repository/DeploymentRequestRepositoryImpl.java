@@ -46,9 +46,19 @@ public class DeploymentRequestRepositoryImpl implements DeploymentRequestReposit
     @Override
     public List<DeploymentRequest> findAllDeploymentRequestsByOrderId(Long deploymentOrderId) {
         return em.createQuery(
-                "SELECT r FROM DeploymentRequest r WHERE r.deploymentOrder.deploymentOrderId = :orderId",
-                DeploymentRequest.class)
-            .setParameter("orderId", deploymentOrderId)
-            .getResultList();
+                        "SELECT r FROM DeploymentRequest r WHERE r.deploymentOrder.deploymentOrderId = :orderId",
+                        DeploymentRequest.class)
+                .setParameter("orderId", deploymentOrderId)
+                .getResultList();
+    }
+
+    @Override
+    public List<DeploymentRequest> findDeploymentRequestByDepartmentId(Long departmentId) {
+        return em.createQuery(
+                        "SELECT dr FROM DeploymentRequest dr WHERE dr.targetDepartmentId = :deptId",
+                        DeploymentRequest.class
+                )
+                .setParameter("deptId", departmentId)
+                .getResultList();
     }
 }
