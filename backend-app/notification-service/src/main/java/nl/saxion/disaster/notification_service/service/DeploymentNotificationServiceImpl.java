@@ -2,100 +2,75 @@ package nl.saxion.disaster.notification_service.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl.saxion.disaster.notification_service.model.entity.Notification;
-import nl.saxion.disaster.notification_service.model.enums.NotificationType;
-import nl.saxion.disaster.notification_service.repository.contract.NotificationRepository;
+import nl.saxion.disaster.notification_service.dto.DeploymentNotificationDto;
 import nl.saxion.disaster.notification_service.service.contract.DeploymentNotificationService;
+import nl.saxion.disaster.notification_service.service.contract.NotificationService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class DeploymentNotificationServiceImpl implements DeploymentNotificationService {
 
-    private final NotificationRepository notificationRepository;
-
-    // departmentId -> SSE emitter
-    private final Map<Long, SseEmitter> emitters = new ConcurrentHashMap<>();
-
-
-    /**
-     * Implementation of the interface method with the same signature.
-     */
-    @Override
-    public void sendDeploymentNotification(Long departmentId,
-                                           Long requestId,
-                                           Long incidentId,
-                                           Instant createdAt) {
-
-        log.info("Creating & sending deployment notification to department {}, for request {}",
-                departmentId, requestId);
-
-        // 1) Create object
-        Notification notification = Notification.builder()
-                .departmentId(departmentId)
-                .incidentId(incidentId)
-                .notificationType(NotificationType.DEPLOYMENT_REQUEST)
-                .title("New deployment request")
-                .description("A new deployment request (" + requestId + ") has been created")
-                .createdAt(OffsetDateTime.ofInstant(createdAt, ZoneOffset.UTC))
-                .read(false)
-                .build();
-
-        // 2) Save in DB
-        Notification saved = notificationRepository.createNotification(notification);
-
-        // 3) Push via SSE
-        sendSseToDepartment(departmentId, saved);
-    }
-
+    private final Map<String, CopyOnWriteArrayList<SseEmitter>> departmentEmitters = new ConcurrentHashMap<>();
+    private final NotificationService notificationService;
 
     @Override
-    public SseEmitter connectStream(Long departmentId) {
-        SseEmitter emitter = new SseEmitter(0L);
-
-        emitters.put(departmentId, emitter);
-
-        emitter.onCompletion(() -> emitters.remove(departmentId));
-        emitter.onTimeout(() -> emitters.remove(departmentId));
-        emitter.onError(e -> emitters.remove(departmentId));
-
-        log.info("SSE connection opened for department {}", departmentId);
-
+    public SseEmitter addEmitter(String departmentId) {
+        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
+        departmentEmitters.computeIfAbsent(departmentId, k -> new CopyOnWriteArrayList<>()).add(emitter);
+        log.info("New SSE client connected for department {} ({} active)", departmentId, departmentEmitters.get(departmentId).size());
+        emitter.onCompletion(() -> departmentEmitters.getOrDefault(departmentId, new CopyOnWriteArrayList<>()).remove(emitter));
+        emitter.onTimeout(() -> departmentEmitters.getOrDefault(departmentId, new CopyOnWriteArrayList<>()).remove(emitter));
         return emitter;
     }
 
+    @Override
+    public void sendMissedDeploymentNotifications(SseEmitter emitter, String departmentId, Long lastNotificationId) {
+        if (lastNotificationId != null) {
+            try {
+                List<DeploymentNotificationDto> missed = notificationService.getDepartmentNotificationsAfterId(lastNotificationId);
+                for (DeploymentNotificationDto dto : missed) {
+                    if (dto.departmentId() != null && dto.departmentId().toString().equals(departmentId)) {
+                        emitter.send(SseEmitter.event()
+                                .id(dto.notificationId() != null ? dto.notificationId().toString() : null)
+                                .name("notification")
+                                .data(dto));
+                    }
+                }
+                log.info("Sent {} missed notifications to reconnecting client for department {}", missed.size(), departmentId);
+            } catch (Exception e) {
+                log.warn("Failed to recover missed notifications: {}", e.getMessage());
+            }
+        }
+    }
 
-    /**
-     * Push notification to the connected SSE client.
-     */
-    private void sendSseToDepartment(Long departmentId, Notification notification) {
-        SseEmitter emitter = emitters.get(departmentId);
 
-        if (emitter == null) {
-            log.warn("No SSE emitter found for department {}", departmentId);
+    @Override
+    public void broadcastDeploymentNotification(DeploymentNotificationDto dto) {
+        Long departmentId = dto.departmentId();
+        if (departmentId == null) {
+            log.warn("Notification does not have a departmentId, skipping broadcast.");
             return;
         }
-
-        try {
-            emitter.send(
-                    SseEmitter.event()
-                            .name("deployment-notification")
-                            .data(notification)
-            );
-            log.info("Sent deployment SSE notification to department {}", departmentId);
-
-        } catch (IOException e) {
-            emitters.remove(departmentId);
-            log.error("Failed to send SSE notification to department {}", departmentId, e);
+        List<SseEmitter> emitters = departmentEmitters.getOrDefault(departmentId.toString(), new CopyOnWriteArrayList<>());
+        for (SseEmitter emitter : emitters) {
+            try {
+                emitter.send(SseEmitter.event()
+                        .id(dto.notificationId() != null ? dto.notificationId().toString() : null)
+                        .name("notification")
+                        .data(dto));
+            } catch (IOException e) {
+                emitters.remove(emitter);
+            }
         }
+        log.info("Broadcasted to {} clients for department {}", emitters.size(), departmentId);
     }
 }

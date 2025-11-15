@@ -1,6 +1,7 @@
 package nl.saxion.disaster.notification_service.service;
 
 import lombok.extern.slf4j.Slf4j;
+import nl.saxion.disaster.notification_service.dto.DeploymentNotificationDto;
 import nl.saxion.disaster.notification_service.dto.IncidentNotificationDto;
 import nl.saxion.disaster.notification_service.mapper.BaseMapper;
 import nl.saxion.disaster.notification_service.model.entity.Notification;
@@ -33,6 +34,9 @@ public class NotificationServiceImpl implements NotificationService {
     @Qualifier("incidentNotificationMapper")
     private final BaseMapper<Notification, IncidentNotificationDto> incidentNotificationMapper;
 
+    @Qualifier("deploymentNotificationMapper")
+    BaseMapper<Notification, DeploymentNotificationDto> deploymentNotificationMapper;
+
     public NotificationServiceImpl(NotificationRepository notificationRepository, BaseMapper<Notification,
             IncidentNotificationDto> incidentNotificationMapper) {
         this.notificationRepository = notificationRepository;
@@ -53,6 +57,13 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    public List<DeploymentNotificationDto> getNotificationsByDepartmentId(Long departmentId) {
+        log.info("📋 Fetching notifications for departmentId={}", departmentId);
+        List<Notification> notifications = notificationRepository.findNotificationsByDepartmentId(departmentId);
+        return deploymentNotificationMapper.toDtoList(notifications);
+    }
+
+    @Override
     public IncidentNotificationDto getNotificationById(Long id) {
         log.info("🔍 Fetching notification with ID {}", id);
         Notification notification = notificationRepository.findNotificationById(id);
@@ -65,11 +76,18 @@ public class NotificationServiceImpl implements NotificationService {
         List<Notification> notifications = notificationRepository.findNotificationsByType(type);
         return incidentNotificationMapper.toDtoList(notifications);
     }
-    
+
     @Override
     public List<IncidentNotificationDto> getNotificationsAfterId(Long afterId) {
         log.info("Fetching notifications with ID > {}", afterId);
         List<Notification> notifications = notificationRepository.findNotificationsAfterId(afterId);
         return incidentNotificationMapper.toDtoList(notifications);
+    }
+
+    @Override
+    public List<DeploymentNotificationDto> getDepartmentNotificationsAfterId(Long afterId) {
+        log.info("Fetching department notifications with ID > {}", afterId);
+        List<Notification> notifications = notificationRepository.findDepartmentNotificationsAfterId(afterId);
+        return deploymentNotificationMapper.toDtoList(notifications);
     }
 }

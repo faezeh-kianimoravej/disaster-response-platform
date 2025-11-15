@@ -1,22 +1,20 @@
 package nl.saxion.disaster.notification_service.service.contract;
 
+import nl.saxion.disaster.notification_service.dto.DeploymentNotificationDto;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
-import java.time.Instant;
 
 public interface DeploymentNotificationService {
 
+    /**
+     * Register a new SSE emitter for a given department.
+     */
+    SseEmitter addEmitter(String departmentId);
 
     /**
-     * Creates and stores a deployment notification in the database,
-     * and sends it in real-time to the department via SSE.
+     * Send missed notifications to a newly connected emitter,
+     * starting after the given lastNotificationId (if any).
      */
-    void sendDeploymentNotification(Long departmentId, Long requestId, Long incidentId, Instant createdAt);
+    void sendMissedDeploymentNotifications(SseEmitter emitter, String departmentId, Long lastNotificationId);
 
-    /**
-     * Opens an SSE connection for the given department.
-     * This is used by frontend to receive real-time deployment notifications.
-     */
-    SseEmitter connectStream(Long departmentId);
-
+    void broadcastDeploymentNotification(DeploymentNotificationDto dto);
 }

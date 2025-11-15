@@ -1,31 +1,29 @@
 package nl.saxion.disaster.notification_service.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import nl.saxion.disaster.notification_service.service.contract.DeploymentNotificationService;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-@RestController
-@RequestMapping("/notifications/deployment")
-@RequiredArgsConstructor
 @Tag(
         name = "Deployment Notifications",
         description = "Provides real-time Server-Sent Events (SSE) notifications for deployment requests."
 )
+@RestController
+@RequestMapping("/api/notifications/deployment")
 public class DeploymentNotificationController {
 
-    private final DeploymentNotificationService notificationService;
+    private final DeploymentNotificationService deploymentNotificationService;
+
+    public DeploymentNotificationController(DeploymentNotificationService deploymentNotificationService) {
+        this.deploymentNotificationService = deploymentNotificationService;
+    }
 
     /**
      * SSE endpoint for department officers to receive
@@ -63,13 +61,11 @@ public class DeploymentNotificationController {
     })
     @GetMapping(value = "/stream/{departmentId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamDeploymentNotifications(
-            @Parameter(
-                    description = "ID of the target department that should receive notifications",
-                    required = true,
-                    example = "12"
-            )
-            @PathVariable Long departmentId
+            @PathVariable String departmentId,
+            @RequestParam(value = "lastNotificationId", required = false) Long lastNotificationId
     ) {
-        return notificationService.connectStream(departmentId);
+        SseEmitter emitter = deploymentNotificationService.addEmitter(departmentId);
+        deploymentNotificationService.sendMissedDeploymentNotifications(emitter, departmentId, lastNotificationId);
+        return emitter;
     }
 }
