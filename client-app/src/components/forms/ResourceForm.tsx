@@ -165,9 +165,21 @@ export default function ResourceForm({
 				...(values.availableQuantity !== undefined && {
 					availableQuantity: values.availableQuantity,
 				}),
-				...(values.unit !== undefined && { unit: values.unit }),
-				...(values.latitude !== undefined && { latitude: values.latitude }),
-				...(values.longitude !== undefined && { longitude: values.longitude }),
+				...(values.resourceKind === 'UNIQUE'
+					? { unit: null }
+					: values.unit !== undefined && values.unit !== null
+						? { unit: values.unit }
+						: {}),
+				...(values.isTrackable
+					? values.latitude !== undefined && values.latitude !== null
+						? { latitude: values.latitude }
+						: {}
+					: { latitude: null }),
+				...(values.isTrackable
+					? values.longitude !== undefined && values.longitude !== null
+						? { longitude: values.longitude }
+						: {}
+					: { longitude: null }),
 			};
 
 			if (isNewResource) {
@@ -196,6 +208,19 @@ export default function ResourceForm({
 	const category = methods.watch('category');
 	const resourceKind = methods.watch('resourceKind');
 	const isTrackable = methods.watch('isTrackable');
+
+	useEffect(() => {
+		if (resourceKind === 'UNIQUE') {
+			methods.setValue('unit', null, { shouldValidate: true, shouldDirty: true });
+		}
+	}, [resourceKind, methods]);
+
+	useEffect(() => {
+		if (!isTrackable) {
+			methods.setValue('latitude', null, { shouldValidate: true, shouldDirty: true });
+			methods.setValue('longitude', null, { shouldValidate: true, shouldDirty: true });
+		}
+	}, [isTrackable, methods]);
 
 	// Filter resource types by selected category
 	const filteredResourceTypes = RESOURCE_TYPES.filter(t => RESOURCE_TYPE_CATEGORY[t] === category);

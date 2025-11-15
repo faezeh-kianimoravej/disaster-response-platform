@@ -11,7 +11,10 @@ import { useAuth } from '@/context/AuthContext';
 import { useIncident } from '@/hooks/useIncident';
 import { useAllDepartments } from '@/hooks/useDepartment';
 import { useMunicipalities } from '@/hooks/useMunicipality';
-import { useCreateDeploymentOrder } from '@/hooks/useDeploymentOrder';
+import {
+	useCreateDeploymentOrder,
+	useDeploymentOrderByIncidentId,
+} from '@/hooks/useDeploymentOrder';
 import {
 	useSearchAvailableResponseUnits,
 	UseSearchAvailableResponseUnitsParams,
@@ -55,6 +58,11 @@ export default function IncidentDeploymentOrder() {
 		refetch: refetchMunicipalities,
 	} = useMunicipalities(incident?.regionId, { enabled: !!incident?.regionId });
 	const createDeploymentOrderMutation = useCreateDeploymentOrder();
+	const {
+		data: existingOrder,
+		isLoading: existingOrderLoading,
+		error: existingOrderError,
+	} = useDeploymentOrderByIncidentId(incidentIdNumber);
 
 	// Search filter form state
 	const filterForm = useForm<{
@@ -107,6 +115,13 @@ export default function IncidentDeploymentOrder() {
 				error: municipalitiesError,
 				loading: municipalitiesLoading,
 				message: 'Unable to load municipalities.',
+			});
+		} else if (existingOrderError) {
+			showSingleError({
+				key: `deployment-order.${incidentIdNumber ?? 'unknown'}`,
+				error: existingOrderError,
+				loading: existingOrderLoading,
+				message: 'Unable to load existing deployment order.',
 			});
 		}
 	}, [
@@ -201,6 +216,64 @@ export default function IncidentDeploymentOrder() {
 								<span className="text-gray-500">No description provided.</span>
 							)}
 						</div>
+					</div>
+
+					{/* Existing deployment order (if any) */}
+					<div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 mb-6">
+						{existingOrderLoading ? (
+							<LoadingPanel text="Loading existing deployment order..." className="py-4" />
+						) : existingOrder ? (
+							<>
+								<h3 className="text-lg font-semibold mb-2">Existing Deployment Order</h3>
+								<div className="text-sm text-gray-700 mb-4">
+									<div className="mb-1">
+										Ordered at: {new Date(existingOrder.orderedAt).toLocaleString()}
+									</div>
+									<div className="mb-1">Incident severity: {existingOrder.incidentSeverity}</div>
+									{existingOrder.notes ? (
+										<div className="text-sm text-gray-600">Notes: {existingOrder.notes}</div>
+									) : null}
+								</div>
+								{existingOrder.deploymentRequests.length === 0 ? (
+									<div className="text-gray-500">No requests in this deployment order.</div>
+								) : (
+									<table className="min-w-full divide-y divide-gray-200">
+										<thead>
+											<tr>
+												<th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+													Department
+												</th>
+												<th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+													Requested Unit Type
+												</th>
+												<th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+													Quantity
+												</th>
+												<th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+													Status
+												</th>
+											</tr>
+										</thead>
+										<tbody>
+											{existingOrder.deploymentRequests.map(req => (
+												<tr key={req.requestId} className="hover:bg-gray-50">
+													<td className="px-4 py-2">
+														{departments.find(
+															(d: Department) => d.departmentId === req.targetDepartmentId
+														)?.name ?? req.targetDepartmentId}
+													</td>
+													<td className="px-4 py-2">{req.requestedUnitType}</td>
+													<td className="px-4 py-2">{req.requestedQuantity}</td>
+													<td className="px-4 py-2">{req.status}</td>
+												</tr>
+											))}
+										</tbody>
+									</table>
+								)}
+							</>
+						) : (
+							<div className="text-gray-500">No existing deployment orders for this incident.</div>
+						)}
 					</div>
 
 					{/* Search and select response units */}

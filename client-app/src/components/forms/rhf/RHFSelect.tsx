@@ -45,36 +45,41 @@ export default function RHFSelect<
 			}: {
 				field: ControllerRenderProps<TFormValues, Path<TFormValues>>;
 				fieldState: ControllerFieldState;
-			}) => (
-				<FormInput
-					label={label}
-					name={String(name)}
-					value={
-						multi
-							? Array.isArray(field.value)
-								? field.value.map(String)
-								: []
-							: (field.value as unknown as string | number)
-					}
-					onChange={e => {
-						if (multi) {
-							const selected = Array.from((e.target as HTMLSelectElement).selectedOptions).map(
-								o => o.value
-							);
-							field.onChange(selected);
-						} else {
-							const raw = (e.target as HTMLSelectElement).value;
-							field.onChange(inferredType === 'number' ? Number(raw) : raw);
-						}
-					}}
-					type="select"
-					options={options as Array<{ value: string | number; label: string }>}
-					error={fieldState.error?.message ?? undefined}
-					showValidation={Boolean(fieldState.error)}
-					multiple={multi}
-					{...rest}
-				/>
-			)}
+			}) => {
+				const value = multi
+					? Array.isArray(field.value)
+						? field.value.map(String)
+						: field.value
+							? [String(field.value)]
+							: []
+					: (field.value as unknown as string | number);
+
+				return (
+					<FormInput
+						label={label}
+						name={String(name)}
+						value={value}
+						onChange={e => {
+							if (multi) {
+								const selected: string[] = Array.from(
+									(e.target as HTMLSelectElement).selectedOptions
+								).map(o => o.value);
+								field.onChange(selected);
+							} else {
+								const raw = (e.target as HTMLSelectElement).value;
+								field.onChange(inferredType === 'number' ? Number(raw) : raw);
+							}
+						}}
+						type="select"
+						options={options as Array<{ value: string | number; label: string }>}
+						error={fieldState.error?.message ?? undefined}
+						showValidation={Boolean(fieldState.error)}
+						multiple={multi}
+						size={multi ? 5 : undefined}
+						{...rest}
+					/>
+				);
+			}}
 		/>
 	);
 }
