@@ -9,6 +9,7 @@ public record NewDeploymentRequestEvent(
         Long deploymentRequestId,
         Long departmentId,
         Long incidentId,
-        Instant createdAt
+        Instant createdAt,
+        String description
 ) {
 }

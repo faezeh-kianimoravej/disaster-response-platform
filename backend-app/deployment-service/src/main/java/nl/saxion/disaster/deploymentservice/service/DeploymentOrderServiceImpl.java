@@ -60,7 +60,7 @@ public class DeploymentOrderServiceImpl implements nl.saxion.disaster.deployment
         });
 
         order.setDeploymentRequests(requests);
-        
+
         DeploymentOrder savedOrder = orderRepository.saveDeploymentOrder(order);
 
         // ------------------------------
@@ -73,6 +73,7 @@ public class DeploymentOrderServiceImpl implements nl.saxion.disaster.deployment
                     .departmentId(req.getTargetDepartmentId())
                     .incidentId(savedOrder.getIncidentId())
                     .createdAt(Instant.now())
+                    .description("A new deployment request was created for Incident #" + savedOrder.getIncidentId())
                     .build();
 
             eventPublisher.publish(event);
