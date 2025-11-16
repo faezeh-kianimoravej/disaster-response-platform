@@ -40,5 +40,5 @@ public interface NotificationRepository {
      */
     List<Notification> findNotificationsAfterId(Long afterId);
 
-    List<Notification> findDepartmentNotificationsAfterId(Long afterId);
+    List<Notification> findDepartmentNotificationsAfterId(Long afterId, Long departmentId);
 }

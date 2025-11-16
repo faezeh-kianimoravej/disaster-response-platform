@@ -36,7 +36,8 @@ public class DeploymentNotificationServiceImpl implements DeploymentNotification
     public void sendMissedDeploymentNotifications(SseEmitter emitter, String departmentId, Long lastNotificationId) {
         if (lastNotificationId != null) {
             try {
-                List<DeploymentNotificationDto> missed = notificationService.getDepartmentNotificationsAfterId(lastNotificationId);
+                List<DeploymentNotificationDto> missed =
+                        notificationService.getDepartmentNotificationsAfterId(lastNotificationId, Long.valueOf(departmentId));
                 for (DeploymentNotificationDto dto : missed) {
                     if (dto.departmentId() != null && dto.departmentId().toString().equals(departmentId)) {
                         emitter.send(SseEmitter.event()

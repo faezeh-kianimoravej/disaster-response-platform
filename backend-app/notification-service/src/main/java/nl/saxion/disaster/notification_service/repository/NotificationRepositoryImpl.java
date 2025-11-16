@@ -71,15 +71,16 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     }
 
     @Override
-    public List<Notification> findDepartmentNotificationsAfterId(Long afterId) {
-
+    public List<Notification> findDepartmentNotificationsAfterId(Long afterId, Long departmentId) {
         String jpql = "SELECT notification FROM Notification notification " +
                 "WHERE notification.id > :afterId " +
-                "AND notification.departmentId IS NOT NULL " +
+                "AND notification.departmentId = :departmentId " +
                 "ORDER BY notification.id ASC";
 
         return entityManager.createQuery(jpql, Notification.class)
                 .setParameter("afterId", afterId)
+                .setParameter("departmentId", departmentId)
                 .getResultList();
     }
+
 }

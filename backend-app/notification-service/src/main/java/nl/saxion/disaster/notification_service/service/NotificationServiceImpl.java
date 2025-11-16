@@ -16,6 +16,23 @@ import java.util.List;
 @Service
 public class NotificationServiceImpl implements NotificationService {
 
+    private final NotificationRepository notificationRepository;
+    private final BaseMapper<Notification, IncidentNotificationDto> incidentNotificationMapper;
+    private final BaseMapper<Notification, DeploymentNotificationDto> deploymentNotificationMapper;
+
+    public NotificationServiceImpl(
+            NotificationRepository notificationRepository,
+            @Qualifier("incidentNotificationMapper")
+            BaseMapper<Notification, IncidentNotificationDto> incidentNotificationMapper,
+            @Qualifier("deploymentNotificationMapper")
+            BaseMapper<Notification, DeploymentNotificationDto> deploymentNotificationMapper
+    ) {
+        this.notificationRepository = notificationRepository;
+        this.incidentNotificationMapper = incidentNotificationMapper;
+        this.deploymentNotificationMapper = deploymentNotificationMapper;
+    }
+
+    // -------------------- Common --------------------
     @Override
     public boolean markNotificationAsRead(Long id) {
         Notification notification = notificationRepository.findNotificationById(id);
@@ -29,65 +46,57 @@ public class NotificationServiceImpl implements NotificationService {
         return true;
     }
 
-    private final NotificationRepository notificationRepository;
-
-    @Qualifier("incidentNotificationMapper")
-    private final BaseMapper<Notification, IncidentNotificationDto> incidentNotificationMapper;
-
-    @Qualifier("deploymentNotificationMapper")
-    BaseMapper<Notification, DeploymentNotificationDto> deploymentNotificationMapper;
-
-    public NotificationServiceImpl(NotificationRepository notificationRepository, BaseMapper<Notification,
-            IncidentNotificationDto> incidentNotificationMapper) {
-        this.notificationRepository = notificationRepository;
-        this.incidentNotificationMapper = incidentNotificationMapper;
-    }
+    // -------------------- INCIDENT --------------------
 
     @Override
     public List<IncidentNotificationDto> getAllNotifications() {
-        log.info("📋 Fetching all notifications...");
         List<Notification> notifications = notificationRepository.findAllNotifications();
         return incidentNotificationMapper.toDtoList(notifications);
     }
 
+    @Override
     public List<IncidentNotificationDto> getNotificationsByRegionId(Long regionId) {
-        log.info("📋 Fetching notifications for regionId={}", regionId);
         List<Notification> notifications = notificationRepository.findNotificationsByRegionId(regionId);
         return incidentNotificationMapper.toDtoList(notifications);
     }
 
     @Override
-    public List<DeploymentNotificationDto> getNotificationsByDepartmentId(Long departmentId) {
-        log.info("📋 Fetching notifications for departmentId={}", departmentId);
-        List<Notification> notifications = notificationRepository.findNotificationsByDepartmentId(departmentId);
-        return deploymentNotificationMapper.toDtoList(notifications);
-    }
-
-    @Override
     public IncidentNotificationDto getNotificationById(Long id) {
-        log.info("🔍 Fetching notification with ID {}", id);
         Notification notification = notificationRepository.findNotificationById(id);
         return incidentNotificationMapper.toDto(notification);
     }
 
     @Override
     public List<IncidentNotificationDto> getNotificationsByType(String type) {
-        log.info("📂 Fetching notifications by type: {}", type);
         List<Notification> notifications = notificationRepository.findNotificationsByType(type);
         return incidentNotificationMapper.toDtoList(notifications);
     }
 
     @Override
     public List<IncidentNotificationDto> getNotificationsAfterId(Long afterId) {
-        log.info("Fetching notifications with ID > {}", afterId);
         List<Notification> notifications = notificationRepository.findNotificationsAfterId(afterId);
         return incidentNotificationMapper.toDtoList(notifications);
     }
 
+    // -------------------- DEPLOYMENT --------------------
+
     @Override
-    public List<DeploymentNotificationDto> getDepartmentNotificationsAfterId(Long afterId) {
-        log.info("Fetching department notifications with ID > {}", afterId);
-        List<Notification> notifications = notificationRepository.findDepartmentNotificationsAfterId(afterId);
+    public List<DeploymentNotificationDto> getNotificationsByDepartmentId(Long departmentId) {
+        List<Notification> notifications = notificationRepository.findNotificationsByDepartmentId(departmentId);
+        return deploymentNotificationMapper.toDtoList(notifications);
+    }
+
+    @Override
+    public DeploymentNotificationDto getDeploymentNotificationById(Long id) {
+        Notification notification = notificationRepository.findNotificationById(id);
+        return deploymentNotificationMapper.toDto(notification);
+    }
+
+    @Override
+    public List<DeploymentNotificationDto> getDepartmentNotificationsAfterId(Long afterId, Long departmentId) {
+        List<Notification> notifications =
+                notificationRepository.findDepartmentNotificationsAfterId(afterId, departmentId);
+
         return deploymentNotificationMapper.toDtoList(notifications);
     }
 }
