@@ -21,6 +21,7 @@ public class Notification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "notification_id")
     private Long notificationId;
+    private Long deploymentRequestId;
     private Long incidentId;
     private Long regionId;
     private Long departmentId;

@@ -33,6 +33,7 @@ public class DeploymentRequestListener {
         //Create Notification entity
         Notification notification = Notification.builder()
                 .incidentId(event.incidentId())
+                .deploymentRequestId(event.deploymentRequestId())
                 .departmentId(event.departmentId())
                 .notificationType(NotificationType.DEPLOYMENT_REQUEST)
                 .description(event.description())
