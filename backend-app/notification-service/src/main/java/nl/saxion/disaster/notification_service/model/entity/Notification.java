@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import nl.saxion.disaster.notification_service.model.enums.NotificationStatus;
 import nl.saxion.disaster.notification_service.model.enums.NotificationType;
 
 import java.time.OffsetDateTime;
@@ -22,8 +21,10 @@ public class Notification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "notification_id")
     private Long notificationId;
+    private Long deploymentRequestId;
     private Long incidentId;
     private Long regionId;
+    private Long departmentId;
     @Enumerated(EnumType.STRING)
     private NotificationType notificationType;
     private String title;

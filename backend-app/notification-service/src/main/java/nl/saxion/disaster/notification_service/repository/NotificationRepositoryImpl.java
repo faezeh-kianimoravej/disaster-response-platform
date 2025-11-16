@@ -17,8 +17,10 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     private EntityManager entityManager;
 
     @Override
-    public void createNotification(Notification notification) {
+    public Notification createNotification(Notification notification) {
         entityManager.persist(notification);
+        entityManager.flush();
+        return notification;
     }
 
     @Override
@@ -26,10 +28,19 @@ public class NotificationRepositoryImpl implements NotificationRepository {
         String jpql = "SELECT notification FROM Notification notification ORDER BY notification.createdAt DESC";
         return entityManager.createQuery(jpql, Notification.class).getResultList();
     }
+
     public List<Notification> findNotificationsByRegionId(Long regionId) {
         String jpql = "SELECT notification FROM Notification notification WHERE notification.regionId = :regionId ORDER BY notification.createdAt DESC";
         return entityManager.createQuery(jpql, Notification.class)
                 .setParameter("regionId", regionId)
+                .getResultList();
+    }
+
+    @Override
+    public List<Notification> findNotificationsByDepartmentId(Long departmentId) {
+        String jpql = "SELECT notification FROM Notification notification WHERE notification.departmentId = :departmentId ORDER BY notification.createdAt DESC";
+        return entityManager.createQuery(jpql, Notification.class)
+                .setParameter("departmentId", departmentId)
                 .getResultList();
     }
 
@@ -58,4 +69,18 @@ public class NotificationRepositoryImpl implements NotificationRepository {
                 .setParameter("afterId", afterId)
                 .getResultList();
     }
+
+    @Override
+    public List<Notification> findDepartmentNotificationsAfterId(Long afterId, Long departmentId) {
+        String jpql = "SELECT notification FROM Notification notification " +
+                "WHERE notification.id > :afterId " +
+                "AND notification.departmentId = :departmentId " +
+                "ORDER BY notification.id ASC";
+
+        return entityManager.createQuery(jpql, Notification.class)
+                .setParameter("afterId", afterId)
+                .setParameter("departmentId", departmentId)
+                .getResultList();
+    }
+
 }

@@ -44,6 +44,19 @@ public enum NotificationType {
      */
     RESOURCE_RETURNED("A resource has returned to base"),
 
+    // ===============================
+    // DEPLOYMENT-RELATED NOTIFICATIONS
+    // ===============================
+
+    /**
+     * A department has received a new deployment request
+     * from the Crisis Coordinator (CaCo).
+     * <p>
+     * This happens when a deployment order includes one or more
+     * requests targeted at the officer's department.
+     */
+    DEPLOYMENT_REQUEST("A new deployment request has been created for your department"),
+
 
     // ===============================
     //  ENVIRONMENTAL OR GENERAL ALERTS

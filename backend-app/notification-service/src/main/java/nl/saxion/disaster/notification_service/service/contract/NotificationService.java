@@ -1,5 +1,6 @@
 package nl.saxion.disaster.notification_service.service.contract;
 
+import nl.saxion.disaster.notification_service.dto.DeploymentNotificationDto;
 import nl.saxion.disaster.notification_service.dto.IncidentNotificationDto;
 
 import java.util.List;
@@ -8,46 +9,46 @@ public interface NotificationService {
 
     /**
      * Marks a notification as read by its ID.
-     * @param id notification ID
-     * @return true if updated, false if not found
      */
     boolean markNotificationAsRead(Long id);
+
     /**
-     * Returns all notifications stored in the system.
-     *
-     * @return list of notification DTOs
+     * Returns all incident notifications stored in the system.
      */
     List<IncidentNotificationDto> getAllNotifications();
-    
+
     /**
-     * Finds a specific notification by its ID.
-     *
-     * @param id notification ID
-     * @return corresponding notification DTO
+     * Returns a specific incident notification by ID.
      */
     IncidentNotificationDto getNotificationById(Long id);
 
     /**
-     * Finds notifications by region ID.
-     *
-     * @param regionId region ID
-     * @return list of notifications for the given region
+     * Returns all incident notifications for a given region.
      */
     List<IncidentNotificationDto> getNotificationsByRegionId(Long regionId);
 
     /**
-     * Finds notifications by their type.
-     *
-     * @param type notification type
-     * @return list of notifications with the given type
+     * Returns all deployment notifications for a given department.
+     */
+    List<DeploymentNotificationDto> getNotificationsByDepartmentId(Long departmentId);
+
+    /**
+     * Returns incident notifications filtered by type.
      */
     List<IncidentNotificationDto> getNotificationsByType(String type);
 
     /**
-     * Finds notifications with ID greater than the given value.
-     *
-     * @param afterId notification ID
-     * @return list of notifications with ID > afterId
+     * Returns incident notifications with ID greater than the given value.
      */
     List<IncidentNotificationDto> getNotificationsAfterId(Long afterId);
+
+    /**
+     * Returns deployment notifications with ID greater than the given value.
+     */
+    List<DeploymentNotificationDto> getDepartmentNotificationsAfterId(Long afterId, Long departmentId);
+
+    /**
+     * Returns a specific deployment notification by ID.
+     */
+    DeploymentNotificationDto getDeploymentNotificationById(Long id);
 }

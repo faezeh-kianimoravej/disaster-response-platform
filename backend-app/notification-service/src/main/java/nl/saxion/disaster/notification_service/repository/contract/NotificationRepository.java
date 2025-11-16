@@ -6,16 +6,16 @@ import java.util.List;
 
 public interface NotificationRepository {
 
-    void createNotification(Notification notification);
-    
+    Notification createNotification(Notification notification);
+
     List<Notification> findAllNotifications();
-    
+
     Notification findNotificationById(Long id);
-    
+
     List<Notification> findNotificationsByType(String type);
-    
+
     void updateNotificationStatus(Notification notification);
-    
+
     /**
      * Finds notifications by region ID.
      *
@@ -25,10 +25,20 @@ public interface NotificationRepository {
     List<Notification> findNotificationsByRegionId(Long regionId);
 
     /**
+     * Finds notifications by department ID.
+     *
+     * @param departmentId department ID
+     * @return list of notifications for the given department
+     */
+    List<Notification> findNotificationsByDepartmentId(Long departmentId);
+
+    /**
      * Finds notifications with ID greater than the given value.
      *
      * @param afterId notification ID
      * @return list of notifications with ID > afterId
      */
     List<Notification> findNotificationsAfterId(Long afterId);
+
+    List<Notification> findDepartmentNotificationsAfterId(Long afterId, Long departmentId);
 }
