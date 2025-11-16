@@ -3,7 +3,10 @@ import { NotificationType } from './notification';
 export interface NotificationUIConfig {
 	icon: string;
 	actionLabel?: string;
-	actionUrl?: (notification: { incidentId?: string }) => string | undefined;
+	actionUrl?: (notification: {
+		incidentId?: string;
+		deploymentRequestId?: number;
+	}) => string | undefined;
 }
 
 const GENERIC_CONFIG: NotificationUIConfig = {
@@ -23,4 +26,10 @@ export const NOTIFICATION_UI_MAP: Record<NotificationType, NotificationUIConfig>
 	[NotificationType.RESOURCE_RETURNED]: GENERIC_CONFIG,
 	[NotificationType.WEATHER_WARNING]: GENERIC_CONFIG,
 	[NotificationType.GENERAL_ALERT]: GENERIC_CONFIG,
+	[NotificationType.DEPLOYMENT_REQUEST]: {
+		icon: 'report',
+		actionLabel: 'View Deployment Request',
+		actionUrl: n =>
+			n.deploymentRequestId ? `/deployment-requests/${n.deploymentRequestId}` : undefined,
+	},
 };
