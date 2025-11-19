@@ -105,6 +105,20 @@
       - app-network
     restart: always
 
+  deployment-service:
+    image: fkiani/disaster-response-deployment-service:latest
+    container_name: deployment-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/deployment_db
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=local-docker
+    depends_on:
+      - discovery-service
+      - postgres-db
+    networks:
+      - app-network
+    restart: always
+
   resource-service:
     image: fkiani/disaster-response-resource-service:latest
     container_name: resource-service

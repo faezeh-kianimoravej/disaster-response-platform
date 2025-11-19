@@ -7,7 +7,12 @@ import java.util.Optional;
 
 public interface DeploymentRequestRepository {
     DeploymentRequest saveDeploymentRequest(DeploymentRequest request);
+
     List<DeploymentRequest> saveAllDeploymentRequests(List<DeploymentRequest> requests);
+
     Optional<DeploymentRequest> findDeploymentRequestById(Long id);
+
     List<DeploymentRequest> findAllDeploymentRequestsByOrderId(Long deploymentOrderId);
+
+    List<DeploymentRequest> findDeploymentRequestByDepartmentId(Long departmentId);
 }

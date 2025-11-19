@@ -8,40 +8,57 @@ spring:
     web-application-type: reactive
   profiles:
     active: local-docker
+
   cloud:
     gateway:
-      # Discovery Locator: Enable dynamic routing by service name
-      # This allows routing to any registered service via /{service-name}/**
       discovery:
         locator:
           enabled: true
           lower-case-service-id: true
 
-      # Default filters applied to all routes
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
 
-      # Global CORS configuration
       globalcors:
         corsConfigurations:
           '[/**]':
-            allowedOrigins:
-              - "*"
-            allowedMethods:
-              - "GET"
-              - "POST"
-              - "PUT"
-              - "DELETE"
-              - "PATCH"
-              - "OPTIONS"
-            allowedHeaders:
-              - "*"
+            allowedOrigins: ["*"]
+            allowedMethods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
+            allowedHeaders: ["*"]
             allowCredentials: false
             maxAge: 3600
-      
-      # Explicit routes with path rewrites for clean API surface
+
       routes:
-        # Region service: /api/regions/** (all other endpoints) -> region-service/api/regions/**
+
+        # ---------------------------
+        # SSE ROUTES — MUST COME FIRST
+        # ---------------------------
+
+        # Incident SSE
+        - id: incident-notification-sse
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/notifications/incidents/stream/**
+          filters:
+            - SetResponseHeader=Cache-Control, no-store
+            - RemoveResponseHeader=Transfer-Encoding
+            - RemoveResponseHeader=Content-Length
+
+        # Deployment SSE
+        - id: deployment-notification-sse
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/notifications/deployment/stream/**
+          filters:
+            - SetResponseHeader=Content-Type, text/event-stream
+            - SetResponseHeader=Cache-Control, no-store
+            - RemoveResponseHeader=Transfer-Encoding
+            - RemoveResponseHeader=Content-Length
+
+        # ---------------------------
+        # NORMAL SERVICES
+        # ---------------------------
+
         - id: region
           uri: lb://region-service
           predicates:
@@ -52,8 +69,7 @@ spring:
                 name: regionServiceCircuitBreaker
                 fallbackUri: forward:/fallback
 
-        # Department service: /api/departments/** -> department-service/api/departments/**
-        - id: department-departments
+        - id: department
           uri: lb://department-service
           predicates:
             - Path=/api/departments/**
@@ -62,8 +78,7 @@ spring:
               args:
                 name: departmentServiceCircuitBreaker
                 fallbackUri: forward:/fallback
-        
-        # Resource service: /api/resources/** -> resource-service/api/resources/**
+
         - id: resource
           uri: lb://resource-service
           predicates:
@@ -74,8 +89,6 @@ spring:
                 name: resourceServiceCircuitBreaker
                 fallbackUri: forward:/fallback
 
-
-        # Municipality service: /api/municipalities/** -> municipality-service/api/municipalities/**
         - id: municipality
           uri: lb://municipality-service
           predicates:
@@ -86,7 +99,6 @@ spring:
                 name: municipalityServiceCircuitBreaker
                 fallbackUri: forward:/fallback
 
-        # Incident service: /api/incidents/** -> incident-service/api/incidents/**
         - id: incident
           uri: lb://incident-service
           predicates:
@@ -97,7 +109,6 @@ spring:
                 name: incidentServiceCircuitBreaker
                 fallbackUri: forward:/fallback
 
-        # Location service: /api/locations/** -> location-service/api/locations/**
         - id: location
           uri: lb://location-service
           predicates:
@@ -108,16 +119,7 @@ spring:
                 name: locationServiceCircuitBreaker
                 fallbackUri: forward:/fallback
 
-        # Notification service SSE: /api/notifications/incidents/stream/** -> notification-service/api/notifications/incidents/stream/** (no circuit breaker)
-        - id: notification-sse
-          uri: lb://notification-service
-          predicates:
-            - Path=/api/notifications/incidents/stream/**
-          filters:
-            - SetResponseHeader=Cache-Control, no-store
-            - RemoveResponseHeader=Transfer-Encoding
-
-        # Notification service: /api/notifications/** -> notification-service/api/notifications/**
+        # Normal Notifications (NON-SSE)
         - id: notification
           uri: lb://notification-service
           predicates:
@@ -128,7 +130,6 @@ spring:
                 name: notificationServiceCircuitBreaker
                 fallbackUri: forward:/fallback
 
-        # User service: /api/users/** -> user-service/api/users/**
         - id: user
           uri: lb://user-service
           predicates:
@@ -139,7 +140,6 @@ spring:
                 name: userServiceCircuitBreaker
                 fallbackUri: forward:/fallback
 
-        # Deployment service: /api/deployment-orders/** -> deployment-service/api/deployments/**
         - id: deployment-order
           uri: lb://deployment-service
           predicates:
@@ -150,7 +150,6 @@ spring:
                 name: deploymentServiceCircuitBreaker
                 fallbackUri: forward:/fallback
 
-        # Deployment service: /api/response-units/** -> deployment-service/api/response-units/**
         - id: response-unit
           uri: lb://deployment-service
           predicates:
@@ -161,25 +160,32 @@ spring:
                 name: deploymentServiceCircuitBreaker
                 fallbackUri: forward:/fallback
 
+        - id: deployment-request
+          uri: lb://deployment-service
+          predicates:
+            - Path=/api/deployment-requests/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: deploymentServiceCircuitBreaker
+                fallbackUri: forward:/fallback
+
+
+
 eureka:
   client:
     serviceUrl:
-      # Use discovery-service hostname for Docker, localhost for local dev
-      # Override via environment variable: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
       defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8761/eureka/}
     fetch-registry: true
     register-with-eureka: true
+
   instance:
-    # Use hostname-based routing in Docker, IP-based locally
-    # Override via environment variable: EUREKA_INSTANCE_PREFER_IP_ADDRESS
     prefer-ip-address: ${EUREKA_INSTANCE_PREFER_IP_ADDRESS:true}
     hostname: ${EUREKA_INSTANCE_HOSTNAME:localhost}
     lease-renewal-interval-in-seconds: 10
     lease-expiration-duration-in-seconds: 30
 
-# Logging for debugging gateway routing
 logging:
   level:
     org.springframework.cloud.gateway: INFO
     reactor.netty.http.client: INFO
-

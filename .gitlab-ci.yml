@@ -219,7 +219,7 @@ image:deployment-service:
   script:
     - |
       IMAGE="$DOCKERHUB_USERNAME/disaster-response-deployment-service"
-      docker build --build-arg VERSION=$VERSION -t "$IMAGE:$VERSION" backend-app/deployment-service
+      docker build --build-arg VERSION=$VERSION -f backend-app/deployment-service/Dockerfile -t "$IMAGE:$VERSION" backend-app
       if [[ "$VERSION" != *"-rc"* ]]; then
         docker tag "$IMAGE:$VERSION" "$IMAGE:latest"
       fi

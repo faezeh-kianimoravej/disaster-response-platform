@@ -1,0 +1,147 @@
+version: '3.9'
+
+services:
+
+  # ==============================
+  # PostgreSQL
+  # ==============================
+  postgres-db:
+    image: postgres:16
+    container_name: postgres-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - backend-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  # ==============================
+  # Zookeeper
+  # ==============================
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    hostname: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - backend-network
+
+  # ==============================
+  # Kafka
+  # ==============================
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    hostname: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - backend-network
+    healthcheck:
+      test: [ "CMD-SHELL", "nc -z localhost 9092" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: on-failure
+
+  # ==============================
+  # Eureka Discovery Service
+  # ==============================
+  discovery-service:
+    image: eclipse-temurin:21-jdk
+    container_name: discovery-service
+    ports:
+      - "8761:8761"
+    environment:
+      SPRING_PROFILES_ACTIVE: local-docker
+    networks:
+      - backend-network
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    volumes:
+      - ./discovery-service/target/discovery-service-1.0.0-dev.jar:/app/app.jar:ro
+    working_dir: /app
+    entrypoint: [ "java", "-jar", "app.jar" ]
+
+  # ==============================
+  # Notification Service
+  # ==============================
+  notification-service:
+    image: eclipse-temurin:21-jdk
+    container_name: notification-service
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      discovery-service:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8085:8085"
+    environment:
+      SPRING_PROFILES_ACTIVE: local-docker
+    networks:
+      - backend-network
+    volumes:
+      - ./notification-service/target/notification-service-1.0.0-dev.jar:/app/app.jar:ro
+    working_dir: /app
+    entrypoint: [ "sh", "-c", "until nc -z kafka 9092; do echo 'Waiting for Kafka...'; sleep 2; done; java -jar app.jar" ]
+
+  # ==============================
+  # Deployment Service
+  # ==============================
+  deployment-service:
+    image: eclipse-temurin:21-jdk
+    container_name: deployment-service
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      discovery-service:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8088:8088"
+    environment:
+      SPRING_PROFILES_ACTIVE: local-docker
+    networks:
+      - backend-network
+    volumes:
+      - ./deployment-service/target/deployment-service-1.0.0-dev.jar:/app/app.jar:ro
+    working_dir: /app
+    entrypoint: [ "sh", "-c", "until nc -z kafka 9092; do echo 'Waiting for Kafka...'; sleep 2; done; java -jar app.jar" ]
+
+# ==============================
+# Network & Volumes
+# ==============================
+networks:
+  backend-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
