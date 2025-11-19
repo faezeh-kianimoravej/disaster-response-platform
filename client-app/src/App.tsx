@@ -16,6 +16,7 @@ import MunicipalitiesPage from './pages/MunicipalitiesPage';
 import IncidentDetailsPage from './pages/IncidentDetailsPage';
 import IncidentPriorityPage from './pages/IncidentPriorityPage';
 import IncidentDeploymentOrder from './pages/IncidentDeploymentOrder';
+import DeploymentRequestDetailsPage from './pages/DeploymentRequestDetailsPage';
 import { AppProviders } from './context/AppProviders';
 
 function App() {
@@ -34,6 +35,13 @@ function App() {
 							path="/incidents/:incidentId/deployment-order"
 							element={<IncidentDeploymentOrder />}
 						/>
+
+						{/* Deployment Request Details */}
+						<Route
+							path="/deployment-requests/:requestId"
+							element={<DeploymentRequestDetailsPage />}
+						/>
+
 						<Route path="/resources" element={<ResourcesPage />} />
 						<Route path="/resources/:departmentId" element={<ResourcesPage />} />
 
