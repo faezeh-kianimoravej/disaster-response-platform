@@ -61,4 +61,5 @@ public class DeploymentRequestRepositoryImpl implements DeploymentRequestReposit
                 .setParameter("deptId", departmentId)
                 .getResultList();
     }
+
 }

@@ -33,6 +33,14 @@ public class DeploymentRequestController {
             @ApiResponse(responseCode = "404", description = "No deployment requests found for the given department ID"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
+
+    @GetMapping("/{id}")
+    public ResponseEntity<DeploymentRequestDTO> getRequestsById(
+            @PathVariable Long id
+    ) {
+        return deploymentRequestService.getDeploymentRequestById(id).map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @GetMapping("/department/{departmentId}/requests")
     public ResponseEntity<List<DeploymentRequestDTO>> getRequestsByDepartment(
             @PathVariable Long departmentId

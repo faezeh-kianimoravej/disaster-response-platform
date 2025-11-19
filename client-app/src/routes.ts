@@ -33,6 +33,9 @@ export const routes = {
 	incidentPrioritize: (incidentId: number | string) => `/incidents/${incidentId}/prioritize`,
 	incidentDeploymentOrder: (incidentId: number | string) =>
 		`/incidents/${incidentId}/deployment-order`,
+
+	// Deployment Requests
+	deploymentRequestDetails: (requestId: number | string) => `/deployment-requests/${requestId}`,
 };
 
 export type Routes = typeof routes;

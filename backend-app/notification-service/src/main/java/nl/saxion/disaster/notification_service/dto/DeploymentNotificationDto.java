@@ -8,6 +8,7 @@ public record DeploymentNotificationDto(
 
         Long notificationId,
         Long departmentId,
+        Long deploymentRequestId,
         String title,
         String description,
         NotificationType notificationType,

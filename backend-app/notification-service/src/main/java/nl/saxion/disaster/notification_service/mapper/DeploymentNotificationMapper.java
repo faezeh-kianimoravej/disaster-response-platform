@@ -19,6 +19,7 @@ public class DeploymentNotificationMapper implements BaseMapper<Notification, De
         return new DeploymentNotificationDto(
                 entity.getNotificationId(),
                 entity.getDepartmentId(),
+                entity.getDeploymentRequestId(),
                 entity.getTitle(),
                 entity.getDescription(),
                 entity.getNotificationType(),
@@ -34,6 +35,7 @@ public class DeploymentNotificationMapper implements BaseMapper<Notification, De
         return Notification.builder()
                 .notificationId(dto.notificationId())
                 .departmentId(dto.departmentId())
+                .deploymentRequestId(dto.deploymentRequestId())
                 .title(dto.title())
                 .description(dto.description())
                 .notificationType(dto.notificationType())

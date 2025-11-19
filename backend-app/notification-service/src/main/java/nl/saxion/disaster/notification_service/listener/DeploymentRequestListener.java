@@ -33,8 +33,8 @@ public class DeploymentRequestListener {
         //Create Notification entity
         Notification notification = Notification.builder()
                 .incidentId(event.incidentId())
-                .deploymentRequestId(event.deploymentRequestId())
                 .departmentId(event.departmentId())
+                .deploymentRequestId(event.deploymentRequestId())
                 .notificationType(NotificationType.DEPLOYMENT_REQUEST)
                 .description(event.description())
                 .createdAt(java.time.OffsetDateTime.now())
@@ -55,6 +55,7 @@ public class DeploymentRequestListener {
             DeploymentNotificationDto dto = new DeploymentNotificationDto(
                     notification.getNotificationId(),
                     notification.getDepartmentId(),
+                    notification.getDeploymentRequestId(),
                     "New Incident - " + notification.getTitle(),
                     notification.getDescription(),
                     notification.getNotificationType(),

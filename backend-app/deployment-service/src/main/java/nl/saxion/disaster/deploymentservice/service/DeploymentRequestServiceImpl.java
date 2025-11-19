@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +18,14 @@ public class DeploymentRequestServiceImpl implements DeploymentRequestService {
 
     private final DeploymentRequestRepository deploymentRequestRepository;
     private final DeploymentRequestMapper requestMapper;
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<DeploymentRequestDTO> getDeploymentRequestById(Long id) {
+               return deploymentRequestRepository.findDeploymentRequestById(id)
+                .map(requestMapper::toDto);
+
+    }
 
     @Override
     @Transactional(readOnly = true)
