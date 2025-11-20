@@ -32,17 +32,17 @@ public class ResponseUnit {
 
     @ElementCollection
     @CollectionTable(
-        name = "response_unit_default_resources",
-        joinColumns = @JoinColumn(name = "unit_id"),
-        uniqueConstraints = @UniqueConstraint(columnNames = {"unit_id", "resource_id"})
+            name = "response_unit_default_resources",
+            joinColumns = @JoinColumn(name = "unit_id"),
+            uniqueConstraints = @UniqueConstraint(columnNames = {"unit_id", "resource_id"})
     )
     private List<DefaultResource> defaultResources;
 
     @ElementCollection
     @CollectionTable(
-        name = "response_unit_default_personnel",
-        joinColumns = @JoinColumn(name = "unit_id"),
-        uniqueConstraints = @UniqueConstraint(columnNames = {"id"})
+            name = "response_unit_default_personnel",
+            joinColumns = @JoinColumn(name = "unit_id"),
+            uniqueConstraints = @UniqueConstraint(columnNames = {"id"})
     )
     private List<DefaultPersonnelSlot> defaultPersonnel;
 
@@ -72,6 +72,9 @@ public class ResponseUnit {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    @Version
+    private Long version; //For optimistic locking
+
     @Embeddable
     @Data
     public static class DefaultResource {
@@ -80,6 +83,8 @@ public class ResponseUnit {
 
         @Column(nullable = false)
         private Integer quantity;
+
+        private Integer requiredQuantity;
 
         @Column(nullable = false)
         private Boolean isPrimary;

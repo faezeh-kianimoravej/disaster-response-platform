@@ -29,6 +29,8 @@ public class Deployment {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private DeploymentStatus status;
+    @Version
+    private Long version;
 
     @ElementCollection
     @CollectionTable(name = "deployment_deployed_resources", joinColumns = @JoinColumn(name = "deployment_id"))

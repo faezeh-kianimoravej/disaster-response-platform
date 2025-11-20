@@ -4,5 +4,6 @@ public enum DeploymentRequestStatus {
     PENDING,
     ASSIGNED,
     DECLINED,
+    PARTIALLY_ASSIGNED,
     CANCELLED
 }
