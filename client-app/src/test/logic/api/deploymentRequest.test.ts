@@ -7,11 +7,10 @@ vi.mock('@/api/deploymentRequest', async importOriginal => {
 	return {
 		...actual,
 		getDeploymentRequestById: vi.fn(),
-		assignDeploymentRequest: vi.fn(),
 	};
 });
 
-import { getDeploymentRequestById, assignDeploymentRequest } from '@/api/deploymentRequest';
+import { getDeploymentRequestById } from '@/api/deploymentRequest';
 
 describe('deploymentRequest API', () => {
 	beforeEach(() => {
@@ -71,66 +70,6 @@ describe('deploymentRequest API', () => {
 
 			await expect(getDeploymentRequestById(1)).rejects.toThrow('Network error');
 			expect(getDeploymentRequestById).toHaveBeenCalledWith(1);
-		});
-	});
-
-	describe('assignDeploymentRequest', () => {
-		it('should assign deployment request successfully', async () => {
-			const assignmentData = {
-				requestId: 1,
-				assignedBy: 600,
-				assignedUsers: [700, 800],
-				assignedResources: [
-					{ resourceId: 900, quantity: 2 },
-					{ resourceId: 1000, quantity: 1 },
-				],
-				notes: 'Test assignment',
-			};
-
-			const mockResponse = {
-				success: true,
-				assignedUnitId: 1100,
-			};
-
-			vi.mocked(assignDeploymentRequest).mockResolvedValue(mockResponse);
-
-			const result = await assignDeploymentRequest(assignmentData);
-
-			expect(assignDeploymentRequest).toHaveBeenCalledWith(assignmentData);
-			expect(result).toEqual(mockResponse);
-		});
-
-		it('should handle assignment without optional fields', async () => {
-			const assignmentData = {
-				requestId: 2,
-				assignedBy: 600,
-				assignedUsers: [700],
-				assignedResources: [{ resourceId: 900, quantity: 1 }],
-			};
-
-			const mockResponse = { success: true, assignedUnitId: 1200 };
-
-			vi.mocked(assignDeploymentRequest).mockResolvedValue(mockResponse);
-
-			const result = await assignDeploymentRequest(assignmentData);
-
-			expect(assignDeploymentRequest).toHaveBeenCalledWith(assignmentData);
-			expect(result).toEqual(mockResponse);
-		});
-
-		it('should throw error when assignment fails', async () => {
-			const assignmentData = {
-				requestId: 1,
-				assignedBy: 600,
-				assignedUsers: [700],
-				assignedResources: [{ resourceId: 900, quantity: 1 }],
-			};
-
-			const error = new Error('Assignment failed');
-			vi.mocked(assignDeploymentRequest).mockRejectedValue(error);
-
-			await expect(assignDeploymentRequest(assignmentData)).rejects.toThrow('Assignment failed');
-			expect(assignDeploymentRequest).toHaveBeenCalledWith(assignmentData);
 		});
 	});
 

@@ -24,23 +24,6 @@ interface DeploymentRequestDTO {
 	notes?: string;
 }
 
-interface DeploymentAssignmentRequest {
-	requestId: number;
-	assignedBy: number;
-	assignedUsers: number[];
-	assignedResources: {
-		resourceId: number;
-		quantity: number;
-	}[];
-	notes?: string;
-}
-
-interface DeploymentAssignmentResponse {
-	success: boolean;
-	assignedUnitId: number;
-	message?: string;
-}
-
 // --- Mapping ---
 function mapDeploymentRequestDTO(dto: DeploymentRequestDTO): DeploymentRequest {
 	return {
@@ -66,14 +49,4 @@ const deploymentRequestApi = new BaseApi(`${API_BASE_URL}/deployment-requests`);
 export async function getDeploymentRequestById(id: number): Promise<DeploymentRequest> {
 	const dto = await deploymentRequestApi.get<DeploymentRequestDTO>(`/${id}`);
 	return mapDeploymentRequestDTO(dto);
-}
-
-export async function assignDeploymentRequest(
-	assignmentData: DeploymentAssignmentRequest
-): Promise<DeploymentAssignmentResponse> {
-	const response = await deploymentRequestApi.post<DeploymentAssignmentResponse>(
-		`/${assignmentData.requestId}/assign`,
-		assignmentData
-	);
-	return response;
 }

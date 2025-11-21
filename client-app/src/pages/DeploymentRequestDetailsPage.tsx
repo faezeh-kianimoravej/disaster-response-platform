@@ -8,12 +8,13 @@ import LoadingPanel from '@/components/ui/LoadingPanel';
 import { ErrorRetryBlock } from '@/components/ui/ErrorRetry';
 import useSingleErrorToast from '@/hooks/useSingleErrorToast';
 import { DEPARTMENT_ROLES } from '@/types/role';
-import { useDeploymentRequest, useAssignDeploymentRequest } from '@/hooks/useDeploymentRequest';
-import { useResources } from '@/hooks/useResource';
-import { useUsersByDepartment } from '@/hooks/useUser';
+import {
+	useDeploymentRequest,
+	useAssignResponseUnitToDeploymentRequest,
+} from '@/hooks/useDeploymentRequest';
+import { useResponseUnits } from '@/hooks/useResponseUnit';
 import { useAuth } from '@/context/AuthContext';
-import type { Resource } from '@/types/resource';
-import type { User } from '@/types/user';
+import type { ResponseUnit } from '@/types/responseUnit';
 
 export default function DeploymentRequestDetailsPage() {
 	const { requestId } = useParams<{ requestId: string }>();
@@ -34,10 +35,7 @@ function DeploymentRequestDetailsPageContent({
 	const navigate = useNavigate();
 	const showSingleError = useSingleErrorToast();
 	const auth = useAuth();
-	const [selectedResources, setSelectedResources] = useState<
-		Array<{ resource: Resource; quantity: number }>
-	>([]);
-	const [selectedPersonnel, setSelectedPersonnel] = useState<User[]>([]);
+	const [selectedResponseUnit, setSelectedResponseUnit] = useState<ResponseUnit | null>(null);
 
 	const {
 		data: deploymentRequest,
@@ -46,63 +44,25 @@ function DeploymentRequestDetailsPageContent({
 		refetch,
 	} = useDeploymentRequest(requestId);
 
-	const assignMutation = useAssignDeploymentRequest();
+	const assignMutation = useAssignResponseUnitToDeploymentRequest();
 
-	// Get department resources and users for assignment
+	// Get department response units for assignment
 	const targetDepartmentId = deploymentRequest?.targetDepartmentId;
 	const requestedUnitType = deploymentRequest?.requestedUnitType;
-	const requestedQuantity = deploymentRequest?.requestedQuantity || 1;
 
-	// For TEAM requests, fetch TEAM resources. For others, fetch resources of the matching type
-	const isTeamRequest = requestedUnitType === 'Team';
-
-	// Always fetch resources (for both TEAM and non-TEAM requests)
-	const { resources, loading: resourcesLoading } = useResources(targetDepartmentId, {
-		enabled: !!targetDepartmentId && deploymentRequest?.status !== 'assigned',
-	});
-
-	// Only fetch users for non-TEAM requests (for optional personnel assignment)
-	const { users: departmentUsers, loading: usersLoading } = useUsersByDepartment(
+	// Fetch available response units for the target department
+	const { data: allResponseUnits, isLoading: responseUnitsLoading } = useResponseUnits(
 		targetDepartmentId,
 		{
-			enabled: !!targetDepartmentId && deploymentRequest?.status !== 'assigned' && !isTeamRequest,
+			enabled: !!targetDepartmentId && deploymentRequest?.status !== 'assigned',
 		}
 	);
 
-	// Filter resources by the requested unit type for non-TEAM requests
-	// Map ResponseUnitType to ResourceType for filtering
-	const getResourceTypeFromUnitType = (unitType: string) => {
-		// If the unitType is already in RESOURCE_TYPE format (uppercase with underscores), return as-is
-		const resourceTypeFormat = /^[A-Z_]+$/.test(unitType);
-		if (resourceTypeFormat) {
-			return unitType;
-		}
-
-		// Otherwise, map from display format to resource type format
-		const mapping: Record<string, string> = {
-			'Command vehicle': 'COMMAND_VEHICLE',
-			Team: 'TEAM',
-			Boat: 'BOAT',
-			Helicopter: 'HELICOPTER',
-			Drone: 'DRONE',
-			'Fire truck': 'FIRE_TRUCK',
-			'Ladder truck': 'LADDER_TRUCK',
-			Ambulance: 'AMBULANCE',
-			'Trauma helicopter': 'TRAUMA_HELICOPTER',
-			'Patrol car': 'PATROL_CAR',
-			'SWAT car': 'SWAT_CAR',
-			'Armored vehicle': 'ARMORED_VEHICLE',
-			'Transport truck': 'TRANSPORT_TRUCK',
-			'Rescue vehicle': 'RESCUE_VEHICLE',
-			'Water tanker': 'WATER_TANKER',
-		};
-		return mapping[unitType] || unitType;
-	};
-
-	// Filter resources based on request type
-	const filteredResources = resources.filter(
-		resource => resource.resourceType === getResourceTypeFromUnitType(requestedUnitType || '')
-	);
+	// Filter response units by the requested unit type and available status
+	const availableResponseUnits =
+		allResponseUnits?.filter(
+			unit => unit.unitType === requestedUnitType && unit.status === 'AVAILABLE'
+		) || [];
 
 	const error = queryError?.message || null;
 
@@ -116,55 +76,22 @@ function DeploymentRequestDetailsPageContent({
 	}, [error, loading, requestId, showSingleError]);
 
 	const handleAssignment = async () => {
-		if (!auth?.user?.userId || !requestId) {
-			return;
-		}
-
-		// Validate selection - all requests now use resources
-		if (selectedResources.length === 0) {
-			return;
-		}
-
-		// Check total quantity doesn't exceed requested
-		const totalQuantity = selectedResources.reduce((sum, item) => sum + item.quantity, 0);
-		if (totalQuantity > requestedQuantity) {
+		if (!auth?.user?.userId || !requestId || !selectedResponseUnit) {
 			return;
 		}
 
 		try {
-			const payload: {
-				requestId: number;
-				assignedBy: number;
-				assignedUsers: number[];
-				assignedResources: {
-					resourceId: number;
-					quantity: number;
-				}[];
-				notes: string;
-			} = {
+			const payload = {
 				requestId,
 				assignedBy: auth.user.userId,
-				assignedResources: selectedResources.map(item => ({
-					resourceId: item.resource.resourceId,
-					quantity: item.quantity,
-				})),
-				assignedUsers: [], // Will be set below
-				notes: `Assigned resources: ${selectedResources.map(item => `${item.resource.name} (${item.quantity})`).join(', ')}`,
+				assignedUnitId: selectedResponseUnit.unitId,
+				notes: `Assigned ResponseUnit: ${selectedResponseUnit.unitName} (${selectedResponseUnit.unitType})`,
 			};
-
-			// For non-TEAM requests, include optional personnel if selected
-			if (!isTeamRequest && selectedPersonnel.length > 0) {
-				payload.assignedUsers = selectedPersonnel.map(p => p.userId);
-				payload.notes += ` with personnel: ${selectedPersonnel.map(p => `${p.firstName} ${p.lastName}`).join(', ')}`;
-			} else {
-				payload.assignedUsers = [];
-			}
 
 			await assignMutation.mutateAsync(payload);
 
-			// Reset selections
-			setSelectedResources([]);
-			setSelectedPersonnel([]);
+			// Reset selection
+			setSelectedResponseUnit(null);
 
 			// Refetch to get updated data
 			refetch();
@@ -350,158 +277,75 @@ function DeploymentRequestDetailsPageContent({
 							{/* Assignment Panel - Show if status is not assigned */}
 							{deploymentRequest.status !== 'assigned' && (
 								<div className="mt-6 p-6 bg-blue-50 rounded-lg border border-blue-200">
-									<h3 className="text-lg font-semibold text-gray-900 mb-4">
-										{isTeamRequest ? 'Assign Team Resources' : 'Assign Resources'}
-									</h3>
+									<h3 className="text-lg font-semibold text-gray-900 mb-4">Assign Response Unit</h3>
 
-									{resourcesLoading || (usersLoading && !isTeamRequest) ? (
-										<LoadingPanel text="Loading assignment options..." />
+									{responseUnitsLoading ? (
+										<LoadingPanel text="Loading available response units..." />
 									) : (
 										<div className="space-y-6">
-											{/* Resource Selection - Always shown for both TEAM and non-TEAM */}
+											{/* Response Unit Selection */}
 											<div>
 												<label className="block text-sm font-medium text-gray-700 mb-2">
-													Select {isTeamRequest ? 'Team' : requestedUnitType} Resources{' '}
+													Select {requestedUnitType} Response Unit{' '}
 													<span className="text-red-500">*</span>
-													<span className="text-sm text-gray-500 ml-2">
-														(Total quantity:{' '}
-														{selectedResources.reduce((sum, item) => sum + item.quantity, 0)} of{' '}
-														{requestedQuantity})
-													</span>
 												</label>
 
-												{filteredResources.length === 0 ? (
+												{availableResponseUnits.length === 0 ? (
 													<div className="text-gray-500 italic space-y-2">
-														<p>No {requestedUnitType} resources available in this department.</p>
-														{/* Debug info */}
+														<p>
+															No available {requestedUnitType} response units in this department.
+														</p>
 														<div className="text-xs bg-gray-100 p-2 rounded">
 															<p>Debug Info:</p>
+															<p>Target Department ID: {targetDepartmentId}</p>
 															<p>Requested Unit Type: &quot;{requestedUnitType}&quot;</p>
-															<p>
-																Mapped Resource Type: &quot;
-																{getResourceTypeFromUnitType(requestedUnitType || '')}&quot;
-															</p>
-															<p>Total Resources in Department: {resources.length}</p>
-															<p>
-																Available Resource Types:{' '}
-																{resources.map(r => r.resourceType).join(', ')}
-															</p>
+															<p>Total Units Found: {allResponseUnits?.length || 0}</p>
+															<p>Available Units: {availableResponseUnits.length}</p>
 														</div>
 													</div>
 												) : (
-													<div className="space-y-4">
-														{filteredResources.map(resource => {
-															const currentSelection = selectedResources.find(
-																item => item.resource.resourceId === resource.resourceId
-															);
-															const selectedQuantity = currentSelection?.quantity || 0;
-															const maxAvailable = Math.min(
-																resource.availableQuantity || 1,
-																requestedQuantity -
-																	selectedResources.reduce(
-																		(sum, item) =>
-																			item.resource.resourceId === resource.resourceId
-																				? sum
-																				: sum + item.quantity,
-																		0
-																	)
-															);
-
-															return (
-																<div
-																	key={resource.resourceId}
-																	className="border border-gray-200 rounded-md p-4"
-																>
-																	<div className="flex justify-between items-start mb-2">
-																		<div>
-																			<h4 className="font-medium">{resource.name}</h4>
-																			<p className="text-sm text-gray-600">
-																				{resource.resourceType}
-																				{resource.availableQuantity !== undefined &&
-																					` (Available: ${resource.availableQuantity})`}
-																			</p>
-																		</div>
-																	</div>
-
-																	<div className="flex items-center space-x-3">
-																		<label className="text-sm font-medium">Quantity:</label>
-																		<input
-																			type="number"
-																			min="0"
-																			max={maxAvailable}
-																			value={selectedQuantity}
-																			onChange={e => {
-																				const newQuantity = Math.max(
-																					0,
-																					parseInt(e.target.value) || 0
-																				);
-																				setSelectedResources(prev => {
-																					const filtered = prev.filter(
-																						item => item.resource.resourceId !== resource.resourceId
-																					);
-																					if (newQuantity > 0) {
-																						return [
-																							...filtered,
-																							{ resource, quantity: newQuantity },
-																						];
-																					}
-																					return filtered;
-																				});
-																			}}
-																			className="w-20 p-1 border border-gray-300 rounded text-center"
-																		/>
-																	</div>
-																</div>
-															);
-														})}
-													</div>
-												)}
-											</div>
-
-											{/* Personnel Selection - Only for non-TEAM requests */}
-											{!isTeamRequest && (
-												<div>
-													<label className="block text-sm font-medium text-gray-700 mb-2">
-														Select Personnel
-													</label>
-
-													<div className="space-y-2 max-h-60 overflow-y-auto border border-gray-300 rounded-md p-3">
-														{departmentUsers?.map(user => (
-															<label key={user.userId} className="flex items-center space-x-3">
+													<div className="space-y-3">
+														{availableResponseUnits.map(unit => (
+															<label
+																key={unit.unitId}
+																className="flex items-start space-x-3 p-3 border border-gray-200 rounded-md hover:bg-gray-50"
+															>
 																<input
-																	type="checkbox"
-																	checked={selectedPersonnel.some(p => p.userId === user.userId)}
-																	onChange={e => {
-																		if (e.target.checked) {
-																			setSelectedPersonnel(prev => [...prev, user]);
-																		} else {
-																			setSelectedPersonnel(prev =>
-																				prev.filter(p => p.userId !== user.userId)
-																			);
-																		}
-																	}}
-																	className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+																	type="radio"
+																	name="responseUnit"
+																	checked={selectedResponseUnit?.unitId === unit.unitId}
+																	onChange={() => setSelectedResponseUnit(unit)}
+																	className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
 																/>
-																<span className="text-sm">
-																	{user.firstName} {user.lastName} - {user.email}
-																</span>
+																<div className="flex-1">
+																	<div className="font-medium text-gray-900">{unit.unitName}</div>
+																	<div className="text-sm text-gray-600">Type: {unit.unitType}</div>
+																	{unit.defaultResources && unit.defaultResources.length > 0 && (
+																		<div className="text-xs text-gray-500 mt-1">
+																			Resources: {unit.defaultResources.length} configured
+																		</div>
+																	)}
+																	{unit.defaultPersonnel && unit.defaultPersonnel.length > 0 && (
+																		<div className="text-xs text-gray-500 mt-1">
+																			Personnel:{' '}
+																			{unit.defaultPersonnel.map(p => p.specialization).join(', ')}
+																		</div>
+																	)}
+																</div>
 															</label>
 														))}
 													</div>
-												</div>
-											)}
+												)}
+											</div>
 
 											{/* Assignment Button */}
 											<div className="flex justify-end">
 												<button
 													onClick={handleAssignment}
-													disabled={
-														selectedResources.length === 0 ||
-														selectedResources.reduce((sum, item) => sum + item.quantity, 0) === 0
-													}
+													disabled={!selectedResponseUnit || assignMutation.isPending}
 													className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
 												>
-													Assign
+													{assignMutation.isPending ? 'Assigning...' : 'Assign Response Unit'}
 												</button>
 											</div>
 										</div>

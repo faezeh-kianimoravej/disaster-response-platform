@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getDeploymentRequestById, assignDeploymentRequest } from '@/api/deploymentRequest';
+import { getDeploymentRequestById } from '@/api/deploymentRequest';
+import { assignResponseUnitToDeploymentRequest } from '@/api/deployment';
 import type { DeploymentRequest } from '@/types/deployment';
 import { DEPLOYMENT_REQUEST_QUERY_KEYS } from '@/hooks/queryKeys';
 
@@ -14,34 +15,26 @@ export function useDeploymentRequest(requestId?: number, options?: { enabled?: b
 	});
 }
 
-export function useAssignDeploymentRequest() {
+export function useAssignResponseUnitToDeploymentRequest() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
 		mutationFn: async (assignmentData: {
 			requestId: number;
 			assignedBy: number;
-			assignedUsers: number[];
-			assignedResources: { resourceId: number; quantity: number }[];
+			assignedUnitId: number;
 			notes?: string;
 		}) => {
-			return await assignDeploymentRequest(assignmentData);
+			return await assignResponseUnitToDeploymentRequest(assignmentData);
 		},
 		onSuccess: (_data, variables) => {
 			// Invalidate related queries
 			queryClient.invalidateQueries({
 				queryKey: DEPLOYMENT_REQUEST_QUERY_KEYS.item(variables.requestId),
 			});
-			// Invalidate availability queries for the department
+			// Invalidate response unit queries
 			queryClient.invalidateQueries({
-				queryKey: ['deployment-allocation'],
-			});
-			// Invalidate user and resource queries
-			queryClient.invalidateQueries({
-				queryKey: ['users'],
-			});
-			queryClient.invalidateQueries({
-				queryKey: ['resources'],
+				queryKey: ['response-units'],
 			});
 		},
 	});

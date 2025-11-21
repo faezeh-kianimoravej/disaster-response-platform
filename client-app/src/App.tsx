@@ -10,6 +10,8 @@ import UnauthorizedPage from '@/pages/NotAuthorizedPage';
 import Navigation from '@/components/layout/Navigation';
 import ResourcesPage from './pages/ResourcesPage';
 import ResourcePage from './pages/ResourcePage';
+import ResponseUnitPage from './pages/ResponseUnitPage';
+import ResponseUnitDetailsPage from './pages/ResponseUnitDetailsPage';
 import DepartmentPage from './pages/DepartmentPage';
 import DepartmentsPage from './pages/DepartmentsPage';
 import MunicipalitiesPage from './pages/MunicipalitiesPage';
@@ -48,6 +50,11 @@ function App() {
 						{/* Resource detail / new */}
 						<Route path="/resource/new" element={<ResourcePage />} />
 						<Route path="/resource/:resourceId" element={<ResourcePage />} />
+
+						{/* Response Unit detail / new */}
+						<Route path="/response-unit/new" element={<ResponseUnitPage />} />
+						<Route path="/response-units/:unitId" element={<ResponseUnitDetailsPage />} />
+						<Route path="/response-units/:responseUnitId/edit" element={<ResponseUnitPage />} />
 
 						{/* Departments list by municipality (municipalityId optional) */}
 						<Route path="/departments" element={<DepartmentsPage />} />
