@@ -7,13 +7,16 @@ import {
 	useAssignResponseUnitToDeploymentRequest,
 } from '@/hooks/useDeploymentRequest';
 import * as deploymentRequestApi from '@/api/deploymentRequest';
+import * as deploymentApi from '@/api/deployment';
 import type { DeploymentRequest } from '@/types/deployment';
 import React, { type ReactNode } from 'react';
 
-// Mock the API module
+// Mock the API modules
 vi.mock('@/api/deploymentRequest');
+vi.mock('@/api/deployment');
 
-const mockedApi = vi.mocked(deploymentRequestApi);
+const mockedDeploymentRequestApi = vi.mocked(deploymentRequestApi);
+const mockedDeploymentApi = vi.mocked(deploymentApi);
 
 describe('useDeploymentRequest hooks', () => {
 	let queryClient: QueryClient;
@@ -47,7 +50,7 @@ describe('useDeploymentRequest hooks', () => {
 		};
 
 		it('should fetch deployment request successfully', async () => {
-			mockedApi.getDeploymentRequestById.mockResolvedValue(mockDeploymentRequest);
+			mockedDeploymentRequestApi.getDeploymentRequestById.mockResolvedValue(mockDeploymentRequest);
 
 			const { result } = renderHook(() => useDeploymentRequest(1), {
 				wrapper: createWrapper(),
@@ -58,11 +61,13 @@ describe('useDeploymentRequest hooks', () => {
 			expect(result.current.data).toEqual(mockDeploymentRequest);
 			expect(result.current.isLoading).toBe(false);
 			expect(result.current.error).toBe(null);
-			expect(mockedApi.getDeploymentRequestById).toHaveBeenCalledWith(1);
+			expect(mockedDeploymentRequestApi.getDeploymentRequestById).toHaveBeenCalledWith(1);
 		});
 
 		it('should handle loading state', () => {
-			mockedApi.getDeploymentRequestById.mockImplementation(() => new Promise(() => {})); // Never resolves
+			mockedDeploymentRequestApi.getDeploymentRequestById.mockImplementation(
+				() => new Promise(() => {})
+			); // Never resolves
 
 			const { result } = renderHook(() => useDeploymentRequest(1), {
 				wrapper: createWrapper(),
@@ -75,7 +80,7 @@ describe('useDeploymentRequest hooks', () => {
 
 		it('should handle error state', async () => {
 			const error = new Error('Failed to fetch deployment request');
-			mockedApi.getDeploymentRequestById.mockRejectedValue(error);
+			mockedDeploymentRequestApi.getDeploymentRequestById.mockRejectedValue(error);
 
 			const { result } = renderHook(() => useDeploymentRequest(1), {
 				wrapper: createWrapper(),
@@ -95,7 +100,7 @@ describe('useDeploymentRequest hooks', () => {
 
 			expect(result.current.isLoading).toBe(false);
 			expect(result.current.data).toBeUndefined();
-			expect(mockedApi.getDeploymentRequestById).not.toHaveBeenCalled();
+			expect(mockedDeploymentRequestApi.getDeploymentRequestById).not.toHaveBeenCalled();
 		});
 
 		it('should not fetch when enabled is false', () => {
@@ -105,7 +110,7 @@ describe('useDeploymentRequest hooks', () => {
 
 			expect(result.current.isLoading).toBe(false);
 			expect(result.current.data).toBeUndefined();
-			expect(mockedApi.getDeploymentRequestById).not.toHaveBeenCalled();
+			expect(mockedDeploymentRequestApi.getDeploymentRequestById).not.toHaveBeenCalled();
 		});
 
 		it('should use correct query key', () => {
@@ -129,7 +134,9 @@ describe('useDeploymentRequest hooks', () => {
 		};
 
 		it('should assign response unit to deployment request successfully', async () => {
-			mockedApi.assignResponseUnitToDeploymentRequest.mockResolvedValue(mockAssignmentResponse);
+			mockedDeploymentApi.assignResponseUnitToDeploymentRequest.mockResolvedValue(
+				mockAssignmentResponse
+			);
 
 			const { result } = renderHook(() => useAssignResponseUnitToDeploymentRequest(), {
 				wrapper: createWrapper(),
@@ -144,12 +151,14 @@ describe('useDeploymentRequest hooks', () => {
 
 			await result.current.mutateAsync(assignmentData);
 
-			expect(mockedApi.assignResponseUnitToDeploymentRequest).toHaveBeenCalledWith(assignmentData);
+			expect(mockedDeploymentApi.assignResponseUnitToDeploymentRequest).toHaveBeenCalledWith(
+				assignmentData
+			);
 		});
 
 		it('should handle assignment error', async () => {
 			const error = new Error('ResponseUnit assignment failed');
-			mockedApi.assignResponseUnitToDeploymentRequest.mockRejectedValue(error);
+			mockedDeploymentApi.assignResponseUnitToDeploymentRequest.mockRejectedValue(error);
 
 			const { result } = renderHook(() => useAssignResponseUnitToDeploymentRequest(), {
 				wrapper: createWrapper(),
@@ -164,11 +173,15 @@ describe('useDeploymentRequest hooks', () => {
 			await expect(result.current.mutateAsync(assignmentData)).rejects.toThrow(
 				'ResponseUnit assignment failed'
 			);
-			expect(mockedApi.assignResponseUnitToDeploymentRequest).toHaveBeenCalledWith(assignmentData);
+			expect(mockedDeploymentApi.assignResponseUnitToDeploymentRequest).toHaveBeenCalledWith(
+				assignmentData
+			);
 		});
 
 		it('should invalidate queries on successful assignment', async () => {
-			mockedApi.assignResponseUnitToDeploymentRequest.mockResolvedValue(mockAssignmentResponse);
+			mockedDeploymentApi.assignResponseUnitToDeploymentRequest.mockResolvedValue(
+				mockAssignmentResponse
+			);
 
 			// Pre-populate cache with some data
 			queryClient.setQueryData(['deployment-request', 1], { requestId: 1 });
@@ -196,7 +209,7 @@ describe('useDeploymentRequest hooks', () => {
 		});
 
 		it('should track mutation state correctly', async () => {
-			mockedApi.assignResponseUnitToDeploymentRequest.mockImplementation(
+			mockedDeploymentApi.assignResponseUnitToDeploymentRequest.mockImplementation(
 				() => new Promise(resolve => setTimeout(() => resolve(mockAssignmentResponse), 100))
 			);
 

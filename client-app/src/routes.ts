@@ -22,6 +22,11 @@ export const routes = {
 	resource: (resourceId: number | string) => `/resource/${resourceId}`,
 	resourceNew: () => `/resource/new`,
 
+	// Response Units
+	responseUnit: (responseUnitId: number | string) => `/response-units/${responseUnitId}`,
+	responseUnitNew: () => `/response-unit/new`,
+	responseUnitEdit: (responseUnitId: number | string) => `/response-units/${responseUnitId}/edit`,
+
 	// Users
 	users: () => '/users',
 	userNew: () => '/users/new',

@@ -1,11 +1,17 @@
 import { useEffect } from 'react';
 import type { FC } from 'react';
+import { Link } from 'react-router-dom';
 import { useResponseUnits } from '@/hooks/useResponseUnit';
 import LoadingPanel from '@/components/ui/LoadingPanel';
 import { ErrorRetryBlock } from '@/components/ui/ErrorRetry';
 import useSingleErrorToast from '@/hooks/useSingleErrorToast';
+import { routes } from '@/routes';
 
-const ResponseUnitsOverview: FC<{ departmentId: number }> = ({ departmentId }) => {
+interface ResponseUnitsOverviewProps {
+	departmentId: number;
+}
+
+const ResponseUnitsOverview: FC<ResponseUnitsOverviewProps> = ({ departmentId }) => {
 	const {
 		data: units = [],
 		isLoading,
@@ -39,22 +45,30 @@ const ResponseUnitsOverview: FC<{ departmentId: number }> = ({ departmentId }) =
 	return (
 		<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 			{units.map(u => (
-				<div key={u.unitId} className="bg-white rounded-lg shadow-md p-6">
-					<h3 className="text-lg font-semibold text-gray-800 mb-1 normal-case">{u.unitName}</h3>
-					<p className="text-sm text-gray-500 mb-2 normal-case">{u.unitType}</p>
-					<p className="text-gray-700 normal-case">
-						<strong>Status:</strong> {u.status}
-					</p>
-					<p className="text-gray-700 normal-case">
-						<strong>Personnel (default):</strong> {u.defaultPersonnel?.length ?? 0}
-					</p>
-					<p className="text-gray-700 normal-case">
-						<strong>Resources (default):</strong> {u.defaultResources?.length ?? 0}
-					</p>
-					<p className="text-gray-700 normal-case">
-						<strong>Current personnel:</strong> {u.currentPersonnel?.length ?? 0}
-					</p>
-				</div>
+				<Link
+					key={u.unitId}
+					to={routes.responseUnit(u.unitId)}
+					className="block bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200"
+				>
+					<div className="mb-3">
+						<h3 className="text-lg font-semibold text-gray-800 mb-1 normal-case">{u.unitName}</h3>
+						<p className="text-sm text-gray-500 normal-case">{u.unitType}</p>
+					</div>
+					<div className="space-y-1">
+						<p className="text-gray-700 normal-case">
+							<strong>Status:</strong> {u.status}
+						</p>
+						<p className="text-gray-700 normal-case">
+							<strong>Personnel (default):</strong> {u.defaultPersonnel?.length ?? 0}
+						</p>
+						<p className="text-gray-700 normal-case">
+							<strong>Resources (default):</strong> {u.defaultResources?.length ?? 0}
+						</p>
+						<p className="text-gray-700 normal-case">
+							<strong>Current personnel:</strong> {u.currentPersonnel?.length ?? 0}
+						</p>
+					</div>
+				</Link>
 			))}
 		</div>
 	);

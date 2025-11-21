@@ -7,14 +7,10 @@ vi.mock('@/api/deploymentRequest', async importOriginal => {
 	return {
 		...actual,
 		getDeploymentRequestById: vi.fn(),
-		assignResponseUnitToDeploymentRequest: vi.fn(),
 	};
 });
 
-import {
-	getDeploymentRequestById,
-	assignResponseUnitToDeploymentRequest,
-} from '@/api/deploymentRequest';
+import { getDeploymentRequestById } from '@/api/deploymentRequest';
 
 describe('deploymentRequest API', () => {
 	beforeEach(() => {
@@ -74,62 +70,6 @@ describe('deploymentRequest API', () => {
 
 			await expect(getDeploymentRequestById(1)).rejects.toThrow('Network error');
 			expect(getDeploymentRequestById).toHaveBeenCalledWith(1);
-		});
-	});
-
-	describe('assignResponseUnitToDeploymentRequest', () => {
-		it('should assign response unit to deployment request successfully', async () => {
-			const assignmentData = {
-				requestId: 1,
-				assignedBy: 600,
-				assignedUnitId: 1100,
-				notes: 'Test ResponseUnit assignment',
-			};
-
-			const mockResponse = {
-				success: true,
-				assignedUnitId: 1100,
-			};
-
-			vi.mocked(assignResponseUnitToDeploymentRequest).mockResolvedValue(mockResponse);
-
-			const result = await assignResponseUnitToDeploymentRequest(assignmentData);
-
-			expect(assignResponseUnitToDeploymentRequest).toHaveBeenCalledWith(assignmentData);
-			expect(result).toEqual(mockResponse);
-		});
-
-		it('should handle assignment without optional notes', async () => {
-			const assignmentData = {
-				requestId: 2,
-				assignedBy: 600,
-				assignedUnitId: 1200,
-			};
-
-			const mockResponse = { success: true, assignedUnitId: 1200 };
-
-			vi.mocked(assignResponseUnitToDeploymentRequest).mockResolvedValue(mockResponse);
-
-			const result = await assignResponseUnitToDeploymentRequest(assignmentData);
-
-			expect(assignResponseUnitToDeploymentRequest).toHaveBeenCalledWith(assignmentData);
-			expect(result).toEqual(mockResponse);
-		});
-
-		it('should throw error when response unit assignment fails', async () => {
-			const assignmentData = {
-				requestId: 1,
-				assignedBy: 600,
-				assignedUnitId: 1100,
-			};
-
-			const error = new Error('ResponseUnit assignment failed');
-			vi.mocked(assignResponseUnitToDeploymentRequest).mockRejectedValue(error);
-
-			await expect(assignResponseUnitToDeploymentRequest(assignmentData)).rejects.toThrow(
-				'ResponseUnit assignment failed'
-			);
-			expect(assignResponseUnitToDeploymentRequest).toHaveBeenCalledWith(assignmentData);
 		});
 	});
 

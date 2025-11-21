@@ -44,6 +44,13 @@ function ResourcesPageContent({
 	const showSingleError = useSingleErrorToast();
 	const [activeTab, setActiveTab] = useState<'resources' | 'responseUnits'>('resources');
 
+	// Navigation handlers for Response Units
+	const handleCreateResponseUnit = () => {
+		navigate(routes.responseUnitNew(), {
+			state: { departmentId },
+		});
+	};
+
 	const { resources, loading, refetch, error } = useResources(departmentId, {
 		enabled: !!departmentId,
 	});
@@ -167,7 +174,7 @@ function ResourcesPageContent({
 								Manage and define response units for this department here.
 							</p>
 							{departmentId !== undefined && (
-								<Button variant="primary" disabled>
+								<Button variant="primary" onClick={handleCreateResponseUnit}>
 									Add Response Unit
 								</Button>
 							)}
