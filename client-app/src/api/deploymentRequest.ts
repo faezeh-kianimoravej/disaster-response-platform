@@ -24,14 +24,11 @@ interface DeploymentRequestDTO {
 	notes?: string;
 }
 
-interface DeploymentAssignmentRequest {
+// New ResponseUnit-based assignment interface
+interface ResponseUnitAssignmentRequest {
 	requestId: number;
 	assignedBy: number;
-	assignedUsers: number[];
-	assignedResources: {
-		resourceId: number;
-		quantity: number;
-	}[];
+	assignedUnitId: number;
 	notes?: string;
 }
 
@@ -68,8 +65,8 @@ export async function getDeploymentRequestById(id: number): Promise<DeploymentRe
 	return mapDeploymentRequestDTO(dto);
 }
 
-export async function assignDeploymentRequest(
-	assignmentData: DeploymentAssignmentRequest
+export async function assignResponseUnitToDeploymentRequest(
+	assignmentData: ResponseUnitAssignmentRequest
 ): Promise<DeploymentAssignmentResponse> {
 	const response = await deploymentRequestApi.post<DeploymentAssignmentResponse>(
 		`/${assignmentData.requestId}/assign`,

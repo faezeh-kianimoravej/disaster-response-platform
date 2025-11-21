@@ -2,7 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createTestQueryClient } from '@/test/utils';
-import { useDeploymentRequest, useAssignDeploymentRequest } from '@/hooks/useDeploymentRequest';
+import {
+	useDeploymentRequest,
+	useAssignResponseUnitToDeploymentRequest,
+} from '@/hooks/useDeploymentRequest';
 import * as deploymentRequestApi from '@/api/deploymentRequest';
 import type { DeploymentRequest } from '@/types/deployment';
 import React, { type ReactNode } from 'react';
@@ -118,70 +121,67 @@ describe('useDeploymentRequest hooks', () => {
 		});
 	});
 
-	describe('useAssignDeploymentRequest', () => {
+	describe('useAssignResponseUnitToDeploymentRequest', () => {
 		const mockAssignmentResponse = {
 			success: true,
 			assignedUnitId: 500,
-			message: 'Assignment successful',
+			message: 'ResponseUnit assignment successful',
 		};
 
-		it('should assign deployment request successfully', async () => {
-			mockedApi.assignDeploymentRequest.mockResolvedValue(mockAssignmentResponse);
+		it('should assign response unit to deployment request successfully', async () => {
+			mockedApi.assignResponseUnitToDeploymentRequest.mockResolvedValue(mockAssignmentResponse);
 
-			const { result } = renderHook(() => useAssignDeploymentRequest(), {
+			const { result } = renderHook(() => useAssignResponseUnitToDeploymentRequest(), {
 				wrapper: createWrapper(),
 			});
 
 			const assignmentData = {
 				requestId: 1,
 				assignedBy: 300,
-				assignedUsers: [401, 402],
-				assignedResources: [{ resourceId: 501, quantity: 1 }],
-				notes: 'Test assignment',
+				assignedUnitId: 500,
+				notes: 'Test ResponseUnit assignment',
 			};
 
 			await result.current.mutateAsync(assignmentData);
 
-			expect(mockedApi.assignDeploymentRequest).toHaveBeenCalledWith(assignmentData);
+			expect(mockedApi.assignResponseUnitToDeploymentRequest).toHaveBeenCalledWith(assignmentData);
 		});
 
 		it('should handle assignment error', async () => {
-			const error = new Error('Assignment failed');
-			mockedApi.assignDeploymentRequest.mockRejectedValue(error);
+			const error = new Error('ResponseUnit assignment failed');
+			mockedApi.assignResponseUnitToDeploymentRequest.mockRejectedValue(error);
 
-			const { result } = renderHook(() => useAssignDeploymentRequest(), {
+			const { result } = renderHook(() => useAssignResponseUnitToDeploymentRequest(), {
 				wrapper: createWrapper(),
 			});
 
 			const assignmentData = {
 				requestId: 1,
 				assignedBy: 300,
-				assignedUsers: [],
-				assignedResources: [],
+				assignedUnitId: 500,
 			};
 
-			await expect(result.current.mutateAsync(assignmentData)).rejects.toThrow('Assignment failed');
-			expect(mockedApi.assignDeploymentRequest).toHaveBeenCalledWith(assignmentData);
+			await expect(result.current.mutateAsync(assignmentData)).rejects.toThrow(
+				'ResponseUnit assignment failed'
+			);
+			expect(mockedApi.assignResponseUnitToDeploymentRequest).toHaveBeenCalledWith(assignmentData);
 		});
 
 		it('should invalidate queries on successful assignment', async () => {
-			mockedApi.assignDeploymentRequest.mockResolvedValue(mockAssignmentResponse);
+			mockedApi.assignResponseUnitToDeploymentRequest.mockResolvedValue(mockAssignmentResponse);
 
 			// Pre-populate cache with some data
 			queryClient.setQueryData(['deployment-request', 1], { requestId: 1 });
-			queryClient.setQueryData(['deployment-allocation'], []);
-			queryClient.setQueryData(['users'], []);
-			queryClient.setQueryData(['resources'], []);
+			queryClient.setQueryData(['response-units'], []);
 
-			const { result } = renderHook(() => useAssignDeploymentRequest(), {
+			const { result } = renderHook(() => useAssignResponseUnitToDeploymentRequest(), {
 				wrapper: createWrapper(),
 			});
 
 			const assignmentData = {
 				requestId: 1,
 				assignedBy: 300,
-				assignedUsers: [],
-				assignedResources: [],
+				assignedUnitId: 500,
 			};
 
 			await result.current.mutateAsync(assignmentData);
@@ -196,11 +196,11 @@ describe('useDeploymentRequest hooks', () => {
 		});
 
 		it('should track mutation state correctly', async () => {
-			mockedApi.assignDeploymentRequest.mockImplementation(
+			mockedApi.assignResponseUnitToDeploymentRequest.mockImplementation(
 				() => new Promise(resolve => setTimeout(() => resolve(mockAssignmentResponse), 100))
 			);
 
-			const { result } = renderHook(() => useAssignDeploymentRequest(), {
+			const { result } = renderHook(() => useAssignResponseUnitToDeploymentRequest(), {
 				wrapper: createWrapper(),
 			});
 
@@ -211,8 +211,7 @@ describe('useDeploymentRequest hooks', () => {
 			const assignmentData = {
 				requestId: 1,
 				assignedBy: 300,
-				assignedUsers: [],
-				assignedResources: [],
+				assignedUnitId: 500,
 			};
 
 			const mutationPromise = result.current.mutateAsync(assignmentData);

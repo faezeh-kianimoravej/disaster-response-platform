@@ -10,22 +10,17 @@ vi.mock('@/components/auth/AuthGuard', () => ({
 
 // Hook mocks configurable per-test
 const mockUseDeploymentRequest = vi.fn();
-const mockUseAssignDeploymentRequest = vi.fn();
-const mockUseResources = vi.fn();
-const mockUseUsersByDepartment = vi.fn();
+const mockUseAssignResponseUnitToDeploymentRequest = vi.fn();
+const mockUseResponseUnits = vi.fn();
 
 vi.mock('@/hooks/useDeploymentRequest', () => ({
 	useDeploymentRequest: (...args: unknown[]) => mockUseDeploymentRequest(...args),
-	useAssignDeploymentRequest: (...args: unknown[]) => mockUseAssignDeploymentRequest(...args),
+	useAssignResponseUnitToDeploymentRequest: (...args: unknown[]) =>
+		mockUseAssignResponseUnitToDeploymentRequest(...args),
 }));
 
-vi.mock('@/hooks/useResource', () => ({
-	useResources: (...args: unknown[]) => mockUseResources(...args),
-	useResource: () => ({ resource: null, loading: false, error: null }),
-}));
-
-vi.mock('@/hooks/useUser', () => ({
-	useUsersByDepartment: (...args: unknown[]) => mockUseUsersByDepartment(...args),
+vi.mock('@/hooks/useResponseUnit', () => ({
+	useResponseUnits: (...args: unknown[]) => mockUseResponseUnits(...args),
 }));
 
 vi.mock('@/hooks/useSingleErrorToast', () => ({
@@ -54,22 +49,15 @@ vi.mock('react-router-dom', async () => {
 describe('DeploymentRequestDetailsPage (smoke)', () => {
 	beforeEach(() => {
 		// Default mock implementations
-		mockUseAssignDeploymentRequest.mockReturnValue({
+		mockUseAssignResponseUnitToDeploymentRequest.mockReturnValue({
 			mutate: vi.fn(),
+			mutateAsync: vi.fn().mockResolvedValue({}),
 			isPending: false,
 			error: null,
 		});
-		mockUseResources.mockReturnValue({
-			resources: [],
-			loading: false,
-			isFetching: false,
-			error: null,
-			refetch: vi.fn(),
-		});
-		mockUseUsersByDepartment.mockReturnValue({
-			users: [],
-			loading: false,
-			isFetching: false,
+		mockUseResponseUnits.mockReturnValue({
+			data: [],
+			isLoading: false,
 			error: null,
 			refetch: vi.fn(),
 		});
@@ -172,10 +160,19 @@ describe('DeploymentRequestDetailsPage (smoke)', () => {
 			refetch: vi.fn(),
 		});
 
-		mockUseResources.mockReturnValue({
-			resources: [{ id: 1, name: 'Emergency Response Team', type: 'Team' }],
-			loading: false,
-			isFetching: false,
+		mockUseResponseUnits.mockReturnValue({
+			data: [
+				{
+					unitId: 1,
+					unitName: 'Emergency Response Team Alpha',
+					unitType: 'Team',
+					departmentId: 5,
+					status: 'AVAILABLE',
+					defaultResources: [],
+					defaultPersonnel: [],
+				},
+			],
+			isLoading: false,
 			error: null,
 			refetch: vi.fn(),
 		});
@@ -186,12 +183,24 @@ describe('DeploymentRequestDetailsPage (smoke)', () => {
 			auth: {
 				user: {
 					userId: 1,
-					roles: [{ roleId: 1, name: 'Department Manager' }],
+					firstName: 'John',
+					lastName: 'Doe',
+					email: 'john.doe@example.com',
+					mobile: '+1234567890',
+					deleted: false,
+					roles: [
+						{
+							roleType: 'Department Admin',
+							departmentId: 5,
+							municipalityId: null,
+							regionId: null,
+						},
+					],
 				},
 			},
 		});
 
-		expect(screen.getByText(/Assign Team Resources/i)).toBeInTheDocument();
-		expect(screen.getByRole('button', { name: /Assign/i })).toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: /Assign Response Unit/i })).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /Assign Response Unit/i })).toBeInTheDocument();
 	});
 });
