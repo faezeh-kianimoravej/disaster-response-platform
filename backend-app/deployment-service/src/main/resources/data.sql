@@ -16,12 +16,12 @@ ON CONFLICT (unit_id) DO NOTHING;
 -- =========================================
 -- Default Resources (Required Resources)
 -- =========================================
-INSERT INTO response_unit_default_resources (unit_id, resource_id, quantity, is_primary)
+INSERT INTO response_unit_default_resources (unit_id, resource_id, quantity, required_quantity, is_primary)
 VALUES
-(1, 10, 1, TRUE),
-(2, 11, 1, TRUE),
-(3, 20, 1, TRUE),
-(4, 12, 1, TRUE)
+(1, 10, 1, 1, TRUE),
+(2, 11, 1, 1, TRUE),
+(3, 20, 1, 1, TRUE),
+(4, 12, 1, 1, TRUE)
 ON CONFLICT (unit_id, resource_id) DO NOTHING;
 
 -- =========================================
@@ -50,43 +50,41 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- =========================================
--- Current Resources (Actual resources — snapshot source)
+-- Current Resources (Actual resources — must match @Embeddable)
 -- =========================================
-INSERT INTO response_unit_current_resources (id, unit_id, resource_id, quantity)
+INSERT INTO response_unit_current_resources (unit_id, resource_id, quantity, is_primary)
 VALUES
--- Unit 1: fully valid (valid for assignment)
-(1, 1, 10, 1),
+-- Unit 1: fully valid
+(1, 10, 1, TRUE),
 
--- Unit 2: invalid (missing primary resource)
-(2, 2, 11, 0),
+-- Unit 2: invalid (primary qty = 0)
+(2, 11, 0, TRUE),
 
--- Unit 3: valid ambulance
-(3, 3, 20, 1),
+-- Unit 3: fully valid ambulance
+(3, 20, 1, TRUE),
 
--- Unit 4: valid resources BUT personnel invalid (below)
-(4, 4, 12, 1)
-ON CONFLICT (id) DO NOTHING;
+-- Unit 4: valid resources only
+(4, 12, 1, TRUE);
 
 -- =========================================
--- Current Personnel (Actual crew — snapshot source)
+-- Current Personnel (Actual crew — must match @Embeddable)
 -- =========================================
-INSERT INTO response_unit_current_personnel (id, unit_id, user_id, specialization)
+INSERT INTO response_unit_current_personnel (unit_id, user_id, specialization)
 VALUES
 -- Unit 1 (valid)
-(1, 1, 101, 'FIREFIGHTER'),
-(2, 1, 102, 'DRIVER'),
-(3, 1, 103, 'OPERATOR'),
+(1, 101, 'FIREFIGHTER'),
+(1, 102, 'DRIVER'),
+(1, 103, 'OPERATOR'),
 
--- Unit 2 (personnel OK, but resource invalid)
-(4, 2, 201, 'FIREFIGHTER'),
-(5, 2, 202, 'DRIVER'),
-(6, 2, 203, 'OPERATOR'),
+-- Unit 2 (personnel OK but resource invalid)
+(2, 201, 'FIREFIGHTER'),
+(2, 202, 'DRIVER'),
+(2, 203, 'OPERATOR'),
 
 -- Unit 3 (ambulance valid)
-(7, 3, 301, 'PARAMEDIC'),
-(8, 3, 302, 'DRIVER'),
+(3, 301, 'PARAMEDIC'),
+(3, 302, 'DRIVER'),
 
--- Unit 4 (personnel INVALID → missing FIREFIGHTER)
-(9, 4, 401, 'DRIVER'),
-(10, 4, 402, 'OPERATOR')
-ON CONFLICT (id) DO NOTHING;
+-- Unit 4 (invalid personnel)
+(4, 401, 'DRIVER'),
+(4, 402, 'OPERATOR');
