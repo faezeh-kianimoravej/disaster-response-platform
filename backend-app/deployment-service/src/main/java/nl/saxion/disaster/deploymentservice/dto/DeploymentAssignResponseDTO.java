@@ -19,6 +19,8 @@ public class DeploymentAssignResponseDTO {
 
     private String notes;
 
+    private String statusMessage;
+
     // List of generated deployments with their own status/timestamps
     private List<DeploymentSummaryDTO> deployments;
 }
