@@ -286,6 +286,7 @@ public class DeploymentServiceImpl implements DeploymentService {
         dto.setRequestAssignedBy(request.getAssignedBy());
         dto.setRequestAssignedAt(request.getAssignedAt());
         dto.setNotes(request.getNotes());
+        fillStatusMessage(request, dto);
 
         List<DeploymentSummaryDTO> summaries = deployments.stream()
                 .map(d -> {
@@ -301,6 +302,37 @@ public class DeploymentServiceImpl implements DeploymentService {
         dto.setDeployments(summaries);
 
         return dto;
+    }
+
+    private void fillStatusMessage(DeploymentRequest request, DeploymentAssignResponseDTO dto) {
+
+        if (request.getStatus() == null) {
+            dto.setStatusMessage("");
+            return;
+        }
+
+        switch (request.getStatus()) {
+            case DECLINED:
+                dto.setStatusMessage(
+                        "This request was declined because no valid response units were available for deployment."
+                );
+                break;
+
+            case PARTIALLY_ASSIGNED:
+                dto.setStatusMessage(
+                        "The request was partially fulfilled due to limited available units."
+                );
+                break;
+
+            case ASSIGNED:
+                dto.setStatusMessage(
+                        "The deployment request has been fully satisfied. All units were assigned."
+                );
+                break;
+
+            default:
+                dto.setStatusMessage("");
+        }
     }
 
     private DeploymentAssignResponseDTO handleNoAssignableUnits(
