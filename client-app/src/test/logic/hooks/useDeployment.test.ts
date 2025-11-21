@@ -46,9 +46,13 @@ describe('useDeployment hooks', () => {
 				notes: 'Test ResponseUnit assignment',
 			};
 
-			await result.current.mutateAsync(assignmentData);
+		await result.current.mutateAsync(assignmentData);
 
-			expect(mockedApi.assignResponseUnitToDeploymentRequest).toHaveBeenCalledWith(assignmentData);
+		expect(mockedApi.assignResponseUnitToDeploymentRequest).toHaveBeenCalledTimes(1);
+		// Check that the first argument matches our assignment data
+		const callArgs = mockedApi.assignResponseUnitToDeploymentRequest.mock.calls[0];
+		expect(callArgs).toBeDefined();
+		expect(callArgs![0]).toEqual(assignmentData);
 		});
 
 		it('should invalidate queries on successful assignment', async () => {
