@@ -90,7 +90,11 @@ function mapFormToCreateDTO(form: DeploymentOrderFormData): DeploymentOrderCreat
 		...(form.notes !== undefined ? { notes: form.notes } : {}),
 		deploymentRequests: form.deploymentRequests.map(req => ({
 			targetDepartmentId: req.targetDepartmentId,
-			requestedUnitType: req.requestedUnitType as ResponseUnitType,
+			// Convert the human-readable unit type to backend enum format
+			requestedUnitType: (req.requestedUnitType as string)
+				.replace(/ /g, '_')
+				.replace(/-/g, '_')
+				.toUpperCase() as unknown as ResponseUnitType,
 			requestedQuantity: req.requestedQuantity,
 		})),
 	};

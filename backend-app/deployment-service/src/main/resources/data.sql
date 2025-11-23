@@ -76,8 +76,7 @@ INSERT INTO response_unit_default_resources (
 VALUES (1, 10, 1, true),
     (2, 11, 1, true),
     (3, 20, 1, true),
-    (4, 12, 1, true)
-ON CONFLICT (unit_id, resource_id) DO NOTHING;
+    (4, 12, 1, true) ON CONFLICT (unit_id, resource_id) DO NOTHING;
 INSERT INTO response_unit_default_personnel (
         id,
         unit_id,
@@ -97,5 +96,12 @@ VALUES (1, 1, NULL, 'FIREFIGHTER', true),
     (10, 3, NULL, 'DRIVER', true),
     (11, 4, NULL, 'FIREFIGHTER', true),
     (12, 4, NULL, 'DRIVER', true),
-    (13, 4, NULL, 'OPERATOR', true)
-ON CONFLICT (id) DO NOTHING;
+    (13, 4, NULL, 'OPERATOR', true) ON CONFLICT (id) DO NOTHING;
+-- Reset sequence to max id after seeding
+SELECT setval(
+        'response_units_unit_id_seq',
+        (
+            SELECT MAX(unit_id)
+            FROM response_units
+        )
+    );
