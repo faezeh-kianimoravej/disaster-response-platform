@@ -170,6 +170,16 @@ spring:
                 name: deploymentServiceCircuitBreaker
                 fallbackUri: forward:/fallback
 
+        - id: deployment
+          uri: lb://deployment-service
+          predicates:
+            - Path=/api/deployment/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: deploymentServiceCircuitBreaker
+                fallbackUri: forward:/fallback
+
 
 
 eureka:
