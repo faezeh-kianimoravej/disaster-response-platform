@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createTestQueryClient } from '@/test/utils';
-import { useAssignResponseUnit } from '@/hooks/useDeployment';
+import { useAssignResponseUnit, useAssignFillUnit } from '@/hooks/useDeployment';
 import * as deploymentApi from '@/api/deployment';
 import React, { type ReactNode } from 'react';
 
@@ -80,6 +80,95 @@ describe('useDeployment hooks', () => {
 					queryKey: ['deploymentRequests'],
 				});
 				expect(deploymentQuery?.state.isInvalidated).toBe(true);
+			});
+		});
+	});
+
+	describe('useAssignFillUnit', () => {
+		const mockFillUnitResponse = {
+			success: true,
+			assignedUnitId: 500,
+			message: 'Fill unit assignment successful',
+		};
+
+		it('should assign fill unit with personnel and resources successfully', async () => {
+			mockedApi.assignFillUnitToDeploymentRequest.mockResolvedValue(mockFillUnitResponse);
+
+			const { result } = renderHook(() => useAssignFillUnit(), {
+				wrapper: createWrapper(),
+			});
+
+			const fillUnitData = {
+				requestId: 1,
+				assignedBy: 300,
+				assignedUnitId: 500,
+				assignedPersonnel: [
+					{ slotId: 0, userId: 501, specialization: 'paramedic' as const },
+					{ slotId: 1, userId: 502, specialization: 'driver' as const },
+				],
+				allocatedResources: [
+					{ resourceId: 101, quantity: 2, isPrimary: true },
+					{ resourceId: 102, quantity: 5, isPrimary: false },
+				],
+				notes: 'Full unit assignment with personnel and resources',
+			};
+
+			await result.current.mutateAsync(fillUnitData);
+
+			expect(mockedApi.assignFillUnitToDeploymentRequest).toHaveBeenCalledTimes(1);
+			// Check that the first argument matches our fill unit data
+			const callArgs = mockedApi.assignFillUnitToDeploymentRequest.mock.calls[0];
+			expect(callArgs).toBeDefined();
+			expect(callArgs![0]).toEqual(fillUnitData);
+		});
+
+		it('should invalidate multiple queries on successful fill unit assignment', async () => {
+			mockedApi.assignFillUnitToDeploymentRequest.mockResolvedValue(mockFillUnitResponse);
+
+			// Pre-populate cache with some data
+			queryClient.setQueryData(['deploymentRequests'], []);
+			queryClient.setQueryData(['deployment-request'], []);
+			queryClient.setQueryData(['response-units'], []);
+			queryClient.setQueryData(['users'], []);
+			queryClient.setQueryData(['resources'], []);
+
+			const { result } = renderHook(() => useAssignFillUnit(), {
+				wrapper: createWrapper(),
+			});
+
+			const fillUnitData = {
+				requestId: 1,
+				assignedBy: 300,
+				assignedUnitId: 500,
+				assignedPersonnel: [{ slotId: 0, userId: 501, specialization: 'paramedic' as const }],
+				allocatedResources: [{ resourceId: 101, quantity: 1, isPrimary: true }],
+			};
+
+			await result.current.mutateAsync(fillUnitData);
+
+			// Wait for invalidation to take effect
+			await waitFor(() => {
+				const deploymentQuery = queryClient.getQueryCache().find({
+					queryKey: ['deploymentRequests'],
+				});
+				const deploymentRequestQuery = queryClient.getQueryCache().find({
+					queryKey: ['deployment-request'],
+				});
+				const responseUnitsQuery = queryClient.getQueryCache().find({
+					queryKey: ['response-units'],
+				});
+				const usersQuery = queryClient.getQueryCache().find({
+					queryKey: ['users'],
+				});
+				const resourcesQuery = queryClient.getQueryCache().find({
+					queryKey: ['resources'],
+				});
+
+				expect(deploymentQuery?.state.isInvalidated).toBe(true);
+				expect(deploymentRequestQuery?.state.isInvalidated).toBe(true);
+				expect(responseUnitsQuery?.state.isInvalidated).toBe(true);
+				expect(usersQuery?.state.isInvalidated).toBe(true);
+				expect(resourcesQuery?.state.isInvalidated).toBe(true);
 			});
 		});
 	});

@@ -200,7 +200,7 @@ describe('DeploymentRequestDetailsPage (smoke)', () => {
 			},
 		});
 
-		expect(screen.getByRole('heading', { name: /Assign Response Unit/i })).toBeInTheDocument();
-		expect(screen.getByRole('button', { name: /Assign Response Unit/i })).toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: /Fill Unit Assignment/i })).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /Create Deployment/i })).toBeInTheDocument();
 	});
 });
