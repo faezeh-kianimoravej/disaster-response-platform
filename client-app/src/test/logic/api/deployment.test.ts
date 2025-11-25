@@ -6,10 +6,14 @@ vi.mock('@/api/deployment', async importOriginal => {
 	return {
 		...actual,
 		assignResponseUnitToDeploymentRequest: vi.fn(),
+		assignFillUnitToDeploymentRequest: vi.fn(),
 	};
 });
 
-import { assignResponseUnitToDeploymentRequest } from '@/api/deployment';
+import {
+	assignResponseUnitToDeploymentRequest,
+	assignFillUnitToDeploymentRequest,
+} from '@/api/deployment';
 
 describe('deployment API', () => {
 	beforeEach(() => {
@@ -69,6 +73,75 @@ describe('deployment API', () => {
 				'ResponseUnit assignment failed'
 			);
 			expect(assignResponseUnitToDeploymentRequest).toHaveBeenCalledWith(assignmentData);
+		});
+	});
+
+	describe('assignFillUnitToDeploymentRequest', () => {
+		it('should assign fill unit with personnel and resources successfully', async () => {
+			const assignmentData = {
+				requestId: 1,
+				assignedBy: 600,
+				assignedUnitId: 1100,
+				assignedPersonnel: [
+					{ slotId: 0, userId: 501, specialization: 'paramedic' as const },
+					{ slotId: 1, userId: 502, specialization: 'emt_basic' as const },
+				],
+				allocatedResources: [
+					{ resourceId: 101, quantity: 2, isPrimary: true },
+					{ resourceId: 102, quantity: 5, isPrimary: false },
+				],
+				notes: 'Full unit assignment with personnel and resources',
+			};
+
+			const mockResponse = {
+				success: true,
+				assignedUnitId: 1100,
+				message: 'Fill unit assigned successfully',
+			};
+
+			vi.mocked(assignFillUnitToDeploymentRequest).mockResolvedValue(mockResponse);
+
+			const result = await assignFillUnitToDeploymentRequest(assignmentData);
+
+			expect(assignFillUnitToDeploymentRequest).toHaveBeenCalledWith(assignmentData);
+			expect(result).toEqual(mockResponse);
+		});
+
+		it('should handle assignment without optional notes', async () => {
+			const assignmentData = {
+				requestId: 2,
+				assignedBy: 600,
+				assignedUnitId: 1200,
+				assignedPersonnel: [{ slotId: 0, userId: 503, specialization: 'driver' as const }],
+				allocatedResources: [{ resourceId: 103, quantity: 1, isPrimary: true }],
+			};
+
+			const mockResponse = { success: true, assignedUnitId: 1200 };
+
+			vi.mocked(assignFillUnitToDeploymentRequest).mockResolvedValue(mockResponse);
+
+			const result = await assignFillUnitToDeploymentRequest(assignmentData);
+
+			expect(assignFillUnitToDeploymentRequest).toHaveBeenCalledWith(assignmentData);
+			expect(result).toEqual(mockResponse);
+		});
+
+		it('should throw error when fill unit assignment fails', async () => {
+			const assignmentData = {
+				requestId: 1,
+				assignedBy: 600,
+				assignedUnitId: 1100,
+				assignedPersonnel: [],
+				allocatedResources: [],
+			};
+
+			const error = new Error('Fill unit assignment failed');
+			vi.mocked(assignFillUnitToDeploymentRequest).mockRejectedValue(error);
+
+			await expect(assignFillUnitToDeploymentRequest(assignmentData)).rejects.toThrow(
+				'Fill unit assignment failed'
+			);
+			expect(assignFillUnitToDeploymentRequest).toHaveBeenCalledWith(assignmentData);
 		});
 	});
 

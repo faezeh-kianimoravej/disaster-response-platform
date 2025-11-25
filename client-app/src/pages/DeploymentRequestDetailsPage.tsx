@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { routes } from '@/routes';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Badge from '@/components/ui/Badge';
 import AuthGuard from '@/components/auth/AuthGuard';
 import Button from '@/components/ui/Button';
@@ -8,13 +8,8 @@ import LoadingPanel from '@/components/ui/LoadingPanel';
 import { ErrorRetryBlock } from '@/components/ui/ErrorRetry';
 import useSingleErrorToast from '@/hooks/useSingleErrorToast';
 import { DEPARTMENT_ROLES } from '@/types/role';
-import {
-	useDeploymentRequest,
-	useAssignResponseUnitToDeploymentRequest,
-} from '@/hooks/useDeploymentRequest';
-import { useResponseUnits } from '@/hooks/useResponseUnit';
-import { useAuth } from '@/context/AuthContext';
-import type { ResponseUnit } from '@/types/responseUnit';
+import { useDeploymentRequest } from '@/hooks/useDeploymentRequest';
+import FillUnitAssignmentPanel from '@/components/forms/FillUnitAssignmentPanel';
 
 export default function DeploymentRequestDetailsPage() {
 	const { requestId } = useParams<{ requestId: string }>();
@@ -34,35 +29,14 @@ function DeploymentRequestDetailsPageContent({
 }): JSX.Element {
 	const navigate = useNavigate();
 	const showSingleError = useSingleErrorToast();
-	const auth = useAuth();
-	const [selectedResponseUnit, setSelectedResponseUnit] = useState<ResponseUnit | null>(null);
 
+	debugger;
 	const {
 		data: deploymentRequest,
 		isLoading: loading,
 		error: queryError,
 		refetch,
 	} = useDeploymentRequest(requestId);
-
-	const assignMutation = useAssignResponseUnitToDeploymentRequest();
-
-	// Get department response units for assignment
-	const targetDepartmentId = deploymentRequest?.targetDepartmentId;
-	const requestedUnitType = deploymentRequest?.requestedUnitType;
-
-	// Fetch available response units for the target department
-	const { data: allResponseUnits, isLoading: responseUnitsLoading } = useResponseUnits(
-		targetDepartmentId,
-		{
-			enabled: !!targetDepartmentId && deploymentRequest?.status !== 'assigned',
-		}
-	);
-
-	// Filter response units by the requested unit type and available status
-	const availableResponseUnits =
-		allResponseUnits?.filter(
-			unit => unit.unitType === requestedUnitType && unit.status === 'AVAILABLE'
-		) || [];
 
 	const error = queryError?.message || null;
 
@@ -74,31 +48,6 @@ function DeploymentRequestDetailsPageContent({
 			message: 'Unable to load deployment request.',
 		});
 	}, [error, loading, requestId, showSingleError]);
-
-	const handleAssignment = async () => {
-		if (!auth?.user?.userId || !requestId || !selectedResponseUnit) {
-			return;
-		}
-
-		try {
-			const payload = {
-				requestId,
-				assignedBy: auth.user.userId,
-				assignedUnitId: selectedResponseUnit.unitId,
-				notes: `Assigned ResponseUnit: ${selectedResponseUnit.unitName} (${selectedResponseUnit.unitType})`,
-			};
-
-			await assignMutation.mutateAsync(payload);
-
-			// Reset selection
-			setSelectedResponseUnit(null);
-
-			// Refetch to get updated data
-			refetch();
-		} catch {
-			// Error will be handled by the mutation's error state
-		}
-	};
 
 	const getStatusBadgeVariant = (status: string) => {
 		switch (status?.toUpperCase()) {
@@ -276,81 +225,10 @@ function DeploymentRequestDetailsPageContent({
 
 							{/* Assignment Panel - Show if status is not assigned */}
 							{deploymentRequest.status !== 'assigned' && (
-								<div className="mt-6 p-6 bg-blue-50 rounded-lg border border-blue-200">
-									<h3 className="text-lg font-semibold text-gray-900 mb-4">Assign Response Unit</h3>
-
-									{responseUnitsLoading ? (
-										<LoadingPanel text="Loading available response units..." />
-									) : (
-										<div className="space-y-6">
-											{/* Response Unit Selection */}
-											<div>
-												<label className="block text-sm font-medium text-gray-700 mb-2">
-													Select {requestedUnitType} Response Unit{' '}
-													<span className="text-red-500">*</span>
-												</label>
-
-												{availableResponseUnits.length === 0 ? (
-													<div className="text-gray-500 italic space-y-2">
-														<p>
-															No available {requestedUnitType} response units in this department.
-														</p>
-														<div className="text-xs bg-gray-100 p-2 rounded">
-															<p>Debug Info:</p>
-															<p>Target Department ID: {targetDepartmentId}</p>
-															<p>Requested Unit Type: &quot;{requestedUnitType}&quot;</p>
-															<p>Total Units Found: {allResponseUnits?.length || 0}</p>
-															<p>Available Units: {availableResponseUnits.length}</p>
-														</div>
-													</div>
-												) : (
-													<div className="space-y-3">
-														{availableResponseUnits.map(unit => (
-															<label
-																key={unit.unitId}
-																className="flex items-start space-x-3 p-3 border border-gray-200 rounded-md hover:bg-gray-50"
-															>
-																<input
-																	type="radio"
-																	name="responseUnit"
-																	checked={selectedResponseUnit?.unitId === unit.unitId}
-																	onChange={() => setSelectedResponseUnit(unit)}
-																	className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-																/>
-																<div className="flex-1">
-																	<div className="font-medium text-gray-900">{unit.unitName}</div>
-																	<div className="text-sm text-gray-600">Type: {unit.unitType}</div>
-																	{unit.defaultResources && unit.defaultResources.length > 0 && (
-																		<div className="text-xs text-gray-500 mt-1">
-																			Resources: {unit.defaultResources.length} configured
-																		</div>
-																	)}
-																	{unit.defaultPersonnel && unit.defaultPersonnel.length > 0 && (
-																		<div className="text-xs text-gray-500 mt-1">
-																			Personnel:{' '}
-																			{unit.defaultPersonnel.map(p => p.specialization).join(', ')}
-																		</div>
-																	)}
-																</div>
-															</label>
-														))}
-													</div>
-												)}
-											</div>
-
-											{/* Assignment Button */}
-											<div className="flex justify-end">
-												<button
-													onClick={handleAssignment}
-													disabled={!selectedResponseUnit || assignMutation.isPending}
-													className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-												>
-													{assignMutation.isPending ? 'Assigning...' : 'Assign Response Unit'}
-												</button>
-											</div>
-										</div>
-									)}
-								</div>
+								<FillUnitAssignmentPanel
+									deploymentRequest={deploymentRequest}
+									onAssignmentSuccess={() => refetch()}
+								/>
 							)}
 						</div>
 					)}
