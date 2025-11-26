@@ -73,7 +73,8 @@ public class ResponseUnit {
     private LocalDateTime updatedAt;
 
     @Version
-    private Long version; //For optimistic locking
+    private Long version;
+
 
     @Embeddable
     @Data
