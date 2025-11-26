@@ -2,6 +2,9 @@ package nl.saxion.disaster.deploymentservice.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import nl.saxion.disaster.deploymentservice.client.ResourceServiceClient;
+import nl.saxion.disaster.deploymentservice.dto.ResourceAllocationBatchRequestDTO;
+import nl.saxion.disaster.deploymentservice.dto.ResourceAllocationItemDTO;
 import nl.saxion.disaster.deploymentservice.dto.DeploymentAssignRequestDTO;
 import nl.saxion.disaster.deploymentservice.dto.DeploymentAssignResponseDTO;
 import nl.saxion.disaster.deploymentservice.dto.DeploymentSummaryDTO;
@@ -22,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,174 +34,204 @@ public class DeploymentServiceImpl implements DeploymentService {
     private final DeploymentRequestRepository requestRepository;
     private final ResponseUnitRepository responseUnitRepository;
     private final DeploymentRepository deploymentRepository;
+    private final ResourceServiceClient resourceServiceClient;
 
     @Override
     @Transactional
-    public DeploymentAssignResponseDTO allocateUnitsForDeploymentRequest(Long requestId, DeploymentAssignRequestDTO dto) {
+    public DeploymentAssignResponseDTO allocateUnitsForDeploymentRequest(DeploymentAssignRequestDTO dto) {
 
-        // 1) Load DeploymentRequest
-        DeploymentRequest deploymentRequest = requestRepository.findDeploymentRequestById(requestId)
-                .orElseThrow(() -> new RuntimeException("DeploymentRequest not found with id: " + requestId));
+        // ---------------------------------------------------------------------
+        // 0) BASIC VALIDATION
+        // ---------------------------------------------------------------------
+        if (dto == null)
+            throw new RuntimeException("Request body cannot be null.");
 
-        log.info("Allocating units for DeploymentRequest id={} (incidentId={}, departmentId={}, requestedQuantity={})",
-                deploymentRequest.getRequestId(),
-                deploymentRequest.getIncidentId(),
-                deploymentRequest.getTargetDepartmentId(),
-                deploymentRequest.getRequestedQuantity()
-        );
+        if (dto.getRequestId() == null)
+            throw new RuntimeException("requestId cannot be null.");
 
-        // 2) Load candidate AVAILABLE units from same department and type
-        List<ResponseUnit> candidates =
-                responseUnitRepository.findResponseUnitByDepartmentIdAndUnitTypeAndStatus(
-                        deploymentRequest.getTargetDepartmentId(),
-                        deploymentRequest.getRequestedUnitType(),
-                        ResponseUnitStatus.AVAILABLE
+        if (dto.getAssignedUnitId() == null)
+            throw new RuntimeException("assignedUnitId cannot be null.");
+
+        if (dto.getAssignedPersonnel() == null || dto.getAssignedPersonnel().isEmpty())
+            throw new RuntimeException("assignedPersonnel cannot be empty.");
+
+        if (dto.getAllocatedResources() == null || dto.getAllocatedResources().isEmpty())
+            throw new RuntimeException("allocatedResources cannot be empty.");
+
+        // ---------------------------------------------------------------------
+        // 1) LOAD REQUEST & UNIT
+        // ---------------------------------------------------------------------
+        DeploymentRequest deploymentRequest = requestRepository.findDeploymentRequestById(dto.getRequestId())
+                .orElseThrow(() -> new RuntimeException("DeploymentRequest not found with id: " + dto.getRequestId()));
+
+        log.info("Manual allocation for requestId={}, assignedUnitId={}",
+                dto.getRequestId(), dto.getAssignedUnitId());
+
+        ResponseUnit unit = responseUnitRepository.findById(dto.getAssignedUnitId())
+                .orElseThrow(() -> new RuntimeException("ResponseUnit not found with id: " + dto.getAssignedUnitId()));
+
+        // ---------------------------------------------------------------------
+        // 2) VALIDATE BUSINESS RULES
+        // ---------------------------------------------------------------------
+        validateUnitMatchesRequest(unit, deploymentRequest);
+        validateAssignedPersonnel(unit, dto);
+        validateAllocatedResources(unit, dto);
+
+        // ---------------------------------------------------------------------
+        // 3) BUILD SNAPSHOT LISTS (MUTABLE) FOR CURRENT PERSONNEL/RESOURCES
+        // ---------------------------------------------------------------------
+        List<ResponseUnit.CurrentPersonnel> newPersonnel =
+                new ArrayList<>(dto.getAssignedPersonnel().stream()
+                        .map(p -> {
+                            ResponseUnit.CurrentPersonnel cp = new ResponseUnit.CurrentPersonnel();
+                            cp.setUserId(p.getUserId());
+                            cp.setSpecialization(ResponderSpecialization.valueOf(p.getSpecialization()));
+                            return cp;
+                        })
+                        .toList());
+
+        List<ResponseUnit.CurrentResource> newResources =
+                new ArrayList<>(dto.getAllocatedResources().stream()
+                        .map(r -> {
+                            ResponseUnit.CurrentResource cr = new ResponseUnit.CurrentResource();
+                            cr.setResourceId(r.getResourceId());
+                            cr.setQuantity(r.getQuantity());
+                            cr.setIsPrimary(r.getIsPrimary());
+                            return cr;
+                        })
+                        .toList());
+
+        // ---------------------------------------------------------------------
+        // 4) CREATE DEPLOYMENT SNAPSHOT (USES NEW SNAPSHOTS, NOT OLD STATE)
+        // ---------------------------------------------------------------------
+        Deployment deployment = buildManualDeployment(unit, deploymentRequest, dto, newPersonnel, newResources);
+        deploymentRepository.createDeployment(deployment);
+        Long deploymentId = deployment.getDeploymentId();
+
+        log.info("Created deployment with id={} for requestId={} and unitId={}",
+                deploymentId, deploymentRequest.getRequestId(), unit.getUnitId());
+
+        // ---------------------------------------------------------------------
+        // 5) CALL RESOURCE-SERVICE TO ALLOCATE REAL INVENTORY
+        // ---------------------------------------------------------------------
+        List<ResourceAllocationItemDTO> allocationItems =
+                dto.getAllocatedResources().stream()
+                        .map(r -> new ResourceAllocationItemDTO(r.getResourceId(), r.getQuantity()))
+                        .toList();
+
+        ResourceAllocationBatchRequestDTO allocationRequest =
+                new ResourceAllocationBatchRequestDTO(
+                        deploymentId,
+                        unit.getUnitId(),
+                        allocationItems
                 );
 
-        if (candidates == null || candidates.isEmpty()) {
-            log.info("No AVAILABLE units found for departmentId={} and unitType={}",
-                    deploymentRequest.getTargetDepartmentId(),
-                    deploymentRequest.getRequestedUnitType());
-            return handleNoAssignableUnits(deploymentRequest, dto);
-        }
+        //resourceServiceClient.allocateResources(allocationRequest);
+        log.info("Allocated resources in resource-service for deploymentId={}", deploymentId);
 
-        // 3) Filter valid units (personnel + resources)
-        List<ResponseUnit> validUnits = filterValidResponseUnits(candidates);
+        // ---------------------------------------------------------------------
+        // 6) UPDATE UNIT RUNTIME STATE (CURRENT SNAPSHOT + STATUS + DEPLOYMENT)
+        // ---------------------------------------------------------------------
+        unit.setCurrentPersonnel(newPersonnel);
+        unit.setCurrentResources(newResources);
+        unit.setCurrentDeploymentId(deploymentId);
+        unit.setStatus(ResponseUnitStatus.DEPLOYED);
+        responseUnitRepository.save(unit);
 
-        if (validUnits.isEmpty()) {
-            log.info("No VALID units found after personnel/resources validation for requestId={}", requestId);
-            return handleNoAssignableUnits(deploymentRequest, dto);
-        }
-
-        // 4) Determine how many units we can assign
-        int needed = deploymentRequest.getRequestedQuantity();
-        int canAssign = Math.min(needed, validUnits.size());
-
-        log.info("DeploymentRequest id={} needs {} units, can assign {}", requestId, needed, canAssign);
-
-        List<Deployment> deployments = new ArrayList<>();
-
-        // 5) Create Deployments and update units
-        for (int i = 0; i < canAssign; i++) {
-            ResponseUnit unit = validUnits.get(i);
-
-            log.debug("Assigning ResponseUnit id={} to DeploymentRequest id={}", unit.getUnitId(), requestId);
-
-            Deployment deployment = buildDeployment(unit, deploymentRequest, dto);
-            deploymentRepository.createDeployment(deployment);
-
-            // Update ResponseUnit
-            unit.setStatus(ResponseUnitStatus.DEPLOYED);
-            unit.setCurrentDeploymentId(deployment.getDeploymentId());
-            responseUnitRepository.save(unit);  // uses @Version for optimistic locking
-
-            deployments.add(deployment);
-        }
-
-        // 6) Update Request Status
-        updateRequestStatus(deploymentRequest, needed, canAssign, dto);
+        // ---------------------------------------------------------------------
+        // 7) UPDATE DEPLOYMENT REQUEST STATUS
+        // ---------------------------------------------------------------------
+        deploymentRequest.setStatus(DeploymentRequestStatus.ASSIGNED);
+        deploymentRequest.setAssignedBy(dto.getAssignedBy());
+        deploymentRequest.setAssignedAt(new Date());
+        deploymentRequest.setNotes(dto.getNotes());
         requestRepository.saveDeploymentRequest(deploymentRequest);
 
-        // 7) Build Response DTO
-        return buildResponseDTO(deploymentRequest, deployments);
+        // ---------------------------------------------------------------------
+        // 8) BUILD RESPONSE DTO
+        // ---------------------------------------------------------------------
+        return buildResponseDTO(deploymentRequest, List.of(deployment));
     }
 
-    // ---------------------------------------------------------
-    // VALIDATION HELPERS
-    // ---------------------------------------------------------
+    // ========================================================================
+    // VALIDATION: UNIT
+    // ========================================================================
+    private void validateUnitMatchesRequest(ResponseUnit unit, DeploymentRequest request) {
 
-    private List<ResponseUnit> filterValidResponseUnits(List<ResponseUnit> units) {
-        if (units == null || units.isEmpty()) return Collections.emptyList();
+        if (!Objects.equals(unit.getDepartmentId(), request.getTargetDepartmentId()))
+            throw new RuntimeException("Unit department mismatch.");
 
-        return units.stream()
-                .filter(this::hasRequiredPersonnel)
-                .filter(this::hasPrimaryResources)
-                .collect(Collectors.toList());
+        if (unit.getUnitType() != request.getRequestedUnitType())
+            throw new RuntimeException("Unit type mismatch.");
+
+        if (unit.getStatus() != ResponseUnitStatus.AVAILABLE)
+            throw new RuntimeException("Unit is not AVAILABLE.");
     }
 
-    private boolean hasRequiredPersonnel(ResponseUnit unit) {
+    // ========================================================================
+    // VALIDATION: PERSONNEL
+    // ========================================================================
+    private void validateAssignedPersonnel(ResponseUnit unit, DeploymentAssignRequestDTO dto) {
 
-        if (unit.getDefaultPersonnel() == null || unit.getDefaultPersonnel().isEmpty()) {
-            return true;
-        }
+        if (unit.getDefaultPersonnel() == null || unit.getDefaultPersonnel().isEmpty())
+            return;
 
-        if (unit.getCurrentPersonnel() == null || unit.getCurrentPersonnel().isEmpty()) {
-            return false;
-        }
-
-        Set<ResponderSpecialization> currentSpecs = unit.getCurrentPersonnel()
-                .stream()
-                .map(ResponseUnit.CurrentPersonnel::getSpecialization)
-                .collect(Collectors.toSet());
+        List<String> assignedSpecs = dto.getAssignedPersonnel().stream()
+                .map(p -> p.getSpecialization())
+                .toList();
 
         for (ResponseUnit.DefaultPersonnelSlot slot : unit.getDefaultPersonnel()) {
-
-            if (Boolean.TRUE.equals(slot.getIsRequired())
-                    && !currentSpecs.contains(slot.getSpecialization())) {
-                log.debug("Unit id={} failed personnel requirement: missing specialization {}",
-                        unit.getUnitId(), slot.getSpecialization());
-                return false;
+            if (Boolean.TRUE.equals(slot.getIsRequired())) {
+                if (!assignedSpecs.contains(slot.getSpecialization().name())) {
+                    throw new RuntimeException("Missing required specialization: " + slot.getSpecialization());
+                }
             }
         }
-
-        return true;
     }
 
-    private boolean hasPrimaryResources(ResponseUnit unit) {
+    // ========================================================================
+    // VALIDATION: RESOURCES
+    // ========================================================================
+    private void validateAllocatedResources(ResponseUnit unit, DeploymentAssignRequestDTO dto) {
 
-        if (unit.getDefaultResources() == null || unit.getDefaultResources().isEmpty()) {
-            return true;
-        }
-
-        if (unit.getCurrentResources() == null || unit.getCurrentResources().isEmpty()) {
-            return false;
-        }
-
-        Map<Long, Integer> currentResourceMap = unit.getCurrentResources()
-                .stream()
-                .collect(Collectors.toMap(
-                        ResponseUnit.CurrentResource::getResourceId,
-                        ResponseUnit.CurrentResource::getQuantity
-                ));
+        if (unit.getDefaultResources() == null || unit.getDefaultResources().isEmpty())
+            return;
 
         for (ResponseUnit.DefaultResource def : unit.getDefaultResources()) {
 
             if (Boolean.TRUE.equals(def.getIsPrimary())) {
 
-                Integer currentQty = currentResourceMap.get(def.getResourceId());
-                int requiredQty = (def.getRequiredQuantity() != null && def.getRequiredQuantity() > 0)
-                        ? def.getRequiredQuantity()
-                        : 1;
+                var match = dto.getAllocatedResources().stream()
+                        .filter(r -> Objects.equals(r.getResourceId(), def.getResourceId()))
+                        .findFirst();
 
-                if (currentQty == null || currentQty < requiredQty) {
-                    log.debug("Unit id={} failed resource requirement: resourceId={} currentQty={} requiredQty={}",
-                            unit.getUnitId(), def.getResourceId(), currentQty, requiredQty);
-                    return false;
-                }
+                if (match.isEmpty())
+                    throw new RuntimeException("Missing primary resource " + def.getResourceId());
+
+                int required = (def.getRequiredQuantity() != null) ? def.getRequiredQuantity() : 1;
+
+                if (match.get().getQuantity() < required)
+                    throw new RuntimeException("Resource " + def.getResourceId()
+                            + " insufficient quantity. Required=" + required
+                            + " Provided=" + match.get().getQuantity());
             }
         }
-
-        return true;
     }
 
-    // ---------------------------------------------------------
-    // BUILD DEPLOYMENT
-    // ---------------------------------------------------------
-
-    private Deployment buildDeployment(ResponseUnit unit, DeploymentRequest request, DeploymentAssignRequestDTO dto) {
+    // ========================================================================
+    // BUILD DEPLOYMENT SNAPSHOT
+    // ========================================================================
+    private Deployment buildManualDeployment(ResponseUnit unit,
+                                             DeploymentRequest request,
+                                             DeploymentAssignRequestDTO dto,
+                                             List<ResponseUnit.CurrentPersonnel> personnelSnapshot,
+                                             List<ResponseUnit.CurrentResource> resourceSnapshot) {
 
         Deployment deployment = new Deployment();
 
-        LocalDateTime requestedAt;
-
-        if (request.getRequestedAt() != null) {
-            requestedAt = request.getRequestedAt().toInstant()
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime();
-        } else {
-            requestedAt = LocalDateTime.now();
-        }
-
+        LocalDateTime requestedAt = (request.getRequestedAt() != null)
+                ? request.getRequestedAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()
+                : LocalDateTime.now();
 
         deployment.setDeploymentRequestId(request.getRequestId());
         deployment.setIncidentId(request.getIncidentId());
@@ -209,76 +241,40 @@ public class DeploymentServiceImpl implements DeploymentService {
         deployment.setOrderedAt(requestedAt);
         deployment.setNotes(dto.getNotes());
 
-        // snapshot CURRENT resources
-        if (unit.getCurrentResources() != null) {
-            List<Deployment.DeployedResource> resourceSnapshot =
-                    unit.getCurrentResources()
-                            .stream()
-                            .map(r -> {
-                                Deployment.DeployedResource dr = new Deployment.DeployedResource();
-                                dr.setResourceId(r.getResourceId());
-                                dr.setQuantity(r.getQuantity());
-                                return dr;
-                            })
-                            .collect(Collectors.toList());
-            deployment.setDeployedResources(resourceSnapshot);
-        } else {
-            deployment.setDeployedResources(Collections.emptyList());
-        }
+        // RESOURCES SNAPSHOT (MUTABLE!)
+        deployment.setDeployedResources(
+                new ArrayList<>(resourceSnapshot.stream()
+                        .map(r -> {
+                            Deployment.DeployedResource dr = new Deployment.DeployedResource();
+                            dr.setResourceId(r.getResourceId());
+                            dr.setQuantity(r.getQuantity());
+                            return dr;
+                        })
+                        .toList())
+        );
 
-        // snapshot CURRENT personnel
-        if (unit.getCurrentPersonnel() != null) {
-            List<Deployment.DeployedPersonnel> personnelSnapshot =
-                    unit.getCurrentPersonnel()
-                            .stream()
-                            .map(p -> {
-                                Deployment.DeployedPersonnel dp = new Deployment.DeployedPersonnel();
-                                dp.setUserId(p.getUserId());
-                                dp.setSpecialization(p.getSpecialization());
-                                return dp;
-                            })
-                            .collect(Collectors.toList());
-            deployment.setDeployedPersonnel(personnelSnapshot);
-        } else {
-            deployment.setDeployedPersonnel(Collections.emptyList());
-        }
+        // PERSONNEL SNAPSHOT (MUTABLE!)
+        deployment.setDeployedPersonnel(
+                new ArrayList<>(personnelSnapshot.stream()
+                        .map(p -> {
+                            Deployment.DeployedPersonnel dp = new Deployment.DeployedPersonnel();
+                            dp.setUserId(p.getUserId());
+                            dp.setSpecialization(p.getSpecialization());
+                            return dp;
+                        })
+                        .toList())
+        );
 
         return deployment;
     }
 
-    // ---------------------------------------------------------
-    // UPDATE REQUEST STATUS
-    // ---------------------------------------------------------
-
-    private void updateRequestStatus(
-            DeploymentRequest request,
-            int needed,
-            int assigned,
-            DeploymentAssignRequestDTO dto
-    ) {
-        if (assigned == 0) {
-            request.setStatus(DeploymentRequestStatus.DECLINED);
-        } else if (assigned < needed) {
-            request.setStatus(DeploymentRequestStatus.PARTIALLY_ASSIGNED);
-        } else {
-            request.setStatus(DeploymentRequestStatus.ASSIGNED);
-        }
-
-        LocalDateTime now = LocalDateTime.now();
-        request.setAssignedAt(Date.from(now.atZone(ZoneId.systemDefault()).toInstant()));
-        request.setAssignedBy(dto.getAssignedBy());
-        request.setNotes(dto.getNotes());
-    }
-
-    // ---------------------------------------------------------
-    // RESPONSE BUILDERS
-    // ---------------------------------------------------------
-
+    // ========================================================================
+    // BUILD RESPONSE DTO
+    // ========================================================================
     private DeploymentAssignResponseDTO buildResponseDTO(
             DeploymentRequest request,
             List<Deployment> deployments
     ) {
-
         DeploymentAssignResponseDTO dto = new DeploymentAssignResponseDTO();
 
         dto.setRequestId(request.getRequestId());
@@ -286,63 +282,21 @@ public class DeploymentServiceImpl implements DeploymentService {
         dto.setRequestAssignedBy(request.getAssignedBy());
         dto.setRequestAssignedAt(request.getAssignedAt());
         dto.setNotes(request.getNotes());
-        fillStatusMessage(request, dto);
+        dto.setStatusMessage("The deployment request has been manually assigned.");
 
-        List<DeploymentSummaryDTO> summaries = deployments.stream()
-                .map(d -> {
-                    DeploymentSummaryDTO s = new DeploymentSummaryDTO();
-                    s.setDeploymentId(d.getDeploymentId());
-                    s.setResponseUnitId(d.getResponseUnitId());
-                    s.setDeploymentAssignedAt(d.getAssignedAt());
-                    s.setDeploymentStatus(d.getStatus().name());
-                    return s;
-                })
-                .collect(Collectors.toList());
-
-        dto.setDeployments(summaries);
+        dto.setDeployments(
+                new ArrayList<>(deployments.stream()
+                        .map(d -> {
+                            DeploymentSummaryDTO s = new DeploymentSummaryDTO();
+                            s.setDeploymentId(d.getDeploymentId());
+                            s.setResponseUnitId(d.getResponseUnitId());
+                            s.setDeploymentAssignedAt(d.getAssignedAt());
+                            s.setDeploymentStatus(d.getStatus().name());
+                            return s;
+                        })
+                        .toList())
+        );
 
         return dto;
-    }
-
-    private void fillStatusMessage(DeploymentRequest request, DeploymentAssignResponseDTO dto) {
-
-        if (request.getStatus() == null) {
-            dto.setStatusMessage("");
-            return;
-        }
-
-        switch (request.getStatus()) {
-            case DECLINED:
-                dto.setStatusMessage(
-                        "This request was declined because no valid response units were available for deployment."
-                );
-                break;
-
-            case PARTIALLY_ASSIGNED:
-                dto.setStatusMessage(
-                        "The request was partially fulfilled due to limited available units."
-                );
-                break;
-
-            case ASSIGNED:
-                dto.setStatusMessage(
-                        "The deployment request has been fully satisfied. All units were assigned."
-                );
-                break;
-
-            default:
-                dto.setStatusMessage("");
-        }
-    }
-
-    private DeploymentAssignResponseDTO handleNoAssignableUnits(
-            DeploymentRequest request,
-            DeploymentAssignRequestDTO dto
-    ) {
-        // If → assigned=0
-        updateRequestStatus(request, request.getRequestedQuantity(), 0, dto);
-        requestRepository.saveDeploymentRequest(request);
-
-        return buildResponseDTO(request, Collections.emptyList());
     }
 }

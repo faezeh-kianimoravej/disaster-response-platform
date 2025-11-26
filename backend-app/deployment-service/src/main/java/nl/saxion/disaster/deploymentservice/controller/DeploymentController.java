@@ -26,31 +26,38 @@ public class DeploymentController {
     private final DeploymentService deploymentService;
 
     @Operation(
-            summary = "Assign ResponseUnits for a DeploymentRequest",
+            summary = "Manually assign a ResponseUnit to a DeploymentRequest",
             description = """
-                    This endpoint triggers the real resource allocation process.
-                    
-                    Frontend does NOT send quantity or unitId.
-                    
-                    Backend:
-                    - Reads requestedQuantity from DeploymentRequest
-                    - Finds available ResponseUnits
-                    - Validates personnel & resources
-                    - Creates one Deployment per assigned ResponseUnit
-                    - Updates ResponseUnit + DeploymentRequest statuses
-                    """,
+                This endpoint performs manual allocation of a ResponseUnit.
+
+                Frontend provides:
+                - requestId             → ID of the DeploymentRequest
+                - assignedUnitId        → ResponseUnit to deploy
+                - assignedPersonnel     → personnel list
+                - allocatedResources    → resource list
+                - assignedBy            → operator performing the allocation
+                - notes                 → optional remarks
+
+                Backend performs:
+                - Validates the DeploymentRequest and selected ResponseUnit
+                - Updates ResponseUnit.currentPersonnel
+                - Updates ResponseUnit.currentResources
+                - Creates a Deployment snapshot
+                - Updates ResponseUnit + DeploymentRequest status
+
+                Manual allocation replaces the previous auto-assignment logic.
+                """,
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Allocation completed successfully"),
-                    @ApiResponse(responseCode = "404", description = "DeploymentRequest not found"),
-                    @ApiResponse(responseCode = "400", description = "Invalid request or allocation rule violation")
+                    @ApiResponse(responseCode = "200", description = "Unit successfully assigned and deployment created"),
+                    @ApiResponse(responseCode = "404", description = "DeploymentRequest or ResponseUnit not found"),
+                    @ApiResponse(responseCode = "400", description = "Invalid allocation data")
             }
     )
-    @PostMapping("/{deploymentRequestId}/assign")
+    @PostMapping("/assign")
     public ResponseEntity<DeploymentAssignResponseDTO> assignUnits(
-            @PathVariable Long deploymentRequestId,
 
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Data required to approve/confirm the allocation",
+                    description = "Manual allocation data (unit + personnel + resources + requestId)",
                     required = true
             )
             @org.springframework.web.bind.annotation.RequestBody
@@ -58,7 +65,7 @@ public class DeploymentController {
     ) {
 
         DeploymentAssignResponseDTO response =
-                deploymentService.allocateUnitsForDeploymentRequest(deploymentRequestId, dto);
+                deploymentService.allocateUnitsForDeploymentRequest(dto);
 
         return ResponseEntity.ok(response);
     }

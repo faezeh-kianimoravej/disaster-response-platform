@@ -38,327 +38,292 @@ class DeploymentServiceImplTest {
     @InjectMocks
     private DeploymentServiceImpl deploymentService;
 
-    // ------------------------------------------------------------------------
-    // 1) Happy-path: successfully assigns 2 units (exactly enough)
-    // ------------------------------------------------------------------------
+    // ==========================================================================================
+    // 1) SUCCESSFUL MANUAL ASSIGNMENT
+    // ==========================================================================================
     @Test
-    void allocateUnits_successfullyAssignsTwoUnits() {
-        // GIVEN
-        Long requestId = 1001L;
-        DeploymentRequest request = buildBaseRequest(requestId, 2);
+    void allocateUnits_manualAssignment_success() {
+        Long requestId = 1L;
+        Long unitId = 10L;
 
+        DeploymentRequest request = buildRequest(requestId);
         when(requestRepository.findDeploymentRequestById(requestId))
                 .thenReturn(Optional.of(request));
 
-        ResponseUnit unit1 = mockValidResponseUnit(1L);
-        ResponseUnit unit2 = mockValidResponseUnit(2L);
+        ResponseUnit unit = mockUnit(unitId);
+        when(responseUnitRepository.findById(unitId))
+                .thenReturn(Optional.of(unit));
 
-        when(responseUnitRepository.findResponseUnitByDepartmentIdAndUnitTypeAndStatus(
-                1L, ResponseUnitType.FIRE_TRUCK, ResponseUnitStatus.AVAILABLE))
-                .thenReturn(Arrays.asList(unit1, unit2));
+        // DEPLOYMENT REPOSITORY → set ID
+        ArgumentCaptor<Deployment> captor = ArgumentCaptor.forClass(Deployment.class);
+        doAnswer(inv -> {
+            Deployment d = inv.getArgument(0);
+            d.setDeploymentId(77L);
+            return null;
+        }).when(deploymentRepository).createDeployment(captor.capture());
 
-        mockDeploymentRepositoryAssignIds();
+        DeploymentAssignRequestDTO dto = validDto(requestId, unitId);
 
-        DeploymentAssignRequestDTO dto = new DeploymentAssignRequestDTO();
-        dto.setAssignedBy(123L);
-        dto.setNotes("TEST");
+        DeploymentAssignResponseDTO resp =
+                deploymentService.allocateUnitsForDeploymentRequest(dto);
 
-        // WHEN
-        DeploymentAssignResponseDTO response =
-                deploymentService.allocateUnitsForDeploymentRequest(requestId, dto);
+        assertEquals("ASSIGNED", resp.getRequestStatus());
+        assertEquals(requestId, resp.getRequestId());
+        assertEquals(1, resp.getDeployments().size());
+        assertEquals("MANUAL ASSIGN", resp.getNotes());
 
-        // THEN
-        assertEquals("ASSIGNED", response.getRequestStatus());
-        assertEquals(2, response.getDeployments().size());
+        // verify created deployment
+        Deployment dep = captor.getValue();
+        assertEquals(unitId, dep.getResponseUnitId());
+        assertEquals(DeploymentStatus.ASSIGNED, dep.getStatus());
+        assertNotNull(dep.getAssignedAt());
+        assertNotNull(dep.getOrderedAt());
+        assertEquals(1, dep.getDeployedResources().size());
+        assertEquals(1, dep.getDeployedPersonnel().size());
 
-        verify(deploymentRepository, times(2)).createDeployment(any());
-        verify(responseUnitRepository, times(2)).save(any());
+        // unit updated
+        assertEquals(ResponseUnitStatus.DEPLOYED, unit.getStatus());
+        assertEquals(77L, unit.getCurrentDeploymentId());
+        assertEquals(1, unit.getCurrentPersonnel().size());
+        assertEquals(1, unit.getCurrentResources().size());
+
+        verify(responseUnitRepository).save(unit);
         verify(requestRepository).saveDeploymentRequest(any());
     }
 
-    // ------------------------------------------------------------------------
-    // 2) Error: DeploymentRequest not found
-    // ------------------------------------------------------------------------
+    // ==========================================================================================
+    // 2) REQUEST NOT FOUND
+    // ==========================================================================================
     @Test
-    void allocateUnits_throwsWhenRequestNotFound() {
+    void allocateUnits_requestNotFound_throws() {
         Long requestId = 999L;
+
         when(requestRepository.findDeploymentRequestById(requestId))
                 .thenReturn(Optional.empty());
 
-        DeploymentAssignRequestDTO dto = new DeploymentAssignRequestDTO();
-        dto.setAssignedBy(123L);
+        DeploymentAssignRequestDTO dto = validDto(requestId, 10L);
 
-        RuntimeException ex = assertThrows(
-                RuntimeException.class,
-                () -> deploymentService.allocateUnitsForDeploymentRequest(requestId, dto)
-        );
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> deploymentService.allocateUnitsForDeploymentRequest(dto));
 
-        assertTrue(ex.getMessage().contains("DeploymentRequest not found with id: 999"));
-        verifyNoInteractions(responseUnitRepository, deploymentRepository);
+        assertTrue(ex.getMessage().contains("DeploymentRequest not found"));
+        verifyNoInteractions(deploymentRepository, responseUnitRepository);
     }
 
-    // ------------------------------------------------------------------------
-    // 3) No AVAILABLE units → DECLINED, no deployments
-    // ------------------------------------------------------------------------
+    // ==========================================================================================
+    // 3) UNIT NOT FOUND
+    // ==========================================================================================
     @Test
-    void allocateUnits_noAvailableUnits_resultsInDeclinedRequest() {
-        Long requestId = 1002L;
-        DeploymentRequest request = buildBaseRequest(requestId, 2);
+    void allocateUnits_unitNotFound_throws() {
+        Long requestId = 1L;
+        Long unitId = 10L;
 
         when(requestRepository.findDeploymentRequestById(requestId))
-                .thenReturn(Optional.of(request));
-        
-        when(responseUnitRepository.findResponseUnitByDepartmentIdAndUnitTypeAndStatus(
-                1L, ResponseUnitType.FIRE_TRUCK, ResponseUnitStatus.AVAILABLE))
-                .thenReturn(Collections.emptyList());
+                .thenReturn(Optional.of(buildRequest(requestId)));
 
-        when(requestRepository.saveDeploymentRequest(any()))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(responseUnitRepository.findById(unitId))
+                .thenReturn(Optional.empty());
 
-        DeploymentAssignRequestDTO dto = new DeploymentAssignRequestDTO();
-        dto.setAssignedBy(123L);
-        dto.setNotes("NO UNITS");
+        DeploymentAssignRequestDTO dto = validDto(requestId, unitId);
 
-        DeploymentAssignResponseDTO response =
-                deploymentService.allocateUnitsForDeploymentRequest(requestId, dto);
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> deploymentService.allocateUnitsForDeploymentRequest(dto));
 
-        assertEquals("DECLINED", response.getRequestStatus());
-        assertTrue(response.getDeployments().isEmpty());
-
+        assertTrue(ex.getMessage().contains("ResponseUnit not found"));
         verify(deploymentRepository, never()).createDeployment(any());
-        verify(responseUnitRepository, never()).save(any());
-        verify(requestRepository).saveDeploymentRequest(any());
     }
 
-    // ------------------------------------------------------------------------
-    // 4) Units exist but none passes validation (missing required personnel)
-    // ------------------------------------------------------------------------
+    // ==========================================================================================
+    // 4) WRONG UNIT (DEPT / TYPE / STATUS)
+    // ==========================================================================================
     @Test
-    void allocateUnits_unitsFailValidation_resultsInDeclinedRequest() {
-        Long requestId = 1003L;
-        DeploymentRequest request = buildBaseRequest(requestId, 2);
+    void allocateUnits_wrongUnitValidation_throws() {
+        Long requestId = 1L;
+        Long unitId = 10L;
 
-        when(requestRepository.findDeploymentRequestById(requestId))
-                .thenReturn(Optional.of(request));
+        DeploymentRequest req = buildRequest(requestId);
+        when(requestRepository.findDeploymentRequestById(requestId)).thenReturn(Optional.of(req));
 
-        ResponseUnit invalidUnit1 = mockUnitMissingRequiredPersonnel(1L);
-        ResponseUnit invalidUnit2 = mockUnitMissingRequiredPersonnel(2L);
+        // wrong department
+        ResponseUnit u1 = mockUnit(unitId);
+        u1.setDepartmentId(99L);
+        when(responseUnitRepository.findById(unitId)).thenReturn(Optional.of(u1));
 
-        when(responseUnitRepository.findResponseUnitByDepartmentIdAndUnitTypeAndStatus(
-                1L, ResponseUnitType.FIRE_TRUCK, ResponseUnitStatus.AVAILABLE))
-                .thenReturn(Arrays.asList(invalidUnit1, invalidUnit2));
+        RuntimeException ex1 = assertThrows(RuntimeException.class,
+                () -> deploymentService.allocateUnitsForDeploymentRequest(validDto(requestId, unitId)));
 
-        when(requestRepository.saveDeploymentRequest(any()))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        assertTrue(ex1.getMessage().contains("department"));
 
-        DeploymentAssignRequestDTO dto = new DeploymentAssignRequestDTO();
-        dto.setAssignedBy(123L);
-        dto.setNotes("INVALID UNITS");
+        // wrong type
+        ResponseUnit u2 = mockUnit(unitId);
+        u2.setUnitType(ResponseUnitType.AMBULANCE);
+        when(responseUnitRepository.findById(unitId)).thenReturn(Optional.of(u2));
 
-        DeploymentAssignResponseDTO response =
-                deploymentService.allocateUnitsForDeploymentRequest(requestId, dto);
+        RuntimeException ex2 = assertThrows(RuntimeException.class,
+                () -> deploymentService.allocateUnitsForDeploymentRequest(validDto(requestId, unitId)));
 
-        assertEquals("DECLINED", response.getRequestStatus());
-        assertTrue(response.getDeployments().isEmpty());
+        assertTrue(ex2.getMessage().contains("type mismatch"));
 
+        // wrong status
+        ResponseUnit u3 = mockUnit(unitId);
+        u3.setStatus(ResponseUnitStatus.DEPLOYED);
+        when(responseUnitRepository.findById(unitId)).thenReturn(Optional.of(u3));
+
+        RuntimeException ex3 = assertThrows(RuntimeException.class,
+                () -> deploymentService.allocateUnitsForDeploymentRequest(validDto(requestId, unitId)));
+
+        assertTrue(ex3.getMessage().contains("not AVAILABLE"));
+    }
+
+    // ==========================================================================================
+    // 5) MISSING REQUIRED PERSONNEL
+    // ==========================================================================================
+    @Test
+    void allocateUnits_missingPersonnel_throws() {
+        Long requestId = 1L;
+        Long unitId = 10L;
+
+        DeploymentRequest req = buildRequest(requestId);
+        when(requestRepository.findDeploymentRequestById(requestId)).thenReturn(Optional.of(req));
+
+        ResponseUnit unit = mockUnit(unitId);
+        when(responseUnitRepository.findById(unitId)).thenReturn(Optional.of(unit));
+
+        DeploymentAssignRequestDTO dto = validDto(requestId, unitId);
+        dto.getAssignedPersonnel().get(0).setSpecialization("DRIVER"); // wrong one
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> deploymentService.allocateUnitsForDeploymentRequest(dto));
+
+        assertTrue(ex.getMessage().contains("Missing required specialization"));
         verify(deploymentRepository, never()).createDeployment(any());
-        verify(responseUnitRepository, never()).save(any());
-        verify(requestRepository).saveDeploymentRequest(any());
     }
 
-    // ------------------------------------------------------------------------
-    // 5) Partial assignment: requested 3, can assign only 2 → PARTIALLY_ASSIGNED
-    // ------------------------------------------------------------------------
+    // ==========================================================================================
+    // 6) MISSING / INSUFFICIENT RESOURCE
+    // ==========================================================================================
     @Test
-    void allocateUnits_partialAssignment_marksRequestPartiallyAssigned() {
-        Long requestId = 1004L;
-        DeploymentRequest request = buildBaseRequest(requestId, 3);
+    void allocateUnits_missingOrLowResource_throws() {
+        Long requestId = 1L;
+        Long unitId = 10L;
 
-        when(requestRepository.findDeploymentRequestById(requestId))
-                .thenReturn(Optional.of(request));
+        DeploymentRequest req = buildRequest(requestId);
+        when(requestRepository.findDeploymentRequestById(requestId)).thenReturn(Optional.of(req));
 
-        ResponseUnit unit1 = mockValidResponseUnit(1L);
-        ResponseUnit unit2 = mockValidResponseUnit(2L);
+        ResponseUnit unit = mockUnit(unitId);
+        when(responseUnitRepository.findById(unitId)).thenReturn(Optional.of(unit));
 
-        // فقط ۲ واحد valid داریم
-        when(responseUnitRepository.findResponseUnitByDepartmentIdAndUnitTypeAndStatus(
-                1L, ResponseUnitType.FIRE_TRUCK, ResponseUnitStatus.AVAILABLE))
-                .thenReturn(Arrays.asList(unit1, unit2));
+        // missing correct resource
+        DeploymentAssignRequestDTO dto1 = validDto(requestId, unitId);
+        dto1.getAllocatedResources().get(0).setResourceId(999L);
 
-        mockDeploymentRepositoryAssignIds();
+        RuntimeException ex1 = assertThrows(RuntimeException.class,
+                () -> deploymentService.allocateUnitsForDeploymentRequest(dto1));
 
-        when(requestRepository.saveDeploymentRequest(any()))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        assertTrue(ex1.getMessage().contains("Missing primary resource"));
 
-        DeploymentAssignRequestDTO dto = new DeploymentAssignRequestDTO();
-        dto.setAssignedBy(123L);
-        dto.setNotes("PARTIAL");
+        // insufficient quantity
+        DeploymentAssignRequestDTO dto2 = validDto(requestId, unitId);
+        dto2.getAllocatedResources().get(0).setQuantity(0);
 
-        DeploymentAssignResponseDTO response =
-                deploymentService.allocateUnitsForDeploymentRequest(requestId, dto);
+        RuntimeException ex2 = assertThrows(RuntimeException.class,
+                () -> deploymentService.allocateUnitsForDeploymentRequest(dto2));
 
-        assertEquals("PARTIALLY_ASSIGNED", response.getRequestStatus());
-        assertEquals(2, response.getDeployments().size());
-
-        verify(deploymentRepository, times(2)).createDeployment(any());
-        verify(responseUnitRepository, times(2)).save(any());
-        verify(requestRepository).saveDeploymentRequest(any());
+        assertTrue(ex2.getMessage().contains("insufficient"));
     }
 
+    // ==========================================================================================
+    // 7) REQUESTED_AT NULL → orderedAt still set
+    // ==========================================================================================
     @Test
-    void allocateUnits_handlesNullRequestedAtWithoutException() {
-        Long requestId = 1005L;
-        DeploymentRequest request = buildBaseRequest(requestId, 1);
-        request.setRequestedAt(null);
+    void allocateUnits_requestedAtNull_stillWorks() {
+        Long requestId = 1L;
+        Long unitId = 10L;
 
-        when(requestRepository.findDeploymentRequestById(requestId))
-                .thenReturn(Optional.of(request));
+        DeploymentRequest req = buildRequest(requestId);
+        req.setRequestedAt(null);
+        when(requestRepository.findDeploymentRequestById(requestId)).thenReturn(Optional.of(req));
 
-        ResponseUnit unit1 = mockValidResponseUnit(1L);
+        ResponseUnit unit = mockUnit(unitId);
+        when(responseUnitRepository.findById(unitId)).thenReturn(Optional.of(unit));
 
-        when(responseUnitRepository.findResponseUnitByDepartmentIdAndUnitTypeAndStatus(
-                1L, ResponseUnitType.FIRE_TRUCK, ResponseUnitStatus.AVAILABLE))
-                .thenReturn(List.of(unit1));
+        ArgumentCaptor<Deployment> captor = ArgumentCaptor.forClass(Deployment.class);
+        doAnswer(inv -> {
+            Deployment d = inv.getArgument(0);
+            d.setDeploymentId(55L);
+            return null;
+        }).when(deploymentRepository).createDeployment(captor.capture());
 
-        ArgumentCaptor<Deployment> deploymentCaptor = ArgumentCaptor.forClass(Deployment.class);
-        doAnswer(invocation -> {
-            Deployment dep = invocation.getArgument(0);
-            dep.setDeploymentId(42L);
-            return dep;
-        }).when(deploymentRepository).createDeployment(deploymentCaptor.capture());
+        DeploymentAssignRequestDTO dto = validDto(requestId, unitId);
 
-        DeploymentAssignRequestDTO dto = new DeploymentAssignRequestDTO();
-        dto.setAssignedBy(123L);
-        dto.setNotes("NULL REQUESTED_AT");
+        deploymentService.allocateUnitsForDeploymentRequest(dto);
 
-        DeploymentAssignResponseDTO response =
-                deploymentService.allocateUnitsForDeploymentRequest(requestId, dto);
-
-        assertEquals("ASSIGNED", response.getRequestStatus());
-        assertEquals(1, response.getDeployments().size());
-
-        Deployment captured = deploymentCaptor.getValue();
-        assertNotNull(captured.getOrderedAt(), "orderedAt should be set even if requestedAt was null");
-        assertEquals(1L, captured.getResponseUnitId());
-
-        verify(deploymentRepository, times(1)).createDeployment(any());
-        verify(responseUnitRepository, times(1)).save(any());
-        verify(requestRepository).saveDeploymentRequest(any());
+        Deployment d = captor.getValue();
+        assertNotNull(d.getOrderedAt());
+        assertEquals(unitId, d.getResponseUnitId());
     }
 
-    // ========================================================================
-    // Helpers
-    // ========================================================================
-
-    private DeploymentRequest buildBaseRequest(Long requestId, int requestedQuantity) {
-        DeploymentOrder order = new DeploymentOrder();
-        order.setDeploymentOrderId(5001L);
-        order.setIncidentId(9001L);
-        order.setOrderedBy(9999L);
-        order.setOrderedAt(new Date());
-        order.setIncidentSeverity(IncidentSeverity.HIGH);
-
-        DeploymentRequest request = new DeploymentRequest();
-        request.setRequestId(requestId);
-        request.setIncidentId(9001L);
-        request.setDeploymentOrder(order);
-        request.setRequestedUnitType(ResponseUnitType.FIRE_TRUCK);
-        request.setTargetDepartmentId(1L);
-        request.setRequestedQuantity(requestedQuantity);
-        request.setRequestedAt(new Date());
-        request.setPriority(IncidentSeverity.HIGH);
-        request.setStatus(DeploymentRequestStatus.PENDING);
-        request.setRequestedBy(9999L);
-
-        return request;
+    // ==========================================================================================
+    // HELPERS
+    // ==========================================================================================
+    private DeploymentRequest buildRequest(Long id) {
+        DeploymentRequest r = new DeploymentRequest();
+        r.setRequestId(id);
+        r.setIncidentId(1000L);
+        r.setRequestedUnitType(ResponseUnitType.FIRE_TRUCK);
+        r.setTargetDepartmentId(1L);
+        r.setRequestedQuantity(1);
+        r.setRequestedAt(new Date());
+        r.setStatus(DeploymentRequestStatus.PENDING);
+        return r;
     }
 
-    // Helper: valid unit (passes both personnel and resource validation)
-    private ResponseUnit mockValidResponseUnit(Long id) {
+    private ResponseUnit mockUnit(Long id) {
         ResponseUnit u = new ResponseUnit();
         u.setUnitId(id);
         u.setUnitType(ResponseUnitType.FIRE_TRUCK);
         u.setDepartmentId(1L);
         u.setStatus(ResponseUnitStatus.AVAILABLE);
 
-        // Default resources
         ResponseUnit.DefaultResource dr = new ResponseUnit.DefaultResource();
-        dr.setIsPrimary(true);
         dr.setResourceId(10L);
-        dr.setQuantity(1);
+        dr.setIsPrimary(true);
         dr.setRequiredQuantity(1);
         u.setDefaultResources(List.of(dr));
 
-        // Current resources
-        ResponseUnit.CurrentResource cr = new ResponseUnit.CurrentResource();
-        cr.setResourceId(10L);
-        cr.setQuantity(1);
-        cr.setIsPrimary(true);
-        u.setCurrentResources(List.of(cr));
-
-        // Default personnel
         ResponseUnit.DefaultPersonnelSlot dp = new ResponseUnit.DefaultPersonnelSlot();
         dp.setId(1L);
         dp.setIsRequired(true);
         dp.setSpecialization(ResponderSpecialization.FIREFIGHTER);
         u.setDefaultPersonnel(List.of(dp));
 
-        // Current personnel
-        ResponseUnit.CurrentPersonnel cp = new ResponseUnit.CurrentPersonnel();
-        cp.setUserId(999L);
-        cp.setSpecialization(ResponderSpecialization.FIREFIGHTER);
-        u.setCurrentPersonnel(List.of(cp));
+        u.setCurrentResources(new ArrayList<>());
+        u.setCurrentPersonnel(new ArrayList<>());
 
         return u;
     }
 
-    private ResponseUnit mockUnitMissingRequiredPersonnel(Long id) {
-        ResponseUnit u = new ResponseUnit();
-        u.setUnitId(id);
-        u.setUnitType(ResponseUnitType.FIRE_TRUCK);
-        u.setDepartmentId(1L);
-        u.setStatus(ResponseUnitStatus.AVAILABLE);
+    private DeploymentAssignRequestDTO validDto(Long reqId, Long unitId) {
+        DeploymentAssignRequestDTO dto = new DeploymentAssignRequestDTO();
+        dto.setRequestId(reqId);
+        dto.setAssignedBy(111L);
+        dto.setAssignedUnitId(unitId);
+        dto.setNotes("MANUAL ASSIGN");
 
+        DeploymentAssignRequestDTO.AssignedPersonnelDTO p =
+                new DeploymentAssignRequestDTO.AssignedPersonnelDTO();
+        p.setSlotId(1L);
+        p.setUserId(500L);
+        p.setSpecialization("FIREFIGHTER");
+        dto.setAssignedPersonnel(List.of(p));
 
-        ResponseUnit.DefaultResource dr = new ResponseUnit.DefaultResource();
-        dr.setIsPrimary(true);
-        dr.setResourceId(10L);
-        dr.setQuantity(1);
-        dr.setRequiredQuantity(1);
-        u.setDefaultResources(List.of(dr));
+        DeploymentAssignRequestDTO.AllocatedResourceDTO r =
+                new DeploymentAssignRequestDTO.AllocatedResourceDTO();
+        r.setResourceId(10L);
+        r.setQuantity(1);
+        r.setIsPrimary(true);
+        dto.setAllocatedResources(List.of(r));
 
-        // Current resources
-        ResponseUnit.CurrentResource cr = new ResponseUnit.CurrentResource();
-        cr.setResourceId(10L);
-        cr.setQuantity(1);
-        cr.setIsPrimary(true);
-        u.setCurrentResources(List.of(cr));
-
-        // Default personnel
-        ResponseUnit.DefaultPersonnelSlot dp = new ResponseUnit.DefaultPersonnelSlot();
-        dp.setId(1L);
-        dp.setIsRequired(true);
-        dp.setSpecialization(ResponderSpecialization.FIREFIGHTER);
-        u.setDefaultPersonnel(List.of(dp));
-
-        // currentPersonnel
-        u.setCurrentPersonnel(Collections.emptyList());
-
-        return u;
-    }
-
-    // Helper: mock createDeployment so it assigns unique IDs
-    private void mockDeploymentRepositoryAssignIds() {
-        final long[] seq = {1L};
-        when(deploymentRepository.createDeployment(any()))
-                .thenAnswer(invocation -> {
-                    Deployment dep = invocation.getArgument(0);
-                    dep.setDeploymentId(seq[0]++);
-                    // just to be safe:
-                    if (dep.getAssignedAt() == null) {
-                        dep.setAssignedAt(LocalDateTime.now());
-                    }
-                    return dep;
-                });
+        return dto;
     }
 }

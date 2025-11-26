@@ -27,4 +27,6 @@ public interface ResourceService {
     Optional<ResourceBasicDto> getResourceBasicInfoById(Long id);
 
     Optional<ResourceLocationDto> getResourceLocationById(Long id);
+
+    void allocateResources(ResourceAllocationBatchRequestDTO resourceAllocationBatchRequestDTO);
 }
