@@ -24,6 +24,7 @@ import {
 	validateRequiredPersonnel,
 	validateResourceRequirements,
 } from '@/validation/fillUnitValidation';
+import { Resource } from '@/types/resource';
 
 interface FillUnitAssignmentPanelProps {
 	deploymentRequest: DeploymentRequest;
@@ -60,8 +61,8 @@ export default function FillUnitAssignmentPanel({
 	const availableResponseUnits =
 		allResponseUnits?.filter(unit => {
 			return (
-				normalizeUnitType(unit.unitType) === normalizeUnitType(deploymentRequest.requestedUnitType) &&
-				unit.status === 'AVAILABLE'
+				normalizeUnitType(unit.unitType) ===
+					normalizeUnitType(deploymentRequest.requestedUnitType) && unit.status === 'AVAILABLE'
 			);
 		}) ?? [];
 
@@ -102,7 +103,8 @@ export default function FillUnitAssignmentPanel({
 		// —————————————————————————————
 		//  PREFILL PERSONNEL
 		// —————————————————————————————
-		const personnel: Record<number, { userId: number; specialization: ResponderSpecialization }> = {};
+		const personnel: Record<number, { userId: number; specialization: ResponderSpecialization }> =
+			{};
 
 		selectedUnit.defaultPersonnel.forEach((slot, index) => {
 			if (!slot.userId) return;
@@ -135,7 +137,8 @@ export default function FillUnitAssignmentPanel({
 		// —————————————————————————————
 		//  PREFILL RESOURCES
 		// —————————————————————————————
-		const resources: Record<number, { resourceId: number; quantity: number; isPrimary: boolean }> = {};
+		const resources: Record<number, { resourceId: number; quantity: number; isPrimary: boolean }> =
+			{};
 
 		selectedUnit.defaultResources.forEach((res, idx) => {
 			resources[idx] = {
@@ -185,7 +188,7 @@ export default function FillUnitAssignmentPanel({
 	// ———————————————————————————————————
 
 	// Determines if resource is available
-	const isResourceAvailable = (r: any) => {
+	const isResourceAvailable = (r: Resource) => {
 		if (r.resourceKind === 'UNIQUE') return r.status === 'AVAILABLE';
 		return (r.availableQuantity ?? 0) > 0;
 	};
@@ -257,18 +260,17 @@ export default function FillUnitAssignmentPanel({
 
 		try {
 			const payload: FillUnitAssignmentRequest = {
-    requestId: deploymentRequest.requestId,
-    assignedBy: auth.user.userId,
-    assignedUnitId: data.assignedUnitId,
-    assignedPersonnel: data.assignedPersonnel.map(p => ({
-        slotId: p.slotId,
-        userId: p.userId,
-        specialization: p.specialization as ResponderSpecialization,
-    })),
-    allocatedResources: data.allocatedResources,
-    ...(data.notes ? { notes: data.notes } : {}),
-};
-
+				requestId: deploymentRequest.requestId,
+				assignedBy: auth.user.userId,
+				assignedUnitId: data.assignedUnitId,
+				assignedPersonnel: data.assignedPersonnel.map(p => ({
+					slotId: p.slotId,
+					userId: p.userId,
+					specialization: p.specialization as ResponderSpecialization,
+				})),
+				allocatedResources: data.allocatedResources,
+				...(data.notes ? { notes: data.notes } : {}),
+			};
 
 			await assignMutation.mutateAsync(payload);
 
@@ -297,254 +299,236 @@ export default function FillUnitAssignmentPanel({
 				</p>
 
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-				{/* Response Unit Selection */}
-				<div className="space-y-3">
-					<label className="block text-sm font-medium text-gray-700">
-						Select {deploymentRequest.requestedUnitType} Response Unit
-						<span className="text-red-500 ml-1">*</span>
-					</label>
+					{/* Response Unit Selection */}
+					<div className="space-y-3">
+						<label className="block text-sm font-medium text-gray-700">
+							Select {deploymentRequest.requestedUnitType} Response Unit
+							<span className="text-red-500 ml-1">*</span>
+						</label>
 
-					{availableResponseUnits.length === 0 && (
-						<div className="text-gray-500 text-sm">
-							No available {deploymentRequest.requestedUnitType} units.
-						</div>
-					)}
+						{availableResponseUnits.length === 0 && (
+							<div className="text-gray-500 text-sm">
+								No available {deploymentRequest.requestedUnitType} units.
+							</div>
+						)}
 
-					{availableResponseUnits.length > 0 && (
-						<div className="space-y-2">
-							{availableResponseUnits.map(unit => (
-								<label
-									key={unit.unitId}
-									className="flex items-start space-x-3 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"
-								>
-									<input
-										type="radio"
-										name="unit"
-										checked={selectedUnit?.unitId === unit.unitId}
-										onChange={() => setSelectedUnit(unit)}
-										className="mt-1"
-									/>
-									<div>
-										<div className="text-sm font-medium text-gray-900">{unit.unitName}</div>
-										<div className="text-sm text-gray-500">Type: {unit.unitType}</div>
-									</div>
-								</label>
-							))}
-						</div>
-					)}
-				</div>
-
-				{/* Personnel Assignment */}
-				{selectedUnit && (
-					<div className="space-y-4">
-						<h4 className="text-lg font-medium text-gray-900">Personnel Assignment</h4>
-
-						<div className="space-y-3">
-							{selectedUnit.defaultPersonnel.map((slot, idx) => {
-								const isDefault =
-									slot.userId &&
-									personnelAssignments[idx]?.userId === slot.userId;
-
-								return (
-									<div key={idx} className="p-4 bg-gray-50 rounded-md border border-gray-200">
-										<div className="flex items-center space-x-2 mb-2">
-											<span className="text-sm font-medium text-gray-700">{slot.specialization}</span>
-											{slot.isRequired && (
-												<span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-													Required
-												</span>
-											)}
-											{isDefault && (
-												<span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-													Default
-												</span>
-											)}
+						{availableResponseUnits.length > 0 && (
+							<div className="space-y-2">
+								{availableResponseUnits.map(unit => (
+									<label
+										key={unit.unitId}
+										className="flex items-start space-x-3 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"
+									>
+										<input
+											type="radio"
+											name="unit"
+											checked={selectedUnit?.unitId === unit.unitId}
+											onChange={() => setSelectedUnit(unit)}
+											className="mt-1"
+										/>
+										<div>
+											<div className="text-sm font-medium text-gray-900">{unit.unitName}</div>
+											<div className="text-sm text-gray-500">Type: {unit.unitType}</div>
 										</div>
-
-										<select
-											className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
-											value={personnelAssignments[idx]?.userId ?? ''}
-											onChange={e => {
-												const userId = parseInt(e.target.value);
-												handlePersonnelAssignment(
-													idx,
-													userId || 0,
-													slot.specialization
-												);
-											}}
-										>
-											<option value="">Select personnel...</option>
-
-											{departmentUsers
-												?.filter(
-													u =>
-														u.responderProfile?.primarySpecialization ===
-														slot.specialization
-												)
-												.map(u => (
-													<option key={u.userId} value={u.userId}>
-														{u.firstName} {u.lastName}
-													</option>
-												))}
-										</select>
-									</div>
-								);
-							})}
-						</div>
+									</label>
+								))}
+							</div>
+						)}
 					</div>
-				)}
 
-				{/* Resource Allocation */}
-				{selectedUnit && (
-					<div className="space-y-4">
-						<h4 className="text-lg font-medium text-gray-900">Resource Allocation</h4>
+					{/* Personnel Assignment */}
+					{selectedUnit && (
+						<div className="space-y-4">
+							<h4 className="text-lg font-medium text-gray-900">Personnel Assignment</h4>
 
-						<div className="space-y-3">
-							{selectedUnit.defaultResources.map((res, idx) => {
-								const defaultRes = departmentResources?.find(
-									r => r.resourceId === res.resourceId
-								);
+							<div className="space-y-3">
+								{selectedUnit.defaultPersonnel.map((slot, idx) => {
+									const isDefault =
+										slot.userId && personnelAssignments[idx]?.userId === slot.userId;
 
-								if (!defaultRes) return null;
-
-								const matchingResources =
-									departmentResources?.filter(r => {
-										return (
-											r.resourceType === defaultRes.resourceType &&
-											isResourceAvailable(r)
-										);
-									}) ?? [];
-
-								const current = resourceAllocations[idx];
-								const selectedId = current?.resourceId ?? res.resourceId;
-								const selectedDetails =
-									departmentResources?.find(r => r.resourceId === selectedId);
-
-								const availabilityText =
-									selectedDetails?.resourceKind === 'UNIQUE'
-										? `Status: ${selectedDetails.status}`
-										: `Available: ${selectedDetails?.availableQuantity ?? 0}`;
-
-								return (
-									<div key={idx} className="p-4 bg-gray-50 rounded-md border border-gray-200">
-										<div className="flex justify-between items-center mb-3">
-											<div>
-												<div className="text-sm font-medium text-gray-700">
-													{defaultRes.resourceType.replace(/_/g, ' ')}
-												</div>
-												<div className="text-xs text-gray-500">
-													Required: {res.quantity}
-												</div>
+									return (
+										<div key={idx} className="p-4 bg-gray-50 rounded-md border border-gray-200">
+											<div className="flex items-center space-x-2 mb-2">
+												<span className="text-sm font-medium text-gray-700">
+													{slot.specialization}
+												</span>
+												{slot.isRequired && (
+													<span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+														Required
+													</span>
+												)}
+												{isDefault && (
+													<span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+														Default
+													</span>
+												)}
 											</div>
+
+											<select
+												className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
+												value={personnelAssignments[idx]?.userId ?? ''}
+												onChange={e => {
+													const userId = parseInt(e.target.value);
+													handlePersonnelAssignment(idx, userId || 0, slot.specialization);
+												}}
+											>
+												<option value="">Select personnel...</option>
+
+												{departmentUsers
+													?.filter(
+														u => u.responderProfile?.primarySpecialization === slot.specialization
+													)
+													.map(u => (
+														<option key={u.userId} value={u.userId}>
+															{u.firstName} {u.lastName}
+														</option>
+													))}
+											</select>
 										</div>
+									);
+								})}
+							</div>
+						</div>
+					)}
 
-										{/* Resource Dropdown */}
-										<div className="space-y-3">
-											<div>
-												<label className="block text-sm font-medium text-gray-700 mb-1">
-													Select Resource
-												</label>
-												<select
-													className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
-													value={selectedId}
-													onChange={e => {
-														const newId = parseInt(e.target.value);
-														handleResourceAllocation(
-															idx,
-															newId,
-															current?.quantity ?? res.quantity,
-															res.isPrimary
-														);
-													}}
-												>
-													{matchingResources.map(r => {
-														return (
-															<option key={r.resourceId} value={r.resourceId}>
-																{r.name} (
-																{r.resourceKind === 'UNIQUE'
-																	? r.status
-																	: `Available: ${r.availableQuantity}`}
-																)
-															</option>
-														);
-													})}
-												</select>
+					{/* Resource Allocation */}
+					{selectedUnit && (
+						<div className="space-y-4">
+							<h4 className="text-lg font-medium text-gray-900">Resource Allocation</h4>
+
+							<div className="space-y-3">
+								{selectedUnit.defaultResources.map((res, idx) => {
+									const defaultRes = departmentResources?.find(
+										r => r.resourceId === res.resourceId
+									);
+
+									if (!defaultRes) return null;
+
+									const matchingResources =
+										departmentResources?.filter(r => {
+											return r.resourceType === defaultRes.resourceType && isResourceAvailable(r);
+										}) ?? [];
+
+									const current = resourceAllocations[idx];
+									const selectedId = current?.resourceId ?? res.resourceId;
+									const selectedDetails = departmentResources?.find(
+										r => r.resourceId === selectedId
+									);
+
+									const availabilityText =
+										selectedDetails?.resourceKind === 'UNIQUE'
+											? `Status: ${selectedDetails.status}`
+											: `Available: ${selectedDetails?.availableQuantity ?? 0}`;
+
+									return (
+										<div key={idx} className="p-4 bg-gray-50 rounded-md border border-gray-200">
+											<div className="flex justify-between items-center mb-3">
+												<div>
+													<div className="text-sm font-medium text-gray-700">
+														{defaultRes.resourceType.replace(/_/g, ' ')}
+													</div>
+													<div className="text-xs text-gray-500">Required: {res.quantity}</div>
+												</div>
 											</div>
 
-											{/* Quantity Input */}
-											<div className="grid grid-cols-2 gap-4">
+											{/* Resource Dropdown */}
+											<div className="space-y-3">
 												<div>
 													<label className="block text-sm font-medium text-gray-700 mb-1">
-														Quantity
+														Select Resource
 													</label>
-													<input
-														type="number"
-														min={1}
-														max={
-															selectedDetails?.resourceKind === 'UNIQUE'
-																? 1
-																: selectedDetails?.availableQuantity ?? 999
-														}
-														disabled={
-															selectedDetails?.resourceKind === 'UNIQUE'
-														}
-														className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100"
-														value={
-															selectedDetails?.resourceKind === 'UNIQUE'
-																? 1
-																: current?.quantity ?? res.quantity
-														}
+													<select
+														className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
+														value={selectedId}
 														onChange={e => {
-															const qty = parseInt(e.target.value) || 0;
+															const newId = parseInt(e.target.value);
 															handleResourceAllocation(
 																idx,
-																selectedId,
-																qty,
+																newId,
+																current?.quantity ?? res.quantity,
 																res.isPrimary
 															);
 														}}
-													/>
+													>
+														{matchingResources.map(r => {
+															return (
+																<option key={r.resourceId} value={r.resourceId}>
+																	{r.name} (
+																	{r.resourceKind === 'UNIQUE'
+																		? r.status
+																		: `Available: ${r.availableQuantity}`}
+																	)
+																</option>
+															);
+														})}
+													</select>
 												</div>
 
-												<div className="flex items-end">
-													<div className="text-sm text-gray-500 pb-2">
-														{availabilityText}
+												{/* Quantity Input */}
+												<div className="grid grid-cols-2 gap-4">
+													<div>
+														<label className="block text-sm font-medium text-gray-700 mb-1">
+															Quantity
+														</label>
+														<input
+															type="number"
+															min={1}
+															max={
+																selectedDetails?.resourceKind === 'UNIQUE'
+																	? 1
+																	: (selectedDetails?.availableQuantity ?? 999)
+															}
+															disabled={selectedDetails?.resourceKind === 'UNIQUE'}
+															className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100"
+															value={
+																selectedDetails?.resourceKind === 'UNIQUE'
+																	? 1
+																	: (current?.quantity ?? res.quantity)
+															}
+															onChange={e => {
+																const qty = parseInt(e.target.value) || 0;
+																handleResourceAllocation(idx, selectedId, qty, res.isPrimary);
+															}}
+														/>
+													</div>
+
+													<div className="flex items-end">
+														<div className="text-sm text-gray-500 pb-2">{availabilityText}</div>
 													</div>
 												</div>
 											</div>
 										</div>
-									</div>
-								);
-							})}
+									);
+								})}
+							</div>
 						</div>
+					)}
+
+					{/* Notes Section */}
+					<div className="space-y-1">
+						<label className="block text-sm font-medium text-gray-700">
+							Notes
+							<span className="text-gray-500 ml-1">(Optional)</span>
+						</label>
+						<textarea
+							{...register('notes')}
+							rows={3}
+							className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
+							placeholder="Add any additional notes about this assignment..."
+						/>
 					</div>
-				)}
 
-				{/* Notes Section */}
-				<div className="space-y-1">
-					<label className="block text-sm font-medium text-gray-700">
-						Notes
-						<span className="text-gray-500 ml-1">(Optional)</span>
-					</label>
-					<textarea
-						{...register('notes')}
-						rows={3}
-						className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
-						placeholder="Add any additional notes about this assignment..."
-					/>
-				</div>
-
-				{/* Submit Button */}
-				<div className="pt-4 border-t border-gray-200">
-					<Button
-						type="submit"
-						disabled={!isValid || !selectedUnit || assignMutation.isPending}
-						className="w-full"
-					>
-						{assignMutation.isPending ? 'Creating Deployment...' : 'Create Deployment'}
-					</Button>
-				</div>
-			</form>
+					{/* Submit Button */}
+					<div className="pt-4 border-t border-gray-200">
+						<Button
+							type="submit"
+							disabled={!isValid || !selectedUnit || assignMutation.isPending}
+							className="w-full"
+						>
+							{assignMutation.isPending ? 'Creating Deployment...' : 'Create Deployment'}
+						</Button>
+					</div>
+				</form>
 			</div>
 		</div>
 	);

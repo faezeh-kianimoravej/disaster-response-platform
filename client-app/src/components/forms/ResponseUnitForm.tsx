@@ -60,9 +60,8 @@ export default function ResponseUnitForm({
 			departmentId: initialData?.departmentId ?? departmentId,
 			selectedResources: initialData?.defaultResources?.map(r => r.resourceId) ?? [],
 			selectedPersonnel:
-				initialData?.defaultPersonnel
-					?.filter(p => p.userId !== undefined)
-					?.map(p => p.userId!) ?? [],
+				initialData?.defaultPersonnel?.filter(p => p.userId !== undefined)?.map(p => p.userId!) ??
+				[],
 		}),
 		[initialData, departmentId]
 	);
@@ -203,7 +202,8 @@ export default function ResponseUnitForm({
 											}}
 										/>
 										<span className="text-sm">
-											{user.firstName} {user.lastName} (Responder - {user.responderProfile?.primarySpecialization?.toLowerCase()})
+											{user.firstName} {user.lastName} (Responder -{' '}
+											{user.responderProfile?.primarySpecialization?.toLowerCase()})
 										</span>
 									</label>
 								))}

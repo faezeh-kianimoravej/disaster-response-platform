@@ -234,18 +234,34 @@ function ResponseUnitDetailsView({
 					<h2 className="text-3xl font-bold text-gray-900 mb-4">{responseUnit.unitName}</h2>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
 						<div className="space-y-2">
-							<p><strong>Unit Type:</strong> {responseUnit.unitType}</p>
-							<p><strong>Status:</strong> {responseUnit.status}</p>
-							<p><strong>Default Personnel:</strong> {defaultPersonnelCount}</p>
-							<p><strong>Default Resources:</strong> {defaultResourceCount}</p>
+							<p>
+								<strong>Unit Type:</strong> {responseUnit.unitType}
+							</p>
+							<p>
+								<strong>Status:</strong> {responseUnit.status}
+							</p>
+							<p>
+								<strong>Default Personnel:</strong> {defaultPersonnelCount}
+							</p>
+							<p>
+								<strong>Default Resources:</strong> {defaultResourceCount}
+							</p>
 						</div>
 						<div className="space-y-2">
-							<p><strong>Current Personnel:</strong> {currentPersonnelCount}</p>
-							<p><strong>Current Resources:</strong> {currentResourceCount}</p>
+							<p>
+								<strong>Current Personnel:</strong> {currentPersonnelCount}
+							</p>
+							<p>
+								<strong>Current Resources:</strong> {currentResourceCount}
+							</p>
 							{responseUnit.latitude && responseUnit.longitude && (
 								<>
-									<p><strong>Latitude:</strong> {responseUnit.latitude}</p>
-									<p><strong>Longitude:</strong> {responseUnit.longitude}</p>
+									<p>
+										<strong>Latitude:</strong> {responseUnit.latitude}
+									</p>
+									<p>
+										<strong>Longitude:</strong> {responseUnit.longitude}
+									</p>
 								</>
 							)}
 						</div>
@@ -259,10 +275,17 @@ function ResponseUnitDetailsView({
 					<h3 className="text-lg font-semibold text-gray-900 mb-4">Default Resources</h3>
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 						{responseUnit.defaultResources.map(resource => (
-							<div key={resource.resourceId} className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
-								<h4 className="text-sm font-medium text-gray-900 mb-2">{getResourceName(resource.resourceId)}</h4>
+							<div
+								key={resource.resourceId}
+								className="bg-white rounded-lg shadow-md p-4 border border-gray-200"
+							>
+								<h4 className="text-sm font-medium text-gray-900 mb-2">
+									{getResourceName(resource.resourceId)}
+								</h4>
 								<div className="space-y-1 text-sm text-gray-600">
-									<p><strong>Quantity:</strong> {resource.quantity}</p>
+									<p>
+										<strong>Quantity:</strong> {resource.quantity}
+									</p>
 									{resource.isPrimary && (
 										<p className="text-blue-600 font-medium">Primary Resource</p>
 									)}
@@ -279,15 +302,18 @@ function ResponseUnitDetailsView({
 					<h3 className="text-lg font-semibold text-gray-900 mb-4">Default Personnel</h3>
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 						{responseUnit.defaultPersonnel.map((person, index) => (
-							<div key={person.userId || index} className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
+							<div
+								key={person.userId || index}
+								className="bg-white rounded-lg shadow-md p-4 border border-gray-200"
+							>
 								<h4 className="text-sm font-medium text-gray-900 mb-2">
 									{person.userId ? getUserName(person.userId) : 'Open Position'}
 								</h4>
 								<div className="space-y-1 text-sm text-gray-600">
-									<p><strong>Specialization:</strong> {person.specialization}</p>
-									{person.isRequired && (
-										<p className="text-red-600 font-medium">Required</p>
-									)}
+									<p>
+										<strong>Specialization:</strong> {person.specialization}
+									</p>
+									{person.isRequired && <p className="text-red-600 font-medium">Required</p>}
 								</div>
 							</div>
 						))}
@@ -301,10 +327,17 @@ function ResponseUnitDetailsView({
 					<h3 className="text-lg font-semibold text-gray-900 mb-4">Current Resources</h3>
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 						{responseUnit.currentResources.map(resource => (
-							<div key={resource.resourceId} className="bg-blue-50 rounded-lg shadow-md p-4 border border-blue-200">
-								<h4 className="text-sm font-medium text-gray-900 mb-2">{getResourceName(resource.resourceId)}</h4>
+							<div
+								key={resource.resourceId}
+								className="bg-blue-50 rounded-lg shadow-md p-4 border border-blue-200"
+							>
+								<h4 className="text-sm font-medium text-gray-900 mb-2">
+									{getResourceName(resource.resourceId)}
+								</h4>
 								<div className="space-y-1 text-sm text-gray-600">
-									<p><strong>Quantity:</strong> {resource.quantity}</p>
+									<p>
+										<strong>Quantity:</strong> {resource.quantity}
+									</p>
 									{resource.isPrimary && (
 										<p className="text-blue-600 font-medium">Primary Resource</p>
 									)}
@@ -321,10 +354,17 @@ function ResponseUnitDetailsView({
 					<h3 className="text-lg font-semibold text-gray-900 mb-4">Current Personnel</h3>
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 						{responseUnit.currentPersonnel.map(person => (
-							<div key={person.userId} className="bg-blue-50 rounded-lg shadow-md p-4 border border-blue-200">
-								<h4 className="text-sm font-medium text-gray-900 mb-2">{getUserName(person.userId)}</h4>
+							<div
+								key={person.userId}
+								className="bg-blue-50 rounded-lg shadow-md p-4 border border-blue-200"
+							>
+								<h4 className="text-sm font-medium text-gray-900 mb-2">
+									{getUserName(person.userId)}
+								</h4>
 								<div className="space-y-1 text-sm text-gray-600">
-									<p><strong>Specialization:</strong> {person.specialization}</p>
+									<p>
+										<strong>Specialization:</strong> {person.specialization}
+									</p>
 								</div>
 							</div>
 						))}
