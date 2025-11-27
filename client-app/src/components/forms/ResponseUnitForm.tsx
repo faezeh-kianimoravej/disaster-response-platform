@@ -83,7 +83,7 @@ export default function ResponseUnitForm({
 				defaultResources: values.selectedResources.map(resourceId => ({
 					resourceId,
 					quantity: 1,
-					isPrimary: false,
+					isPrimary: true,
 				})),
 				defaultPersonnel: values.selectedPersonnel.map(userId => {
 					const user = users.find(u => u.userId === userId);

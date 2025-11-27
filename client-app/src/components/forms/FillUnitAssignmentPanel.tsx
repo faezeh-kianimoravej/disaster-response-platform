@@ -48,16 +48,13 @@ export default function FillUnitAssignmentPanel({
 		Record<number, { resourceId: number; quantity: number; isPrimary: boolean }>
 	>({});
 
-	// Fetch response units
 	const { data: allResponseUnits, isLoading: responseUnitsLoading } = useResponseUnits(
 		deploymentRequest.targetDepartmentId,
 		{ enabled: deploymentRequest.status !== 'assigned' }
 	);
 
-	// Normalize string types
 	const normalizeUnitType = (text: string) => text.toLowerCase().replace(/_/g, ' ');
 
-	// Filter units based on requested type + AVAILABLE
 	const availableResponseUnits =
 		allResponseUnits?.filter(unit => {
 			return (
@@ -66,19 +63,16 @@ export default function FillUnitAssignmentPanel({
 			);
 		}) ?? [];
 
-	// Fetch department users
 	const { users: departmentUsers, loading: usersLoading } = useUsersByDepartment(
 		deploymentRequest.targetDepartmentId,
 		{ enabled: !!selectedUnit && deploymentRequest.status !== 'assigned' }
 	);
 
-	// Fetch department resources
 	const { resources: departmentResources, loading: resourcesLoading } = useResources(
 		deploymentRequest.targetDepartmentId,
 		{ enabled: !!selectedUnit && deploymentRequest.status !== 'assigned' }
 	);
 
-	// Form setup
 	const {
 		register,
 		handleSubmit,
@@ -94,27 +88,21 @@ export default function FillUnitAssignmentPanel({
 		},
 	});
 
-	// Prefill Personnel + Resources when unit changes
 	useEffect(() => {
 		if (!selectedUnit || !departmentUsers || !departmentResources) return;
 
 		setValue('assignedUnitId', selectedUnit.unitId);
 
-		// —————————————————————————————
-		//  PREFILL PERSONNEL
-		// —————————————————————————————
 		const personnel: Record<number, { userId: number; specialization: ResponderSpecialization }> =
 			{};
 
 		selectedUnit.defaultPersonnel.forEach((slot, index) => {
 			if (!slot.userId) return;
-
 			const match = departmentUsers.find(
 				u =>
 					u.userId === slot.userId &&
 					u.responderProfile?.primarySpecialization === slot.specialization
 			);
-
 			if (match) {
 				personnel[index] = {
 					userId: slot.userId,
@@ -134,9 +122,6 @@ export default function FillUnitAssignmentPanel({
 			}))
 		);
 
-		// —————————————————————————————
-		//  PREFILL RESOURCES
-		// —————————————————————————————
 		const resources: Record<number, { resourceId: number; quantity: number; isPrimary: boolean }> =
 			{};
 
@@ -160,7 +145,6 @@ export default function FillUnitAssignmentPanel({
 		);
 	}, [selectedUnit, departmentUsers, departmentResources, setValue]);
 
-	// Update personnel assignment
 	const handlePersonnelAssignment = (
 		slotId: number,
 		userId: number,
@@ -183,17 +167,11 @@ export default function FillUnitAssignmentPanel({
 		);
 	};
 
-	// ———————————————————————————————————
-	//  RESOURCE ALLOCATION LOGIC (FIXED)
-	// ———————————————————————————————————
-
-	// Determines if resource is available
 	const isResourceAvailable = (r: Resource) => {
 		if (r.resourceKind === 'UNIQUE') return r.status === 'AVAILABLE';
 		return (r.availableQuantity ?? 0) > 0;
 	};
 
-	// Called when user changes dropdown or quantity
 	const handleResourceAllocation = (
 		index: number,
 		resourceId: number,
@@ -225,17 +203,12 @@ export default function FillUnitAssignmentPanel({
 		);
 	};
 
-	// ———————————————————————————————————
-	//  SUBMIT HANDLER
-	// ———————————————————————————————————
-
 	const onSubmit = async (data: FillUnitFormData) => {
 		if (!auth?.user?.userId || !selectedUnit) {
 			showError('Authentication error.');
 			return;
 		}
 
-		// Validation
 		const requiredSlots = selectedUnit.defaultPersonnel.map((slot, idx) => ({
 			slotId: idx,
 			specialization: slot.specialization,
@@ -266,7 +239,7 @@ export default function FillUnitAssignmentPanel({
 				assignedPersonnel: data.assignedPersonnel.map(p => ({
 					slotId: p.slotId,
 					userId: p.userId,
-					specialization: p.specialization as ResponderSpecialization,
+					specialization: String(p.specialization).toUpperCase() as ResponderSpecialization,
 				})),
 				allocatedResources: data.allocatedResources,
 				...(data.notes ? { notes: data.notes } : {}),
@@ -275,8 +248,14 @@ export default function FillUnitAssignmentPanel({
 			await assignMutation.mutateAsync(payload);
 
 			showSuccess('Deployment created successfully');
+
+			// Call onAssignmentSuccess first to trigger refetch
 			onAssignmentSuccess?.();
-			navigate(routes.deploymentRequestDetails(deploymentRequest.requestId));
+
+			// Add a small delay to allow refetch to complete before navigation
+			setTimeout(() => {
+				navigate(routes.deploymentRequestDetails(deploymentRequest.requestId));
+			}, 100);
 		} catch {
 			showError('Failed to create deployment.');
 		}
@@ -285,10 +264,6 @@ export default function FillUnitAssignmentPanel({
 	const isLoading = responseUnitsLoading || usersLoading || resourcesLoading;
 
 	if (isLoading) return <LoadingPanel text="Loading assignment options..." />;
-
-	// ———————————————————————————————————
-	//  RENDER
-	// ———————————————————————————————————
 
 	return (
 		<div className="mb-6">
@@ -299,7 +274,6 @@ export default function FillUnitAssignmentPanel({
 				</p>
 
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-					{/* Response Unit Selection */}
 					<div className="space-y-3">
 						<label className="block text-sm font-medium text-gray-700">
 							Select {deploymentRequest.requestedUnitType} Response Unit
@@ -336,7 +310,6 @@ export default function FillUnitAssignmentPanel({
 						)}
 					</div>
 
-					{/* Personnel Assignment */}
 					{selectedUnit && (
 						<div className="space-y-4">
 							<h4 className="text-lg font-medium text-gray-900">Personnel Assignment</h4>
@@ -391,7 +364,6 @@ export default function FillUnitAssignmentPanel({
 						</div>
 					)}
 
-					{/* Resource Allocation */}
 					{selectedUnit && (
 						<div className="space-y-4">
 							<h4 className="text-lg font-medium text-gray-900">Resource Allocation</h4>
@@ -431,7 +403,6 @@ export default function FillUnitAssignmentPanel({
 												</div>
 											</div>
 
-											{/* Resource Dropdown */}
 											<div className="space-y-3">
 												<div>
 													<label className="block text-sm font-medium text-gray-700 mb-1">
@@ -464,7 +435,6 @@ export default function FillUnitAssignmentPanel({
 													</select>
 												</div>
 
-												{/* Quantity Input */}
 												<div className="grid grid-cols-2 gap-4">
 													<div>
 														<label className="block text-sm font-medium text-gray-700 mb-1">
@@ -504,7 +474,6 @@ export default function FillUnitAssignmentPanel({
 						</div>
 					)}
 
-					{/* Notes Section */}
 					<div className="space-y-1">
 						<label className="block text-sm font-medium text-gray-700">
 							Notes
@@ -518,7 +487,6 @@ export default function FillUnitAssignmentPanel({
 						/>
 					</div>
 
-					{/* Submit Button */}
 					<div className="pt-4 border-t border-gray-200">
 						<Button
 							type="submit"
