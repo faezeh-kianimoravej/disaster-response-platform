@@ -9,6 +9,7 @@ import nl.saxion.disaster.regionservice.dto.RegionSummaryDto;
 import nl.saxion.disaster.regionservice.service.contract.RegionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/regions")
 @RequiredArgsConstructor
+
 public class RegionController {
 
     private final RegionService regionService;
@@ -65,6 +67,7 @@ public class RegionController {
     @Operation(summary = "Get municipalities of a region",
             description = "Retrieve all municipalities that belong to a specific region using its ID.")
     @GetMapping("/{regionId}/municipalities")
+    @PreAuthorize("hasRole('REGION_ADMIN')")
     public ResponseEntity<List<MunicipalityDto>> getAllMunicipalitiesOfRegion(@PathVariable Long regionId) {
         List<MunicipalityDto> municipalities = regionService.getAllMunicipalitiesOfRegion(regionId);
         return ResponseEntity.ok(municipalities);
