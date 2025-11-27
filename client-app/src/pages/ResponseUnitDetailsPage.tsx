@@ -2,6 +2,8 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useResponseUnit, useDeleteResponseUnit } from '@/hooks/useResponseUnit';
+import { useUsersByDepartment } from '@/hooks/useUser';
+import { useResources } from '@/hooks/useResource';
 import { routes } from '@/routes';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useToast } from '@/components/toast/ToastProvider';
@@ -12,6 +14,8 @@ import AuthGuard from '@/components/auth/AuthGuard';
 import Button from '@/components/ui/Button';
 import { DEPARTMENT_ROLES, MUNICIPALITY_ROLES, REGION_ROLES, createRoles } from '@/types/role';
 import type { ResponseUnit } from '@/types/responseUnit';
+import type { User } from '@/types/user';
+import type { Resource } from '@/types/resource';
 
 export default function ResponseUnitDetailsPage() {
 	const { unitId } = useParams<{ unitId: string }>();
@@ -56,6 +60,14 @@ function ResponseUnitDetailsPageContent({
 		.find((id): id is number => typeof id === 'number');
 	const departmentIdForActions =
 		deptIdFromUnit ?? deptIdFromState ?? fallbackDepartmentId ?? undefined;
+
+	// Fetch department users and resources for displaying names instead of IDs
+	const { users: departmentUsers } = useUsersByDepartment(departmentIdForActions, {
+		enabled: !!departmentIdForActions,
+	});
+	const { resources: departmentResources } = useResources(departmentIdForActions, {
+		enabled: !!departmentIdForActions,
+	});
 
 	// Show single error toast for loading issues
 	showSingleError({
@@ -151,6 +163,8 @@ function ResponseUnitDetailsPageContent({
 						<div className="flex-1">
 							<ResponseUnitDetailsView
 								responseUnit={responseUnit}
+								departmentUsers={departmentUsers || []}
+								departmentResources={departmentResources || []}
 								onEdit={handleEdit}
 								onDelete={handleDelete}
 								onBack={handleBack}
@@ -176,6 +190,8 @@ function ResponseUnitDetailsPageContent({
 
 interface ResponseUnitDetailsViewProps {
 	responseUnit: ResponseUnit;
+	departmentUsers: User[];
+	departmentResources: Resource[];
 	onEdit: () => void;
 	onDelete: () => void;
 	onBack: () => void;
@@ -183,6 +199,8 @@ interface ResponseUnitDetailsViewProps {
 
 function ResponseUnitDetailsView({
 	responseUnit,
+	departmentUsers,
+	departmentResources,
 	onEdit,
 	onDelete,
 	onBack,
@@ -192,57 +210,63 @@ function ResponseUnitDetailsView({
 	const currentPersonnelCount = responseUnit.currentPersonnel?.length ?? 0;
 	const currentResourceCount = responseUnit.currentResources?.length ?? 0;
 
+	// Helper functions to get names instead of IDs
+	const getUserName = (userId: number) => {
+		if (!departmentUsers || departmentUsers.length === 0) {
+			return `User ID: ${userId}`;
+		}
+		const user = departmentUsers.find(u => u.userId === userId);
+		return user ? `${user.firstName} ${user.lastName}` : `User ID: ${userId}`;
+	};
+
+	const getResourceName = (resourceId: number) => {
+		if (!departmentResources || departmentResources.length === 0) {
+			return `Resource ID: ${resourceId}`;
+		}
+		const resource = departmentResources.find(r => r.resourceId === resourceId);
+		return resource ? resource.name : `Resource ID: ${resourceId}`;
+	};
+
 	return (
 		<div className="relative">
-			<div className="flex items-start space-x-6 mb-4">
+			<div className="flex items-start justify-between mb-6">
 				<div className="flex-1">
-					<h2 className="text-2xl font-semibold pr-40">{responseUnit.unitName}</h2>
-					<div className="mt-4 text-gray-700">
-						<p>
-							<strong>Unit Type:</strong> {responseUnit.unitType}
-						</p>
-						<p>
-							<strong>Status:</strong> {responseUnit.status}
-						</p>
-						<p>
-							<strong>Default Personnel Count:</strong> {defaultPersonnelCount}
-						</p>
-						<p>
-							<strong>Default Resource Count:</strong> {defaultResourceCount}
-						</p>
-						<p>
-							<strong>Current Personnel Count:</strong> {currentPersonnelCount}
-						</p>
-						<p>
-							<strong>Current Resource Count:</strong> {currentResourceCount}
-						</p>
-						{responseUnit.latitude && responseUnit.longitude && (
-							<div>
-								<p>
-									<strong>Latitude:</strong> {responseUnit.latitude}
-								</p>
-								<p>
-									<strong>Longitude:</strong> {responseUnit.longitude}
-								</p>
-							</div>
-						)}
+					<h2 className="text-3xl font-bold text-gray-900 mb-4">{responseUnit.unitName}</h2>
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
+						<div className="space-y-2">
+							<p><strong>Unit Type:</strong> {responseUnit.unitType}</p>
+							<p><strong>Status:</strong> {responseUnit.status}</p>
+							<p><strong>Default Personnel:</strong> {defaultPersonnelCount}</p>
+							<p><strong>Default Resources:</strong> {defaultResourceCount}</p>
+						</div>
+						<div className="space-y-2">
+							<p><strong>Current Personnel:</strong> {currentPersonnelCount}</p>
+							<p><strong>Current Resources:</strong> {currentResourceCount}</p>
+							{responseUnit.latitude && responseUnit.longitude && (
+								<>
+									<p><strong>Latitude:</strong> {responseUnit.latitude}</p>
+									<p><strong>Longitude:</strong> {responseUnit.longitude}</p>
+								</>
+							)}
+						</div>
 					</div>
 				</div>
 			</div>
 
 			{/* Default Resources */}
 			{responseUnit.defaultResources && responseUnit.defaultResources.length > 0 && (
-				<div className="mb-6 bg-gray-50 rounded-lg p-4">
-					<h3 className="text-lg font-medium mb-2">Default Resources</h3>
-					<p className="text-sm text-gray-600 mb-4">Resources assigned by default to this unit</p>
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+				<div className="mb-6">
+					<h3 className="text-lg font-semibold text-gray-900 mb-4">Default Resources</h3>
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 						{responseUnit.defaultResources.map(resource => (
-							<div key={resource.resourceId} className="p-3 bg-white border rounded-lg">
-								<div className="font-medium">Resource ID: {resource.resourceId}</div>
-								<div className="text-sm text-gray-600">Quantity: {resource.quantity}</div>
-								{resource.isPrimary && (
-									<div className="text-sm text-blue-600 font-medium">Primary Resource</div>
-								)}
+							<div key={resource.resourceId} className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
+								<h4 className="text-sm font-medium text-gray-900 mb-2">{getResourceName(resource.resourceId)}</h4>
+								<div className="space-y-1 text-sm text-gray-600">
+									<p><strong>Quantity:</strong> {resource.quantity}</p>
+									{resource.isPrimary && (
+										<p className="text-blue-600 font-medium">Primary Resource</p>
+									)}
+								</div>
 							</div>
 						))}
 					</div>
@@ -251,17 +275,20 @@ function ResponseUnitDetailsView({
 
 			{/* Default Personnel */}
 			{responseUnit.defaultPersonnel && responseUnit.defaultPersonnel.length > 0 && (
-				<div className="mb-6 bg-gray-50 rounded-lg p-4">
-					<h3 className="text-lg font-medium mb-2">Default Personnel</h3>
-					<p className="text-sm text-gray-600 mb-4">Personnel assigned by default to this unit</p>
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-						{responseUnit.defaultPersonnel.map(person => (
-							<div key={person.userId} className="p-3 bg-white border rounded-lg">
-								<div className="font-medium">User ID: {person.userId}</div>
-								<div className="text-sm text-gray-600">Specialization: {person.specialization}</div>
-								{person.isRequired && (
-									<div className="text-sm text-red-600 font-medium">Required</div>
-								)}
+				<div className="mb-6">
+					<h3 className="text-lg font-semibold text-gray-900 mb-4">Default Personnel</h3>
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+						{responseUnit.defaultPersonnel.map((person, index) => (
+							<div key={person.userId || index} className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
+								<h4 className="text-sm font-medium text-gray-900 mb-2">
+									{person.userId ? getUserName(person.userId) : 'Open Position'}
+								</h4>
+								<div className="space-y-1 text-sm text-gray-600">
+									<p><strong>Specialization:</strong> {person.specialization}</p>
+									{person.isRequired && (
+										<p className="text-red-600 font-medium">Required</p>
+									)}
+								</div>
 							</div>
 						))}
 					</div>
@@ -270,17 +297,18 @@ function ResponseUnitDetailsView({
 
 			{/* Current Resources (if different from defaults) */}
 			{responseUnit.currentResources && responseUnit.currentResources.length > 0 && (
-				<div className="mb-6 bg-blue-50 rounded-lg p-4">
-					<h3 className="text-lg font-medium mb-2">Current Resources</h3>
-					<p className="text-sm text-gray-600 mb-4">Resources currently assigned to this unit</p>
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+				<div className="mb-6">
+					<h3 className="text-lg font-semibold text-gray-900 mb-4">Current Resources</h3>
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 						{responseUnit.currentResources.map(resource => (
-							<div key={resource.resourceId} className="p-3 bg-white border rounded-lg">
-								<div className="font-medium">Resource ID: {resource.resourceId}</div>
-								<div className="text-sm text-gray-600">Quantity: {resource.quantity}</div>
-								{resource.isPrimary && (
-									<div className="text-sm text-blue-600 font-medium">Primary Resource</div>
-								)}
+							<div key={resource.resourceId} className="bg-blue-50 rounded-lg shadow-md p-4 border border-blue-200">
+								<h4 className="text-sm font-medium text-gray-900 mb-2">{getResourceName(resource.resourceId)}</h4>
+								<div className="space-y-1 text-sm text-gray-600">
+									<p><strong>Quantity:</strong> {resource.quantity}</p>
+									{resource.isPrimary && (
+										<p className="text-blue-600 font-medium">Primary Resource</p>
+									)}
+								</div>
 							</div>
 						))}
 					</div>
@@ -289,14 +317,15 @@ function ResponseUnitDetailsView({
 
 			{/* Current Personnel (if different from defaults) */}
 			{responseUnit.currentPersonnel && responseUnit.currentPersonnel.length > 0 && (
-				<div className="mb-6 bg-blue-50 rounded-lg p-4">
-					<h3 className="text-lg font-medium mb-2">Current Personnel</h3>
-					<p className="text-sm text-gray-600 mb-4">Personnel currently assigned to this unit</p>
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+				<div className="mb-6">
+					<h3 className="text-lg font-semibold text-gray-900 mb-4">Current Personnel</h3>
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 						{responseUnit.currentPersonnel.map(person => (
-							<div key={person.userId} className="p-3 bg-white border rounded-lg">
-								<div className="font-medium">User ID: {person.userId}</div>
-								<div className="text-sm text-gray-600">Specialization: {person.specialization}</div>
+							<div key={person.userId} className="bg-blue-50 rounded-lg shadow-md p-4 border border-blue-200">
+								<h4 className="text-sm font-medium text-gray-900 mb-2">{getUserName(person.userId)}</h4>
+								<div className="space-y-1 text-sm text-gray-600">
+									<p><strong>Specialization:</strong> {person.specialization}</p>
+								</div>
 							</div>
 						))}
 					</div>
