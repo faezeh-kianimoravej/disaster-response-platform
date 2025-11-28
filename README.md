@@ -33,15 +33,14 @@ Latest stable release: [Releases page](https://gitlab.com/saxionnl/master-ict-se
 [![Backend coverage](https://gitlab.com/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/-/jobs/artifacts/main/raw/backend-app/badges/coverage.svg?job=test:backend-app)](https://gitlab.com/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/-/pipelines)
 
 [![Backend tests](https://gitlab.com/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/-/jobs/artifacts/main/raw/backend-app/badges/tests.svg?job=test:backend-app)](https://gitlab.com/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/-/pipelines)
-
 ---
 
 ## 📦 User Deployment Guide — Run a Release
 
 Run DRCCS using pre-built images from Docker Hub.
 
-1) Install Docker Desktop and Docker Compose
-2) From the `release/` directory:
+1. Install Docker Desktop and Docker Compose
+2. From the `release/` directory:
 
 ```powershell
 cd release

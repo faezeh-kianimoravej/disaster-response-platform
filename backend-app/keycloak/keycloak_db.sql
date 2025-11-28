@@ -2,17 +2,9 @@
 -- PostgreSQL database dump
 --
 
-\restrict 8o2dj2mo7CVqGkvSBdDDwjG1GVWTjUqPUFMcVaAC5uQo7hbteU4UfqK3Hls4eyq
-
--- Dumped from database version 16.10 (Debian 16.10-1.pgdg13+1)
--- Dumped by pg_dump version 18.0
-
--- Started on 2025-11-28 13:36:46
-
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
-SET transaction_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
@@ -3594,17 +3586,15 @@ COPY public.realm_supported_locales (realm_id, value) FROM stdin;
 -- Data for Name: redirect_uris; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.redirect_uris (client_id, value) FROM stdin;
-9c71c67c-24e8-45c3-aa0d-4df498facac4	/realms/master/account/*
-84302485-9b73-4186-9e5b-0da15972c7e6	/realms/master/account/*
-d455a894-4eb3-4584-9c3a-8c5ed7ed2aa3	/admin/master/console/*
-7bec06e5-f1db-4d81-99a4-df603a9d007c	/realms/DRCCS/account/*
-d30bc5e2-7ce6-4932-bf87-1eb8d95b036b	/realms/DRCCS/account/*
-d7c11793-e6cd-405c-9da1-b8d8ba057a83	/admin/DRCCS/console/*
-e3652182-d1bb-4f94-a8a0-edc307e0e6e4	http://127.0.0.1:3000/*
-e3652182-d1bb-4f94-a8a0-edc307e0e6e4	http://localhost:3000/*
-\.
-
+INSERT INTO public.redirect_uris (client_id, value) VALUES 
+('9c71c67c-24e8-45c3-aa0d-4df498facac4', '/realms/master/account/*'),
+('84302485-9b73-4186-9e5b-0da15972c7e6', '/realms/master/account/*'),
+('d455a894-4eb3-4584-9c3a-8c5ed7ed2aa3', '/admin/master/console/*'),
+('7bec06e5-f1db-4d81-99a4-df603a9d007c', '/realms/DRCCS/account/*'),
+('d30bc5e2-7ce6-4932-bf87-1eb8d95b036b', '/realms/DRCCS/account/*'),
+('d7c11793-e6cd-405c-9da1-b8d8ba057a83', '/admin/DRCCS/console/*'),
+('e3652182-d1bb-4f94-a8a0-edc307e0e6e4', 'http://127.0.0.1:3000/*'),
+('e3652182-d1bb-4f94-a8a0-edc307e0e6e4', 'http://localhost:3000/*');
 
 --
 -- TOC entry 4239 (class 0 OID 17482)
@@ -6189,13 +6179,4 @@ ALTER TABLE ONLY public.policy_config
 
 ALTER TABLE ONLY public.identity_provider_config
     ADD CONSTRAINT fkdc4897cf864c4e43 FOREIGN KEY (identity_provider_id) REFERENCES public.identity_provider(internal_id);
-
-
--- Completed on 2025-11-28 13:36:46
-
---
--- PostgreSQL database dump complete
---
-
-\unrestrict 8o2dj2mo7CVqGkvSBdDDwjG1GVWTjUqPUFMcVaAC5uQo7hbteU4UfqK3Hls4eyq
 

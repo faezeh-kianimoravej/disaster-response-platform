@@ -6,6 +6,7 @@ import {
 	updateUser,
 	removeUser,
 	getUser,
+	getUserByEmail,
 	listUsers,
 	getUsersByRegion,
 	getUsersByMunicipality,
@@ -206,6 +207,40 @@ export function useUser(id?: number | string, options?: { enabled?: boolean }) {
 		return queryClient.fetchQuery({
 			queryKey: USER_QUERY_KEYS.item(uid),
 			queryFn: () => getUser(uid),
+		});
+	};
+
+	return useMemo(
+		() => ({
+			user: data ?? null,
+			loading: isLoading,
+			error: error?.message ?? null,
+			refetch,
+			fetchUser,
+		}),
+		[data, isLoading, error, refetch]
+	);
+}
+
+// Fetch user by email
+export function useUserByEmail(email?: string, options?: { enabled?: boolean }) {
+	const queryClient = useQueryClient();
+	const enabled = (options?.enabled ?? !!email) && !!email;
+	const singleQuery = useQuery<User | undefined, Error>({
+		queryKey: email ? USER_QUERY_KEYS.byEmail(email) : ['user', 'none'],
+		queryFn: () => getUserByEmail(email as string),
+		enabled,
+		staleTime: 1000 * 60 * 5,
+	});
+
+	const { data, isLoading, error, refetch } = singleQuery;
+
+	const fetchUser = async (emailArg?: string) => {
+		const e = emailArg ?? email;
+		if (!e) return undefined;
+		return queryClient.fetchQuery({
+			queryKey: USER_QUERY_KEYS.byEmail(e),
+			queryFn: () => getUserByEmail(e),
 		});
 	};
 

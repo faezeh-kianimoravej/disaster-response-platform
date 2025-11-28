@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
 import {
 	useIsUserLoggedIn,
 	useUserHasAnyRole,
@@ -12,8 +11,7 @@ import {
 import NotAuthorizedPage from '@/pages/NotAuthorizedPage';
 import LoadingPanel from '@/components/ui/LoadingPanel';
 import { Role, RoleType } from '@/types/role';
-import { routes } from '@/routes';
-import keycloak from '@/config/keycloak';
+import { useKeycloak } from '@/context/KeycloakProvider';
 
 type Props = AuthGuardOptions & {
 	children: ReactNode;
@@ -44,7 +42,8 @@ export type AuthGuardOptions = {
  */
 export default function AuthGuard({ children, ...opts }: Props) {
 	const isLoggedIn = useIsUserLoggedIn();
-	const location = useLocation();
+	const { initialized: keycloakInitialized, isAuthenticated: keycloakAuthenticated } =
+		useKeycloak();
 
 	const required = opts.requireRoles ?? [];
 	const hasAnyRole = useUserHasAnyRole(required);
@@ -54,9 +53,28 @@ export default function AuthGuard({ children, ...opts }: Props) {
 	const departmentCheck = useUserHasAccessToDepartment(opts.requireAccessToDepartment);
 	const resourceCheck = useUserHasAccessToResource(opts.requireAccessToResource);
 
+	if (!keycloakInitialized) {
+		return (<LoadingPanel text="Authenticating" />) as JSX.Element;
+	}
+
 	if (!isLoggedIn) {
-		keycloak.login({ redirectUri: window.location.href });
-		return null;
+		if (keycloakAuthenticated) {
+			return (<LoadingPanel text="Authenticating" />) as JSX.Element;
+		}
+
+		try {
+			const params = new URLSearchParams(window.location.search);
+			const isKcCallback =
+				params.has('code') ||
+				params.has('error') ||
+				params.has('state') ||
+				params.has('session_state');
+			if (isKcCallback) {
+				return (<LoadingPanel text="Authenticating" />) as JSX.Element;
+			}
+		} catch {
+			return (<NotAuthorizedPage />) as JSX.Element;
+		}
 	}
 
 	const isLoading = municipalityCheck.loading || departmentCheck.loading || resourceCheck.loading;

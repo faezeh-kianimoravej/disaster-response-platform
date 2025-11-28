@@ -8,15 +8,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.PostConstruct;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl.saxion.disaster.user_service.dto.LoginRequestDto;
-import nl.saxion.disaster.user_service.dto.LoginResponseDto;
 import nl.saxion.disaster.user_service.dto.UserBasicDTO;
 import nl.saxion.disaster.user_service.dto.UserRequestDto;
-import nl.saxion.disaster.user_service.dto.UserResponseDto;
-import nl.saxion.disaster.user_service.service.contract.UserAuthenticationService;
+import nl.saxion.disaster.user_service.dto.UserResponseDto; 
 import nl.saxion.disaster.user_service.service.contract.UserService;
 import nl.saxion.disaster.user_service.validation.OnCreate;
 import nl.saxion.disaster.user_service.validation.OnUpdate;
@@ -38,7 +34,6 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
-    private final UserAuthenticationService userAuthenticationService;
 
     @PostConstruct
     public void init() {
@@ -155,6 +150,39 @@ public class UserController {
                 });
 
         return response;
+    }
+
+    // --------------------------------------------------------------------------------------------
+    // Get User by Email
+    // --------------------------------------------------------------------------------------------
+    @GetMapping("/by-email/{email}")
+    @Operation(
+                    summary = "Get user by email",
+                    description = "Fetches details of a single user by their email address."
+    )
+    @ApiResponses({
+                    @ApiResponse(responseCode = "200", description = "User found successfully",
+                                    content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
+                    @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
+    })
+    public ResponseEntity<UserResponseDto> getUserByEmail(
+                    @Parameter(description = "User email address", example = "user@example.com")
+                    @PathVariable String email) {
+
+            long start = System.currentTimeMillis();
+            log.debug("[GET USER BY EMAIL] Request received for email={}", email);
+
+            var response = userService.getUserByEmail(email)
+                            .map(user -> {
+                                    log.info("[GET USER BY EMAIL] Found user with email={} ({} ms)", email, System.currentTimeMillis() - start);
+                                    return ResponseEntity.ok(user);
+                            })
+                            .orElseGet(() -> {
+                                    log.warn("[GET USER BY EMAIL] User with email={} not found ({} ms)", email, System.currentTimeMillis() - start);
+                                    return ResponseEntity.notFound().build();
+                            });
+
+            return response;
     }
 
     // --------------------------------------------------------------------------------------------
@@ -283,34 +311,5 @@ public class UserController {
         log.info("[DELETE USER] User ID={} soft deleted successfully ({} ms).", id, duration);
         return ResponseEntity.noContent().build();
     }
-
-    // --------------------------------------------------------------------------------------------
-    // Login
-    // --------------------------------------------------------------------------------------------
-
-    /**
-     * Authenticates a user and returns a JWT token along with assigned roles.
-     *
-     * @param request contains the user's email and password
-     * @return a response containing the JWT token and role details
-     */
-    @Operation(
-            summary = "Authenticate user and generate JWT token",
-            description = "Validates user credentials (email and password). " +
-                    "If valid, returns a JWT token and user roles to be used for authorized requests."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Login successful",
-                    content = @Content(schema = @Schema(implementation = LoginResponseDto.class))),
-            @ApiResponse(responseCode = "401", description = "Invalid email or password",
-                    content = @Content),
-            @ApiResponse(responseCode = "500", description = "Internal server error",
-                    content = @Content)
-    })
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponseDto> login(
-            @Valid @RequestBody LoginRequestDto request
-    ) {
-        return ResponseEntity.ok(userAuthenticationService.login(request));
-    }
+    // Authentication is handled by Keycloak; no local login endpoint required.
 }

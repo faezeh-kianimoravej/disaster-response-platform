@@ -91,6 +91,18 @@ public class UserServiceImpl implements UserService {
     }
 
     // --------------------------------------------------------------------------------------------
+    // GET USER BY EMAIL
+    // --------------------------------------------------------------------------------------------
+    @Override
+    public Optional<UserResponseDto> getUserByEmail(String email) {
+        log.info("Fetching user by email: {}", email);
+
+        return userRepository.findUserByEmail(email)
+                .filter(u -> !u.isDeleted())
+                .flatMap(userResponseMapper::toDto);
+    }
+
+    // --------------------------------------------------------------------------------------------
     // UPDATE USER
     // --------------------------------------------------------------------------------------------
     @Override

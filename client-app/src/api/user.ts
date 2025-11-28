@@ -165,6 +165,12 @@ export async function getUser(userId: string | number): Promise<User> {
 	return fromApiUser(data);
 }
 
+export async function getUserByEmail(email: string): Promise<User> {
+	const encoded = encodeURIComponent(email);
+	const data = await userApi.get<ApiUser>(`/by-email/${encoded}`);
+	return fromApiUser(data);
+}
+
 export async function createUser(formData: UserCreateFormData): Promise<User> {
 	const requestData = toApiUserRequest(formData);
 	const created = await userApi.post<ApiUser>('', requestData);

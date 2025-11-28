@@ -1,14 +1,13 @@
 package nl.saxion.disaster.user_service.configuration;
 
 import lombok.RequiredArgsConstructor;
-import nl.saxion.disaster.user_service.security.JwtFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * Main Spring Security configuration.
@@ -20,9 +19,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
-
-    // Custom JWT filter that validates tokens for incoming requests
-    private final JwtFilter jwtFilter;
 
     /**
      * Password encoder used for hashing and verifying user passwords.
@@ -36,8 +32,9 @@ public class SecurityConfig {
     /**
      * Defines the main security filter chain.
      * - Disables CSRF (since we’re using stateless REST APIs)
-     * - Allows /api/users/login and /api/users/register without authentication
-     * - Protects all other endpoints with JWT authentication
+     * - Allows user creation (`POST /api/users`) without authentication
+     * - Uses OAuth2 Resource Server (JWT) to validate Keycloak tokens for protected
+     * endpoints
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -47,13 +44,23 @@ public class SecurityConfig {
 
                 // Define which requests are public and which require authentication
                 .authorizeHttpRequests(auth -> auth
+<<<<<<< ours
                         .requestMatchers("/api/users/login", "/api/users/register").permitAll()  // public endpoints
                         .requestMatchers("/api/users/internal/**").permitAll()  // Allow internal service-to-service calls
                         .anyRequest().authenticated()  // all other requests require a valid token
+||||||| ancestor
+                        .requestMatchers("/api/users/login", "/api/users/register").permitAll()  // public endpoints
+                        .anyRequest().authenticated()  // all other requests require a valid token
+=======
+                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll() // allow creating users
+                                                                                    // (registration)
+                        .anyRequest().authenticated() // all other requests require a valid token
+>>>>>>> theirs
                 )
 
-                // Add our custom JWT filter before the UsernamePasswordAuthenticationFilter
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                // Configure OAuth2 Resource Server to validate incoming Keycloak JWTs
+                .oauth2ResourceServer(
+                        oauth2 -> oauth2.jwt(org.springframework.security.config.Customizer.withDefaults()));
 
         // Build and return the configured security filter chain
         return http.build();

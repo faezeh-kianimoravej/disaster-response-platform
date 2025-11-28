@@ -4,7 +4,7 @@ import { routes } from '@/routes';
 import Logo from '@/components/ui/Logo';
 import Button from '@/components/ui/Button';
 import { REGION_ROLES, MUNICIPALITY_ROLES, DEPARTMENT_ROLES, type RoleType } from '@/types/role';
-import keycloak from '@/config/keycloak';
+import { useKeycloak } from '@/context/KeycloakProvider';
 
 function getDefaultLandingPage(userRoles: RoleType[]): string {
 	const hasRegionRole = REGION_ROLES.some(role => userRoles.includes(role));
@@ -21,7 +21,7 @@ function getDefaultLandingPage(userRoles: RoleType[]): string {
 export default function HomePage() {
 	const auth = useAuth();
 	const navigate = useNavigate();
-	const isLoggedIn = auth?.isLoggedIn && auth?.user;
+	const { isAuthenticated, login } = useKeycloak();
 
 	const userRoles = auth?.user?.roles?.map(r => r.roleType) ?? [];
 	const defaultPage = getDefaultLandingPage(userRoles);
@@ -51,7 +51,7 @@ export default function HomePage() {
 					</p>
 
 					{/* Login link or personalized message */}
-					{isLoggedIn ? (
+					{isAuthenticated ? (
 						<div className="space-y-4">
 							<div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
 								<p className="text-xl font-semibold text-blue-900 mb-2">
@@ -68,10 +68,7 @@ export default function HomePage() {
 						</div>
 					) : (
 						<div className="space-y-4">
-							<Button
-								onClick={() => keycloak.login()}
-								className="font-semibold px-8 py-3 shadow-md hover:shadow-lg"
-							>
+							<Button onClick={login} className="font-semibold px-8 py-3 shadow-md hover:shadow-lg">
 								Sign In to Continue
 							</Button>
 							<p className="text-sm text-gray-500">

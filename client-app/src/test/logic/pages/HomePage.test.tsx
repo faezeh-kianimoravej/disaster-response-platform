@@ -13,17 +13,6 @@ vi.mock('react-router-dom', async () => {
 });
 
 describe('HomePage', () => {
-	it('navigates to login when sign in button is clicked', () => {
-		renderWithProviders(<HomePage />, {
-			auth: { isLoggedIn: false, user: null, token: undefined },
-		});
-
-		const signInBtn = screen.getByRole('button', { name: /sign in/i });
-		fireEvent.click(signInBtn);
-
-		expect(mockNavigate).toHaveBeenCalledWith('/login');
-	});
-
 	it('navigates to appropriate dashboard based on user role', () => {
 		renderWithProviders(<HomePage />, {
 			auth: {

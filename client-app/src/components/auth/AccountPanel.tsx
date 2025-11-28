@@ -1,17 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { User as UserIcon, X, LogOut } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { useLogin } from '@/hooks/useLogin';
-import { routes } from '@/routes';
-import keycloak from '@/config/keycloak';
+import { useKeycloak } from '@/context/KeycloakProvider';
 
 export default function AccountPanel() {
 	const auth = useAuth();
-	const { logout } = useLogin();
-	const navigate = useNavigate();
 	const [isOpen, setIsOpen] = useState(false);
 	const panelRef = useRef<HTMLDivElement | null>(null);
+	const { isAuthenticated, login, logout } = useKeycloak();
 
 	useEffect(() => {
 		function handleClickOutside(e: MouseEvent) {
@@ -29,7 +25,6 @@ export default function AccountPanel() {
 	function handleLogout() {
 		logout();
 		setIsOpen(false);
-		keycloak.login();
 	}
 
 	return (
@@ -85,7 +80,7 @@ export default function AccountPanel() {
 						)}
 
 						<div className="flex justify-between pt-2">
-							{user ? (
+							{isAuthenticated ? (
 								<button
 									onClick={handleLogout}
 									className="flex items-center gap-2 px-3 py-1.5 text-sm text-white bg-red-600 hover:bg-red-700 rounded"
@@ -96,9 +91,12 @@ export default function AccountPanel() {
 							) : (
 								<div className="flex items-center gap-2">
 									<div className="text-sm text-gray-500">Please login</div>
-									<a href="/login" className="text-sm text-blue-600 hover:underline">
+									<button
+										onClick={login}
+										className="text-sm text-blue-600 hover:underline px-2 py-1 rounded border border-blue-200 bg-blue-50"
+									>
 										Login
-									</a>
+									</button>
 								</div>
 							)}
 							<button
