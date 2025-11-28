@@ -60,9 +60,8 @@ export default function ResponseUnitForm({
 			departmentId: initialData?.departmentId ?? departmentId,
 			selectedResources: initialData?.defaultResources?.map(r => r.resourceId) ?? [],
 			selectedPersonnel:
-				initialData?.defaultPersonnel
-					?.map(p => p.userId)
-					.filter((id): id is number => typeof id === 'number') ?? [],
+				initialData?.defaultPersonnel?.filter(p => p.userId !== undefined)?.map(p => p.userId!) ??
+				[],
 		}),
 		[initialData, departmentId]
 	);
@@ -76,21 +75,25 @@ export default function ResponseUnitForm({
 
 	async function handleSubmit(values: FormData) {
 		try {
-			// Transform form data to API format
+			// Transform form data to API format - matching Swagger definition exactly
 			const payload: ResponseUnitFormData = {
 				unitName: values.unitName,
-				unitType: values.unitType,
 				departmentId: values.departmentId,
+				unitType: values.unitType,
 				defaultResources: values.selectedResources.map(resourceId => ({
 					resourceId,
 					quantity: 1,
-					isPrimary: false,
+					isPrimary: true,
 				})),
-				defaultPersonnel: values.selectedPersonnel.map(userId => ({
-					userId,
-					specialization: 'driver' as const,
-					isRequired: true,
-				})),
+				defaultPersonnel: values.selectedPersonnel.map(userId => {
+					const user = users.find(u => u.userId === userId);
+					const specialization = user?.responderProfile?.primarySpecialization || 'FIREFIGHTER';
+					return {
+						userId,
+						specialization,
+						isRequired: true,
+					};
+				}),
 			};
 
 			if (isNewResponseUnit) {
@@ -122,80 +125,89 @@ export default function ResponseUnitForm({
 
 	return (
 		<FormShell methods={methods} onSubmit={handleSubmit} footer={{ onCancel }}>
-			<div className="space-y-6">
-				<RHFInput name="unitName" label="Unit Name" placeholder="Enter unit name" required />
+			<div>
+				<h2 className="text-2xl font-semibold mb-4">
+					{isNewResponseUnit ? 'Create New Response Unit' : 'Edit Response Unit'}
+				</h2>
 
-				<RHFInput
-					name="unitType"
-					label="Unit Type"
-					type="select"
-					options={RESPONSE_UNIT_TYPES.map(type => ({ value: type, label: type }))}
-					required
-				/>
+				<div className="space-y-3">
+					<RHFInput name="unitName" label="Unit Name" placeholder="Enter unit name" required />
 
-				{/* Resources Section */}
-				<div className="bg-white border rounded-lg p-4">
-					<h3 className="text-lg font-medium mb-2">Default Resources</h3>
-					<p className="text-sm text-gray-600 mb-4">
-						Select resources that should be automatically assigned to this response unit.
-					</p>
+					<RHFInput
+						name="unitType"
+						label="Unit Type"
+						type="select"
+						options={RESPONSE_UNIT_TYPES.map(type => ({ value: type, label: type }))}
+						required
+					/>
+
+					{/* Resources Section */}
 					<div className="space-y-2">
-						{resources.map((resource: Resource) => (
-							<label key={resource.resourceId} className="flex items-center space-x-2">
-								<input
-									type="checkbox"
-									className="rounded border-gray-300"
-									checked={methods.watch('selectedResources').includes(resource.resourceId)}
-									onChange={e => {
-										const current = methods.getValues('selectedResources');
-										if (e.target.checked) {
-											methods.setValue('selectedResources', [...current, resource.resourceId]);
-										} else {
-											methods.setValue(
-												'selectedResources',
-												current.filter(id => id !== resource.resourceId)
-											);
-										}
-									}}
-								/>
-								<span className="text-sm">
-									{resource.name} ({resource.resourceType})
-								</span>
-							</label>
-						))}
+						<label className="block text-sm font-medium text-gray-700">Default Resources</label>
+						<p className="text-sm text-gray-600">
+							Select resources that should be automatically assigned to this response unit.
+						</p>
+						<div className="space-y-2 max-h-40 overflow-y-auto border border-gray-200 rounded-md p-3">
+							{resources.map((resource: Resource) => (
+								<label key={resource.resourceId} className="flex items-center space-x-2">
+									<input
+										type="checkbox"
+										className="rounded border-gray-300"
+										checked={methods.watch('selectedResources').includes(resource.resourceId)}
+										onChange={e => {
+											const current = methods.getValues('selectedResources');
+											if (e.target.checked) {
+												methods.setValue('selectedResources', [...current, resource.resourceId]);
+											} else {
+												methods.setValue(
+													'selectedResources',
+													current.filter(id => id !== resource.resourceId)
+												);
+											}
+										}}
+									/>
+									<span className="text-sm">
+										{resource.name} ({resource.resourceType})
+									</span>
+								</label>
+							))}
+						</div>
 					</div>
-				</div>
 
-				{/* Personnel Section */}
-				<div className="bg-white border rounded-lg p-4">
-					<h3 className="text-lg font-medium mb-2">Default Personnel</h3>
-					<p className="text-sm text-gray-600 mb-4">
-						Select personnel that should be automatically assigned to this response unit.
-					</p>
+					{/* Personnel Section */}
 					<div className="space-y-2">
-						{users.map((user: User) => (
-							<label key={user.userId} className="flex items-center space-x-2">
-								<input
-									type="checkbox"
-									className="rounded border-gray-300"
-									checked={methods.watch('selectedPersonnel').includes(user.userId)}
-									onChange={e => {
-										const current = methods.getValues('selectedPersonnel');
-										if (e.target.checked) {
-											methods.setValue('selectedPersonnel', [...current, user.userId]);
-										} else {
-											methods.setValue(
-												'selectedPersonnel',
-												current.filter(id => id !== user.userId)
-											);
-										}
-									}}
-								/>
-								<span className="text-sm">
-									{user.firstName} {user.lastName} ({user.roles.map(r => r.roleType).join(', ')})
-								</span>
-							</label>
-						))}
+						<label className="block text-sm font-medium text-gray-700">Default Personnel</label>
+						<p className="text-sm text-gray-600">
+							Select personnel that should be automatically assigned to this response unit.
+						</p>
+						<div className="space-y-2 max-h-40 overflow-y-auto border border-gray-200 rounded-md p-3">
+							{users
+								.filter(user => user.responderProfile?.primarySpecialization)
+								.map((user: User) => (
+									<label key={user.userId} className="flex items-center space-x-2">
+										<input
+											type="checkbox"
+											className="rounded border-gray-300"
+											checked={methods.watch('selectedPersonnel').includes(user.userId)}
+											onChange={e => {
+												const current = methods.getValues('selectedPersonnel');
+												if (e.target.checked) {
+													methods.setValue('selectedPersonnel', [...current, user.userId]);
+												} else {
+													methods.setValue(
+														'selectedPersonnel',
+														current.filter(id => id !== user.userId)
+													);
+												}
+											}}
+										/>
+										<span className="text-sm">
+											{user.firstName} {user.lastName} (Responder -{' '}
+											{user.responderProfile?.primarySpecialization?.toLowerCase()})
+										</span>
+									</label>
+								))}
+						</div>
 					</div>
 				</div>
 			</div>

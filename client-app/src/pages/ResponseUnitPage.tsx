@@ -136,48 +136,44 @@ function ResponseUnitPageContent({
 	return (
 		<div className="min-h-screen bg-gray-50 py-8">
 			<div className="max-w-4xl mx-auto px-4">
-				<div className="bg-white rounded-lg shadow-md p-6">
-					{loading && <LoadingPanel text="Loading response unit..." />}
+				{loading && <LoadingPanel text="Loading response unit..." />}
 
-					{error && !loading && (
-						<ErrorRetryBlock message="Unable to load response unit." onRetry={() => refetch()} />
-					)}
+				{error && !loading && (
+					<ErrorRetryBlock message="Unable to load response unit." onRetry={() => refetch()} />
+				)}
 
-					{!loading && !error && (
-						<div className="flex items-start space-x-6">
-							<div className="flex-1">
-								{!editing && responseUnit ? (
-									<ResponseUnitView
-										responseUnit={responseUnit}
-										onEdit={() => setEditing(true)}
-										onDelete={handleDelete}
-										onBack={() =>
-											departmentIdForActions !== undefined
-												? navigate(routes.resources(departmentIdForActions))
-												: navigate(routes.resources())
-										}
-									/>
-								) : (
-									<ResponseUnitForm
-										{...(responseUnit && { initialData: responseUnit })}
-										departmentId={Number(departmentIdForActions ?? -1)}
-										onCancel={handleCancel}
-										onSaved={() => {
-											if (isEditRoute && responseUnit) {
-												// For edit routes, go back to details page after save
-												navigate(routes.responseUnit(responseUnit.unitId));
-											} else {
-												// For other cases, switch to view mode
-												setEditing(false);
-											}
-										}}
-										onRefetch={() => refetch()}
-									/>
-								)}
-							</div>
-						</div>
-					)}
-				</div>
+				{!loading && !error && (
+					<div className="bg-white rounded-lg shadow-md p-6">
+						{!editing && responseUnit ? (
+							<ResponseUnitView
+								responseUnit={responseUnit}
+								onEdit={() => setEditing(true)}
+								onDelete={handleDelete}
+								onBack={() =>
+									departmentIdForActions !== undefined
+										? navigate(routes.resources(departmentIdForActions))
+										: navigate(routes.resources())
+								}
+							/>
+						) : (
+							<ResponseUnitForm
+								{...(responseUnit && { initialData: responseUnit })}
+								departmentId={Number(departmentIdForActions ?? -1)}
+								onCancel={handleCancel}
+								onSaved={() => {
+									if (isEditRoute && responseUnit) {
+										// For edit routes, go back to details page after save
+										navigate(routes.responseUnit(responseUnit.unitId));
+									} else {
+										// For other cases, switch to view mode
+										setEditing(false);
+									}
+								}}
+								onRefetch={() => refetch()}
+							/>
+						)}
+					</div>
+				)}
 			</div>
 
 			<ConfirmModal

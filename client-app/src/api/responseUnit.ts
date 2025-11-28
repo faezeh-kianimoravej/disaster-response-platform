@@ -36,7 +36,7 @@ interface DefaultResourceDTO {
 }
 
 interface DefaultPersonnelSlotDTO {
-	userId?: number | string | undefined;
+	userId: number | string;
 	specialization: string | ResponderSpecialization;
 	isRequired: boolean;
 }
@@ -160,7 +160,7 @@ function mapFormToCreateDTO(
 		// Convert human-friendly unit type (e.g. "Rescue vehicle") to backend enum format (e.g. "RESCUE_VEHICLE")
 		unitType: toBackendUnitType(form.unitType as string) as unknown as ResponseUnitType,
 		defaultResources: form.defaultResources,
-		// Convert frontend specialization strings (e.g. "driver" or "team_leader") to backend enum format (e.g. "DRIVER")
+		// Ensure defaultPersonnel always has userId (non-optional) and proper specialization format
 		defaultPersonnel: (form.defaultPersonnel || []).map(p => ({
 			userId: p.userId,
 			specialization: (p.specialization as string)

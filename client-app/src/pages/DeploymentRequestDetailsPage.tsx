@@ -30,7 +30,6 @@ function DeploymentRequestDetailsPageContent({
 	const navigate = useNavigate();
 	const showSingleError = useSingleErrorToast();
 
-	debugger;
 	const {
 		data: deploymentRequest,
 		isLoading: loading,
@@ -85,7 +84,16 @@ function DeploymentRequestDetailsPageContent({
 				<div className="flex justify-between items-center mb-8">
 					<h1 className="text-3xl font-bold text-gray-900">Deployment Request Details</h1>
 					<div className="flex space-x-3">
-						<Button variant="outline" onClick={() => navigate(routes.dashboard())}>
+						<Button
+							variant="outline"
+							onClick={() =>
+								navigate(
+									deploymentRequest
+										? routes.resources(deploymentRequest.targetDepartmentId)
+										: routes.dashboard()
+								)
+							}
+						>
 							Back
 						</Button>
 					</div>
@@ -186,9 +194,6 @@ function DeploymentRequestDetailsPageContent({
 													<th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 														Status
 													</th>
-													<th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-														Assigned Unit
-													</th>
 												</tr>
 											</thead>
 											<tbody>
@@ -207,15 +212,6 @@ function DeploymentRequestDetailsPageContent({
 															{deploymentRequest.status.toUpperCase()}
 														</Badge>
 													</td>
-													<td className="px-4 py-3 text-sm text-gray-900">
-														{deploymentRequest.assignedUnitId ? (
-															<span className="font-medium">
-																Unit #{deploymentRequest.assignedUnitId}
-															</span>
-														) : (
-															<span className="text-gray-500 italic">Not assigned</span>
-														)}
-													</td>
 												</tr>
 											</tbody>
 										</table>
@@ -224,7 +220,7 @@ function DeploymentRequestDetailsPageContent({
 							</div>
 
 							{/* Assignment Panel - Show if status is not assigned */}
-							{deploymentRequest.status !== 'assigned' && (
+							{deploymentRequest.status?.toLowerCase() !== 'assigned' && (
 								<FillUnitAssignmentPanel
 									deploymentRequest={deploymentRequest}
 									onAssignmentSuccess={() => refetch()}

@@ -15,49 +15,64 @@ export default function ResponseUnitView({
 	onBack,
 }: ResponseUnitViewProps) {
 	return (
-		<div className="relative">
-			<div className="flex items-start space-x-6 mb-4">
-				<div className="flex-1">
-					<h2 className="text-2xl font-semibold pr-40">{responseUnit.unitName}</h2>
-					<div className="mt-4 text-gray-700">
-						<p>
-							<strong>Unit Type:</strong> {responseUnit.unitType}
-						</p>
-						<p>
-							<strong>Status:</strong> {responseUnit.status}
-						</p>
-						{responseUnit.currentDeploymentId && (
-							<p>
-								<strong>Current Deployment:</strong> {responseUnit.currentDeploymentId}
-							</p>
-						)}
-						{responseUnit.latitude && responseUnit.longitude && (
-							<div>
-								<p>
-									<strong>Latitude:</strong> {responseUnit.latitude}
-								</p>
-								<p>
-									<strong>Longitude:</strong> {responseUnit.longitude}
-								</p>
-							</div>
-						)}
+		<div>
+			<h2 className="text-2xl font-semibold mb-6">{responseUnit.unitName}</h2>
+
+			{/* Basic Information */}
+			<div className="space-y-3 mb-6">
+				<div className="grid grid-cols-2 gap-6">
+					<div>
+						<p className="text-sm font-medium text-gray-500">Unit Type</p>
+						<p className="text-gray-900">{responseUnit.unitType}</p>
+					</div>
+					<div>
+						<p className="text-sm font-medium text-gray-500">Status</p>
+						<p className="text-gray-900">{responseUnit.status}</p>
 					</div>
 				</div>
+
+				{responseUnit.currentDeploymentId && (
+					<div>
+						<p className="text-sm font-medium text-gray-500">Current Deployment</p>
+						<p className="text-gray-900">{responseUnit.currentDeploymentId}</p>
+					</div>
+				)}
+
+				{responseUnit.latitude && responseUnit.longitude && (
+					<div className="grid grid-cols-2 gap-6">
+						<div>
+							<p className="text-sm font-medium text-gray-500">Latitude</p>
+							<p className="text-gray-900">{responseUnit.latitude}</p>
+						</div>
+						<div>
+							<p className="text-sm font-medium text-gray-500">Longitude</p>
+							<p className="text-gray-900">{responseUnit.longitude}</p>
+						</div>
+					</div>
+				)}
 			</div>
 
 			{/* Default Resources */}
 			{responseUnit.defaultResources && responseUnit.defaultResources.length > 0 && (
-				<div className="mb-6 bg-gray-50 rounded-lg p-4">
-					<h3 className="text-lg font-medium mb-2">Default Resources</h3>
-					<p className="text-sm text-gray-600 mb-4">Resources assigned to this unit by default</p>
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+				<div className="mb-6">
+					<h3 className="text-lg font-semibold text-gray-900 mb-4">Default Resources</h3>
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 						{responseUnit.defaultResources.map(resource => (
-							<div key={resource.resourceId} className="p-3 bg-white border rounded-lg">
-								<div className="font-medium">Resource ID: {resource.resourceId}</div>
-								<div className="text-sm text-gray-600">Quantity: {resource.quantity}</div>
-								{resource.isPrimary && (
-									<div className="text-sm text-blue-600 font-medium">Primary Resource</div>
-								)}
+							<div
+								key={resource.resourceId}
+								className="bg-white rounded-lg shadow-md p-4 border border-gray-200"
+							>
+								<h4 className="text-sm font-medium text-gray-900 mb-2">
+									Resource ID: {resource.resourceId}
+								</h4>
+								<div className="space-y-1 text-sm text-gray-600">
+									<p>
+										<strong>Quantity:</strong> {resource.quantity}
+									</p>
+									{resource.isPrimary && (
+										<p className="text-blue-600 font-medium">Primary Resource</p>
+									)}
+								</div>
 							</div>
 						))}
 					</div>
@@ -66,21 +81,27 @@ export default function ResponseUnitView({
 
 			{/* Default Personnel */}
 			{responseUnit.defaultPersonnel && responseUnit.defaultPersonnel.length > 0 && (
-				<div className="mb-6 bg-gray-50 rounded-lg p-4">
-					<h3 className="text-lg font-medium mb-2">Default Personnel</h3>
-					<p className="text-sm text-gray-600 mb-4">Personnel assigned to this unit by default</p>
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+				<div className="mb-6">
+					<h3 className="text-lg font-semibold text-gray-900 mb-4">Default Personnel</h3>
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 						{responseUnit.defaultPersonnel.map((person, index) => (
-							<div key={person.userId || index} className="p-3 bg-white border rounded-lg">
+							<div
+								key={person.userId || index}
+								className="bg-white rounded-lg shadow-md p-4 border border-gray-200"
+							>
 								{person.userId ? (
-									<div className="font-medium">User ID: {person.userId}</div>
+									<h4 className="text-sm font-medium text-gray-900 mb-2">
+										User ID: {person.userId}
+									</h4>
 								) : (
-									<div className="font-medium text-gray-500">Open Position</div>
+									<h4 className="text-sm font-medium text-gray-500 mb-2">Open Position</h4>
 								)}
-								<div className="text-sm text-gray-600">Specialization: {person.specialization}</div>
-								{person.isRequired && (
-									<div className="text-sm text-red-600 font-medium">Required</div>
-								)}
+								<div className="space-y-1 text-sm text-gray-600">
+									<p>
+										<strong>Specialization:</strong> {person.specialization}
+									</p>
+									{person.isRequired && <p className="text-red-600 font-medium">Required</p>}
+								</div>
 							</div>
 						))}
 					</div>
@@ -89,17 +110,25 @@ export default function ResponseUnitView({
 
 			{/* Current Resources (if different from defaults) */}
 			{responseUnit.currentResources && responseUnit.currentResources.length > 0 && (
-				<div className="mb-6 bg-gray-50 rounded-lg p-4">
-					<h3 className="text-lg font-medium mb-2">Current Resources</h3>
-					<p className="text-sm text-gray-600 mb-4">Resources currently assigned to this unit</p>
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+				<div className="mb-6">
+					<h3 className="text-lg font-semibold text-gray-900 mb-4">Current Resources</h3>
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 						{responseUnit.currentResources.map(resource => (
-							<div key={resource.resourceId} className="p-3 bg-white border rounded-lg">
-								<div className="font-medium">Resource ID: {resource.resourceId}</div>
-								<div className="text-sm text-gray-600">Quantity: {resource.quantity}</div>
-								{resource.isPrimary && (
-									<div className="text-sm text-blue-600 font-medium">Primary Resource</div>
-								)}
+							<div
+								key={resource.resourceId}
+								className="bg-white rounded-lg shadow-md p-4 border border-gray-200"
+							>
+								<h4 className="text-sm font-medium text-gray-900 mb-2">
+									Resource ID: {resource.resourceId}
+								</h4>
+								<div className="space-y-1 text-sm text-gray-600">
+									<p>
+										<strong>Quantity:</strong> {resource.quantity}
+									</p>
+									{resource.isPrimary && (
+										<p className="text-blue-600 font-medium">Primary Resource</p>
+									)}
+								</div>
 							</div>
 						))}
 					</div>
@@ -108,14 +137,20 @@ export default function ResponseUnitView({
 
 			{/* Current Personnel (if different from defaults) */}
 			{responseUnit.currentPersonnel && responseUnit.currentPersonnel.length > 0 && (
-				<div className="mb-6 bg-gray-50 rounded-lg p-4">
-					<h3 className="text-lg font-medium mb-2">Current Personnel</h3>
-					<p className="text-sm text-gray-600 mb-4">Personnel currently assigned to this unit</p>
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+				<div className="mb-6">
+					<h3 className="text-lg font-semibold text-gray-900 mb-4">Current Personnel</h3>
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 						{responseUnit.currentPersonnel.map(person => (
-							<div key={person.userId} className="p-3 bg-white border rounded-lg">
-								<div className="font-medium">User ID: {person.userId}</div>
-								<div className="text-sm text-gray-600">Specialization: {person.specialization}</div>
+							<div
+								key={person.userId}
+								className="bg-white rounded-lg shadow-md p-4 border border-gray-200"
+							>
+								<h4 className="text-sm font-medium text-gray-900 mb-2">User ID: {person.userId}</h4>
+								<div className="space-y-1 text-sm text-gray-600">
+									<p>
+										<strong>Specialization:</strong> {person.specialization}
+									</p>
+								</div>
 							</div>
 						))}
 					</div>

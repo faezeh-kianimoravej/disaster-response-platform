@@ -15,7 +15,6 @@ import { useUsersByDepartment } from '@/hooks/useUser';
 import { useResources } from '@/hooks/useResource';
 
 import type { ResponderSpecialization } from '@/types/responderSpecialization';
-
 import type { DeploymentRequest } from '@/types/deployment';
 import type { ResponseUnit } from '@/types/responseUnit';
 
@@ -25,6 +24,7 @@ import {
 	validateRequiredPersonnel,
 	validateResourceRequirements,
 } from '@/validation/fillUnitValidation';
+import { Resource } from '@/types/resource';
 
 interface FillUnitAssignmentPanelProps {
 	deploymentRequest: DeploymentRequest;
@@ -45,44 +45,34 @@ export default function FillUnitAssignmentPanel({
 		Record<number, { userId: number; specialization: ResponderSpecialization }>
 	>({});
 	const [resourceAllocations, setResourceAllocations] = useState<
-		Record<number, { quantity: number; isPrimary: boolean }>
+		Record<number, { resourceId: number; quantity: number; isPrimary: boolean }>
 	>({});
 
-	// Fetch available response units for the target department
 	const { data: allResponseUnits, isLoading: responseUnitsLoading } = useResponseUnits(
 		deploymentRequest.targetDepartmentId,
 		{ enabled: deploymentRequest.status !== 'assigned' }
 	);
 
-	// Utility function to normalize unit types for comparison
-	const normalizeUnitType = (unitType: string): string => {
-		// Convert both to lowercase and remove underscores/spaces for comparison
-		// This handles: "FIRE_TRUCK" -> "fire truck" and "Fire truck" -> "fire truck"
-		return unitType.toLowerCase().replace(/_/g, ' ');
-	};
+	const normalizeUnitType = (text: string) => text.toLowerCase().replace(/_/g, ' ');
 
-	// Filter units by requested type and available status
 	const availableResponseUnits =
 		allResponseUnits?.filter(unit => {
-			const normalizedUnitType = normalizeUnitType(unit.unitType);
-			const normalizedRequestedType = normalizeUnitType(deploymentRequest.requestedUnitType);
+			return (
+				normalizeUnitType(unit.unitType) ===
+					normalizeUnitType(deploymentRequest.requestedUnitType) && unit.status === 'AVAILABLE'
+			);
+		}) ?? [];
 
-			return normalizedUnitType === normalizedRequestedType && unit.status === 'AVAILABLE';
-		}) || [];
-
-	// Fetch department users for personnel selection
 	const { users: departmentUsers, loading: usersLoading } = useUsersByDepartment(
 		deploymentRequest.targetDepartmentId,
 		{ enabled: !!selectedUnit && deploymentRequest.status !== 'assigned' }
 	);
 
-	// Fetch department resources for allocation
 	const { resources: departmentResources, loading: resourcesLoading } = useResources(
 		deploymentRequest.targetDepartmentId,
 		{ enabled: !!selectedUnit && deploymentRequest.status !== 'assigned' }
 	);
 
-	// Form setup
 	const {
 		register,
 		handleSubmit,
@@ -98,290 +88,416 @@ export default function FillUnitAssignmentPanel({
 		},
 	});
 
-	// Update form when unit selection changes
 	useEffect(() => {
-		if (selectedUnit) {
-			setValue('assignedUnitId', selectedUnit.unitId);
+		if (!selectedUnit || !departmentUsers || !departmentResources) return;
 
-			// Reset assignments when unit changes
-			setPersonnelAssignments({});
-			setResourceAllocations({});
-			setValue('assignedPersonnel', []);
-			setValue('allocatedResources', []);
-		}
-	}, [selectedUnit, setValue]);
+		setValue('assignedUnitId', selectedUnit.unitId);
 
-	// Handle personnel slot assignment
+		const personnel: Record<number, { userId: number; specialization: ResponderSpecialization }> =
+			{};
+
+		selectedUnit.defaultPersonnel.forEach((slot, index) => {
+			if (!slot.userId) return;
+			const match = departmentUsers.find(
+				u =>
+					u.userId === slot.userId &&
+					u.responderProfile?.primarySpecialization === slot.specialization
+			);
+			if (match) {
+				personnel[index] = {
+					userId: slot.userId,
+					specialization: slot.specialization,
+				};
+			}
+		});
+
+		setPersonnelAssignments(personnel);
+
+		setValue(
+			'assignedPersonnel',
+			Object.entries(personnel).map(([slotId, a]) => ({
+				slotId: parseInt(slotId),
+				userId: a.userId,
+				specialization: a.specialization,
+			}))
+		);
+
+		const resources: Record<number, { resourceId: number; quantity: number; isPrimary: boolean }> =
+			{};
+
+		selectedUnit.defaultResources.forEach((res, idx) => {
+			resources[idx] = {
+				resourceId: res.resourceId,
+				quantity: res.quantity,
+				isPrimary: res.isPrimary,
+			};
+		});
+
+		setResourceAllocations(resources);
+
+		setValue(
+			'allocatedResources',
+			Object.values(resources).map(r => ({
+				resourceId: r.resourceId,
+				quantity: r.quantity,
+				isPrimary: r.isPrimary,
+			}))
+		);
+	}, [selectedUnit, departmentUsers, departmentResources, setValue]);
+
 	const handlePersonnelAssignment = (
 		slotId: number,
 		userId: number,
 		specialization: ResponderSpecialization
 	) => {
-		const newAssignments = {
-			...personnelAssignments,
-			[slotId]: { userId, specialization },
-		};
-		setPersonnelAssignments(newAssignments);
+		const assignments = { ...personnelAssignments };
 
-		// Update form
-		const assignedPersonnel = Object.entries(newAssignments).map(([slotIdStr, assignment]) => ({
-			slotId: parseInt(slotIdStr),
-			userId: assignment.userId,
-			specialization: assignment.specialization,
-		}));
-		setValue('assignedPersonnel', assignedPersonnel);
+		if (userId === 0) delete assignments[slotId];
+		else assignments[slotId] = { userId, specialization };
+
+		setPersonnelAssignments(assignments);
+
+		setValue(
+			'assignedPersonnel',
+			Object.entries(assignments).map(([slotId, a]) => ({
+				slotId: parseInt(slotId),
+				userId: a.userId,
+				specialization: a.specialization,
+			}))
+		);
 	};
 
-	// Handle resource allocation
-	const handleResourceAllocation = (resourceId: number, quantity: number, isPrimary: boolean) => {
-		const newAllocations = {
-			...resourceAllocations,
-			[resourceId]: { quantity, isPrimary },
-		};
-		setResourceAllocations(newAllocations);
-
-		// Update form
-		const allocatedResources = Object.entries(newAllocations)
-			.filter(([, allocation]) => allocation.quantity > 0)
-			.map(([resourceIdStr, allocation]) => ({
-				resourceId: parseInt(resourceIdStr),
-				quantity: allocation.quantity,
-				isPrimary: allocation.isPrimary,
-			}));
-		setValue('allocatedResources', allocatedResources);
+	const isResourceAvailable = (r: Resource) => {
+		if (r.resourceKind === 'UNIQUE') return r.status === 'AVAILABLE';
+		return (r.availableQuantity ?? 0) > 0;
 	};
 
-	// Form submission
-	const onSubmit = async (formData: FillUnitFormData) => {
+	const handleResourceAllocation = (
+		index: number,
+		resourceId: number,
+		quantity: number,
+		isPrimary: boolean
+	) => {
+		const resource = departmentResources?.find(r => r.resourceId === resourceId);
+		const finalQty = resource?.resourceKind === 'UNIQUE' ? 1 : quantity;
+
+		const allocations = { ...resourceAllocations };
+
+		if (finalQty <= 0) delete allocations[index];
+		else
+			allocations[index] = {
+				resourceId,
+				quantity: finalQty,
+				isPrimary,
+			};
+
+		setResourceAllocations(allocations);
+
+		setValue(
+			'allocatedResources',
+			Object.values(allocations).map(a => ({
+				resourceId: a.resourceId,
+				quantity: a.quantity,
+				isPrimary: a.isPrimary,
+			}))
+		);
+	};
+
+	const onSubmit = async (data: FillUnitFormData) => {
 		if (!auth?.user?.userId || !selectedUnit) {
-			showError('Authentication error. Please log in again.');
+			showError('Authentication error.');
 			return;
 		}
 
-		// Additional custom validations
-		const requiredSlots = selectedUnit.defaultPersonnel.map((slot, index) => ({
-			slotId: index,
+		const requiredSlots = selectedUnit.defaultPersonnel.map((slot, idx) => ({
+			slotId: idx,
 			specialization: slot.specialization,
 			isRequired: slot.isRequired,
 		}));
 
-		const requiredResources = selectedUnit.defaultResources.map(resource => ({
-			resourceId: resource.resourceId,
-			requiredQuantity: resource.quantity,
+		const requiredResources = selectedUnit.defaultResources.map(r => ({
+			resourceId: r.resourceId,
+			requiredQuantity: r.quantity,
 			resourceName:
-				departmentResources?.find(r => r.resourceId === resource.resourceId)?.name ||
-				`Resource ${resource.resourceId}`,
+				departmentResources?.find(dr => dr.resourceId === r.resourceId)?.name ||
+				`Resource ${r.resourceId}`,
 		}));
 
-		const personnelErrors = validateRequiredPersonnel(formData, requiredSlots);
-		const resourceErrors = validateResourceRequirements(formData, requiredResources);
+		const pErrors = validateRequiredPersonnel(data, requiredSlots);
+		const rErrors = validateResourceRequirements(data, requiredResources);
 
-		if (personnelErrors.length > 0 || resourceErrors.length > 0) {
-			const allErrors = [...personnelErrors, ...resourceErrors];
-			showError(`Please fix the following issues: ${allErrors.join(', ')}`);
+		if (pErrors.length || rErrors.length) {
+			showError([...pErrors, ...rErrors].join(', '));
 			return;
 		}
 
 		try {
-			const assignmentData: FillUnitAssignmentRequest = {
+			const payload: FillUnitAssignmentRequest = {
 				requestId: deploymentRequest.requestId,
 				assignedBy: auth.user.userId,
-				assignedUnitId: formData.assignedUnitId,
-				assignedPersonnel: formData.assignedPersonnel.map(p => ({
+				assignedUnitId: data.assignedUnitId,
+				assignedPersonnel: data.assignedPersonnel.map(p => ({
 					slotId: p.slotId,
 					userId: p.userId,
-					specialization: p.specialization as ResponderSpecialization,
+					specialization: String(p.specialization).toUpperCase() as ResponderSpecialization,
 				})),
-				allocatedResources: formData.allocatedResources,
-				...(formData.notes ? { notes: formData.notes } : {}),
+				allocatedResources: data.allocatedResources,
+				...(data.notes ? { notes: data.notes } : {}),
 			};
 
-			await assignMutation.mutateAsync(assignmentData);
+			await assignMutation.mutateAsync(payload);
 
 			showSuccess('Deployment created successfully');
+
+			// Call onAssignmentSuccess first to trigger refetch
 			onAssignmentSuccess?.();
 
-			// Navigate to deployment details page
-			navigate(routes.deploymentRequestDetails(deploymentRequest.requestId));
+			// Add a small delay to allow refetch to complete before navigation
+			setTimeout(() => {
+				navigate(routes.deploymentRequestDetails(deploymentRequest.requestId));
+			}, 100);
 		} catch {
-			showError('Failed to create deployment. Please try again.');
+			showError('Failed to create deployment.');
 		}
 	};
 
 	const isLoading = responseUnitsLoading || usersLoading || resourcesLoading;
 
-	if (isLoading) {
-		return <LoadingPanel text="Loading assignment options..." />;
-	}
+	if (isLoading) return <LoadingPanel text="Loading assignment options..." />;
 
 	return (
-		<div className="mt-6 p-6 bg-blue-50 rounded-lg border border-blue-200">
-			<h3 className="text-lg font-semibold text-gray-900 mb-6">Fill Unit Assignment</h3>
+		<div className="mb-6">
+			<h3 className="text-lg font-semibold text-gray-900 mb-4">Fill Unit Assignment</h3>
+			<div className="bg-gray-50 rounded-lg p-4">
+				<p className="text-sm text-gray-600 mb-6">
+					Assign personnel and resources to {deploymentRequest.requestedUnitType} for deployment.
+				</p>
 
-			<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-				{/* Response Unit Selection */}
-				<div>
-					<label className="block text-sm font-medium text-gray-700 mb-3">
-						Select {deploymentRequest.requestedUnitType} Response Unit{' '}
-						<span className="text-red-500">*</span>
-					</label>
+				<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+					<div className="space-y-3">
+						<label className="block text-sm font-medium text-gray-700">
+							Select {deploymentRequest.requestedUnitType} Response Unit
+							<span className="text-red-500 ml-1">*</span>
+						</label>
 
-					{availableResponseUnits.length === 0 ? (
-						<div className="text-gray-500 italic">
-							No available {deploymentRequest.requestedUnitType} response units in this department.
-						</div>
-					) : (
-						<div className="space-y-3">
-							{availableResponseUnits.map(unit => (
-								<label
-									key={unit.unitId}
-									className="flex items-start space-x-3 p-3 border border-gray-200 rounded-md hover:bg-gray-50"
-								>
-									<input
-										type="radio"
-										name="responseUnit"
-										checked={selectedUnit?.unitId === unit.unitId}
-										onChange={() => setSelectedUnit(unit)}
-										className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-									/>
-									<div className="flex-1">
-										<div className="font-medium text-gray-900">{unit.unitName}</div>
-										<div className="text-sm text-gray-600">Type: {unit.unitType}</div>
-										{unit.defaultResources && unit.defaultResources.length > 0 && (
-											<div className="text-xs text-gray-500 mt-1">
-												Resources: {unit.defaultResources.length} configured
+						{availableResponseUnits.length === 0 && (
+							<div className="text-gray-500 text-sm">
+								No available {deploymentRequest.requestedUnitType} units.
+							</div>
+						)}
+
+						{availableResponseUnits.length > 0 && (
+							<div className="space-y-2">
+								{availableResponseUnits.map(unit => (
+									<label
+										key={unit.unitId}
+										className="flex items-start space-x-3 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"
+									>
+										<input
+											type="radio"
+											name="unit"
+											checked={selectedUnit?.unitId === unit.unitId}
+											onChange={() => setSelectedUnit(unit)}
+											className="mt-1"
+										/>
+										<div>
+											<div className="text-sm font-medium text-gray-900">{unit.unitName}</div>
+											<div className="text-sm text-gray-500">Type: {unit.unitType}</div>
+										</div>
+									</label>
+								))}
+							</div>
+						)}
+					</div>
+
+					{selectedUnit && (
+						<div className="space-y-4">
+							<h4 className="text-lg font-medium text-gray-900">Personnel Assignment</h4>
+
+							<div className="space-y-3">
+								{selectedUnit.defaultPersonnel.map((slot, idx) => {
+									const isDefault =
+										slot.userId && personnelAssignments[idx]?.userId === slot.userId;
+
+									return (
+										<div key={idx} className="p-4 bg-gray-50 rounded-md border border-gray-200">
+											<div className="flex items-center space-x-2 mb-2">
+												<span className="text-sm font-medium text-gray-700">
+													{slot.specialization}
+												</span>
+												{slot.isRequired && (
+													<span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+														Required
+													</span>
+												)}
+												{isDefault && (
+													<span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+														Default
+													</span>
+												)}
 											</div>
-										)}
-										{unit.defaultPersonnel && unit.defaultPersonnel.length > 0 && (
-											<div className="text-xs text-gray-500 mt-1">
-												Personnel: {unit.defaultPersonnel.length} slots
-											</div>
-										)}
-									</div>
-								</label>
-							))}
+
+											<select
+												className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
+												value={personnelAssignments[idx]?.userId ?? ''}
+												onChange={e => {
+													const userId = parseInt(e.target.value);
+													handlePersonnelAssignment(idx, userId || 0, slot.specialization);
+												}}
+											>
+												<option value="">Select personnel...</option>
+
+												{departmentUsers
+													?.filter(
+														u => u.responderProfile?.primarySpecialization === slot.specialization
+													)
+													.map(u => (
+														<option key={u.userId} value={u.userId}>
+															{u.firstName} {u.lastName}
+														</option>
+													))}
+											</select>
+										</div>
+									);
+								})}
+							</div>
 						</div>
 					)}
-				</div>
 
-				{/* Personnel Assignment Section */}
-				{selectedUnit && (
-					<div>
-						<h4 className="text-md font-medium text-gray-900 mb-4">Personnel Assignment</h4>
+					{selectedUnit && (
 						<div className="space-y-4">
-							{selectedUnit.defaultPersonnel.map((slot, slotIndex) => (
-								<div key={slotIndex} className="border border-gray-200 rounded-md p-4">
-									<div className="flex items-center space-x-2 mb-2">
-										<span className="text-sm font-medium text-gray-700">{slot.specialization}</span>
-										{slot.isRequired && (
-											<span className="text-xs text-red-500 font-medium">Required</span>
-										)}
-									</div>
-									<select
-										className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-										value={personnelAssignments[slotIndex]?.userId || ''}
-										onChange={e => {
-											const userId = parseInt(e.target.value);
-											if (userId) {
-												handlePersonnelAssignment(slotIndex, userId, slot.specialization);
-											}
-										}}
-									>
-										<option value="">Select personnel...</option>
-										{departmentUsers
-											?.filter(
-												user => user.responderProfile?.primarySpecialization === slot.specialization
-											)
-											.map(user => (
-												<option key={user.userId} value={user.userId}>
-													{user.firstName} {user.lastName}
-												</option>
-											))}
-									</select>
-								</div>
-							))}
-						</div>
-					</div>
-				)}
+							<h4 className="text-lg font-medium text-gray-900">Resource Allocation</h4>
 
-				{/* Resource Allocation Section */}
-				{selectedUnit && (
-					<div>
-						<h4 className="text-md font-medium text-gray-900 mb-4">Resource Allocation</h4>
-						<div className="space-y-4">
-							{selectedUnit.defaultResources.map((resource, resourceIndex) => {
-								const resourceDetails = departmentResources?.find(
-									r => r.resourceId === resource.resourceId
-								);
+							<div className="space-y-3">
+								{selectedUnit.defaultResources.map((res, idx) => {
+									const defaultRes = departmentResources?.find(
+										r => r.resourceId === res.resourceId
+									);
 
-								// Skip resources that aren't available in this department
-								if (!resourceDetails) {
-									return null;
-								}
+									if (!defaultRes) return null;
 
-								return (
-									<div key={resourceIndex} className="border border-gray-200 rounded-md p-4">
-										<div className="flex items-center justify-between mb-2">
-											<span className="text-sm font-medium text-gray-700">
-												{resourceDetails?.name || `Resource ${resource.resourceId}`}
-											</span>
-											<span className="text-xs text-gray-500">Required: {resource.quantity}</span>
-										</div>
-										<div className="flex items-center space-x-4">
-											<div className="flex-1">
-												<label className="block text-xs text-gray-500 mb-1">Quantity</label>
-												<input
-													type="number"
-													min="1"
-													max={resourceDetails?.availableQuantity || 999}
-													className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-													placeholder={resource.quantity.toString()}
-													value={
-														resourceAllocations[resource.resourceId]?.quantity || resource.quantity
-													}
-													onChange={e => {
-														const quantity = parseInt(e.target.value) || 0;
-														handleResourceAllocation(
-															resource.resourceId,
-															quantity,
-															resource.isPrimary
-														);
-													}}
-												/>
+									const matchingResources =
+										departmentResources?.filter(r => {
+											return r.resourceType === defaultRes.resourceType && isResourceAvailable(r);
+										}) ?? [];
+
+									const current = resourceAllocations[idx];
+									const selectedId = current?.resourceId ?? res.resourceId;
+									const selectedDetails = departmentResources?.find(
+										r => r.resourceId === selectedId
+									);
+
+									const availabilityText =
+										selectedDetails?.resourceKind === 'UNIQUE'
+											? `Status: ${selectedDetails.status}`
+											: `Available: ${selectedDetails?.availableQuantity ?? 0}`;
+
+									return (
+										<div key={idx} className="p-4 bg-gray-50 rounded-md border border-gray-200">
+											<div className="flex justify-between items-center mb-3">
+												<div>
+													<div className="text-sm font-medium text-gray-700">
+														{defaultRes.resourceType.replace(/_/g, ' ')}
+													</div>
+													<div className="text-xs text-gray-500">Required: {res.quantity}</div>
+												</div>
 											</div>
-											<div className="text-xs text-gray-500">
-												Available: {resourceDetails?.availableQuantity || 0}
+
+											<div className="space-y-3">
+												<div>
+													<label className="block text-sm font-medium text-gray-700 mb-1">
+														Select Resource
+													</label>
+													<select
+														className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
+														value={selectedId}
+														onChange={e => {
+															const newId = parseInt(e.target.value);
+															handleResourceAllocation(
+																idx,
+																newId,
+																current?.quantity ?? res.quantity,
+																res.isPrimary
+															);
+														}}
+													>
+														{matchingResources.map(r => {
+															return (
+																<option key={r.resourceId} value={r.resourceId}>
+																	{r.name} (
+																	{r.resourceKind === 'UNIQUE'
+																		? r.status
+																		: `Available: ${r.availableQuantity}`}
+																	)
+																</option>
+															);
+														})}
+													</select>
+												</div>
+
+												<div className="grid grid-cols-2 gap-4">
+													<div>
+														<label className="block text-sm font-medium text-gray-700 mb-1">
+															Quantity
+														</label>
+														<input
+															type="number"
+															min={1}
+															max={
+																selectedDetails?.resourceKind === 'UNIQUE'
+																	? 1
+																	: (selectedDetails?.availableQuantity ?? 999)
+															}
+															disabled={selectedDetails?.resourceKind === 'UNIQUE'}
+															className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100"
+															value={
+																selectedDetails?.resourceKind === 'UNIQUE'
+																	? 1
+																	: (current?.quantity ?? res.quantity)
+															}
+															onChange={e => {
+																const qty = parseInt(e.target.value) || 0;
+																handleResourceAllocation(idx, selectedId, qty, res.isPrimary);
+															}}
+														/>
+													</div>
+
+													<div className="flex items-end">
+														<div className="text-sm text-gray-500 pb-2">{availabilityText}</div>
+													</div>
+												</div>
 											</div>
 										</div>
-									</div>
-								);
-							})}
+									);
+								})}
+							</div>
 						</div>
+					)}
+
+					<div className="space-y-1">
+						<label className="block text-sm font-medium text-gray-700">
+							Notes
+							<span className="text-gray-500 ml-1">(Optional)</span>
+						</label>
+						<textarea
+							{...register('notes')}
+							rows={3}
+							className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
+							placeholder="Add any additional notes about this assignment..."
+						/>
 					</div>
-				)}
 
-				{/* Notes Section */}
-				<div>
-					<label className="block text-sm font-medium text-gray-700 mb-2">Notes (Optional)</label>
-					<textarea
-						{...register('notes')}
-						rows={3}
-						className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-						placeholder="Add any additional notes about this assignment..."
-					/>
-				</div>
-
-				{/* Submit Button */}
-				<div className="flex justify-end">
-					<Button
-						type="submit"
-						disabled={!isValid || !selectedUnit || assignMutation.isPending}
-						className="w-full"
-					>
-						{assignMutation.isPending ? 'Creating Deployment...' : 'Create Deployment'}
-					</Button>
-				</div>
-			</form>
+					<div className="pt-4 border-t border-gray-200">
+						<Button
+							type="submit"
+							disabled={!isValid || !selectedUnit || assignMutation.isPending}
+							className="w-full"
+						>
+							{assignMutation.isPending ? 'Creating Deployment...' : 'Create Deployment'}
+						</Button>
+					</div>
+				</form>
+			</div>
 		</div>
 	);
 }

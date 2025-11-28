@@ -3,21 +3,18 @@ import type { ResponderSpecialization } from '@/types/responderSpecialization';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-// Personnel slot assignment
 interface AssignedPersonnel {
 	slotId: number;
 	userId: number;
 	specialization: ResponderSpecialization;
 }
 
-// Resource allocation
 interface AllocatedResource {
 	resourceId: number;
 	quantity: number;
 	isPrimary: boolean;
 }
 
-// New full unit assignment interface
 interface FillUnitAssignmentRequest {
 	requestId: number;
 	assignedBy: number;
@@ -27,7 +24,6 @@ interface FillUnitAssignmentRequest {
 	notes?: string;
 }
 
-// Legacy Response Unit assignment interface (for backward compatibility)
 interface ResponseUnitAssignmentRequest {
 	requestId: number;
 	assignedBy: number;
@@ -36,6 +32,7 @@ interface ResponseUnitAssignmentRequest {
 }
 
 interface DeploymentAssignRequestDTO {
+	requestId: number;
 	assignedBy: number;
 	assignedUnitId: number;
 	assignedPersonnel: AssignedPersonnel[];
@@ -49,14 +46,13 @@ interface DeploymentAssignmentResponse {
 	message?: string;
 }
 
-// --- API ---
-const deploymentApi = new BaseApi(`${API_BASE_URL}/department/requests`);
+const deploymentApi = new BaseApi(`${API_BASE_URL}/deployment`);
 
-// New Fill Unit assignment endpoint
 export async function assignFillUnitToDeploymentRequest(
 	assignmentData: FillUnitAssignmentRequest
 ): Promise<DeploymentAssignmentResponse> {
 	const requestBody: DeploymentAssignRequestDTO = {
+		requestId: assignmentData.requestId,
 		assignedBy: assignmentData.assignedBy,
 		assignedUnitId: assignmentData.assignedUnitId,
 		assignedPersonnel: assignmentData.assignedPersonnel,
@@ -64,30 +60,23 @@ export async function assignFillUnitToDeploymentRequest(
 		...(assignmentData.notes ? { notes: assignmentData.notes } : {}),
 	};
 
-	const response = await deploymentApi.post<DeploymentAssignmentResponse>(
-		`/${assignmentData.requestId}/assign`,
-		requestBody
-	);
+	const response = await deploymentApi.post<DeploymentAssignmentResponse>(`/assign`, requestBody);
 	return response;
 }
 
-// Legacy assignment endpoint (for backward compatibility)
 export async function assignResponseUnitToDeploymentRequest(
 	assignmentData: ResponseUnitAssignmentRequest
 ): Promise<DeploymentAssignmentResponse> {
 	const requestBody = {
+		requestId: assignmentData.requestId,
 		assignedBy: assignmentData.assignedBy,
 		...(assignmentData.notes ? { notes: assignmentData.notes } : {}),
 	};
 
-	const response = await deploymentApi.post<DeploymentAssignmentResponse>(
-		`/${assignmentData.requestId}/assign`,
-		requestBody
-	);
+	const response = await deploymentApi.post<DeploymentAssignmentResponse>(`/assign`, requestBody);
 	return response;
 }
 
-// Export types for use in components
 export type {
 	FillUnitAssignmentRequest,
 	AssignedPersonnel,

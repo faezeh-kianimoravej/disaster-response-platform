@@ -100,8 +100,8 @@ export interface ResponseUnitFormData {
 	}[];
 
 	defaultPersonnel: {
-		userId?: number;
-		specialization: ResponderSpecialization;
+		userId: number;
+		specialization: string;
 		isRequired: boolean;
 	}[];
 }
