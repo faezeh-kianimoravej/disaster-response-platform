@@ -13,6 +13,7 @@ import NotAuthorizedPage from '@/pages/NotAuthorizedPage';
 import LoadingPanel from '@/components/ui/LoadingPanel';
 import { Role, RoleType } from '@/types/role';
 import { routes } from '@/routes';
+import keycloak from '@/config/keycloak';
 
 type Props = AuthGuardOptions & {
 	children: ReactNode;
@@ -54,7 +55,8 @@ export default function AuthGuard({ children, ...opts }: Props) {
 	const resourceCheck = useUserHasAccessToResource(opts.requireAccessToResource);
 
 	if (!isLoggedIn) {
-		return (<Navigate to={routes.login()} replace state={{ from: location }} />) as JSX.Element;
+		keycloak.login({ redirectUri: window.location.href });
+		return null;
 	}
 
 	const isLoading = municipalityCheck.loading || departmentCheck.loading || resourceCheck.loading;

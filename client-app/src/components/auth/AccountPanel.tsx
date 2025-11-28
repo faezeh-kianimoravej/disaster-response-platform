@@ -4,6 +4,7 @@ import { User as UserIcon, X, LogOut } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useLogin } from '@/hooks/useLogin';
 import { routes } from '@/routes';
+import keycloak from '@/config/keycloak';
 
 export default function AccountPanel() {
 	const auth = useAuth();
@@ -28,7 +29,7 @@ export default function AccountPanel() {
 	function handleLogout() {
 		logout();
 		setIsOpen(false);
-		navigate(routes.login());
+		keycloak.login();
 	}
 
 	return (

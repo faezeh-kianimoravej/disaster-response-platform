@@ -1,6 +1,5 @@
 export const routes = {
 	home: () => '/',
-	login: () => '/login',
 
 	// Regions
 	dashboard: () => '/dashboard',

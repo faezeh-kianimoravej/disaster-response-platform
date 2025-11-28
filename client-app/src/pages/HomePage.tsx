@@ -4,6 +4,7 @@ import { routes } from '@/routes';
 import Logo from '@/components/ui/Logo';
 import Button from '@/components/ui/Button';
 import { REGION_ROLES, MUNICIPALITY_ROLES, DEPARTMENT_ROLES, type RoleType } from '@/types/role';
+import keycloak from '@/config/keycloak';
 
 function getDefaultLandingPage(userRoles: RoleType[]): string {
 	const hasRegionRole = REGION_ROLES.some(role => userRoles.includes(role));
@@ -68,7 +69,7 @@ export default function HomePage() {
 					) : (
 						<div className="space-y-4">
 							<Button
-								onClick={() => navigate(routes.login())}
+								onClick={() => keycloak.login()}
 								className="font-semibold px-8 py-3 shadow-md hover:shadow-lg"
 							>
 								Sign In to Continue

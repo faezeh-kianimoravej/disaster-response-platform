@@ -4,67 +4,122 @@ import type { AuthState } from './AuthContext';
 import type { User } from '@/types/user';
 import { ToastProvider } from '../components/toast/ToastProvider';
 import React from 'react';
+import keycloak from '@/config/keycloak';
+import { useUser } from '@/hooks/useUser';
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
-	// Start as unauthenticated
-	const [authState, setAuthState] = React.useState<AuthState>({
-		isLoggedIn: false,
-		user: null,
-		token: undefined,
-	});
-	const [isRestoring, setIsRestoring] = React.useState(true);
+    const [authState, setAuthState] = React.useState<AuthState>({
+        isLoggedIn: false,
+        user: null,
+        token: undefined,
+    });
+    const [isRestoring, setIsRestoring] = React.useState(true);
+    const [authenticatedUserId, setAuthenticatedUserId] = React.useState<string | undefined>();
 
-	const setAuth = (a: AuthState) => setAuthState(a);
+    const { user: fetchedUser } = useUser(authenticatedUserId, { enabled: !!authenticatedUserId });
 
-	const updateUser = (patch: Partial<User> | null) => {
-		setAuthState(
-			prev =>
-				({
-					...prev,
-					user: patch === null ? null : { ...(prev.user ?? ({} as User)), ...patch },
-				}) as AuthState
-		);
-	};
+    const setAuth = (a: AuthState) => setAuthState(a);
 
-	// Restore auth from localStorage on mount
-	React.useEffect(() => {
-		const token = localStorage.getItem('auth_token');
-		const userDataStr = localStorage.getItem('user_data');
+    const updateUser = (patch: Partial<User> | null) => {
+        setAuthState(
+            prev =>
+                ({
+                    ...prev,
+                    user: patch === null ? null : { ...(prev.user ?? ({} as User)), ...patch },
+                }) as AuthState
+        );
+    };
 
-		if (token && userDataStr) {
-			try {
-				const restoredUser = JSON.parse(userDataStr) as User;
-				setAuthState({
-					isLoggedIn: true,
-					user: restoredUser,
-					token,
-				});
-			} catch {
-				// If JSON parse fails, clear invalid data
-				localStorage.removeItem('auth_token');
-				localStorage.removeItem('user_data');
-			}
-		}
+    // Initialize Keycloak once
+    React.useEffect(() => {
+        let refreshTimer: number | undefined;
+        let isInitialized = false;
 
-		setIsRestoring(false);
-	}, []);
+        const initKeycloak = async () => {
+            try {
+                const authenticated = await keycloak.init({
+                    onLoad: 'check-sso',
+                    checkLoginIframe: false,
+                });
 
-	const contextValue = {
-		...authState,
-		setAuth,
-		updateUser,
-	};
+                isInitialized = true;
 
-	// Show loading state while restoring auth
-	if (isRestoring) {
-		return null;
-	}
+                if (authenticated) {
+                    const token = keycloak.token;
+                    const parsed = keycloak.tokenParsed as Record<string, any> | undefined;
+                    const userId = parsed?.sub;
 
-	return (
-		<ToastProvider>
-			<NotificationProvider>
-				<AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
-			</NotificationProvider>
-		</ToastProvider>
-	);
+                    setAuthenticatedUserId(userId);
+                    setAuthState(prev => ({
+                        ...prev,
+                        isLoggedIn: true,
+                        token,
+                    }));
+
+                    localStorage.setItem('auth_token', token ?? '');
+
+                    // regularly try to refresh token
+                    refreshTimer = window.setInterval(() => {
+                        keycloak.updateToken(70).then((refreshed) => {
+                            if (refreshed) {
+                                const newToken = keycloak.token;
+                                setAuthState(prev => ({ ...prev, token: newToken }));
+                                localStorage.setItem('auth_token', newToken ?? '');
+                            }
+                        }).catch(() => {
+                            // token refresh failed
+                        });
+                    }, 60_000);
+                } else {
+                    localStorage.removeItem('auth_token');
+                    localStorage.removeItem('user_data');
+                    setAuthState({ isLoggedIn: false, user: null, token: undefined });
+                }
+
+                setIsRestoring(false);
+            } catch (err) {
+                console.error('Keycloak init failed:', err);
+                setIsRestoring(false);
+            }
+        };
+
+        if (!isInitialized) {
+            initKeycloak();
+        }
+
+        return () => {
+            if (refreshTimer) {
+                clearInterval(refreshTimer);
+            }
+        };
+    }, []);
+
+    // Fetch user info once authenticated
+    React.useEffect(() => {
+        if (!isRestoring && fetchedUser) {
+            setAuthState(prev => ({
+                ...prev,
+                user: fetchedUser,
+            }));
+            localStorage.setItem('user_data', JSON.stringify(fetchedUser));
+        }
+    }, [isRestoring, fetchedUser]);
+
+    const contextValue = {
+        ...authState,
+        setAuth,
+        updateUser,
+    };
+
+    if (isRestoring) {
+        return null;
+    }
+
+    return (
+        <ToastProvider>
+            <NotificationProvider>
+                <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
+            </NotificationProvider>
+        </ToastProvider>
+    );
 }
