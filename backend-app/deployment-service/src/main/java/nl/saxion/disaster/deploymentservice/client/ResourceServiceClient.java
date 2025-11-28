@@ -1,5 +1,6 @@
 package nl.saxion.disaster.deploymentservice.client;
 
+import nl.saxion.disaster.deploymentservice.configuration.FeignClientConfig;
 import nl.saxion.disaster.deploymentservice.dto.ResourceAllocationBatchRequestDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -7,7 +8,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "resource-service")
+@FeignClient(
+        name = "resource-service",
+        configuration = FeignClientConfig .class
+)
 public interface ResourceServiceClient {
     
     @GetMapping("/api/resources/{resourceId}/location")

@@ -6,6 +6,7 @@ import nl.saxion.disaster.resourceservice.dto.*;
 import nl.saxion.disaster.resourceservice.exception.ResourceException;
 import nl.saxion.disaster.resourceservice.mapper.ResourceMapper;
 import nl.saxion.disaster.resourceservice.model.entity.Resource;
+import nl.saxion.disaster.resourceservice.model.enums.ResourceStatus;
 import nl.saxion.disaster.resourceservice.model.enums.ResourceType;
 import nl.saxion.disaster.resourceservice.repository.contract.ResourceRepository;
 import nl.saxion.disaster.resourceservice.service.contract.ResourceService;
@@ -103,30 +104,34 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Transactional
     public void allocateResources(ResourceAllocationBatchRequestDTO request) {
-
-        Long deploymentId = request.getDeploymentId();
-        Long unitId = request.getResponseUnitId();
-
-        log.info("Allocating {} resources for deploymentId={} (unitId={})",
-                request.getAllocations().size(), deploymentId, unitId);
-
-        for (ResourceAllocationItemDTO item : request.getAllocations()) {
-
-            int updated = resourceRepository.allocateResource(
-                    item.getResourceId(),
-                    item.getQuantity(),
-                    deploymentId
-            );
-
-            if (updated == 0) {
-                throw new ResourceException(
-                        "Insufficient quantity or resource not found: resourceId=" + item.getResourceId()
-                );
-            }
-
-            log.info("Allocated {} units of resource {} for deployment {}",
-                    item.getQuantity(), item.getResourceId(), deploymentId);
+        for (var item : request.getAllocations()) {
+            allocateResource(item.getResourceId(), item.getQuantity(), request.getDeploymentId());
         }
+    }
+
+    @Transactional
+    public void allocateResource(Long resourceId, int qty, Long deploymentId) {
+
+        Resource resource = resourceRepository.findById(resourceId)
+                .orElseThrow(() -> new ResourceException("Resource not found"));
+
+        if (resource.getAvailableQuantity() < qty) {
+            throw new ResourceException("Insufficient quantity");
+        }
+
+        resource.setAvailableQuantity(resource.getAvailableQuantity() - qty);
+        resource.setDeployedQuantity(
+                (resource.getDeployedQuantity() == null ? 0 : resource.getDeployedQuantity()) + qty
+        );
+        resource.setCurrentDeploymentId(deploymentId);
+
+        if (resource.getAvailableQuantity() == 0) {
+            resource.setStatus(ResourceStatus.DEPLOYED);
+        } else if (resource.getAvailableQuantity() < resource.getTotalQuantity()) {
+            resource.setStatus(ResourceStatus.PARTIALLY_DEPLOYED);
+        }
+
+        resourceRepository.save(resource);
     }
 }
 
