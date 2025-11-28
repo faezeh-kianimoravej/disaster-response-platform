@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -87,12 +88,17 @@ public class DeploymentOrderServiceImpl implements nl.saxion.disaster.deployment
 
 
     @Override
-    @Transactional(readOnly = true)
-    public DeploymentOrderDTO getDeploymentOrderByIncidentId(Long incidentId) {
-        DeploymentOrder order = orderRepository.findDeploymentOrderByIncidentId(incidentId)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Deployment order not found for incident ID: " + incidentId));
+    public List<DeploymentOrderDTO> getDeploymentOrdersByIncidentId(Long incidentId) {
 
-        return orderMapper.toDto(order);
+        List<DeploymentOrder> orders =
+                orderRepository.findDeploymentOrdersByIncidentId(incidentId);
+
+        if (orders == null || orders.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return orders.stream()
+                .map(orderMapper::toDto)
+                .toList();
     }
 }
