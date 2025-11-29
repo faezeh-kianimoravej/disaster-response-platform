@@ -5,7 +5,8 @@ import type React from 'react';
 import { ToastProvider } from '@/components/toast/ToastProvider';
 import { NotificationProvider } from '@/context/NotificationContext';
 import { AuthContext, type AuthContextValue } from '@/context/AuthContext';
-import { KeycloakContext } from '@/context/KeycloakProvider';
+import { KeycloakContext, KeycloakContextType } from '@/context/KeycloakProvider';
+import { KeycloakInstance } from 'keycloak-js';
 
 export type TestProvidersOptions = {
 	route?: string;
@@ -66,12 +67,33 @@ function TestProviders({
 			login: async () => {},
 			logout: async () => {},
 			updateToken: async () => true,
-		},
+			register: async () => {},
+			accountManagement: async () => {},
+			createLoginUrl: () => '',
+			createLogoutUrl: () => '',
+			createRegisterUrl: () => '',
+			createAccountUrl: () => '',
+			isTokenExpired: () => false,
+			clearToken: () => {},
+			hasRealmRole: () => false,
+			hasResourceRole: () => false,
+			loadUserProfile: async () => ({}),
+			realmAccess: undefined,
+			resourceAccess: undefined,
+			idToken: undefined,
+			idTokenParsed: undefined,
+			clientId: '',
+			realm: '',
+			authServerUrl: '',
+			refreshToken: undefined,
+			refreshTokenParsed: undefined,
+			timeSkew: 0,
+		} as unknown as KeycloakInstance,
 		initialized: true,
 		isAuthenticated: isLoggedInOption,
 		login: async () => {},
 		logout: async () => {},
-	} as any;
+	} as KeycloakContextType;
 
 	return (
 		<MemoryRouter initialEntries={[route]}>

@@ -10,7 +10,7 @@ const keycloakConfig = {
 const KeycloakConstructor = Keycloak as unknown as new (config: unknown) => KeycloakInstance;
 const keycloak = new KeycloakConstructor(keycloakConfig);
 
-interface KeycloakContextType {
+export interface KeycloakContextType {
 	keycloak: KeycloakInstance;
 	initialized: boolean;
 	isAuthenticated: boolean;
