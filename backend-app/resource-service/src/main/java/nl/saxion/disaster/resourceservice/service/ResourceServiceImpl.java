@@ -6,6 +6,7 @@ import nl.saxion.disaster.resourceservice.dto.*;
 import nl.saxion.disaster.resourceservice.exception.ResourceException;
 import nl.saxion.disaster.resourceservice.mapper.ResourceMapper;
 import nl.saxion.disaster.resourceservice.model.entity.Resource;
+import nl.saxion.disaster.resourceservice.model.enums.ResourceKind;
 import nl.saxion.disaster.resourceservice.model.enums.ResourceStatus;
 import nl.saxion.disaster.resourceservice.model.enums.ResourceType;
 import nl.saxion.disaster.resourceservice.repository.contract.ResourceRepository;
@@ -110,10 +111,32 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Transactional
-    public void allocateResource(Long resourceId, int qty, Long deploymentId) {
+    private void allocateResource(Long resourceId, int qty, Long deploymentId) {
 
         Resource resource = resourceRepository.findById(resourceId)
                 .orElseThrow(() -> new ResourceException("Resource not found"));
+
+        // ---------------------------
+        // HANDLE UNIQUE RESOURCES
+        // ---------------------------
+        if (resource.getResourceKind() == ResourceKind.UNIQUE) {
+
+            if (resource.getStatus() == ResourceStatus.DEPLOYED) {
+                throw new ResourceException("This unique resource is already deployed");
+            }
+
+            resource.setAvailableQuantity(0);
+            resource.setDeployedQuantity(1);
+            resource.setCurrentDeploymentId(deploymentId);
+            resource.setStatus(ResourceStatus.DEPLOYED);
+
+            resourceRepository.save(resource);
+            return;
+        }
+
+        // ---------------------------
+        // HANDLE STACKABLE & CONSUMABLE
+        // ---------------------------
 
         if (resource.getAvailableQuantity() < qty) {
             throw new ResourceException("Insufficient quantity");
@@ -123,6 +146,7 @@ public class ResourceServiceImpl implements ResourceService {
         resource.setDeployedQuantity(
                 (resource.getDeployedQuantity() == null ? 0 : resource.getDeployedQuantity()) + qty
         );
+
         resource.setCurrentDeploymentId(deploymentId);
 
         if (resource.getAvailableQuantity() == 0) {
