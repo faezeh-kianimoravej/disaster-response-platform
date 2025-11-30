@@ -64,7 +64,7 @@ validate:version:
       artifacts: true
     - job: test:backend-app
       optional: true
-    - job: test:client-app
+    - job: test:frontend
       optional: true
   before_script:
     - echo "Docker Hub Username - ${DOCKERHUB_USERNAME}"
@@ -245,7 +245,7 @@ image:frontend:
       artifacts: true
     - job: test:backend-app
       optional: true
-    - job: test:client-app
+    - job: test:frontend
       optional: true
   before_script:
     - echo "Docker Hub Username - ${DOCKERHUB_USERNAME}"
@@ -526,11 +526,13 @@ publish:gitlab-release:
 # Security Scanning (SAST)
 # ======================================
 semgrep-sast:
-  image: returntocorp/semgrep:latest
+  image: python:3.11-slim
   stage: test
   variables:
     SEMGREP_TIMEOUT: "900"
   script:
+    - python3 -m pip install --upgrade pip setuptools wheel || true
+    - python3 -m pip install semgrep || true
     - semgrep --config auto --exclude node_modules --exclude dist --exclude build --exclude coverage --exclude target --sarif -o semgrep.sarif . || true
     - |
       echo "\n=== Semgrep summary (from SARIF) ==="
@@ -543,12 +545,23 @@ semgrep-sast:
       grep -o '"ruleId"[[:space:]]*:[[:space:]]*"[^"]*"' semgrep.sarif | \
         sed 's/"ruleId"[[:space:]]*:[[:space:]]*"//;s/"$//' | \
         sort | uniq -c | sort -nr | head -n 10 || true
+    - |
+      # Try converting SARIF -> GitLab SAST report so GitLab can parse findings
+      if [ -f semgrep.sarif ]; then
+        echo "Converting semgrep.sarif -> gl-sast-report.json"
+        python3 tools/convert_sarif_to_gitlab_sast.py semgrep.sarif gl-sast-report.json || (
+          echo "Conversion failed, gl-sast-report.json not created" >&2
+        )
+      else
+        echo "No semgrep.sarif found; skipping conversion"
+      fi
   artifacts:
     when: always
     paths:
       - semgrep.sarif
+      - gl-sast-report.json
     reports:
-      sast: semgrep.sarif
+      sast: gl-sast-report.json
   allow_failure: true
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
