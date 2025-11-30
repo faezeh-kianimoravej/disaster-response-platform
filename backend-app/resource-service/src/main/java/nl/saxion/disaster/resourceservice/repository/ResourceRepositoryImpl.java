@@ -98,33 +98,4 @@ public class ResourceRepositoryImpl implements ResourceRepository {
             entityManager.remove(resource);
         }
     }
-
-    /**
-     * Atomically allocate resource quantities:
-     *  - decrease availableQuantity
-     *  - increase deployedQuantity
-     *  - assign resource to deployment
-     *
-     * Returns number of updated rows (0 means failure).
-     */
-    @Override
-    public int allocateResource(Long resourceId, Integer quantity, Long deploymentId) {
-
-        return entityManager.createQuery("""
-                UPDATE Resource r
-                SET r.availableQuantity = r.availableQuantity - :qty,
-                    r.deployedQuantity = 
-                        CASE 
-                            WHEN r.deployedQuantity IS NULL THEN :qty
-                            ELSE r.deployedQuantity + :qty
-                        END,
-                    r.currentDeploymentId = :deploymentId
-                WHERE r.resourceId = :id
-                AND r.availableQuantity >= :qty
-            """)
-                .setParameter("qty", quantity)
-                .setParameter("deploymentId", deploymentId)
-                .setParameter("id", resourceId)
-                .executeUpdate();
-    }
 }

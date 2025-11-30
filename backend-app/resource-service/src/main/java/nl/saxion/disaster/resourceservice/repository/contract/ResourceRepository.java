@@ -23,12 +23,4 @@ public interface ResourceRepository {
     Resource edit(Long id, Resource updatedResource);
 
     void deleteById(Long id);
-
-    /**
-     * Allocate (reserve) resource quantity for a deployment.
-     * Must reduce availableQuantity and increase deployedQuantity.
-     * Return number of updated rows for validation (0 = failed).
-     */
-    int allocateResource(Long resourceId, Integer quantity, Long deploymentId);
-
 }

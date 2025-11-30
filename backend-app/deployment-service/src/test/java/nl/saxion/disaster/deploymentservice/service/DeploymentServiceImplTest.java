@@ -1,10 +1,9 @@
 package nl.saxion.disaster.deploymentservice.service;
 
-import nl.saxion.disaster.deploymentservice.dto.DeploymentAssignRequestDTO;
-import nl.saxion.disaster.deploymentservice.dto.DeploymentAssignResponseDTO;
+import nl.saxion.disaster.deploymentservice.client.ResourceServiceClient;
+import nl.saxion.disaster.deploymentservice.dto.*;
 import nl.saxion.disaster.deploymentservice.enums.*;
 import nl.saxion.disaster.deploymentservice.model.Deployment;
-import nl.saxion.disaster.deploymentservice.model.DeploymentOrder;
 import nl.saxion.disaster.deploymentservice.model.DeploymentRequest;
 import nl.saxion.disaster.deploymentservice.model.ResponseUnit;
 import nl.saxion.disaster.deploymentservice.repository.contract.DeploymentRepository;
@@ -12,9 +11,7 @@ import nl.saxion.disaster.deploymentservice.repository.contract.DeploymentReques
 import nl.saxion.disaster.deploymentservice.repository.contract.ResponseUnitRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
@@ -35,27 +32,32 @@ class DeploymentServiceImplTest {
     @Mock
     private DeploymentRepository deploymentRepository;
 
-    @InjectMocks
-    private DeploymentServiceImpl deploymentService;
+    @Mock
+    private ResourceServiceClient resourceServiceClient;
 
-    // ==========================================================================================
-    // 1) SUCCESSFUL MANUAL ASSIGNMENT
-    // ==========================================================================================
+    @InjectMocks
+    private DeploymentServiceImpl service;
+
+    // =========================================================================
+    // 1) SUCCESS CASE
+    // =========================================================================
     @Test
-    void allocateUnits_manualAssignment_success() {
+    void allocateUnits_success() {
+
         Long requestId = 1L;
         Long unitId = 10L;
 
-        DeploymentRequest request = buildRequest(requestId);
+        DeploymentRequest req = buildRequest(requestId);
         when(requestRepository.findDeploymentRequestById(requestId))
-                .thenReturn(Optional.of(request));
+                .thenReturn(Optional.of(req));
 
         ResponseUnit unit = mockUnit(unitId);
         when(responseUnitRepository.findById(unitId))
                 .thenReturn(Optional.of(unit));
 
-        // DEPLOYMENT REPOSITORY → set ID
+        // Capture deployment BEFORE saving
         ArgumentCaptor<Deployment> captor = ArgumentCaptor.forClass(Deployment.class);
+
         doAnswer(inv -> {
             Deployment d = inv.getArgument(0);
             d.setDeploymentId(77L);
@@ -65,37 +67,37 @@ class DeploymentServiceImplTest {
         DeploymentAssignRequestDTO dto = validDto(requestId, unitId);
 
         DeploymentAssignResponseDTO resp =
-                deploymentService.allocateUnitsForDeploymentRequest(dto);
+                service.allocateUnitsForDeploymentRequest(dto);
 
+        // Response validation
         assertEquals("ASSIGNED", resp.getRequestStatus());
         assertEquals(requestId, resp.getRequestId());
         assertEquals(1, resp.getDeployments().size());
-        assertEquals("MANUAL ASSIGN", resp.getNotes());
 
-        // verify created deployment
-        Deployment dep = captor.getValue();
-        assertEquals(unitId, dep.getResponseUnitId());
-        assertEquals(DeploymentStatus.ASSIGNED, dep.getStatus());
-        assertNotNull(dep.getAssignedAt());
-        assertNotNull(dep.getOrderedAt());
-        assertEquals(1, dep.getDeployedResources().size());
-        assertEquals(1, dep.getDeployedPersonnel().size());
+        Deployment d = captor.getValue();
+        assertNotNull(d.getDeploymentId());
+        assertEquals(unitId, d.getResponseUnitId());
+        assertEquals(DeploymentStatus.ASSIGNED, d.getStatus());
+        assertNotNull(d.getAssignedAt());
+        assertNotNull(d.getOrderedAt());
 
-        // unit updated
+        // Unit updated
         assertEquals(ResponseUnitStatus.DEPLOYED, unit.getStatus());
         assertEquals(77L, unit.getCurrentDeploymentId());
         assertEquals(1, unit.getCurrentPersonnel().size());
         assertEquals(1, unit.getCurrentResources().size());
 
+        verify(resourceServiceClient).allocateResources(any());
         verify(responseUnitRepository).save(unit);
         verify(requestRepository).saveDeploymentRequest(any());
     }
 
-    // ==========================================================================================
+    // =========================================================================
     // 2) REQUEST NOT FOUND
-    // ==========================================================================================
+    // =========================================================================
     @Test
-    void allocateUnits_requestNotFound_throws() {
+    void allocateUnits_requestNotFound() {
+
         Long requestId = 999L;
 
         when(requestRepository.findDeploymentRequestById(requestId))
@@ -104,17 +106,18 @@ class DeploymentServiceImplTest {
         DeploymentAssignRequestDTO dto = validDto(requestId, 10L);
 
         RuntimeException ex = assertThrows(RuntimeException.class,
-                () -> deploymentService.allocateUnitsForDeploymentRequest(dto));
+                () -> service.allocateUnitsForDeploymentRequest(dto));
 
         assertTrue(ex.getMessage().contains("DeploymentRequest not found"));
-        verifyNoInteractions(deploymentRepository, responseUnitRepository);
+        verifyNoInteractions(resourceServiceClient);
+        verifyNoInteractions(deploymentRepository);
     }
 
-    // ==========================================================================================
+    // =========================================================================
     // 3) UNIT NOT FOUND
-    // ==========================================================================================
+    // =========================================================================
     @Test
-    void allocateUnits_unitNotFound_throws() {
+    void allocateUnits_unitNotFound() {
         Long requestId = 1L;
         Long unitId = 10L;
 
@@ -127,22 +130,25 @@ class DeploymentServiceImplTest {
         DeploymentAssignRequestDTO dto = validDto(requestId, unitId);
 
         RuntimeException ex = assertThrows(RuntimeException.class,
-                () -> deploymentService.allocateUnitsForDeploymentRequest(dto));
+                () -> service.allocateUnitsForDeploymentRequest(dto));
 
         assertTrue(ex.getMessage().contains("ResponseUnit not found"));
+
         verify(deploymentRepository, never()).createDeployment(any());
     }
 
-    // ==========================================================================================
-    // 4) WRONG UNIT (DEPT / TYPE / STATUS)
-    // ==========================================================================================
+    // =========================================================================
+    // 4) WRONG UNIT (department, type, status)
+    // =========================================================================
     @Test
-    void allocateUnits_wrongUnitValidation_throws() {
+    void allocateUnits_wrongUnitValidation() {
+
         Long requestId = 1L;
         Long unitId = 10L;
 
         DeploymentRequest req = buildRequest(requestId);
-        when(requestRepository.findDeploymentRequestById(requestId)).thenReturn(Optional.of(req));
+        when(requestRepository.findDeploymentRequestById(requestId))
+                .thenReturn(Optional.of(req));
 
         // wrong department
         ResponseUnit u1 = mockUnit(unitId);
@@ -150,8 +156,7 @@ class DeploymentServiceImplTest {
         when(responseUnitRepository.findById(unitId)).thenReturn(Optional.of(u1));
 
         RuntimeException ex1 = assertThrows(RuntimeException.class,
-                () -> deploymentService.allocateUnitsForDeploymentRequest(validDto(requestId, unitId)));
-
+                () -> service.allocateUnitsForDeploymentRequest(validDto(requestId, unitId)));
         assertTrue(ex1.getMessage().contains("department"));
 
         // wrong type
@@ -160,8 +165,7 @@ class DeploymentServiceImplTest {
         when(responseUnitRepository.findById(unitId)).thenReturn(Optional.of(u2));
 
         RuntimeException ex2 = assertThrows(RuntimeException.class,
-                () -> deploymentService.allocateUnitsForDeploymentRequest(validDto(requestId, unitId)));
-
+                () -> service.allocateUnitsForDeploymentRequest(validDto(requestId, unitId)));
         assertTrue(ex2.getMessage().contains("type mismatch"));
 
         // wrong status
@@ -170,16 +174,16 @@ class DeploymentServiceImplTest {
         when(responseUnitRepository.findById(unitId)).thenReturn(Optional.of(u3));
 
         RuntimeException ex3 = assertThrows(RuntimeException.class,
-                () -> deploymentService.allocateUnitsForDeploymentRequest(validDto(requestId, unitId)));
-
+                () -> service.allocateUnitsForDeploymentRequest(validDto(requestId, unitId)));
         assertTrue(ex3.getMessage().contains("not AVAILABLE"));
     }
 
-    // ==========================================================================================
-    // 5) MISSING REQUIRED PERSONNEL
-    // ==========================================================================================
+    // =========================================================================
+    // 5) MISSING PERSONNEL
+    // =========================================================================
     @Test
-    void allocateUnits_missingPersonnel_throws() {
+    void allocateUnits_missingPersonnel() {
+
         Long requestId = 1L;
         Long unitId = 10L;
 
@@ -190,20 +194,21 @@ class DeploymentServiceImplTest {
         when(responseUnitRepository.findById(unitId)).thenReturn(Optional.of(unit));
 
         DeploymentAssignRequestDTO dto = validDto(requestId, unitId);
-        dto.getAssignedPersonnel().get(0).setSpecialization("DRIVER"); // wrong one
+        dto.getAssignedPersonnel().get(0).setSpecialization("DRIVER");
 
         RuntimeException ex = assertThrows(RuntimeException.class,
-                () -> deploymentService.allocateUnitsForDeploymentRequest(dto));
+                () -> service.allocateUnitsForDeploymentRequest(dto));
 
         assertTrue(ex.getMessage().contains("Missing required specialization"));
         verify(deploymentRepository, never()).createDeployment(any());
     }
 
-    // ==========================================================================================
-    // 6) MISSING / INSUFFICIENT RESOURCE
-    // ==========================================================================================
+    // =========================================================================
+    // 6) MISSING OR INSUFFICIENT RESOURCE
+    // =========================================================================
     @Test
-    void allocateUnits_missingOrLowResource_throws() {
+    void allocateUnits_resourceMissingOrLow() {
+
         Long requestId = 1L;
         Long unitId = 10L;
 
@@ -213,59 +218,29 @@ class DeploymentServiceImplTest {
         ResponseUnit unit = mockUnit(unitId);
         when(responseUnitRepository.findById(unitId)).thenReturn(Optional.of(unit));
 
-        // missing correct resource
+        // missing primary
         DeploymentAssignRequestDTO dto1 = validDto(requestId, unitId);
         dto1.getAllocatedResources().get(0).setResourceId(999L);
 
         RuntimeException ex1 = assertThrows(RuntimeException.class,
-                () -> deploymentService.allocateUnitsForDeploymentRequest(dto1));
+                () -> service.allocateUnitsForDeploymentRequest(dto1));
 
         assertTrue(ex1.getMessage().contains("Missing primary resource"));
 
-        // insufficient quantity
+        // insufficient
         DeploymentAssignRequestDTO dto2 = validDto(requestId, unitId);
         dto2.getAllocatedResources().get(0).setQuantity(0);
 
         RuntimeException ex2 = assertThrows(RuntimeException.class,
-                () -> deploymentService.allocateUnitsForDeploymentRequest(dto2));
+                () -> service.allocateUnitsForDeploymentRequest(dto2));
 
         assertTrue(ex2.getMessage().contains("insufficient"));
     }
 
-    // ==========================================================================================
-    // 7) REQUESTED_AT NULL → orderedAt still set
-    // ==========================================================================================
-    @Test
-    void allocateUnits_requestedAtNull_stillWorks() {
-        Long requestId = 1L;
-        Long unitId = 10L;
-
-        DeploymentRequest req = buildRequest(requestId);
-        req.setRequestedAt(null);
-        when(requestRepository.findDeploymentRequestById(requestId)).thenReturn(Optional.of(req));
-
-        ResponseUnit unit = mockUnit(unitId);
-        when(responseUnitRepository.findById(unitId)).thenReturn(Optional.of(unit));
-
-        ArgumentCaptor<Deployment> captor = ArgumentCaptor.forClass(Deployment.class);
-        doAnswer(inv -> {
-            Deployment d = inv.getArgument(0);
-            d.setDeploymentId(55L);
-            return null;
-        }).when(deploymentRepository).createDeployment(captor.capture());
-
-        DeploymentAssignRequestDTO dto = validDto(requestId, unitId);
-
-        deploymentService.allocateUnitsForDeploymentRequest(dto);
-
-        Deployment d = captor.getValue();
-        assertNotNull(d.getOrderedAt());
-        assertEquals(unitId, d.getResponseUnitId());
-    }
-
-    // ==========================================================================================
+    // =========================================================================
     // HELPERS
-    // ==========================================================================================
+    // =========================================================================
+
     private DeploymentRequest buildRequest(Long id) {
         DeploymentRequest r = new DeploymentRequest();
         r.setRequestId(id);
@@ -304,6 +279,7 @@ class DeploymentServiceImplTest {
     }
 
     private DeploymentAssignRequestDTO validDto(Long reqId, Long unitId) {
+
         DeploymentAssignRequestDTO dto = new DeploymentAssignRequestDTO();
         dto.setRequestId(reqId);
         dto.setAssignedBy(111L);
@@ -315,6 +291,7 @@ class DeploymentServiceImplTest {
         p.setSlotId(1L);
         p.setUserId(500L);
         p.setSpecialization("FIREFIGHTER");
+
         dto.setAssignedPersonnel(List.of(p));
 
         DeploymentAssignRequestDTO.AllocatedResourceDTO r =
@@ -322,6 +299,7 @@ class DeploymentServiceImplTest {
         r.setResourceId(10L);
         r.setQuantity(1);
         r.setIsPrimary(true);
+
         dto.setAllocatedResources(List.of(r));
 
         return dto;

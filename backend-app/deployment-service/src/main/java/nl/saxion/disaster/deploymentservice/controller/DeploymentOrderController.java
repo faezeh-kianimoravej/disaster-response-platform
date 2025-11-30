@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Tag(name = "Deployment Orders", description = "Create and manage deployment orders")
 @RestController
 @RequestMapping("/api/deployment-orders")
@@ -26,10 +28,10 @@ public class DeploymentOrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    @Operation(summary = "Get deployment order by incident ID")
+    @Operation(summary = "Get deployment orders by incident ID")
     @GetMapping("/incident/{incidentId}")
-    public ResponseEntity<DeploymentOrderDTO> getByIncidentId(@PathVariable Long incidentId) {
-        DeploymentOrderDTO order = deploymentOrderService.getDeploymentOrderByIncidentId(incidentId);
-        return ResponseEntity.ok(order);
+    public ResponseEntity<List<DeploymentOrderDTO>> getByIncidentId(@PathVariable Long incidentId) {
+        List<DeploymentOrderDTO> orders = deploymentOrderService.getDeploymentOrdersByIncidentId(incidentId);
+        return ResponseEntity.ok(orders);
     }
 }

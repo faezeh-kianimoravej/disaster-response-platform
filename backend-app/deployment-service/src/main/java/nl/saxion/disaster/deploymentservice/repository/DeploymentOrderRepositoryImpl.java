@@ -42,15 +42,13 @@ public class DeploymentOrderRepositoryImpl implements DeploymentOrderRepository 
         DeploymentOrder found = em.find(DeploymentOrder.class, id);
         if (found != null) em.remove(found);
     }
-    
+
     @Override
-    public Optional<DeploymentOrder> findDeploymentOrderByIncidentId(Long incidentId) {
-        List<DeploymentOrder> results = em.createQuery(
-                "SELECT o FROM DeploymentOrder o WHERE o.incidentId = :incidentId",
-                DeploymentOrder.class)
+    public List<DeploymentOrder> findDeploymentOrdersByIncidentId(Long incidentId) {
+        return em.createQuery(
+                        "SELECT o FROM DeploymentOrder o WHERE o.incidentId = :incidentId",
+                        DeploymentOrder.class)
                 .setParameter("incidentId", incidentId)
-                .setMaxResults(1)
-                .getResultList();
-        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+                .getResultList(); // always returns a list, even if empty
     }
 }

@@ -10,5 +10,6 @@ public interface DeploymentOrderRepository {
     Optional<DeploymentOrder> findDeploymentOrderById(Long id);
     List<DeploymentOrder> findAllDeploymentOrders();
     void deleteDeploymentOrderById(Long id);
-    Optional<DeploymentOrder> findDeploymentOrderByIncidentId(Long incidentId);
+    List<DeploymentOrder> findDeploymentOrdersByIncidentId(Long incidentId);
+
 }

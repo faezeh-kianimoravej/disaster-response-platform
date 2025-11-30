@@ -126,7 +126,7 @@ public class DeploymentServiceImpl implements DeploymentService {
                         allocationItems
                 );
 
-        //resourceServiceClient.allocateResources(allocationRequest);
+        resourceServiceClient.allocateResources(allocationRequest);
         log.info("Allocated resources in resource-service for deploymentId={}", deploymentId);
 
         // ---------------------------------------------------------------------
@@ -145,6 +145,7 @@ public class DeploymentServiceImpl implements DeploymentService {
         deploymentRequest.setAssignedBy(dto.getAssignedBy());
         deploymentRequest.setAssignedAt(new Date());
         deploymentRequest.setNotes(dto.getNotes());
+        deploymentRequest.setAssignedUnitId(unit.getUnitId());
         requestRepository.saveDeploymentRequest(deploymentRequest);
 
         // ---------------------------------------------------------------------
