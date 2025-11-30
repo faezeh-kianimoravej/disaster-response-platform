@@ -1,82 +1,38 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { vi, describe, it, expect } from 'vitest';
+import { BaseApi } from '@/api/base';
 
-// Mock the entire API module
-vi.mock('@/api/deploymentRequest', async importOriginal => {
-	const actual = await importOriginal<typeof import('@/api/deploymentRequest')>();
-	return {
-		...actual,
-		getDeploymentRequestById: vi.fn(),
-	};
-});
+describe('api/deploymentRequest mapping', () => {
+	afterEach(() => vi.restoreAllMocks());
 
-import { getDeploymentRequestById } from '@/api/deploymentRequest';
-
-describe('deploymentRequest API', () => {
-	beforeEach(() => {
-		vi.clearAllMocks();
-	});
-
-	describe('getDeploymentRequestById', () => {
-		it('should fetch and map deployment request correctly', async () => {
-			const expectedResult = {
-				requestId: 1,
-				incidentId: 100,
-				deploymentOrderId: 200,
-				requestedBy: 300,
-				requestedAt: new Date('2024-01-15T10:30:00Z'),
-				targetDepartmentId: 400,
-				priority: 'CRITICAL',
-				requestedUnitType: 'Fire truck',
+	it('converts DTO dates to Date and maps fields', async () => {
+		vi.spyOn(BaseApi.prototype, 'get').mockImplementation(async () => {
+			return {
+				requestId: 99,
+				incidentId: 10,
+				deploymentOrderId: 20,
+				requestedBy: 3,
+				requestedAt: '2020-01-02T03:04:05.000Z',
+				targetDepartmentId: 5,
+				priority: 'LOW',
+				requestedUnitType: 'AMBULANCE',
 				requestedQuantity: 2,
-				assignedUnitId: 500,
-				assignedBy: 600,
-				assignedAt: new Date('2024-01-15T11:00:00Z'),
-				status: 'assigned',
+				status: 'OPEN',
 			};
-
-			vi.mocked(getDeploymentRequestById).mockResolvedValue(expectedResult as any);
-
-			const result = await getDeploymentRequestById(1);
-
-			expect(getDeploymentRequestById).toHaveBeenCalledWith(1);
-			expect(result).toEqual(expectedResult);
 		});
 
-		it('should handle deployment request without optional fields', async () => {
-			const expectedResult = {
-				requestId: 2,
-				incidentId: 101,
-				deploymentOrderId: 201,
-				requestedBy: 300,
-				requestedAt: new Date('2024-01-15T10:30:00Z'),
-				targetDepartmentId: 400,
-				priority: 'HIGH',
-				requestedUnitType: 'Ambulance',
-				requestedQuantity: 1,
-				status: 'pending',
-			};
-
-			vi.mocked(getDeploymentRequestById).mockResolvedValue(expectedResult as any);
-
-			const result = await getDeploymentRequestById(2);
-
-			expect(result).toEqual(expectedResult);
-		});
-
-		it('should throw error when API call fails', async () => {
-			const error = new Error('Network error');
-			vi.mocked(getDeploymentRequestById).mockRejectedValue(error);
-
-			await expect(getDeploymentRequestById(1)).rejects.toThrow('Network error');
-			expect(getDeploymentRequestById).toHaveBeenCalledWith(1);
-		});
+		const module = await import('@/api/deploymentRequest');
+		const out = await module.getDeploymentRequestById(99);
+		expect(out).toBeDefined();
+		expect(out.requestId).toBe(99);
+		expect(out.requestedAt instanceof Date).toBe(true);
+		expect(out.priority).toBe('LOW');
 	});
 
 	describe('API initialization', () => {
-		it('should initialize BaseApi with correct URL', () => {
-			// This test validates that the module loads without errors
-			expect(true).toBe(true);
+		it('should initialize BaseApi with correct exports', async () => {
+			// Ensure the module loads and exports the expected function
+			const module = await import('@/api/deploymentRequest');
+			expect(typeof module.getDeploymentRequestById).toBe('function');
 		});
 	});
 });

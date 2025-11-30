@@ -1,26 +1,31 @@
 # 🚨 Disaster Response — DRCCS
 
+[![Frontend coverage](https://img.shields.io/gitlab/coverage/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/main.svg?job=test:frontend&label=Frontend%20coverage)](https://gitlab.com/%{project_path}/-/pipelines)
+[![Backend coverage](https://img.shields.io/gitlab/coverage/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/main.svg?job=test:backend-app&label=Backend%20coverage)](https://gitlab.com/%{project_path}/-/pipelines)
+
 Welcome to the Disaster Response Coordination and Communication System (DRCCS) — a student-built solution for supporting coordination, situational awareness, and communication during large-scale disasters in the Ijsselland region.  
 Built with a microservices backend and a modern React front-end, DRCCS empowers first responders, government staff, and affected citizens. 🌍🆘
 
 ---
 
 ## Who this README is for
+
 - **Users/operators:** see "User Deployment Guide" below to run a release from Docker Hub.
 - **Developers:** see "Developer Guide" for local development, testing, and releasing.
 
 ---
 
 ## 🚧 Project Status
+
 - **Status:** Proof of Concept release (student project for 2025–2026) 🛠️
 - **Backend:** Java (Maven) microservices  
-    &nbsp;&nbsp;&nbsp;&nbsp;`api-gateway`, `discovery-service`, `department-service`, `incident-service`, `municipality-service`, `notification-service`, `region-service`
+   `api-gateway`, `discovery-service`, `department-service`, `incident-service`, `municipality-service`, `notification-service`, `region-service`, `deployment-service`, `user-service`
 - **Frontend:** React + TypeScript (Vite) in `client-app/`
 
-    
 ---
 
 ## 📦 User Deployment Guide — Run a Release
+
 Run DRCCS using pre-built images from Docker Hub.
 
 1) Install Docker Desktop and Docker Compose
@@ -33,17 +38,19 @@ docker-compose up -d
 ```
 
 Services:
-- Frontend: http://localhost:3000
-- API Gateway: http://localhost:8080
-- Eureka: http://localhost:8761
 
+- Frontend: <http://localhost:3000>
+- API Gateway: <http://localhost:8080>
+- Eureka: <http://localhost:8761>
 
 **📖 Full deployment documentation:** See [`release/README.md`](release/README.md)
 
 ---
 
 ## 🧑‍💻 Developer Guide — Local Development
+
 ### Prerequisites
+
 - ☕ **Java 21** (for backend builds)
 - 🧰 **Apache Maven 3.8+** (for building the backend services)
 - 🐳 **Docker Desktop** (must be running)
@@ -52,12 +59,14 @@ Services:
 ### Backend (with Docker)
 
 **Normal start:**
+
 ```powershell
 cd backend-app
 docker-compose up -d
 ```
 
 **Fresh rebuild** (first time / after changes):
+
 ```powershell
 cd backend-app
 docker-compose down -v
@@ -66,11 +75,13 @@ docker-compose build --no-cache; docker-compose up -d
 ```
 
 Access services:
-- **Eureka Dashboard**: http://localhost:8761
-- **API Gateway**: http://localhost:8080
+
+- **Eureka Dashboard**: <http://localhost:8761>
+- **API Gateway**: <http://localhost:8080>
 - See `backend-app/README.md` for all service URLs
 
 ### Frontend
+
 ```powershell
 cd client-app
 npm install
@@ -82,6 +93,7 @@ npm run dev
 ---
 
 ## 🚀 Developer Release Process (Tag-Based)
+
 Releases are created via GitLab CI/CD when you push a version tag.
 
 1. Update the `VERSION` file
@@ -96,6 +108,7 @@ Images: `fkiani/disaster-response-*` on Docker Hub
 ---
 
 ## 🏗️ Architecture Overview
+
 - Microservices: incidents, locations, resources, notifications, discovery
 - React + TypeScript frontend (Vite)
 - REST APIs between services; notifications via push/messaging
@@ -104,6 +117,7 @@ Images: `fkiani/disaster-response-*` on Docker Hub
 ---
 
 ## 👥 Team
+
 - Sepideh
 - Faezeh
 - Furqan
@@ -114,6 +128,7 @@ See [`Docs/Team-Charter.md`](Docs/Team-Charter.md) for process, meetings, and ro
 ---
 
 ## 🤝 Contributing
+
 - Use feature branches & merge requests
 - Include tests and update API docs for any public endpoints
 - Follow security and code-quality checks before merging
@@ -121,6 +136,7 @@ See [`Docs/Team-Charter.md`](Docs/Team-Charter.md) for process, meetings, and ro
 ---
 
 ## 🔐 Security Scanning
+
 This repo uses a Free‑tier friendly security setup in GitLab CI:
 
 - SAST: included via GitLab’s Security/SAST template. On Free, results appear in job logs/artifacts rather than the full Security dashboard.
@@ -128,11 +144,13 @@ This repo uses a Free‑tier friendly security setup in GitLab CI:
 - Semgrep OSS: additional SAST job that outputs a SARIF report artifact and summarises findings in logs.
 
 Notes:
+
 - Scans exclude heavy build folders (node_modules, dist/build, coverage, target) to keep jobs fast.
 - Jobs are non‑blocking by default. We can enforce fail‑on‑severity (e.g., High/Critical) once noise is acceptable.
 
 ## 📬 Contact / Support
-- Open an issue in this repository  
+
+- Open an issue in this repository
 - Or contact the project coordinator (see [`Docs/Team-Charter.md`](Docs/Team-Charter.md))
 
 ---

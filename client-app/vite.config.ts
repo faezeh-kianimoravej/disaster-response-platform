@@ -34,6 +34,8 @@ export default defineConfig({
 				'build/**',
 			],
 		},
+		// Produce a JUnit report so GitLab can show tests in the pipeline UI
+		reporters: [['junit', { outputFile: 'test-results/junit.xml' }]],
 	},
 	resolve: {
 		alias: {

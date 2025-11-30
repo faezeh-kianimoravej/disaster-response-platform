@@ -23,7 +23,7 @@ variables:
     - npm ci
 
 # Test job (full coverage on main & MRs to main)
-test:client-app:
+test:frontend:
   extends: .client-app-base
   stage: test
   rules:
@@ -40,6 +40,7 @@ test:client-app:
       when: always
     - when: never
   script:
+    - mkdir -p test-results
     - npm run lint
     - npm run coverage
     - npm run format:check
@@ -49,7 +50,9 @@ test:client-app:
       coverage_report:
         coverage_format: cobertura
         path: client-app/coverage/cobertura-coverage.xml
+      junit: client-app/test-results/junit.xml
     paths:
       - client-app/coverage/
+      - client-app/test-results/
     expire_in: 7 days
   coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'

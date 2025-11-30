@@ -27,6 +27,7 @@ dependency-reduced-pom.xml
 **/build/
 **/dist/
 **/coverage/
+**/test-results/
 /node_modules
 /build
 /coverage
