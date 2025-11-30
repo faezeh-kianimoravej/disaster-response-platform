@@ -4,6 +4,6 @@ import java.util.List;
 
 public record ResourceAllocationBatchRequestDTO(
         Long deploymentId,
-        Long unitId,
-        List<ResourceAllocationItemDTO> items
+        Long responseUnitId,
+        List<ResourceAllocationItemDTO> allocations
 ) {}
