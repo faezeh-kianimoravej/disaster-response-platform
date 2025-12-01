@@ -80,7 +80,6 @@ test:frontend:
       }
       let j = {};
       try { j = JSON.parse(jsonText); } catch(e) { j = {}; }
-      let total = 0;
       if (typeof j.numTotalTests === 'number') total = j.numTotalTests;
       else if (typeof j.totalTests === 'number') total = j.totalTests;
       else if (j.stats && typeof j.stats.tests === 'number') total = j.stats.tests;
