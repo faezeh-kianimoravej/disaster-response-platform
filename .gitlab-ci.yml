@@ -63,9 +63,9 @@ validate:version:
     - job: validate:version
       artifacts: true
     - job: test:backend-app
-      optional: true
+      artifacts: true
     - job: test:frontend
-      optional: true
+      artifacts: true
   before_script:
     - echo "Docker Hub Username - ${DOCKERHUB_USERNAME}"
     - |
@@ -244,9 +244,9 @@ image:frontend:
     - job: validate:version
       artifacts: true
     - job: test:backend-app
-      optional: true
+      artifacts: true
     - job: test:frontend
-      optional: true
+      artifacts: true
   before_script:
     - echo "Docker Hub Username - ${DOCKERHUB_USERNAME}"
     - |

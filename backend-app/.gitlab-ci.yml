@@ -41,11 +41,13 @@ test:backend-app:
   script:
     - mvn -B clean org.jacoco:jacoco-maven-plugin:0.8.10:prepare-agent test org.jacoco:jacoco-maven-plugin:0.8.10:report
     - |
-      # Find generated JaCoCo XML and compute line coverage percent (rounded)
+      # Compute coverage percentage from JaCoCo xml (rounded integer) and generate badges
+      set -e
       JACOCO_XML=$(find . -path "*/target/site/jacoco/jacoco.xml" | head -n1 || true)
+      PCT=0
       if [ -f "$JACOCO_XML" ]; then
-        LINE_MISSED=$(sed -n 's/.*type="LINE" missed="\([0-9]*\)".*/\1/p' "$JACOCO_XML")
-        LINE_COVERED=$(sed -n 's/.*type="LINE" missed="[0-9]*" covered="\([0-9]*\)".*/\1/p' "$JACOCO_XML")
+        LINE_MISSED=$(sed -n 's/.*type="LINE" missed="\([0-9]*\)".*/\1/p' "$JACOCO_XML") || LINE_MISSED=0
+        LINE_COVERED=$(sed -n 's/.*type="LINE" missed="[0-9]*" covered="\([0-9]*\)".*/\1/p' "$JACOCO_XML") || LINE_COVERED=0
         if [ -z "$LINE_MISSED" ] || [ -z "$LINE_COVERED" ]; then
           echo "Could not parse LINE counters from $JACOCO_XML"
         else
@@ -55,14 +57,42 @@ test:backend-app:
       else
         echo "Jacoco XML not found; skipping coverage summary"
       fi
+      # Generate badges directory
+      mkdir -p badges || true
+      # Coverage badge color logic: green >=90, yellow >=75, orange >=60, red otherwise
+      cov=${PCT:-0}
+      if [ "$cov" -ge 90 ]; then
+        covColor="#4c1"
+      elif [ "$cov" -ge 75 ]; then
+        covColor="#dfb317"
+      elif [ "$cov" -ge 60 ]; then
+        covColor="#f39c12"
+      else
+        covColor="#e05d44"
+      fi
+      covSvg="<?xml version=\"1.0\"?>\n<svg xmlns='http://www.w3.org/2000/svg' width='110' height='20'>\n  <rect width='110' height='20' fill='#555'/>\n  <rect x='60' width='50' height='20' fill='${covColor}'/>\n  <g fill='#fff' font-family='Verdana,Geneva,sans-serif' font-size='11'>\n    <text x='8' y='14'>coverage</text>\n    <text x='72' y='14'>${cov}%</text>\n  </g>\n</svg>"
+      echo -e "$covSvg" > badges/coverage.svg || echo "Failed to write badges/coverage.svg"
+      # Find surefire XML files produced by modules and sum tests attributes
+      TEST_FILES=$(find . -path "./*/target/surefire-reports/TEST-*.xml" -print || true)
+      if [ -z "$TEST_FILES" ]; then
+        echo "No surefire TEST-*.xml files found; writing zero tests badge"
+        TEST_COUNT=0
+      else
+        TEST_COUNT=$(grep -ho 'tests="[0-9]*"' $TEST_FILES 2>/dev/null | sed 's/tests="\([0-9]*\)"/\1/' | awk '{s+=$1}END{print s+0}')
+        TEST_COUNT=${TEST_COUNT:-0}
+      fi
+      testSvg="<?xml version=\"1.0\"?>\n<svg xmlns='http://www.w3.org/2000/svg' width='110' height='20'>\n  <rect width='110' height='20' fill='#555'/>\n  <rect x='60' width='50' height='20' fill='#007ec6'/>\n  <g fill='#fff' font-family='Verdana,Geneva,sans-serif' font-size='11'>\n    <text x='8' y='14'>tests</text>\n    <text x='72' y='14'>${TEST_COUNT}</text>\n  </g>\n</svg>"
+      echo -e "$testSvg" > badges/tests.svg || echo "Failed to write badges/tests.svg"
+      echo "Wrote badges/tests.svg and badges/coverage.svg -> tests=${TEST_COUNT} cov=${cov}%"
   artifacts:
     when: always
     reports:
       junit:
         - backend-app/*/target/surefire-reports/TEST-*.xml
     paths:
-      - backend-app/*/target/surefire-reports/
-      - backend-app/*/target/site/jacoco/
+      - backend-app/*/target/site/jacoco/jacoco.xml
+      - backend-app/*/target/surefire-reports/TEST-*.xml
+      - backend-app/badges/*.svg
     expire_in: 30 days
   coverage: '/Total Coverage: ([0-9]{1,3})%/'
 

@@ -34,8 +34,14 @@ export default defineConfig({
 				'build/**',
 			],
 		},
-		// Produce a JUnit report so GitLab can show tests in the pipeline UI
-		reporters: [['junit', { outputFile: 'test-results/junit.xml' }]],
+		// Produce a JUnit report in CI only so local `vitest` UX isn't affected
+		reporters: ((): any => {
+			const r: any[] = [];
+			if (process.env.CI || process.env.GITLAB_CI) {
+				r.push(['junit', { outputFile: 'test-results/junit.xml' }]);
+			}
+			return r;
+		})(),
 	},
 	resolve: {
 		alias: {
