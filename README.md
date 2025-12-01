@@ -1,7 +1,10 @@
 # 🚨 Disaster Response — DRCCS
 
-[![Frontend coverage](https://img.shields.io/gitlab/coverage/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/main.svg?job=test:frontend&label=Frontend%20coverage)](https://gitlab.com/%{project_path}/-/pipelines)
-[![Backend coverage](https://img.shields.io/gitlab/coverage/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/main.svg?job=test:backend-app&label=Backend%20coverage)](https://gitlab.com/%{project_path}/-/pipelines)
+**Frontend status**
+[![Frontend coverage](https://gitlab.com/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/badges/main/coverage.svg?job=test:frontend)](https://gitlab.com/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/-/pipelines)
+
+**Backend status**
+[![Backend coverage](https://gitlab.com/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/badges/main/coverage.svg?job=test:backend-app)](https://gitlab.com/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/-/pipelines)
 
 Welcome to the Disaster Response Coordination and Communication System (DRCCS) — a student-built solution for supporting coordination, situational awareness, and communication during large-scale disasters in the Ijsselland region.  
 Built with a microservices backend and a modern React front-end, DRCCS empowers first responders, government staff, and affected citizens. 🌍🆘
