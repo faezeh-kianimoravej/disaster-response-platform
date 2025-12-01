@@ -51,6 +51,7 @@ test:frontend:
       const fs = require('fs');
       const p = 'test-results/vitest-summary.json';
       let raw = '';
+      let total = 0;
       try { raw = fs.readFileSync(p,'utf8'); } catch(e) { raw = ''; }
       // If JUnit file exists, parse it to get exact test count (most reliable)
       try {
