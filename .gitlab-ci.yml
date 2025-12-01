@@ -398,6 +398,7 @@ publish:gitlab-release:
   before_script:
     - |
       if [ -z "$VERSION" ]; then VERSION=$(cat VERSION); fi
+
       echo "Preparing GitLab Release for v$VERSION";
       RELEASE_DATE=$(date +"%B %d, %Y")
       IS_RC=""
@@ -567,3 +568,37 @@ semgrep-sast:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH
       when: on_success
+
+# ======================================
+# Release badge
+# ======================================
+badges:release:
+  stage: publish
+  image: alpine:latest
+  # Run only on stable tag releases (semantic version tags without -rc)
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
+      when: on_success
+    - when: never
+  script:
+    - mkdir -p badges
+    - VERSION_FILE=$(cat VERSION 2>/dev/null || echo "$CI_COMMIT_TAG")
+    - echo "Writing badges/release.svg for VERSION=$VERSION_FILE"
+    - |
+      cat > badges/release.svg <<'SVG'
+      <?xml version="1.0" encoding="UTF-8"?>
+      <svg xmlns="http://www.w3.org/2000/svg" width="200" height="20">
+        <rect rx="3" width="200" height="20" fill="#555"/>
+        <rect rx="3" x="96" width="104" height="20" fill="#4c1"/>
+        <g fill="#fff" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
+          <text x="8" y="14">stable release</text>
+          <text id="version" x="102" y="14">$VERSION_PLACEHOLDER</text>
+        </g>
+      </svg>
+      SVG
+    # Replace placeholder with actual version safely
+    - sed -i "s/\$VERSION_PLACEHOLDER/${VERSION_FILE}/g" badges/release.svg || true
+  artifacts:
+    paths:
+      - badges/release.svg
+    expire_in: 30 days

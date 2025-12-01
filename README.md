@@ -19,13 +19,16 @@ Built with a microservices backend and a modern React front-end, DRCCS empowers 
    `api-gateway`, `discovery-service`, `department-service`, `incident-service`, `municipality-service`, `notification-service`, `region-service`, `deployment-service`, `user-service`
 - **Frontend:** React + TypeScript (Vite) in `client-app/`
 
-### Frontend status
+[![Pipeline status](https://gitlab.com/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/badges/main/pipeline.svg)](https://gitlab.com/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/-/pipelines)  
+Latest stable release: [Releases page](https://gitlab.com/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/-/releases)  
+
+### Frontend tests
 
 [![Frontend coverage](https://gitlab.com/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/-/jobs/artifacts/main/raw/client-app/badges/coverage.svg?job=test:frontend)](https://gitlab.com/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/-/pipelines)
 
 [![Frontend tests](https://gitlab.com/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/-/jobs/artifacts/main/raw/client-app/badges/tests.svg?job=test:frontend)](https://gitlab.com/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/-/pipelines)
 
-### Backend status
+### Backend tests
 
 [![Backend coverage](https://gitlab.com/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/-/jobs/artifacts/main/raw/backend-app/badges/coverage.svg?job=test:backend-app)](https://gitlab.com/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/-/pipelines)
 
