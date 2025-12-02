@@ -119,7 +119,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .userId(message.getUserId())
                 .userFullName(chatUser != null ? chatUser.getUserFullName() : "Unknown User")
                 .userRole(chatUser != null ? chatUser.getUserRole() : "Unknown")
-                .messageType(message.getMessageType())
+                .messageType(message.getMessageType().name())
                 .content(message.getContent())
                 .timestamp(message.getTimestamp())
                 .build();
