@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import nl.saxion.disaster.chat_service.model.MessageType;
 
 import java.time.LocalDateTime;
 
@@ -18,7 +19,7 @@ public class ChatMessageResponseDto {
     private Long userId;
     private String userFullName;
     private String userRole;
-    private String messageType;
+    private MessageType messageType;
     private String content;
     private LocalDateTime timestamp;
 }

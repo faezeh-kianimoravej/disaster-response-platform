@@ -5,12 +5,6 @@ CREATE DATABASE region_db;
 CREATE DATABASE incident_db;
 CREATE DATABASE notification_db;
 CREATE DATABASE user_db;
-<<<<<<< ours
-CREATE DATABASE deployment_db;
-CREATE DATABASE chat_db;
-||||||| ancestor
-CREATE DATABASE deployment_db;
-=======
 CREATE DATABASE deployment_db;
 CREATE DATABASE keycloak_db;
->>>>>>> theirs
+CREATE DATABASE chat_db;
