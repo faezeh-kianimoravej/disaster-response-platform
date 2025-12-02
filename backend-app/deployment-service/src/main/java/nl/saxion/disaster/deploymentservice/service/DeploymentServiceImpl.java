@@ -2,6 +2,12 @@ package nl.saxion.disaster.deploymentservice.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import nl.saxion.disaster.deploymentservice.client.ChatGroupCreateDTO;
+import nl.saxion.disaster.deploymentservice.client.ChatGroupResponseDTO;
+import nl.saxion.disaster.deploymentservice.client.ChatServiceClient;
+import nl.saxion.disaster.deploymentservice.client.ChatUserAddDTO;
+import nl.saxion.disaster.deploymentservice.client.IncidentBasicDTO;
+import nl.saxion.disaster.deploymentservice.client.IncidentServiceClient;
 import nl.saxion.disaster.deploymentservice.client.ResourceServiceClient;
 import nl.saxion.disaster.deploymentservice.dto.ResourceAllocationBatchRequestDTO;
 import nl.saxion.disaster.deploymentservice.dto.ResourceAllocationItemDTO;
@@ -35,6 +41,8 @@ public class DeploymentServiceImpl implements DeploymentService {
     private final ResponseUnitRepository responseUnitRepository;
     private final DeploymentRepository deploymentRepository;
     private final ResourceServiceClient resourceServiceClient;
+    private final ChatServiceClient chatServiceClient;
+    private final IncidentServiceClient incidentServiceClient;
 
     @Override
     @Transactional
@@ -147,6 +155,54 @@ public class DeploymentServiceImpl implements DeploymentService {
         deploymentRequest.setNotes(dto.getNotes());
         deploymentRequest.setAssignedUnitId(unit.getUnitId());
         requestRepository.saveDeploymentRequest(deploymentRequest);
+
+        // ---------------------------------------------------------------------
+        // 7.5) ADD DEPLOYED PERSONNEL TO CHAT GROUP
+        // ---------------------------------------------------------------------
+        try {
+            // Fetch incident details to get the title
+            IncidentBasicDTO incident = incidentServiceClient.getIncidentById(deploymentRequest.getIncidentId());
+            String chatTitle = incident.getTitle() != null ? incident.getTitle() : "Incident Response Team";
+            
+            ChatGroupCreateDTO chatGroupRequest = new ChatGroupCreateDTO(
+                    deploymentRequest.getIncidentId(),
+                    chatTitle
+            );
+            ChatGroupResponseDTO chatGroup = chatServiceClient.createChatGroup(chatGroupRequest);
+            log.info("Chat group created/retrieved for incident {}: groupId={}", 
+                    deploymentRequest.getIncidentId(), chatGroup.getChatGroupId());
+
+            // Add the person who assigned this deployment
+            try {
+                chatServiceClient.addUserToGroup(
+                        chatGroup.getChatGroupId(), 
+                        new ChatUserAddDTO(dto.getAssignedBy())
+                );
+                log.info("Added user {} (assigned by) to chat group {}", 
+                        dto.getAssignedBy(), chatGroup.getChatGroupId());
+            } catch (Exception e) {
+                log.warn("Failed to add assigner {} to chat group: {}", 
+                        dto.getAssignedBy(), e.getMessage());
+            }
+
+            // Add each deployed personnel to the chat group
+            deployment.getDeployedPersonnel().forEach(personnel -> {
+                try {
+                    chatServiceClient.addUserToGroup(
+                            chatGroup.getChatGroupId(), 
+                            new ChatUserAddDTO(personnel.getUserId())
+                    );
+                    log.info("Added deployed personnel {} to chat group {}", 
+                            personnel.getUserId(), chatGroup.getChatGroupId());
+                } catch (Exception e) {
+                    log.warn("Failed to add personnel {} to chat group: {}", 
+                            personnel.getUserId(), e.getMessage());
+                }
+            });
+        } catch (Exception e) {
+            log.error("Failed to add deployed personnel to chat group for incident {}: {}", 
+                    deploymentRequest.getIncidentId(), e.getMessage());
+        }
 
         // ---------------------------------------------------------------------
         // 8) BUILD RESPONSE DTO

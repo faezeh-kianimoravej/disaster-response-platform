@@ -1,6 +1,13 @@
 package nl.saxion.disaster.deploymentservice.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import nl.saxion.disaster.deploymentservice.client.ChatGroupCreateDTO;
+import nl.saxion.disaster.deploymentservice.client.ChatGroupResponseDTO;
+import nl.saxion.disaster.deploymentservice.client.ChatServiceClient;
+import nl.saxion.disaster.deploymentservice.client.ChatUserAddDTO;
+import nl.saxion.disaster.deploymentservice.client.IncidentBasicDTO;
+import nl.saxion.disaster.deploymentservice.client.IncidentServiceClient;
 import nl.saxion.disaster.deploymentservice.dto.DeploymentOrderCreateDTO;
 import nl.saxion.disaster.deploymentservice.dto.DeploymentOrderDTO;
 import nl.saxion.disaster.deploymentservice.enums.DeploymentRequestStatus;
@@ -21,11 +28,14 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DeploymentOrderServiceImpl implements nl.saxion.disaster.deploymentservice.service.contract.DeploymentOrderService {
 
     private final DeploymentOrderRepository orderRepository;
     private final DeploymentOrderMapper orderMapper;
     private final DeploymentEventPublisher eventPublisher;
+    private final ChatServiceClient chatServiceClient;
+    private final IncidentServiceClient incidentServiceClient;
 
     @Override
     @Transactional
@@ -63,6 +73,49 @@ public class DeploymentOrderServiceImpl implements nl.saxion.disaster.deployment
         order.setDeploymentRequests(requests);
 
         DeploymentOrder savedOrder = orderRepository.saveDeploymentOrder(order);
+
+        // ------------------------------
+        // 2) Create/Get Chat Group & Add User Responsible for Order
+        // ------------------------------
+        try {
+            // Fetch incident details to get the title
+            IncidentBasicDTO incident = incidentServiceClient.getIncidentById(savedOrder.getIncidentId());
+            String chatTitle = incident.getTitle() != null ? incident.getTitle() : "Incident Response Team";
+            
+            ChatGroupCreateDTO chatGroupRequest = new ChatGroupCreateDTO(
+                    savedOrder.getIncidentId(),
+                    chatTitle
+            );
+            ChatGroupResponseDTO chatGroup = chatServiceClient.createChatGroup(chatGroupRequest);
+            log.info("Chat group created/retrieved for incident {}: groupId={}", 
+                    savedOrder.getIncidentId(), chatGroup.getChatGroupId());
+
+            // Add the user responsible for the order
+            chatServiceClient.addUserToGroup(
+                    chatGroup.getChatGroupId(), 
+                    new ChatUserAddDTO(savedOrder.getOrderedBy())
+            );
+            log.info("Added user {} (ordered by) to chat group {}", 
+                    savedOrder.getOrderedBy(), chatGroup.getChatGroupId());
+
+            // Add users handling each deployment request
+            savedOrder.getDeploymentRequests().forEach(req -> {
+                try {
+                    chatServiceClient.addUserToGroup(
+                            chatGroup.getChatGroupId(), 
+                            new ChatUserAddDTO(req.getRequestedBy())
+                    );
+                    log.info("Added user {} (requested by) to chat group {}", 
+                            req.getRequestedBy(), chatGroup.getChatGroupId());
+                } catch (Exception e) {
+                    log.warn("Failed to add user {} to chat group: {}", 
+                            req.getRequestedBy(), e.getMessage());
+                }
+            });
+        } catch (Exception e) {
+            log.error("Failed to create chat group or add users for incident {}: {}", 
+                    savedOrder.getIncidentId(), e.getMessage());
+        }
 
         // ------------------------------
         // 3) Publish events
