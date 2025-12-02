@@ -25,6 +25,7 @@
         <module>user-service</module>
         <module>resource-service</module>
         <module>deployment-service</module>
+        <module>chat-service</module>
     </modules>
 
     <properties>

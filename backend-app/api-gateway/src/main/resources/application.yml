@@ -55,6 +55,17 @@ spring:
             - RemoveResponseHeader=Transfer-Encoding
             - RemoveResponseHeader=Content-Length
 
+        # Chat SSE
+        - id: chat-sse
+          uri: lb://chat-service
+          predicates:
+            - Path=/api/chat/*/subscribe
+          filters:
+            - SetResponseHeader=Content-Type, text/event-stream
+            - SetResponseHeader=Cache-Control, no-store
+            - RemoveResponseHeader=Transfer-Encoding
+            - RemoveResponseHeader=Content-Length
+
         # ---------------------------
         # NORMAL SERVICES
         # ---------------------------
@@ -178,6 +189,16 @@ spring:
             - name: CircuitBreaker
               args:
                 name: deploymentServiceCircuitBreaker
+                fallbackUri: forward:/fallback
+
+        - id: chat
+          uri: lb://chat-service
+          predicates:
+            - Path=/api/chat/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: chatServiceCircuitBreaker
                 fallbackUri: forward:/fallback
 
 

@@ -24,6 +24,7 @@ echo "1.0.0" > VERSION
 ```
 
 **Version Format:**
+
 - Release candidates: `X.Y.Z-rcN` (e.g., `1.0.0-rc1`)
 - Stable releases: `X.Y.Z` (e.g., `1.0.0`)
 
@@ -73,6 +74,7 @@ Once you push the tag, GitLab CI will automatically:
 6. **Security scan** images with Trivy (non-blocking)
 
 Visit the GitLab CI/CD Pipelines page to monitor progress:
+
 - `https://gitlab.com/<your-org>/<your-repo>/-/pipelines`
 
 ### 5. Verify Release
@@ -88,6 +90,7 @@ docker pull fkiani/disaster-response-frontend:1.0.0
 ```
 
 For release candidates, verify `latest` was NOT created:
+
 ```bash
 # This should fail for RC tags
 docker pull fkiani/disaster-response-api-gateway:latest
@@ -98,6 +101,7 @@ docker pull fkiani/disaster-response-api-gateway:latest
 Deployment instructions for users/operators live in `release/README.md`. Developers creating releases do not need to perform deployment as part of the release pipeline itself.
 
 If you need to verify manually:
+
 ```bash
 cd release
 docker-compose pull
@@ -107,15 +111,19 @@ docker-compose up -d
 ## Version Bump Strategy
 
 ### Major Version (X.0.0)
+
 Breaking changes, major architecture updates, incompatible API changes.
 
 ### Minor Version (X.Y.0)
+
 New features, backward-compatible functionality additions.
 
 ### Patch Version (X.Y.Z)
+
 Bug fixes, security patches, minor improvements.
 
 ### Release Candidates (X.Y.Z-rcN)
+
 Pre-release testing versions. Automatically skips `latest` tag to prevent accidental production use.
 
 ## Rollback
@@ -135,12 +143,14 @@ Alternatively, redeploy containers using a previous image tag directly (see `rel
 **Error:** `Git tag 'vX.Y.Z' does not match VERSION file 'vA.B.C'`
 
 **Solution:** Ensure the Git tag exactly matches `v` + VERSION file contents:
+
 ```bash
 cat VERSION  # Should output X.Y.Z (no v prefix)
 git tag      # Should show vX.Y.Z
 ```
 
 Delete incorrect tag and recreate:
+
 ```bash
 git tag -d v1.0.0-wrong
 git push origin :refs/tags/v1.0.0-wrong
@@ -149,10 +159,12 @@ git push origin :refs/tags/v1.0.0-wrong
 ### Docker Build Fails
 
 **Common causes:**
+
 - Maven dependency resolution issues → Check internet connectivity in runner
 - Multi-stage build OOM → Increase Docker runner resources
 
 **Local test:**
+
 ```bash
 cd backend-app/api-gateway
 docker build -t test-api-gateway .
@@ -161,6 +173,7 @@ docker build -t test-api-gateway .
 ### Images Not Appearing on Docker Hub
 
 **Check:**
+
 1. GitLab CI variables `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` are set
 2. Token has push permissions
 3. Pipeline logs show successful `docker push` commands
@@ -188,5 +201,6 @@ After release:
 ## Support
 
 For questions or issues with the release process:
+
 - Open an issue in the repository
 - Contact the project coordinator (see `Docs/Team-Charter.md`)

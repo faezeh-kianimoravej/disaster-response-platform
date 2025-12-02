@@ -191,6 +191,21 @@
       - app-network
     restart: always
 
+  chat-service:
+    image: fkiani/disaster-response-chat-service:latest
+    container_name: chat-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/chat_db
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-service:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=local-docker
+    depends_on:
+      - discovery-service
+      - postgres-db
+      - user-service
+    networks:
+      - app-network
+    restart: always
+
   frontend:
     image: fkiani/disaster-response-frontend:latest
     container_name: disaster-frontend
