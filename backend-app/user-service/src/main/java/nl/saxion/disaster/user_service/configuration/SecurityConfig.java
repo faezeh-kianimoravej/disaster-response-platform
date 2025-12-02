@@ -48,6 +48,7 @@ public class SecurityConfig {
                 // Define which requests are public and which require authentication
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/users/login", "/api/users/register").permitAll()  // public endpoints
+                        .requestMatchers("/api/users/internal/**").permitAll()  // Allow internal service-to-service calls
                         .anyRequest().authenticated()  // all other requests require a valid token
                 )
 

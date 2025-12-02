@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.saxion.disaster.user_service.dto.LoginRequestDto;
 import nl.saxion.disaster.user_service.dto.LoginResponseDto;
+import nl.saxion.disaster.user_service.dto.UserBasicDTO;
 import nl.saxion.disaster.user_service.dto.UserRequestDto;
 import nl.saxion.disaster.user_service.dto.UserResponseDto;
 import nl.saxion.disaster.user_service.service.contract.UserAuthenticationService;
@@ -89,6 +90,41 @@ public class UserController {
         long duration = System.currentTimeMillis() - start;
         log.info("[GET USERS] Returned {} active users ({} ms).", users.size(), duration);
         return ResponseEntity.ok(users);
+    }
+
+    // --------------------------------------------------------------------------------------------
+    // Get User Basic Info (Internal - No Auth Required)
+    // --------------------------------------------------------------------------------------------
+    @Operation(
+            summary = "Get basic user info by ID (Internal)",
+            description = "Fetches basic user information (name and role) for internal service-to-service calls. No authentication required."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "User found successfully",
+                    content = @Content(schema = @Schema(implementation = UserBasicDTO.class))),
+            @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
+    })
+    @GetMapping("/internal/{id}")
+    public ResponseEntity<UserBasicDTO> getUserBasicInfo(@PathVariable Long id) {
+        long start = System.currentTimeMillis();
+        log.debug("[GET USER BASIC] Internal request received for user ID={}", id);
+
+        var response = userService.getUserById(id)
+                .map(user -> {
+                    UserBasicDTO basicInfo = UserBasicDTO.builder()
+                            .userId(user.id())
+                            .fullName(user.firstName() + " " + user.lastName())
+                            .role(user.roles().iterator().next().roleType().name())
+                            .build();
+                    log.info("[GET USER BASIC] Found user with id={} ({} ms)", id, System.currentTimeMillis() - start);
+                    return ResponseEntity.ok(basicInfo);
+                })
+                .orElseGet(() -> {
+                    log.warn("[GET USER BASIC] User with id={} not found ({} ms)", id, System.currentTimeMillis() - start);
+                    return ResponseEntity.notFound().build();
+                });
+
+        return response;
     }
 
     // --------------------------------------------------------------------------------------------
