@@ -2,15 +2,23 @@
 
 This document provides comprehensive API documentation for the Chat Service microservice.
 
+## Overview
+
+The Chat Service provides real-time communication capabilities for incident response teams. Key features:
+
+- **One Chat Group Per Incident**: Each incident has exactly one associated chat group
+- **Role-Based Message Types**: Messages are automatically typed based on user roles
+  - `LEADER`: Admins, commanders, and department/region/municipality leaders
+  - `DEFAULT`: Regular users and responders
+  - `SYSTEM`: Automated system messages
+- **Real-Time Updates**: Server-Sent Events (SSE) for live message streaming
+- **Read Receipts**: Track which messages each user has read
+- **User Integration**: Fetches user details (name, role) from User Service
+
 ## Base URL
 
-- **Local (Single)**: `http://localhost:8089`
-- **Local (Docker)**: `http://chat-service:8089`
+- **Local**: `http://localhost:8089`
 - **Production**: Via API Gateway at `http://localhost:8080/api/chat`
-
-## Authentication
-
-All endpoints require valid authentication tokens passed via the API Gateway.
 
 ---
 
@@ -20,7 +28,7 @@ All endpoints require valid authentication tokens passed via the API Gateway.
 
 #### 1. Create Chat Group
 
-Creates a new chat group for an incident.
+Creates a new chat group for an incident. **Note**: Only one chat group can exist per incident. If a chat group already exists for the incident, the existing group is returned instead of creating a duplicate.
 
 **Endpoint**: `POST /api/chat/groups`
 
@@ -33,7 +41,7 @@ Creates a new chat group for an incident.
 }
 ```
 
-**Response** (201 Created):
+**Response** (201 Created or 200 OK if existing):
 
 ```json
 {
@@ -111,7 +119,10 @@ Closes a chat group (prevents new messages).
 
 #### 5. Send Message
 
-Sends a new message to a chat group.
+Sends a new message to a chat group. The message type is automatically determined based on the sender's role:
+
+- Users with roles containing "ADMIN", "LEADER", or "COMMANDER" send `LEADER` type messages
+- All other users send `DEFAULT` type messages
 
 **Endpoint**: `POST /api/chat/{groupId}/messages`
 
@@ -131,6 +142,9 @@ Sends a new message to a chat group.
   "chatMessageId": 42,
   "chatGroupId": 1,
   "userId": 2,
+  "userFullName": "Mike Johnson",
+  "userRole": "FIRE_DEPARTMENT",
+  "messageType": "DEFAULT",
   "content": "Fire truck deployed to location",
   "timestamp": "2025-12-02T12:30:00"
 }
@@ -152,6 +166,9 @@ Retrieves all messages in a chat group (ordered by timestamp).
     "chatMessageId": 40,
     "chatGroupId": 1,
     "userId": 1,
+    "userFullName": "Jane Smith",
+    "userRole": "REGION_ADMIN",
+    "messageType": "LEADER",
     "content": "Emergency at Main Street",
     "timestamp": "2025-12-02T12:00:00"
   },
@@ -159,6 +176,9 @@ Retrieves all messages in a chat group (ordered by timestamp).
     "chatMessageId": 41,
     "chatGroupId": 1,
     "userId": 2,
+    "userFullName": "Mike Johnson",
+    "userRole": "RESPONDER",
+    "messageType": "DEFAULT",
     "content": "Received, sending team",
     "timestamp": "2025-12-02T12:15:00"
   }
@@ -171,7 +191,7 @@ Retrieves all messages in a chat group (ordered by timestamp).
 
 #### 7. Add User to Group
 
-Adds a user to a chat group.
+Adds a user to a chat group. User details (full name and role) are automatically fetched from the User Service.
 
 **Endpoint**: `POST /api/chat/{groupId}/users`
 
@@ -209,7 +229,7 @@ Removes a user from a chat group.
 
 #### 9. Update Last Read Message
 
-Marks messages as read up to a specific message ID.
+Marks messages as read up to a specific message ID. This is used to track unread message counts.
 
 **Endpoint**: `PUT /api/chat/{groupId}/users/{userId}/read`
 
@@ -357,6 +377,9 @@ Unexpected server error.
   chatMessageId: number;
   chatGroupId: number;
   userId: number;
+  userFullName: string;
+  userRole: string;
+  messageType: "DEFAULT" | "LEADER" | "SYSTEM";
   content: string;
   timestamp: string; // ISO 8601 timestamp
 }
@@ -401,8 +424,11 @@ The chat-service registers with Eureka Discovery Service and can be accessed via
 
 ### Dependencies
 
-- **User Service**: Called via Feign client to fetch user details (name, role)
-- **PostgreSQL**: Database `chat_db` with tables `chat_groups`, `chat_messages`, `chat_users`
+- **User Service**: Called via Feign client to fetch user details (name, role) using internal endpoint `/internal/{userId}`
+- **PostgreSQL**: Database `chat_db` with tables:
+  - `chat_groups`: Stores chat groups with unique constraint on `incident_id`
+  - `chat_messages`: Stores messages with `message_type` enum (DEFAULT, LEADER, SYSTEM)
+  - `chat_users`: Stores user membership and last read message tracking
 
 ### SSE Configuration
 

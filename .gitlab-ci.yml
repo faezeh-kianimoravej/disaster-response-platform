@@ -214,6 +214,20 @@ image:user-service:
         docker push "$IMAGE:latest"
       fi
 
+image:chat-service:
+  extends: .backend-image-base
+  script:
+    - |
+      IMAGE="$DOCKERHUB_USERNAME/disaster-response-chat-service"
+      docker build --build-arg VERSION=$VERSION -t "$IMAGE:$VERSION" backend-app/chat-service
+      if [[ "$VERSION" != *"-rc"* ]]; then
+        docker tag "$IMAGE:$VERSION" "$IMAGE:latest"
+      fi
+      docker push "$IMAGE:$VERSION"
+      if [[ "$VERSION" != *"-rc"* ]]; then
+        docker push "$IMAGE:latest"
+      fi
+
 image:deployment-service:
   extends: .backend-image-base
   script:
@@ -358,6 +372,13 @@ scan:user-service:
   script:
     - trivy image --severity HIGH,CRITICAL --ignore-unfixed "$DOCKERHUB_USERNAME/disaster-response-user-service:$VERSION"
 
+scan:chat-service:
+  extends: .trivy-scan
+  needs:
+    - job: image:chat-service
+  script:
+    - trivy image --severity HIGH,CRITICAL --ignore-unfixed "$DOCKERHUB_USERNAME/disaster-response-chat-service:$VERSION"
+
 scan:deployment-service:
   extends: .trivy-scan
   needs:
@@ -393,6 +414,7 @@ publish:gitlab-release:
     - image:region-service
     - image:resource-service
     - image:user-service
+    - image:chat-service
     - image:deployment-service
     - image:frontend
   before_script:
@@ -446,6 +468,7 @@ publish:gitlab-release:
       - **Resource Service** - Resource allocation and tracking
       - **User Service** - User authentication and management
       - **Deployment Service** - Deployment management
+      - **Chat Service** - Real-time chat and messaging
       - **Frontend Application** - React-based web interface
 
       ## 🐳 Docker Images
@@ -463,6 +486,7 @@ publish:gitlab-release:
       $DOCKERHUB_USERNAME/disaster-response-resource-service:$VERSION
       $DOCKERHUB_USERNAME/disaster-response-user-service:$VERSION
       $DOCKERHUB_USERNAME/disaster-response-deployment-service:$VERSION
+      $DOCKERHUB_USERNAME/disaster-response-chat-service:$VERSION
       $DOCKERHUB_USERNAME/disaster-response-frontend:$VERSION
       \`\`\`
 
