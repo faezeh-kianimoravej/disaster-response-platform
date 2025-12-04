@@ -103,6 +103,7 @@ post-coverage:backend:
   needs:
     - job: test:backend-app
       artifacts: true
+      optional: true
   rules:
     - if: '$CI_MERGE_REQUEST_IID'
       when: on_success
