@@ -14,11 +14,12 @@ import nl.saxion.disaster.user_service.mapper.ResponderProfileMapper;
 import nl.saxion.disaster.user_service.service.contract.UserService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +32,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final ResponderProfileRepository responderProfileRepository;
     private final ResponderProfileMapper responderProfileMapper;
+    private final KeycloakAdminClient keycloakAdminClient;
 
     // --------------------------------------------------------------------------------------------
     // CREATE USER
@@ -50,7 +52,36 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(requestDto.password()));
         user.setPasswordUpdatedAt(OffsetDateTime.now());
 
+
         User savedUser = userRepository.createUser(user);
+
+         // create user in Keycloak (best-effort)
+        try {
+            String keycloakUserId = keycloakAdminClient.createUserInKeycloak(
+                savedUser.getFirstName(),
+                savedUser.getLastName(),
+                savedUser.getEmail(),
+                requestDto.password()
+            );
+
+            if (keycloakUserId != null) {
+              
+                // gather role names and assign them 
+                Set<String> roleNames = savedUser.getRoles().stream()
+                .filter(Objects::nonNull)
+                .map(r -> r.getRoleType().toString())
+                .collect(Collectors.toSet());
+
+                boolean rolesAssigned = keycloakAdminClient.assignRolesToUser(keycloakUserId, roleNames);
+                if (!rolesAssigned) {
+                    log.warn("Failed to assign roles to Keycloak user (userId={})", keycloakUserId);
+                }
+            } else {
+                log.warn("Failed to create Keycloak user for email={}", savedUser.getEmail());
+            }
+        } catch (Exception ex) {
+            log.warn("Keycloak integration error for email={} : {}", savedUser.getEmail(), ex.getMessage());
+        }
         if (user.getResponderProfile() != null) {
             user.getResponderProfile().setUser(savedUser);
             responderProfileRepository.save(user.getResponderProfile());

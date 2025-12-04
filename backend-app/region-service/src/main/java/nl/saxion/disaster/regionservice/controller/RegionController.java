@@ -20,6 +20,7 @@ import java.util.List;
 @RequestMapping("/api/regions")
 @RequiredArgsConstructor
 
+@PreAuthorize("hasRole('REGION_ADMIN')")
 public class RegionController {
 
     private final RegionService regionService;
@@ -67,7 +68,6 @@ public class RegionController {
     @Operation(summary = "Get municipalities of a region",
             description = "Retrieve all municipalities that belong to a specific region using its ID.")
     @GetMapping("/{regionId}/municipalities")
-    @PreAuthorize("hasRole('REGION_ADMIN')")
     public ResponseEntity<List<MunicipalityDto>> getAllMunicipalitiesOfRegion(@PathVariable Long regionId) {
         List<MunicipalityDto> municipalities = regionService.getAllMunicipalitiesOfRegion(regionId);
         return ResponseEntity.ok(municipalities);

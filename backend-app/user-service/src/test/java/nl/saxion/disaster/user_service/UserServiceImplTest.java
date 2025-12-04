@@ -14,6 +14,7 @@ import nl.saxion.disaster.user_service.model.enums.ResponderSpecialization;
 import nl.saxion.disaster.user_service.repository.contract.UserRepository;
 import nl.saxion.disaster.user_service.repository.contract.ResponderProfileRepository;
 import nl.saxion.disaster.user_service.service.UserServiceImpl;
+import nl.saxion.disaster.user_service.service.KeycloakAdminClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -55,6 +56,7 @@ class UserServiceImplTest {
     private RoleDto roleDto;
     private RoleDto responderRoleDto;
     private ResponderProfileDto responderProfileDto;
+    private KeycloakAdminClient keycloakAdminClient;
 
     @BeforeEach
     void setUp() {
@@ -99,7 +101,8 @@ class UserServiceImplTest {
             userResponseMapper,
             passwordEncoder,
             responderProfileRepository,
-            responderProfileMapper
+            responderProfileMapper,
+            keycloakAdminClient
         );
     }
 
