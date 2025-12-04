@@ -48,7 +48,11 @@ export default function FormShell<TFormValues extends FieldValues>({
 			<form
 				onSubmit={methods.handleSubmit(
 					async (values: TFormValues) => {
-						await onSubmit(values as TFormValues);
+						try {
+							await onSubmit(values as TFormValues);
+						} catch (err) {
+							throw err;
+						}
 					},
 					(errors: FieldErrors<TFormValues>) => {
 						try {

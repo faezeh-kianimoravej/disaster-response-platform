@@ -89,24 +89,44 @@ export class BaseApi {
 						message?: string;
 						error?: string;
 						errors?: Record<string, string>;
+						fieldErrors?: Record<string, string>;
+						validationErrors?: Record<string, string>;
 				  }
 				| undefined;
-			const validationErrors = data?.errors;
+			const validationErrors = data?.errors || data?.fieldErrors || data?.validationErrors;
 			// Prefer backend-provided message if present; fallback to Axios message
 			const serverMessage = data?.message || data?.error;
-			return {
+
+			const apiError: ApiError = {
 				message: serverMessage || axiosError.message,
 				status: axiosError.response?.status || 500,
 				...(axiosError.code && { code: axiosError.code }),
 				...(validationErrors && { validationErrors }),
 			};
+
+			// eslint-disable-next-line no-console
+			console.error('[API Error] Request failed:', {
+				url: axiosError.config?.url,
+				method: axiosError.config?.method,
+				status: axiosError.response?.status,
+				message: apiError.message,
+				validationErrors,
+				fullResponseData: data,
+				fullError: axiosError,
+			});
+			return apiError;
 		}
 
 		const err = error as { message?: string; status?: number; code?: string };
-		return {
+		const apiError: ApiError = {
 			message: err.message || 'An unexpected error occurred',
 			status: err.status || 500,
 			...(err.code && { code: err.code }),
 		};
+
+		// eslint-disable-next-line no-console
+		console.error('[API Error] Unexpected error:', apiError);
+
+		return apiError;
 	}
 }

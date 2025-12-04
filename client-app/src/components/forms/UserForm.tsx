@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import FormShell from '@/components/forms/base/FormShell';
@@ -104,8 +104,19 @@ export default function UserForm({
 	}, [initialData, isNewUser, departmentAdminId, departments, loadingDepartments]);
 
 	const schema = isNewUser ? userCreateFormSchema : userEditFormSchema;
+
+	// Custom resolver that cleans up responder profile before validation
+	const customResolver: Resolver<UserFormValues> = async (values, context, options) => {
+		// Remove responder profile if Responder role is not selected
+		const cleanedValues: Record<string, unknown> = { ...values };
+		if (!selectedRoles.some(r => r.roleType === 'Responder')) {
+			delete cleanedValues.responderProfile;
+		}
+		return zodResolver(schema)(cleanedValues as UserFormValues, context, options ?? {});
+	};
+
 	const methods = useForm<UserFormValues>({
-		resolver: zodResolver(schema),
+		resolver: customResolver,
 		defaultValues,
 		mode: 'onSubmit',
 	});
@@ -201,8 +212,12 @@ export default function UserForm({
 		setServerValidation(null);
 		try {
 			if (isNewUser) {
-				const formData: UserCreateFormData = { ...values, roles: selectedRoles };
-				const success = await createUser(formData);
+				const formData = { ...values, roles: selectedRoles } as Record<string, unknown>;
+				// Only include responder profile if Responder role is selected
+				if (!selectedRoles.some(r => r.roleType === 'Responder')) {
+					delete formData.responderProfile;
+				}
+				const success = await createUser(formData as unknown as UserCreateFormData);
 				if (success) {
 					toast.showSuccess('User created successfully');
 					onSuccess?.();
@@ -237,10 +252,13 @@ export default function UserForm({
 			const apiErr = err as { validationErrors?: Record<string, string>; message?: string };
 			if (apiErr.validationErrors) {
 				setServerValidation(apiErr.validationErrors);
+				const errorMsg = `Validation failed: ${Object.values(apiErr.validationErrors).join(', ')}`;
+				toast.showError(errorMsg);
 				onFailure?.(apiErr);
 				return;
 			}
-			toast.showError(apiErr.message ?? 'An unexpected error occurred while saving.');
+			const errorMsg = apiErr.message ?? 'An unexpected error occurred while saving.';
+			toast.showError(errorMsg);
 			onFailure?.(apiErr ?? err);
 		}
 	};
@@ -258,6 +276,40 @@ export default function UserForm({
 				<h2 className="text-2xl font-semibold mb-4">
 					{isNewUser ? 'Create New User' : 'Edit User'}
 				</h2>
+
+				{/* Client-side validation summary */}
+				{methods.formState.isSubmitted &&
+					methods.formState.errors &&
+					Object.keys(methods.formState.errors).length > 0 && (
+						<div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+							<p className="text-sm font-semibold text-red-800 mb-2">
+								Please fix the following errors:
+							</p>
+							<ul className="text-sm text-red-700 list-disc list-inside space-y-1">
+								{Object.entries(methods.formState.errors).map(([field, error]) => (
+									<li key={field}>
+										<span className="font-medium">{field}:</span>{' '}
+										{(error as { message?: string })?.message || 'Invalid value'}
+									</li>
+								))}
+							</ul>
+						</div>
+					)}
+
+				{/* Server validation summary */}
+				{serverValidation && Object.keys(serverValidation).length > 0 && (
+					<div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+						<p className="text-sm font-semibold text-red-800 mb-2">Server validation errors:</p>
+						<ul className="text-sm text-red-700 list-disc list-inside space-y-1">
+							{Object.entries(serverValidation).map(([field, message]) => (
+								<li key={field}>
+									<span className="font-medium">{field}:</span> {message}
+								</li>
+							))}
+						</ul>
+					</div>
+				)}
+
 				<div className="space-y-4">
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<RHFInput name="firstName" label="First Name" placeholder="Enter first name" required />
@@ -386,9 +438,10 @@ export default function UserForm({
 								);
 							})}
 						</div>
-						{selectedRoles.length === 0 && (
-							<p className="text-red-500 text-sm mt-1">At least one role is required</p>
-						)}
+						{selectedRoles.length === 0 &&
+							(methods.formState.isDirty || methods.formState.isSubmitted) && (
+								<p className="text-red-500 text-sm mt-1">At least one role is required</p>
+							)}
 					</div>
 					{/* Responder Profile Section: only show if user has a Responder role */}
 					{selectedRoles.some(r => r.roleType === 'Responder') && (

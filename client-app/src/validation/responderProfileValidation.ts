@@ -16,9 +16,13 @@ export const responderProfileSchema = z
 	})
 	.merge(responderProfileBase);
 
-// Relaxed schema for create flows: userId is not available yet, and isAvailable defaults to true
+// Relaxed schema for create flows: fully optional, validated only when Responder role is selected
 export const responderProfileCreateSchema = z
 	.object({
 		userId: z.number().min(1).optional(),
+		departmentId: z.number().min(1).optional().nullable(),
+		primarySpecialization: z.enum(RESPONDER_SPECIALIZATIONS).optional(),
+		secondarySpecializations: z.array(z.enum(RESPONDER_SPECIALIZATIONS)).optional(),
+		isAvailable: z.boolean().optional().default(true),
 	})
-	.merge(responderProfileBase.extend({ isAvailable: z.boolean().optional().default(true) }));
+	.optional();

@@ -19,31 +19,40 @@ export function useCreateUser() {
 	const queryClient = useQueryClient();
 	const [user, setUser] = useState<User | null>(null);
 	const [error, setError] = useState<string | null>(null);
+	const [validationErrors, setValidationErrors] = useState<Record<string, string> | null>(null);
 
 	const mutation = useMutation<User, ApiError, UserCreateFormData>({
 		mutationFn: data => createUser(data),
 		onSuccess: saved => {
 			setUser(saved);
 			setError(null);
+			setValidationErrors(null);
 			// Update caches
 			queryClient.setQueryData(USER_QUERY_KEYS.item(saved.userId), saved);
 			queryClient.invalidateQueries({ queryKey: USER_QUERY_KEYS.list });
 		},
 		onError: err => {
 			setError(err.message);
+			if (err.validationErrors) {
+				setValidationErrors(err.validationErrors);
+			}
 		},
 	});
 
 	async function submit(formData: UserCreateFormData) {
-		await mutation.mutateAsync(formData); // Let errors throw to be handled by caller
-		return true;
+		try {
+			await mutation.mutateAsync(formData);
+			return true;
+		} catch (err) {
+			throw err;
+		}
 	}
 
 	return {
 		submit,
 		loading: mutation.isPending,
 		error,
-		validation: null as Record<string, never> | null,
+		validation: validationErrors,
 		user,
 	};
 }
@@ -53,31 +62,40 @@ export function useUpdateUser() {
 	const queryClient = useQueryClient();
 	const [user, setUser] = useState<User | null>(null);
 	const [error, setError] = useState<string | null>(null);
+	const [validationErrors, setValidationErrors] = useState<Record<string, string> | null>(null);
 
 	const mutation = useMutation<User, ApiError, UserEditFormData>({
 		mutationFn: data => updateUser(data),
 		onSuccess: updated => {
 			setUser(updated);
 			setError(null);
+			setValidationErrors(null);
 			// Update caches
 			queryClient.setQueryData(USER_QUERY_KEYS.item(updated.userId), updated);
 			queryClient.invalidateQueries({ queryKey: USER_QUERY_KEYS.list });
 		},
 		onError: err => {
 			setError(err.message);
+			if (err.validationErrors) {
+				setValidationErrors(err.validationErrors);
+			}
 		},
 	});
 
 	async function submit(formData: UserEditFormData) {
-		await mutation.mutateAsync(formData); // Let errors throw to be handled by caller
-		return true;
+		try {
+			await mutation.mutateAsync(formData);
+			return true;
+		} catch (err) {
+			throw err;
+		}
 	}
 
 	return {
 		submit,
 		loading: mutation.isPending,
 		error,
-		validation: null as Record<string, never> | null,
+		validation: validationErrors,
 		user,
 	};
 }
