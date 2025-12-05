@@ -1,14 +1,11 @@
 package nl.saxion.disaster.user_service.service;
 
-// ...place in your service module (e.g. src/main/java/.../keycloak/KeycloakAdminClient.java)
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
-import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -16,200 +13,288 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 @Service
 public class KeycloakAdminClient {
+    private static final Logger log = LoggerFactory.getLogger(KeycloakAdminClient.class);
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
+    private static final Duration USER_LOOKUP_RETRY_DELAY = Duration.ofMillis(200);
+    private static final int USER_LOOKUP_MAX_ATTEMPTS = 6;
+
     private final RestTemplate rest;
     private final ObjectMapper mapper = new ObjectMapper();
 
-    @Value("${keycloak.url:http://keycloak:9090}")
+    @Value("${keycloak.url}")
     private String keycloakUrl;
 
-    @Value("${keycloak.realm:DRCCS}")
+    @Value("${keycloak.realm}")
     private String realm;
 
-    @Value("${keycloak.admin.username:disaster-admin}")
+    @Value("${keycloak.admin.username}")
     private String adminUser;
 
-    @Value("${keycloak.admin.password:AdminSecure123!}")
+    @Value("${keycloak.admin.password}")
     private String adminPass;
 
-    public KeycloakAdminClient() {
-        this.rest = new RestTemplate();
+    // prefer constructor injection for easier testing
+    public KeycloakAdminClient(RestTemplate rest) {
+        this.rest = rest != null ? rest : new RestTemplate();
     }
 
-    /**
-     * Create a Keycloak user with firstName, lastName, email and password.
-     * Returns the userId on success, null on failure.
-     */
-    public String createUserInKeycloak(String firstName,
-                                       String lastName,
-                                       String email,
-                                       String password) throws Exception {
+    // Simple guard and logging, returns created Keycloak user id or null
+    public String createUserInKeycloak(String firstName, String lastName, String email, String password) {
+        log.info("Creating Keycloak user: first='{}', last='{}', email='{}'", firstName, lastName, email);
 
-        System.out.printf("Keycloak create user request: firstName='%s', lastName='%s', email='%s'%n",
-            firstName, lastName, email);
-
-        // basic email validation
-        if (email == null || !isValidEmail(email)) {
-            System.err.printf("Skipping Keycloak call: invalid email '%s'%n", email);
+        if (!isValidEmail(email)) {
+            log.warn("Invalid email provided, skipping Keycloak: {}", email);
             return null;
         }
 
         String token = obtainAdminAccessToken();
-        if (token == null) return null;
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        ObjectNode userNode = mapper.createObjectNode()
-            .put("username", email)
-            .put("email", email)
-            .put("enabled", true)
-            .put("emailVerified", true)
-            .put("firstName", firstName == null ? "" : firstName)
-            .put("lastName", lastName == null ? "" : lastName);
-
-        String userJson = userNode.toString();
-
-        try {
-            HttpEntity<String> createReq = new HttpEntity<>(userJson, headers);
-            rest.exchange(
-                keycloakUrl + "/admin/realms/" + realm + "/users",
-                HttpMethod.POST, createReq, Void.class);
-        } catch (org.springframework.web.client.HttpStatusCodeException ex) {
-            System.err.printf("Keycloak create user failed: %s : %s%n", ex.getStatusCode(), ex.getResponseBodyAsString());
+        if (token == null) {
+            log.error("Cannot obtain Keycloak admin token");
             return null;
         }
 
-        // find user id by email
-        HttpEntity<Void> getReq = new HttpEntity<>(headers);
-        ResponseEntity<String> listResp = rest.exchange(
-            keycloakUrl + "/admin/realms/" + realm + "/users?email=" + URLEncoder.encode(email, StandardCharsets.UTF_8),
-            HttpMethod.GET, getReq, String.class);
+        HttpHeaders headers = commonHeaders(token);
+        String userJson = buildUserJson(firstName, lastName, email);
 
-        JsonNode users = mapper.readTree(listResp.getBody());
-        if (!users.isArray() || users.size() == 0) return null;
-        String userId = users.get(0).get("id").asText();
-
-        // set password
+        ResponseEntity<Void> createResp;
         try {
-            String pwdJson = mapper.createObjectNode()
-                .put("type", "password")
-                .put("temporary", false)
-                .put("value", password)
-                .toString();
-            HttpEntity<String> pwdReq = new HttpEntity<>(pwdJson, headers);
-            rest.exchange(
-                keycloakUrl + "/admin/realms/" + realm + "/users/" + userId + "/reset-password",
-                HttpMethod.PUT, pwdReq, Void.class);
-            System.out.printf("User created successfully in Keycloak with userId='%s'%n", userId);
-        } catch (org.springframework.web.client.HttpStatusCodeException ex) {
-            System.err.printf("Keycloak reset-password failed: %s : %s%n", ex.getStatusCode(), ex.getResponseBodyAsString());
+            createResp = rest.exchange(keycloakUrl + "/admin/realms/" + realm + "/users",
+                    HttpMethod.POST, new HttpEntity<>(userJson, headers), Void.class);
+            log.info("Keycloak create response: {}", createResp.getStatusCode());
+        } catch (HttpStatusCodeException ex) {
+            log.error("Keycloak create user error: {} - {}", ex.getStatusCode(), ex.getResponseBodyAsString());
+            return null;
+        }
+
+        // try Location header first (fast)
+        String userId = extractUserIdFromLocation(createResp.getHeaders().getLocation());
+        if (userId != null) {
+            log.debug("UserId obtained from Location header: {}", userId);
+        } else {
+            // fallback: search by email with retries (creation may be eventually consistent)
+            userId = findUserIdByEmailWithRetry(email, headers);
+        }
+
+        if (userId == null) {
+            log.error("Failed to locate created user in Keycloak for email: {}", email);
+            return null;
+        }
+
+        // set password (best-effort)
+        if (!setUserPassword(userId, password, headers)) {
+            log.warn("Setting password failed for userId={}", userId);
         }
 
         return userId;
     }
 
-    /**
-     * Assign realm roles to an existing Keycloak user.
-     * @param userId the Keycloak user ID (returned from createUserInKeycloak)
-     * @param roleNames collection of role names to assign
-     * @return true if assignment succeeds or no roles provided, false on error
-     */
-    public boolean assignRolesToUser(String userId, Iterable<String> roleNames) throws Exception {
-
+    public boolean assignRolesToUser(String userId, Iterable<String> roleNames) {
         if (userId == null || userId.isBlank()) {
-            System.err.println("Cannot assign roles: userId is null or blank");
+            log.warn("assignRolesToUser called with empty userId");
             return false;
         }
-
         if (roleNames == null) {
-            System.out.println("No roles to assign");
+            log.debug("No roles provided to assign for userId={}", userId);
             return true;
         }
 
         String token = obtainAdminAccessToken();
-        if (token == null) return false;
+        if (token == null) {
+            log.error("Cannot obtain Keycloak admin token for role assignment");
+            return false;
+        }
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpHeaders headers = commonHeaders(token);
 
-        HttpEntity<Void> getReq = new HttpEntity<>(headers);
+        // First, remove all default roles
+        removeDefaultRoles(userId, headers);
+
+        // Then assign custom roles
         ArrayNode rolesArray = mapper.createArrayNode();
-        Set<String> processed = new HashSet<>();
+        Set<String> seen = new HashSet<>();
 
         for (String roleName : roleNames) {
-            if (roleName == null || roleName.isBlank() || processed.contains(roleName)) continue;
-            processed.add(roleName);
-
-            try {
-                System.out.printf("Fetching role '%s'%n", roleName);
-                ResponseEntity<String> roleResp = rest.exchange(
-                    keycloakUrl + "/admin/realms/" + realm + "/roles/" + URLEncoder.encode(roleName, StandardCharsets.UTF_8),
-                    HttpMethod.GET, getReq, String.class);
-
-                if (!roleResp.getStatusCode().is2xxSuccessful()) {
-                    System.err.printf("Role '%s' not found or inaccessible%n", roleName);
-                    continue;
-                }
-
-                JsonNode roleObj = mapper.readTree(roleResp.getBody());
+            if (roleName == null || roleName.isBlank() || !seen.add(roleName)) continue;
+            JsonNode role = fetchRoleRepresentation(roleName, headers);
+            if (role != null) {
                 ObjectNode r = mapper.createObjectNode();
-                if (roleObj.has("id")) r.put("id", roleObj.get("id").asText());
-                if (roleObj.has("name")) r.put("name", roleObj.get("name").asText());
-                if (roleObj.has("containerId")) r.put("containerId", roleObj.get("containerId").asText(""));
+                if (role.has("id")) r.put("id", role.get("id").asText());
+                if (role.has("name")) r.put("name", role.get("name").asText());
+                if (role.has("containerId")) r.put("containerId", role.get("containerId").asText(""));
                 rolesArray.add(r);
-                System.out.printf("Added role '%s' to assignment list%n", roleName);
-            } catch (org.springframework.web.client.HttpStatusCodeException ex) {
-                System.err.printf("Role '%s' fetch failed: %s%n", roleName, ex.getResponseBodyAsString());
+                log.debug("Prepared role for assignment: {}", roleName);
+            } else {
+                log.warn("Role not found in Keycloak: {}", roleName);
             }
         }
 
-        if (rolesArray.size() == 0) {
-            System.out.println("No valid roles to assign");
+        if (rolesArray.isEmpty()) {
+            log.info("No valid roles to assign for userId={}", userId);
             return true;
         }
 
         try {
-            System.out.printf("Assigning %d role(s) to userId='%s'%n", rolesArray.size(), userId);
-            HttpEntity<String> assignReq = new HttpEntity<>(mapper.writeValueAsString(rolesArray), headers);
-            rest.exchange(
-                keycloakUrl + "/admin/realms/" + realm + "/users/" + userId + "/role-mappings/realm",
-                HttpMethod.POST, assignReq, Void.class);
-            System.out.printf("Roles assigned successfully to userId='%s'%n", userId);
+            rest.exchange(keycloakUrl + "/admin/realms/" + realm + "/users/" + userId + "/role-mappings/realm",
+                    HttpMethod.POST, new HttpEntity<>(mapper.writeValueAsString(rolesArray), headers), Void.class);
+            log.info("Assigned {} role(s) to userId={}", rolesArray.size(), userId);
             return true;
-        } catch (org.springframework.web.client.HttpStatusCodeException ex) {
-            System.err.printf("Assigning roles failed: %s : %s%n", ex.getStatusCode(), ex.getResponseBodyAsString());
+        } catch (HttpStatusCodeException ex) {
+            log.error("Failed to assign roles: {} - {}", ex.getStatusCode(), ex.getResponseBodyAsString());
+            return false;
+        } catch (Exception ex) {
+            log.error("Unexpected error while assigning roles: {}", ex.getMessage());
             return false;
         }
     }
 
-    private String obtainAdminAccessToken() throws Exception {
+    private void removeDefaultRoles(String userId, HttpHeaders headers) {
+        String[] defaultRoles = {"offline_access", "default-roles-drccs", "uma_authorization"};
+        
+        for (String roleName : defaultRoles) {
+            try {
+                JsonNode role = fetchRoleRepresentation(roleName, headers);
+                if (role != null) {
+                    ArrayNode roleToRemove = mapper.createArrayNode();
+                    ObjectNode r = mapper.createObjectNode();
+                    if (role.has("id")) r.put("id", role.get("id").asText());
+                    if (role.has("name")) r.put("name", role.get("name").asText());
+                    if (role.has("containerId")) r.put("containerId", role.get("containerId").asText(""));
+                    roleToRemove.add(r);
+
+                    rest.exchange(
+                            keycloakUrl + "/admin/realms/" + realm + "/users/" + userId + "/role-mappings/realm",
+                            HttpMethod.DELETE,
+                            new HttpEntity<>(mapper.writeValueAsString(roleToRemove), headers),
+                            Void.class);
+                    log.debug("Removed default role '{}' from userId={}", roleName, userId);
+                }
+            } catch (Exception ex) {
+                log.debug("Could not remove default role '{}': {}", roleName, ex.getMessage());
+            }
+        }
+    }
+
+    // ---------------- helpers ----------------
+
+    private HttpHeaders commonHeaders(String bearerToken) {
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setBearerAuth(bearerToken);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        return headers;
+    }
 
-        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
-        form.add("grant_type", "password");
-        form.add("client_id", "admin-cli");
-        form.add("username", adminUser);
-        form.add("password", adminPass);
+    private String buildUserJson(String firstName, String lastName, String email) {
+        ObjectNode node = mapper.createObjectNode()
+                .put("username", email)
+                .put("email", email)
+                .put("enabled", true)
+                .put("emailVerified", true)
+                .put("firstName", firstName == null ? "" : firstName)
+                .put("lastName", lastName == null ? "" : lastName);
+        return node.toString();
+    }
 
-        HttpEntity<MultiValueMap<String, String>> tokenReq = new HttpEntity<>(form, headers);
-        ResponseEntity<String> tokenResp = rest.postForEntity(
-            keycloakUrl + "/realms/master/protocol/openid-connect/token",
-            tokenReq, String.class);
+    private String extractUserIdFromLocation(java.net.URI location) {
+        if (location == null) return null;
+        String path = location.getPath();
+        if (path == null || path.isBlank()) return null;
+        String[] parts = path.split("/");
+        return parts.length == 0 ? null : parts[parts.length - 1];
+    }
 
-        if (!tokenResp.getStatusCode().is2xxSuccessful()) return null;
-        JsonNode node = mapper.readTree(tokenResp.getBody());
-        return node.path("access_token").asText(null);
+    private String findUserIdByEmailWithRetry(String email, HttpHeaders headers) {
+        int attempts = 0;
+        while (attempts < USER_LOOKUP_MAX_ATTEMPTS) {
+            attempts++;
+            try {
+                String encoded = URLEncoder.encode(email, StandardCharsets.UTF_8);
+                ResponseEntity<String> resp = rest.exchange(
+                        keycloakUrl + "/admin/realms/" + realm + "/users?email=" + encoded,
+                        HttpMethod.GET, new HttpEntity<>(headers), String.class);
+                JsonNode users = mapper.readTree(resp.getBody());
+                if (users.isArray() && users.size() > 0) {
+                    return users.get(0).get("id").asText();
+                }
+            } catch (Exception ex) {
+                log.debug("Attempt {} user lookup failed: {}", attempts, ex.getMessage());
+            }
+            try { Thread.sleep(USER_LOOKUP_RETRY_DELAY.toMillis()); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); break; }
+        }
+        return null;
+    }
+
+    private JsonNode fetchRoleRepresentation(String roleName, HttpHeaders headers) {
+        try {
+            String encoded = URLEncoder.encode(roleName, StandardCharsets.UTF_8);
+            ResponseEntity<String> resp = rest.exchange(
+                    keycloakUrl + "/admin/realms/" + realm + "/roles/" + encoded,
+                    HttpMethod.GET, new HttpEntity<>(headers), String.class);
+            if (!resp.getStatusCode().is2xxSuccessful()) return null;
+            return mapper.readTree(resp.getBody());
+        } catch (HttpStatusCodeException ex) {
+            log.debug("Role fetch failed for {}: {}", roleName, ex.getResponseBodyAsString());
+            return null;
+        } catch (Exception ex) {
+            log.debug("Unexpected error fetching role {}: {}", roleName, ex.getMessage());
+            return null;
+        }
+    }
+
+    private boolean setUserPassword(String userId, String password, HttpHeaders headers) {
+        try {
+            ObjectNode pwd = mapper.createObjectNode()
+                    .put("type", "password")
+                    .put("temporary", false)
+                    .put("value", password);
+            rest.exchange(keycloakUrl + "/admin/realms/" + realm + "/users/" + userId + "/reset-password",
+                    HttpMethod.PUT, new HttpEntity<>(pwd.toString(), headers), Void.class);
+            log.debug("Password set for userId={}", userId);
+            return true;
+        } catch (HttpStatusCodeException ex) {
+            log.error("setUserPassword status {} : {}", ex.getStatusCode(), ex.getResponseBodyAsString());
+            return false;
+        } catch (Exception ex) {
+            log.error("setUserPassword unexpected error: {}", ex.getMessage());
+            return false;
+        }
+    }
+
+    private String obtainAdminAccessToken() {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+            form.add("grant_type", "password");
+            form.add("client_id", "admin-cli");
+            form.add("username", adminUser);
+            form.add("password", adminPass);
+
+            ResponseEntity<String> tokenResp = rest.postForEntity(
+                    keycloakUrl + "/realms/master/protocol/openid-connect/token",
+                    new HttpEntity<>(form, headers), String.class);
+            if (!tokenResp.getStatusCode().is2xxSuccessful()) {
+                log.error("Token endpoint returned status {}", tokenResp.getStatusCode());
+                return null;
+            }
+            JsonNode node = mapper.readTree(tokenResp.getBody());
+            return node.path("access_token").asText(null);
+        } catch (Exception ex) {
+            log.error("Failed to obtain admin token: {}", ex.getMessage());
+            return null;
+        }
     }
 
     private static boolean isValidEmail(String email) {
-        final Pattern EMAIL = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
-        return EMAIL.matcher(email).matches();
+        return email != null && EMAIL_PATTERN.matcher(email).matches();
     }
 }
