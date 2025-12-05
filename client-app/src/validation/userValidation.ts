@@ -114,12 +114,37 @@ function addResponderProfileCheck<T extends z.ZodTypeAny>(schema: T) {
 		const hasResponderRole =
 			Array.isArray(data.roles) &&
 			data.roles.some((r: { roleType: string }) => r.roleType === 'Responder');
-		if (hasResponderRole && !data.responderProfile) {
-			ctx.addIssue({
-				code: z.ZodIssueCode.custom,
-				message: 'Responder profile is required for users with the Responder role',
-				path: ['responderProfile'],
-			});
+
+		if (hasResponderRole) {
+			const profile = (data as Record<string, unknown>).responderProfile as
+				| Record<string, unknown>
+				| undefined;
+
+			if (!profile) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					message: 'Responder profile is required for users with the Responder role',
+					path: ['responderProfile'],
+				});
+				return;
+			}
+
+			// Validate required fields when Responder role is present
+			if (!profile.departmentId) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					message: 'Department is required for responder profile',
+					path: ['responderProfile', 'departmentId'],
+				});
+			}
+
+			if (!profile.primarySpecialization) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					message: 'Primary specialization is required for responder profile',
+					path: ['responderProfile', 'primarySpecialization'],
+				});
+			}
 		}
 	});
 }
@@ -141,6 +166,7 @@ export const userCreateFormSchema = addResponderProfileCheck(
 
 export const userEditFormSchema = addResponderProfileCheck(
 	userBaseSchema.extend({
+		responderProfile: responderProfileCreateSchema.optional(),
 		password: z.union([z.literal(''), strongPassword]),
 	})
 );
