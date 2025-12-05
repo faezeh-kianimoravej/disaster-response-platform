@@ -3,7 +3,7 @@ import {
 	assignResponseUnitToDeploymentRequest,
 	assignFillUnitToDeploymentRequest,
 	type FillUnitAssignmentRequest,
-} from '@/api/deployment';
+} from '@/api/deployment/deployment';
 
 // Legacy assignment hook (for backward compatibility)
 export function useAssignResponseUnit() {

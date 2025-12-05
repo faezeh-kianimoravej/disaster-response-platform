@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import Button from '@/components/ui/Button';
 import LoadingPanel from '@/components/ui/LoadingPanel';
 import { useToast } from '@/components/toast/ToastProvider';
-import { useAuth } from '@/context/AuthContext';
+import { useCurrentUserId } from '@/context/AuthContext';
 import { routes } from '@/routes';
 
 import { useAssignFillUnit, type FillUnitAssignmentRequest } from '@/hooks/useDeployment';
@@ -37,7 +37,7 @@ export default function FillUnitAssignmentPanel({
 }: FillUnitAssignmentPanelProps) {
 	const navigate = useNavigate();
 	const { showSuccess, showError } = useToast();
-	const auth = useAuth();
+	const currentUserId = useCurrentUserId();
 	const assignMutation = useAssignFillUnit();
 
 	const [selectedUnit, setSelectedUnit] = useState<ResponseUnit | null>(null);
@@ -204,7 +204,7 @@ export default function FillUnitAssignmentPanel({
 	};
 
 	const onSubmit = async (data: FillUnitFormData) => {
-		if (!auth?.user?.userId || !selectedUnit) {
+		if (!currentUserId || !selectedUnit) {
 			showError('Authentication error.');
 			return;
 		}
@@ -234,7 +234,7 @@ export default function FillUnitAssignmentPanel({
 		try {
 			const payload: FillUnitAssignmentRequest = {
 				requestId: deploymentRequest.requestId,
-				assignedBy: auth.user.userId,
+				assignedBy: currentUserId!,
 				assignedUnitId: data.assignedUnitId,
 				assignedPersonnel: data.assignedPersonnel.map(p => ({
 					slotId: p.slotId,

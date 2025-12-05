@@ -6,17 +6,23 @@ import {
 	useDeploymentRequest,
 	useAssignResponseUnitToDeploymentRequest,
 } from '@/hooks/useDeploymentRequest';
-import * as deploymentRequestApi from '@/api/deploymentRequest';
-import * as deploymentApi from '@/api/deployment';
 import type { DeploymentRequest } from '@/types/deployment';
 import React, { type ReactNode } from 'react';
 
 // Mock the API modules
-vi.mock('@/api/deploymentRequest');
-vi.mock('@/api/deployment');
+vi.mock('@/api/deployment/deploymentRequest', () => ({
+	getDeploymentRequestById: vi.fn(),
+}));
 
-const mockedDeploymentRequestApi = vi.mocked(deploymentRequestApi);
-const mockedDeploymentApi = vi.mocked(deploymentApi);
+vi.mock('@/api/deployment/deployment', () => ({
+	assignResponseUnitToDeploymentRequest: vi.fn(),
+}));
+
+const deploymentRequestApi = await import('@/api/deployment/deploymentRequest');
+const deploymentApi = await import('@/api/deployment/deployment');
+
+const mockedDeploymentRequestApi = vi.mocked(deploymentRequestApi, { partial: true });
+const mockedDeploymentApi = vi.mocked(deploymentApi, { partial: true });
 
 describe('useDeploymentRequest hooks', () => {
 	let queryClient: QueryClient;

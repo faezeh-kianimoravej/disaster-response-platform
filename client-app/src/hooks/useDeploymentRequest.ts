@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getDeploymentRequestById } from '@/api/deploymentRequest';
-import { assignResponseUnitToDeploymentRequest } from '@/api/deployment';
+import { getDeploymentRequestById } from '@/api/deployment/deploymentRequest';
+import { assignResponseUnitToDeploymentRequest } from '@/api/deployment/deployment';
 import type { DeploymentRequest } from '@/types/deployment';
 import { DEPLOYMENT_REQUEST_QUERY_KEYS } from '@/hooks/queryKeys';
 

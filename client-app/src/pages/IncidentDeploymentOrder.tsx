@@ -7,7 +7,7 @@ import {
 	RESPONSE_UNIT_TYPES,
 	AvailableResponseUnitSearchResult,
 } from '@/types/responseUnit';
-import { useAuth } from '@/context/AuthContext';
+import { useCurrentUserId } from '@/context/AuthContext';
 import { useIncident } from '@/hooks/useIncident';
 import { useAllDepartments } from '@/hooks/useDepartment';
 import { useMunicipalities } from '@/hooks/useMunicipality';
@@ -36,7 +36,7 @@ export default function IncidentDeploymentOrder() {
 	const { incidentId } = useParams<{ incidentId: string }>();
 	const incidentIdNumber = incidentId ? Number(incidentId) : undefined;
 	const navigate = useNavigate();
-	const auth = useAuth();
+	const currentUserId = useCurrentUserId();
 	const { showToast } = useToast();
 	const showSingleError = useSingleErrorToast();
 
@@ -154,7 +154,7 @@ export default function IncidentDeploymentOrder() {
 
 	// Finalize deployment order
 	const handleFinalize = async () => {
-		if (!incidentIdNumber || !auth || !auth.user || !incident) {
+		if (!incidentIdNumber || !currentUserId || !incident) {
 			showToast('Invalid incident or user.', 'error');
 			return;
 		}
@@ -173,7 +173,7 @@ export default function IncidentDeploymentOrder() {
 		try {
 			await createDeploymentOrderMutation.mutateAsync({
 				incidentId: incidentIdNumber,
-				orderedBy: auth.user.userId,
+				orderedBy: currentUserId!,
 				incidentSeverity: incident.severity,
 				deploymentRequests,
 			});

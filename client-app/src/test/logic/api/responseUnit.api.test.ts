@@ -9,7 +9,7 @@ import {
 	updateResponseUnit,
 	deleteResponseUnit,
 	searchAvailableResponseUnits,
-} from '@/api/responseUnit';
+} from '@/api/deployment/responseUnit';
 import type { ResponseUnitFormData, ResponseUnitType } from '@/types/responseUnit';
 import { ResourceStatus } from '@/types/resource';
 

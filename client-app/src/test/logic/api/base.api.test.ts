@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest';
 import { axios } from '@/lib/axios';
 import { BaseApi } from '@/api/base';
 
@@ -13,8 +13,14 @@ vi.mock('@/lib/axios', () => ({
 }));
 
 describe('BaseApi', () => {
+	const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
 	beforeEach(() => {
 		vi.clearAllMocks();
+	});
+
+	afterAll(() => {
+		consoleErrorSpy.mockRestore();
 	});
 
 	it('calls GET with baseUrl + endpoint and params', async () => {

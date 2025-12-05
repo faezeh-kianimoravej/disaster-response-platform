@@ -13,6 +13,7 @@ import {
 	BellRing,
 } from 'lucide-react';
 import useNotifications from '@/hooks/useNotifications';
+import { useAuth } from '@/context/AuthContext';
 import { ErrorRetryBlock } from '@/components/ui/ErrorRetry';
 import LoadingPanel from '@/components/ui/LoadingPanel';
 import useSingleErrorToast from '@/hooks/useSingleErrorToast';
@@ -59,6 +60,8 @@ export default function NotificationPanel() {
 	const [isOpen, setIsOpen] = useState(false);
 	const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all');
 	const panelRef = useRef<HTMLDivElement>(null);
+	const auth = useAuth();
+	const user = auth?.user ?? null;
 	const {
 		notifications,
 		unreadCount,
@@ -67,7 +70,7 @@ export default function NotificationPanel() {
 		loading,
 		error,
 		fetchNotifications,
-	} = useNotifications();
+	} = useNotifications(user);
 
 	const showSingleError = useSingleErrorToast();
 

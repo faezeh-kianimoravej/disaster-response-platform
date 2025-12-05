@@ -20,7 +20,7 @@ describe('api/deploymentRequest mapping', () => {
 			};
 		});
 
-		const module = await import('@/api/deploymentRequest');
+		const module = await import('@/api/deployment/deploymentRequest');
 		const out = await module.getDeploymentRequestById(99);
 		expect(out).toBeDefined();
 		expect(out.requestId).toBe(99);
@@ -31,7 +31,7 @@ describe('api/deploymentRequest mapping', () => {
 	describe('API initialization', () => {
 		it('should initialize BaseApi with correct exports', async () => {
 			// Ensure the module loads and exports the expected function
-			const module = await import('@/api/deploymentRequest');
+			const module = await import('@/api/deployment/deploymentRequest');
 			expect(typeof module.getDeploymentRequestById).toBe('function');
 		});
 	});

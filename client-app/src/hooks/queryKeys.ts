@@ -52,3 +52,19 @@ export const RESPONSE_UNIT_QUERY_KEYS = {
 	list: (departmentId: number) => ['response-units', 'list', departmentId] as const,
 	item: (unitId: number) => ['response-units', 'item', unitId] as const,
 };
+
+export const CHAT_QUERY_KEYS = {
+	groups: {
+		all: ['chat-groups'] as const,
+		item: (groupId: number) => ['chat-groups', 'item', groupId] as const,
+	},
+	messages: {
+		all: ['chat-messages'] as const,
+		byGroup: (groupId: number) => ['chat-messages', 'group', groupId] as const,
+		item: (messageId: string) => ['chat-messages', 'item', messageId] as const,
+	},
+	users: {
+		all: ['chat-users'] as const,
+		item: (userId: number) => ['chat-users', 'item', userId] as const,
+	},
+};

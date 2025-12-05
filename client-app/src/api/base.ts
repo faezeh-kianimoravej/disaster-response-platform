@@ -1,6 +1,11 @@
 import { axios } from '@/lib/axios';
 import { AxiosError } from 'axios';
 
+const shouldLogApiError =
+	typeof process !== 'undefined' &&
+	typeof process.env !== 'undefined' &&
+	process.env.NODE_ENV !== 'test';
+
 export interface ApiError {
 	message: string;
 	status: number;
@@ -104,16 +109,18 @@ export class BaseApi {
 				...(validationErrors && { validationErrors }),
 			};
 
-			// eslint-disable-next-line no-console
-			console.error('[API Error] Request failed:', {
-				url: axiosError.config?.url,
-				method: axiosError.config?.method,
-				status: axiosError.response?.status,
-				message: apiError.message,
-				validationErrors,
-				fullResponseData: data,
-				fullError: axiosError,
-			});
+			if (shouldLogApiError) {
+				// eslint-disable-next-line no-console
+				console.error('[API Error] Request failed:', {
+					url: axiosError.config?.url,
+					method: axiosError.config?.method,
+					status: axiosError.response?.status,
+					message: apiError.message,
+					validationErrors,
+					fullResponseData: data,
+					fullError: axiosError,
+				});
+			}
 			return apiError;
 		}
 
@@ -124,8 +131,10 @@ export class BaseApi {
 			...(err.code && { code: err.code }),
 		};
 
-		// eslint-disable-next-line no-console
-		console.error('[API Error] Unexpected error:', apiError);
+		if (shouldLogApiError) {
+			// eslint-disable-next-line no-console
+			console.error('[API Error] Unexpected error:', apiError);
+		}
 
 		return apiError;
 	}

@@ -6,14 +6,14 @@ import {
 	getAllResponseUnits,
 	updateResponseUnit,
 	deleteResponseUnit,
-} from '@/api/responseUnit';
+} from '@/api/deployment/responseUnit';
 import type {
 	ResponseUnit,
 	ResponseUnitFormData,
 	ResponseUnitType,
 	AvailableResponseUnitSearchResult,
 } from '@/types/responseUnit';
-import { searchAvailableResponseUnits } from '@/api/responseUnit';
+import { searchAvailableResponseUnits } from '@/api/deployment/responseUnit';
 import type { ResourceStatus } from '@/types/resource';
 import { RESPONSE_UNIT_QUERY_KEYS } from '@/hooks/queryKeys';
 

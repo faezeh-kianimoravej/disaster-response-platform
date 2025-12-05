@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { axios } from '@/lib/axios';
-import { fetchNotifications, markNotificationAsRead } from '@/api/notification';
+import { fetchNotifications, markNotificationAsRead } from '@/api/notification/notification';
 
 vi.mock('@/lib/axios', () => ({
 	axios: {

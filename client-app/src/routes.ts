@@ -38,6 +38,10 @@ export const routes = {
 	incidentDeploymentOrder: (incidentId: number | string) =>
 		`/incidents/${incidentId}/deployment-order`,
 
+	// Chat
+	chat: () => '/chat',
+	chatWith: (chatId: number | string) => `/chat/${chatId}`,
+
 	// Deployment Requests
 	deploymentRequestDetails: (requestId: number | string) => `/deployment-requests/${requestId}`,
 };
