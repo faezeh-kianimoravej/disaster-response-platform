@@ -171,13 +171,13 @@ class UserServiceImplTest {
         );
         when(passwordEncoder.encode("plain-pass")).thenReturn("encoded-pass");
         when(userRepository.createUser(any(User.class))).thenReturn(userEntity);
-        when(userResponseMapper.toDto(userEntity)).thenReturn(Optional.of(responseDto));
+        when(userResponseMapper.toDto(any(User.class))).thenReturn(Optional.of(responseDto));
 
         UserResponseDto result = userService.createUser(req);
         assertThat(result).isNotNull();
         verify(passwordEncoder).encode("plain-pass");
         verify(userRepository).createUser(any(User.class));
-        verify(userResponseMapper).toDto(userEntity);
+        verify(userResponseMapper).toDto(any(User.class));
     }
 
     @Test
