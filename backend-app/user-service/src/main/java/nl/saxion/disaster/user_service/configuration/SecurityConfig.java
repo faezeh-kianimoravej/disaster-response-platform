@@ -44,18 +44,9 @@ public class SecurityConfig {
 
                 // Define which requests are public and which require authentication
                 .authorizeHttpRequests(auth -> auth
-<<<<<<< ours
-                        .requestMatchers("/api/users/login", "/api/users/register").permitAll()  // public endpoints
+                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll() // allow creating users (registration)
                         .requestMatchers("/api/users/internal/**").permitAll()  // Allow internal service-to-service calls
                         .anyRequest().authenticated()  // all other requests require a valid token
-||||||| ancestor
-                        .requestMatchers("/api/users/login", "/api/users/register").permitAll()  // public endpoints
-                        .anyRequest().authenticated()  // all other requests require a valid token
-=======
-                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll() // allow creating users
-                                                                                    // (registration)
-                        .anyRequest().authenticated() // all other requests require a valid token
->>>>>>> theirs
                 )
 
                 // Configure OAuth2 Resource Server to validate incoming Keycloak JWTs
