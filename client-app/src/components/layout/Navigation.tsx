@@ -3,7 +3,7 @@ import { routes } from '@/routes';
 import Logo from '@/components/ui/Logo';
 import NotificationPanel from '@/components/features/notifications/NotificationPanel';
 import AccountPanel from '@/components/auth/AccountPanel';
-import { useUserHasAnyRole } from '@/context/AuthContext';
+import { useUserHasAnyRole, useIsUserLoggedIn } from '@/context/AuthContext';
 import {
 	ADMIN_ROLES,
 	REGION_ROLES,
@@ -29,6 +29,8 @@ export default function Navigation() {
 		...(showMunicipality ? [{ path: routes.departments(), label: 'Departments' }] : []),
 		...(showDepartment ? [{ path: routes.resources(), label: 'Resources' }] : []),
 		...(showAdmin ? [{ path: routes.users(), label: 'Users' }] : []),
+		// Chat available for any logged-in user
+		...(useIsUserLoggedIn() ? [{ path: routes.chat(), label: 'Chat' }] : []),
 	];
 
 	return (

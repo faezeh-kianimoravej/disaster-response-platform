@@ -18,6 +18,7 @@ import IncidentDetailsPage from './pages/IncidentDetailsPage';
 import IncidentPriorityPage from './pages/IncidentPriorityPage';
 import IncidentDeploymentOrder from './pages/IncidentDeploymentOrder';
 import DeploymentRequestDetailsPage from './pages/DeploymentRequestDetailsPage';
+import ChatPage from './pages/Chat';
 import { AppProviders } from './context/AppProviders';
 
 function App() {
@@ -31,6 +32,8 @@ function App() {
 						<Route path="/dashboard" element={<DashboardPage />} />
 
 						<Route path="/incidents/:incidentId" element={<IncidentDetailsPage />} />
+						<Route path="/chat" element={<ChatPage />} />
+						<Route path="/chat/:chatId" element={<ChatPage />} />
 						<Route path="/incidents/:incidentId/prioritize" element={<IncidentPriorityPage />} />
 						<Route
 							path="/incidents/:incidentId/deployment-order"

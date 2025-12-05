@@ -1,6 +1,6 @@
 import { vi, describe, it, expect } from 'vitest';
 import { BaseApi } from '@/api/base';
-import type { FillUnitAssignmentRequest } from '@/api/deployment';
+import type { FillUnitAssignmentRequest } from '@/api/deployment/deployment';
 
 describe('api/deployment', () => {
 	afterEach(() => vi.restoreAllMocks());
@@ -20,7 +20,7 @@ describe('api/deployment', () => {
 			}
 		);
 
-		const deployment = await import('@/api/deployment');
+		const deployment = await import('@/api/deployment/deployment');
 
 		const req: FillUnitAssignmentRequest = {
 			requestId: 1,
@@ -50,7 +50,7 @@ describe('api/deployment', () => {
 			}
 		);
 
-		const deployment = await import('@/api/deployment');
+		const deployment = await import('@/api/deployment/deployment');
 
 		const req = { requestId: 9, assignedBy: 10, assignedUnitId: 123 };
 		const res = await deployment.assignResponseUnitToDeploymentRequest(req);

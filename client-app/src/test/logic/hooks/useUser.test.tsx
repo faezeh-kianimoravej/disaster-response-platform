@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll, afterAll } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type React from 'react';
@@ -31,8 +31,18 @@ function createWrapper() {
 }
 
 describe('useUser hooks', () => {
+	let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
+	beforeAll(() => {
+		consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+	});
+
 	beforeEach(() => {
 		vi.clearAllMocks();
+	});
+
+	afterAll(() => {
+		consoleErrorSpy.mockRestore();
 	});
 
 	it('useCreateUser submits successfully', async () => {
@@ -144,12 +154,18 @@ describe('useUser hooks', () => {
 	it('useRemoveUser success and failure', async () => {
 		vi.mocked(api.removeUser).mockResolvedValueOnce(undefined);
 		const { result } = renderHook(() => useRemoveUser(), { wrapper: createWrapper() });
-		const ok1 = await result.current.remove('1');
+		let ok1 = false;
+		await act(async () => {
+			ok1 = await result.current.remove('1');
+		});
 		expect(ok1).toBe(true);
 		await waitFor(() => expect(result.current.success).toBe(true));
 
 		vi.mocked(api.removeUser).mockRejectedValueOnce(new Error('Nope'));
-		const ok2 = await result.current.remove('2');
+		let ok2 = true;
+		await act(async () => {
+			ok2 = await result.current.remove('2');
+		});
 		expect(ok2).toBe(false);
 		await waitFor(() => expect(result.current.error).toBe('Nope'));
 	});

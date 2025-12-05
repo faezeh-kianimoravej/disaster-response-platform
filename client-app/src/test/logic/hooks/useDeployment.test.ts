@@ -3,13 +3,16 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createTestQueryClient } from '@/test/utils';
 import { useAssignResponseUnit, useAssignFillUnit } from '@/hooks/useDeployment';
-import * as deploymentApi from '@/api/deployment';
 import React, { type ReactNode } from 'react';
 
 // Mock the API module
-vi.mock('@/api/deployment');
+vi.mock('@/api/deployment/deployment', () => ({
+	assignResponseUnitToDeploymentRequest: vi.fn(),
+	assignFillUnitToDeploymentRequest: vi.fn(),
+}));
 
-const mockedApi = vi.mocked(deploymentApi);
+const deploymentApi = await import('@/api/deployment/deployment');
+const mockedApi = vi.mocked(deploymentApi, { partial: true });
 
 describe('useDeployment hooks', () => {
 	let queryClient: QueryClient;

@@ -9,12 +9,13 @@ import {
 	useCreateDeploymentOrder,
 } from '@/hooks/useDeploymentOrder';
 
-vi.mock('@/api/deploymentOrder', () => ({
-	createDeploymentOrder: vi.fn(),
+vi.mock('@/api/deployment/deploymentOrder', () => ({
 	getDeploymentOrderByIncidentId: vi.fn(),
+	createDeploymentOrder: vi.fn(),
 }));
 
-const api = await import('@/api/deploymentOrder');
+const api = await import('@/api/deployment/deploymentOrder');
+const mockedApi = vi.mocked(api, { partial: true });
 
 function createWrapper() {
 	const queryClient = new QueryClient({
@@ -43,7 +44,7 @@ describe('useDeploymentOrder hooks', () => {
 			deploymentRequests: [],
 			incidentSeverity: 'LOW' as IncidentSeverity,
 		};
-		vi.mocked(api.getDeploymentOrderByIncidentId).mockResolvedValueOnce(mock);
+		vi.mocked(mockedApi.getDeploymentOrderByIncidentId).mockResolvedValueOnce(mock);
 
 		const { result } = renderHook(() => useDeploymentOrderByIncidentId(99), {
 			wrapper: createWrapper(),
@@ -61,7 +62,7 @@ describe('useDeploymentOrder hooks', () => {
 			deploymentRequests: [],
 			incidentSeverity: 'HIGH' as IncidentSeverity,
 		};
-		vi.mocked(api.createDeploymentOrder).mockResolvedValueOnce(mock);
+		vi.mocked(mockedApi.createDeploymentOrder).mockResolvedValueOnce(mock);
 
 		const { result } = renderHook(() => useCreateDeploymentOrder(), { wrapper: createWrapper() });
 		let res: DeploymentOrder | undefined;
@@ -73,7 +74,7 @@ describe('useDeploymentOrder hooks', () => {
 				deploymentRequests: [] as DeploymentOrderFormData['deploymentRequests'],
 			});
 		});
-		expect(vi.mocked(api.createDeploymentOrder).mock.calls.length).toBe(1);
+		expect(vi.mocked(mockedApi.createDeploymentOrder).mock.calls.length).toBe(1);
 		expect(res?.deploymentOrderId).toBe(2);
 	});
 });

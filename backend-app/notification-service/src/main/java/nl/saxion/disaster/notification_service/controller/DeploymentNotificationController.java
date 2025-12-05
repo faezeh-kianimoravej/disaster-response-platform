@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import nl.saxion.disaster.notification_service.service.contract.DeploymentNotificationService;
+import nl.saxion.disaster.notification_service.service.JwtTokenService;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -20,9 +22,11 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class DeploymentNotificationController {
 
     private final DeploymentNotificationService deploymentNotificationService;
+    private final JwtTokenService jwtTokenService;
 
-    public DeploymentNotificationController(DeploymentNotificationService deploymentNotificationService) {
+    public DeploymentNotificationController(DeploymentNotificationService deploymentNotificationService, JwtTokenService jwtTokenService) {
         this.deploymentNotificationService = deploymentNotificationService;
+        this.jwtTokenService = jwtTokenService;
     }
 
     /**
@@ -62,8 +66,13 @@ public class DeploymentNotificationController {
     @GetMapping(value = "/stream/{departmentId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamDeploymentNotifications(
             @PathVariable String departmentId,
-            @RequestParam(value = "lastNotificationId", required = false) Long lastNotificationId
+            @RequestParam(value = "lastNotificationId", required = false) Long lastNotificationId,
+            @RequestParam String token
     ) {
+        Jwt jwt = jwtTokenService.decodeAndValidate(token);
+        // Optionally extract roles or other claims if needed
+        // List<String> roles = jwt.getClaimAsStringList("roles");
+        // Use keycloakSub for authorization if needed
         SseEmitter emitter = deploymentNotificationService.addEmitter(departmentId);
         deploymentNotificationService.sendMissedDeploymentNotifications(emitter, departmentId, lastNotificationId);
         return emitter;

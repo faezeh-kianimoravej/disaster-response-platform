@@ -1,7 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { axios } from '@/lib/axios';
 import type { AxiosResponse } from 'axios';
-import { createDeploymentOrder, getDeploymentOrderByIncidentId } from '@/api/deploymentOrder';
+import {
+	createDeploymentOrder,
+	getDeploymentOrderByIncidentId,
+} from '@/api/deployment/deploymentOrder';
 import type { DeploymentOrderFormData } from '@/types/deployment';
 
 vi.mock('@/lib/axios', () => ({

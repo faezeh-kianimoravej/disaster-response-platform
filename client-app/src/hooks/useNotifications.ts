@@ -1,15 +1,43 @@
-import { useEffect, useState } from 'react';
-import type { Notification } from '@/types/notification';
+import { useCallback, useEffect, useState } from 'react';
+import { NotificationType, type Notification } from '@/types/notification';
+import type { User } from '@/types/user';
 import { config } from '@/config';
-import { markNotificationAsRead } from '@/api/notification';
+import { markNotificationAsRead } from '@/api/notification/notification';
 import { showBrowserNotification } from '@/utils/notificationUtils';
-import { useAuth } from '@/context/AuthContext';
-import { useNotificationContext } from '@/context/NotificationContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+	connectToNotificationStream,
+	disconnectFromNotificationStream,
+	addNotificationEventListener,
+	removeNotificationEventListener,
+	type NotificationSSEEvent,
+	type NotificationSSEData,
+} from '@/api/notification/notificationSseApi';
 
-export default function useNotifications(onNewNotification?: (n: Notification) => void) {
-	const auth = useAuth();
-	const roles = auth?.user?.roles ?? [];
+function normalizeNotification(data: NotificationSSEData): Notification {
+	const normalized: Notification = {
+		notificationId: String(data.notificationId),
+		title: data.title ?? 'Notification',
+		description: data.description ?? '',
+		createdAt: data.createdAt ?? new Date().toISOString(),
+		read: data.read ?? false,
+		notificationType: (data.notificationType as NotificationType) ?? NotificationType.GENERAL_ALERT,
+	};
+
+	if (data.incidentId !== undefined) normalized.incidentId = data.incidentId;
+	if (data.deploymentRequestId !== undefined)
+		normalized.deploymentRequestId = data.deploymentRequestId;
+	if (data.targetDepartmentId !== undefined)
+		normalized.targetDepartmentId = data.targetDepartmentId;
+
+	return normalized;
+}
+
+export default function useNotifications(
+	user?: User | null,
+	onNewNotification?: (n: Notification) => void
+) {
+	const roles = user?.roles ?? [];
 
 	const regionId = roles.find(r => r.regionId)?.regionId ?? null;
 	const departmentId = roles.find(r => r.departmentId)?.departmentId ?? null;
@@ -19,7 +47,7 @@ export default function useNotifications(onNewNotification?: (n: Notification) =
 	const targetKey = isRegionUser ? regionId : departmentId;
 	const targetType = isRegionUser ? 'region' : 'department';
 
-	const { lastNotificationId, setLastNotificationId } = useNotificationContext();
+	const [lastNotificationId, setLastNotificationId] = useState<number | null>(null);
 	const [isConnected, setIsConnected] = useState(false);
 
 	const queryClient = useQueryClient();
@@ -30,7 +58,7 @@ export default function useNotifications(onNewNotification?: (n: Notification) =
 		queryKey: ['notifications', targetType, targetKey],
 		queryFn: async () => {
 			const url = isRegionUser
-				? `${config.api.baseURL}/notifications/incident?regionId=${regionId}`
+				? `${config.api.baseURL}/notifications/incidents?regionId=${regionId}`
 				: `${config.api.baseURL}/notifications/deployment?departmentId=${departmentId}`;
 
 			const res = await fetch(url);
@@ -42,51 +70,63 @@ export default function useNotifications(onNewNotification?: (n: Notification) =
 
 	// --------------- SSE STREAM ----------------
 
+	const handleSSEEvent = useCallback(
+		(event: NotificationSSEEvent) => {
+			if (event.type !== 'NOTIFICATION') return;
+
+			const notification = normalizeNotification(event.data as NotificationSSEData);
+
+			queryClient.setQueryData<Notification[]>(['notifications', targetType, targetKey], prev => {
+				if (!prev) return [notification];
+				const exists = prev.some(n => n.notificationId === notification.notificationId);
+				if (exists) return prev;
+				return [notification, ...prev];
+			});
+
+			onNewNotification?.(notification);
+
+			const idNum = Number(notification.notificationId);
+			if (!lastNotificationId || idNum > lastNotificationId) {
+				setLastNotificationId(idNum);
+			}
+
+			showBrowserNotification(notification.title ?? 'Notification', {
+				body: notification.description,
+			});
+		},
+		[
+			targetType,
+			targetKey,
+			lastNotificationId,
+			queryClient,
+			onNewNotification,
+			setLastNotificationId,
+		]
+	);
+
 	useEffect(() => {
 		if (!targetKey) return;
 
+		const streamKey = isRegionUser ? `incident-${regionId}` : `deployment-${departmentId}`;
 		const streamUrl = isRegionUser
-			? `${config.api.baseURL}/notifications/incident/stream/${regionId}${
-					lastNotificationId ? `?lastNotificationId=${lastNotificationId}` : ''
-				}`
-			: `${config.api.baseURL}/notifications/deployment/stream/${departmentId}${
-					lastNotificationId ? `?lastNotificationId=${lastNotificationId}` : ''
-				}`;
+			? `${config.api.baseURL}/notifications/incidents/stream/${regionId}`
+			: `${config.api.baseURL}/notifications/deployment/stream/${departmentId}`;
 
-		const sse = new EventSource(streamUrl);
-
-		sse.addEventListener('notification', (event: MessageEvent) => {
-			try {
-				const notification: Notification = JSON.parse(event.data);
-
-				queryClient.setQueryData<Notification[]>(['notifications', targetType, targetKey], prev => {
-					if (!prev) return [notification];
-					const exists = prev.some(n => n.notificationId === notification.notificationId);
-					if (exists) return prev;
-					return [notification, ...prev];
-				});
-
-				onNewNotification?.(notification);
-
-				const idNum = Number(notification.notificationId);
-				if (!lastNotificationId || idNum > lastNotificationId) {
-					setLastNotificationId(idNum);
-				}
-
-				showBrowserNotification(notification.title ?? 'Notification', {
-					body: notification.description,
-				});
-			} catch {}
+		// Add event listener
+		addNotificationEventListener(streamKey, 'NOTIFICATION', handleSSEEvent);
+		addNotificationEventListener(streamKey, 'CONNECTION_STATUS', (event: NotificationSSEEvent) => {
+			const statusData = event.data as { status: string };
+			setIsConnected(statusData.status === 'CONNECTED');
 		});
 
-		sse.onopen = () => setIsConnected(true);
-		sse.onerror = () => {
-			setIsConnected(false);
-			sse.close();
-		};
+		// Connect
+		connectToNotificationStream(streamKey, streamUrl, lastNotificationId ?? undefined);
 
-		return () => sse.close();
-	}, [regionId, departmentId, targetKey, targetType, lastNotificationId]);
+		return () => {
+			removeNotificationEventListener(streamKey, 'NOTIFICATION', handleSSEEvent);
+			disconnectFromNotificationStream(streamKey);
+		};
+	}, [regionId, departmentId, targetKey, isRegionUser, lastNotificationId, handleSSEEvent]);
 
 	// ----------- MARK AS READ -----------
 

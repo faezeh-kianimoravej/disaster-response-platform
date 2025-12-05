@@ -259,6 +259,16 @@ export function useCurrentUserRoles(): Role[] {
 }
 
 /**
+ * Hook: useCurrentUserId
+ * - Returns the current user's ID (or null if not logged in).
+ * - Useful in pages and components that need to query user-specific data.
+ */
+export function useCurrentUserId(): number | null {
+	const auth = useAuth();
+	return auth?.user?.userId ?? null;
+}
+
+/**
  * Hook: useGetUserRegionIds
  * - Returns all region IDs from the current user's roles.
  */

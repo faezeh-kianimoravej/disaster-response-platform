@@ -1,5 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createDeploymentOrder, getDeploymentOrderByIncidentId } from '@/api/deploymentOrder';
+import {
+	createDeploymentOrder,
+	getDeploymentOrderByIncidentId,
+} from '@/api/deployment/deploymentOrder';
 import type { DeploymentOrder, DeploymentOrderFormData } from '@/types/deployment';
 import { DEPLOYMENT_ORDER_QUERY_KEYS } from '@/hooks/queryKeys';
 
