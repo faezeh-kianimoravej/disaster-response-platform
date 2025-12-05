@@ -8,6 +8,9 @@ spring:
     web-application-type: reactive
   profiles:
     active: local-docker
+  security:
+    oauth2:
+      resourceserver: { jwt: { issuer-uri: http://localhost:8080/realms/DDRCS } }
 
   cloud:
     gateway:
@@ -53,6 +56,17 @@ spring:
           uri: lb://notification-service
           predicates:
             - Path=/api/notifications/deployment/stream/**
+          filters:
+            - SetResponseHeader=Content-Type, text/event-stream
+            - SetResponseHeader=Cache-Control, no-store
+            - RemoveResponseHeader=Transfer-Encoding
+            - RemoveResponseHeader=Content-Length
+
+        # Chat SSE
+        - id: chat-sse
+          uri: lb://chat-service
+          predicates:
+            - Path=/api/chat/*/subscribe
           filters:
             - SetResponseHeader=Content-Type, text/event-stream
             - SetResponseHeader=Cache-Control, no-store

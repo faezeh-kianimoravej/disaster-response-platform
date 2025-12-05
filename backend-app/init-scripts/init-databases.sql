@@ -7,3 +7,4 @@ CREATE DATABASE notification_db;
 CREATE DATABASE user_db;
 CREATE DATABASE deployment_db;
 CREATE DATABASE chat_db;
+CREATE DATABASE keycloak_db;

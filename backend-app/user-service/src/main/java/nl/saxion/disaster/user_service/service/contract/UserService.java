@@ -38,6 +38,14 @@ public interface UserService {
     Optional<UserResponseDto> getUserById(Long id);
 
     /**
+     * Retrieves a user by email address.
+     *
+     * @param email user's email address
+     * @return optional of UserResponseDto
+     */
+    Optional<UserResponseDto> getUserByEmail(String email);
+
+    /**
      * Updates a user.
      *
      * @param id         ID of the user to update

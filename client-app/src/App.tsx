@@ -5,7 +5,6 @@ import DashboardPage from '@/pages/DashboardPage';
 import UsersPage from '@/pages/UsersPage';
 import UserDetailsPage from '@/pages/UserDetailsPage';
 import UserCreatePage from '@/pages/UserCreatePage';
-import LoginPage from '@/pages/LoginPage';
 import UnauthorizedPage from '@/pages/NotAuthorizedPage';
 import Navigation from '@/components/layout/Navigation';
 import ResourcesPage from './pages/ResourcesPage';
@@ -71,9 +70,6 @@ function App() {
 						<Route path="/users" element={<UsersPage />} />
 						<Route path="/users/new" element={<UserCreatePage />} />
 						<Route path="/users/:userId" element={<UserDetailsPage />} />
-
-						{/* Auth */}
-						<Route path="/login" element={<LoginPage />} />
 
 						{/* Unknown routes -> 401 Unauthorized */}
 						<Route path="*" element={<UnauthorizedPage />} />

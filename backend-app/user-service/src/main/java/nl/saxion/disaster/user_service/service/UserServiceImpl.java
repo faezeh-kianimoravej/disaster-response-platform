@@ -2,12 +2,13 @@ package nl.saxion.disaster.user_service.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import nl.saxion.disaster.user_service.dto.RoleDto;
 import nl.saxion.disaster.user_service.dto.UserRequestDto;
 import nl.saxion.disaster.user_service.dto.UserResponseDto;
 import nl.saxion.disaster.user_service.mapper.contract.RequestMapper;
 import nl.saxion.disaster.user_service.mapper.contract.ResponseMapper;
-import nl.saxion.disaster.user_service.model.entity.User;
 import nl.saxion.disaster.user_service.model.entity.ResponderProfile;
+import nl.saxion.disaster.user_service.model.entity.User;
 import nl.saxion.disaster.user_service.repository.contract.UserRepository;
 import nl.saxion.disaster.user_service.repository.contract.ResponderProfileRepository;
 import nl.saxion.disaster.user_service.mapper.ResponderProfileMapper;
@@ -16,9 +17,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,34 +31,116 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final ResponderProfileRepository responderProfileRepository;
     private final ResponderProfileMapper responderProfileMapper;
+    private final KeycloakAdminClient keycloakAdminClient;
 
-    // --------------------------------------------------------------------------------------------
-    // CREATE USER
-    // --------------------------------------------------------------------------------------------
     @Override
     public UserResponseDto createUser(UserRequestDto requestDto) {
-        if (requestDto == null) {
-            log.error("Received null UserRequestDto in createUser()");
-            throw new IllegalArgumentException("User request cannot be null");
-        }
-
-        log.info("Creating new user with email: {}", requestDto.email());
+        validateRequest(requestDto);
 
         User user = userRequestMapper.toEntity(requestDto)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid user data"));
 
+        prepareAndSaveLocalUser(user, requestDto);
+
+        // Keycloak sync - best-effort, do not fail user creation if Keycloak fails
+        try {
+            syncUserToKeycloak(user, requestDto);
+        } catch (Exception e) {
+            log.warn("Keycloak sync failed for email={} : {}", user.getEmail(), e.getMessage());
+        }
+
+        // Save responder profile if present
+        if (user.getResponderProfile() != null) {
+            user.getResponderProfile().setUser(user);
+            responderProfileRepository.save(user.getResponderProfile());
+        }
+
+        log.info("User successfully saved with ID: {}", user.getId());
+        return userResponseMapper.toDto(user)
+                .orElseThrow(() -> new IllegalStateException("Failed to map user entity to response"));
+    }
+
+    private void validateRequest(UserRequestDto requestDto) {
+        if (requestDto == null) {
+            log.error("Received null UserRequestDto in createUser()");
+            throw new IllegalArgumentException("User request cannot be null");
+        }
+        log.info("Creating new user with email: {}", requestDto.email());
+    }
+
+    private void prepareAndSaveLocalUser(User user, UserRequestDto requestDto) {
         user.setPassword(passwordEncoder.encode(requestDto.password()));
         user.setPasswordUpdatedAt(OffsetDateTime.now());
 
-        User savedUser = userRepository.createUser(user);
-        if (user.getResponderProfile() != null) {
-            user.getResponderProfile().setUser(savedUser);
-            responderProfileRepository.save(user.getResponderProfile());
-        }
-        log.info("User successfully saved with ID: {}", savedUser.getId());
+        // persist and update user ref with generated id (assuming createUser returns saved entity)
+        User saved = userRepository.createUser(user);
+        // copy back fields (if repository returns separate instance)
+        user.setId(saved.getId());
+    }
 
-        return userResponseMapper.toDto(savedUser)
-            .orElseThrow(() -> new IllegalStateException("Failed to map user entity to response"));
+    private void syncUserToKeycloak(User savedUser, UserRequestDto requestDto) throws Exception {
+        String keycloakUserId = keycloakAdminClient.createUserInKeycloak(
+                savedUser.getFirstName(),
+                savedUser.getLastName(),
+                savedUser.getEmail(),
+                requestDto.password()
+        );
+
+        if (keycloakUserId == null) {
+            log.warn("KeyCLoak-Log: Failed to create Keycloak user for email={}", savedUser.getEmail());
+            return;
+        }
+
+        Set<String> roleNames = extractRoleNames(requestDto, savedUser);
+        boolean rolesAssigned = keycloakAdminClient.assignRolesToUser(keycloakUserId, roleNames);
+        if (!rolesAssigned) {
+            log.warn("KeyCLoak-Log: Failed to assign roles to Keycloak user (userId={})", keycloakUserId);
+        }
+    }
+
+    private Set<String> extractRoleNames(UserRequestDto requestDto, User savedUser) {
+        // Prefer roles from request; fallback to savedUser roles
+        if (requestDto != null && requestDto.roles() != null && !requestDto.roles().isEmpty()) {
+            return requestDto.roles().stream()
+                    .filter(Objects::nonNull)
+                    .map(RoleDto::roleType)
+                    .filter(Objects::nonNull)
+                    .map(Enum::toString)
+                    .collect(Collectors.toSet());
+        }
+        if (savedUser != null && savedUser.getRoles() != null && !savedUser.getRoles().isEmpty()) {
+            return savedUser.getRoles().stream()
+                    .filter(Objects::nonNull)
+                    .map(r -> r.getRoleType())
+                    .filter(Objects::nonNull)
+                    .map(Enum::toString)
+                    .collect(Collectors.toSet());
+        }
+        return Set.of();
+    }
+
+    @SuppressWarnings("unchecked")
+    private Set<String> safeRoleNameExtraction(Iterable<?> rolesIterable) {
+        Set<String> result = new HashSet<>();
+        for (Object r : rolesIterable) {
+            if (r == null) continue;
+            if (r instanceof String) result.add((String) r);
+            else if (r instanceof Enum) result.add(((Enum<?>) r).name());
+            else {
+                try { // try common getters
+                    var m = r.getClass().getMethod("name");
+                    result.add(String.valueOf(m.invoke(r)));
+                } catch (Exception e1) {
+                    try {
+                        var m2 = r.getClass().getMethod("getName");
+                        result.add(String.valueOf(m2.invoke(r)));
+                    } catch (Exception e2) {
+                        result.add(r.toString());
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     // --------------------------------------------------------------------------------------------
@@ -86,6 +168,18 @@ public class UserServiceImpl implements UserService {
         log.info("Fetching user by ID: {}", id);
 
         return userRepository.findUserById(id)
+                .filter(u -> !u.isDeleted())
+                .flatMap(userResponseMapper::toDto);
+    }
+
+    // --------------------------------------------------------------------------------------------
+    // GET USER BY EMAIL
+    // --------------------------------------------------------------------------------------------
+    @Override
+    public Optional<UserResponseDto> getUserByEmail(String email) {
+        log.info("Fetching user by email: {}", email);
+
+        return userRepository.findUserByEmail(email)
                 .filter(u -> !u.isDeleted())
                 .flatMap(userResponseMapper::toDto);
     }

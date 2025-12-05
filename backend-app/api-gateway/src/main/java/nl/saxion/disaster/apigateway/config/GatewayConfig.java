@@ -1,10 +1,13 @@
 package nl.saxion.disaster.apigateway.config;
 
+import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
+import org.springframework.web.server.ServerWebExchange;
+import org.springframework.http.HttpHeaders;
 
 import java.util.Arrays;
 import java.util.List;
@@ -15,7 +18,7 @@ import java.util.List;
  * to make requests to the backend services through the gateway.
  */
 @Configuration
-public class CorsConfig {
+public class GatewayConfig {
 
     @Bean
     public CorsWebFilter corsWebFilter() {
@@ -51,5 +54,18 @@ public class CorsConfig {
         source.registerCorsConfiguration("/**", corsConfig);
         
         return new CorsWebFilter(source);
+    }
+
+    @Bean
+    public GlobalFilter addAuthHeaderFilter() {
+        return (exchange, chain) -> {
+            ServerWebExchange mutatedExchange = exchange.mutate()
+                    .request(exchange.getRequest().mutate()
+                            .header(HttpHeaders.AUTHORIZATION,
+                                    exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION))
+                            .build())
+                    .build();
+            return chain.filter(mutatedExchange);
+        };
     }
 }

@@ -44,6 +44,7 @@ export const USER_QUERY_KEYS = {
 	byRegion: (regionId: number) => ['users', 'region', regionId] as const,
 	byMunicipality: (municipalityId: number) => ['users', 'municipality', municipalityId] as const,
 	byDepartment: (departmentId: number) => ['users', 'department', departmentId] as const,
+	byEmail: (email: string) => ['user', 'email', email] as const,
 };
 
 export const RESPONSE_UNIT_QUERY_KEYS = {

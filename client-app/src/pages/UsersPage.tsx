@@ -7,7 +7,11 @@ import LoadingPanel from '@/components/ui/LoadingPanel';
 import { ErrorRetryBlock } from '@/components/ui/ErrorRetry';
 import { ADMIN_ROLES } from '@/types/role';
 import AuthGuard from '@/components/auth/AuthGuard';
-import { useCurrentUserRoles } from '@/context/AuthContext';
+import {
+	useGetUserRegionIds,
+	useGetUserMunicipalityIds,
+	useGetUserDepartmentIds,
+} from '@/context/AuthContext';
 import useSingleErrorToast from '@/hooks/useSingleErrorToast';
 
 export default function UsersPage() {
@@ -21,14 +25,15 @@ export default function UsersPage() {
 function UsersPageContent() {
 	const navigate = useNavigate();
 
-	// Current user's roles and derived admin entity ids (first match if multiple)
-	const currentUserRoles = useCurrentUserRoles();
-	const regionAdminId =
-		currentUserRoles.find(r => r.roleType === 'Region Admin')?.regionId ?? undefined;
-	const municipalityAdminId =
-		currentUserRoles.find(r => r.roleType === 'Municipality Admin')?.municipalityId ?? undefined;
-	const departmentAdminId =
-		currentUserRoles.find(r => r.roleType === 'Department Admin')?.departmentId ?? undefined;
+	// Get all entity IDs from user's roles
+	const regionIds = useGetUserRegionIds();
+	const municipalityIds = useGetUserMunicipalityIds();
+	const departmentIds = useGetUserDepartmentIds();
+
+	// Use first ID if multiple exist for each scope
+	const regionAdminId = regionIds[0];
+	const municipalityAdminId = municipalityIds[0];
+	const departmentAdminId = departmentIds[0];
 
 	// Load list of users the current scope has access to
 	const {

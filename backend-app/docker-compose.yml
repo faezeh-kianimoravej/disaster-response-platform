@@ -25,6 +25,49 @@ services:
       start_period: 20s
 
   # ==============================
+  # Keycloak Identity Server
+  # ==============================
+  keycloak-db-restore:
+    image: postgres:16
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    entrypoint: >
+      bash -c "
+        sleep 10;
+        PGPASSWORD=1234 psql -h postgres-db -U postgres -d keycloak_db -f /docker-entrypoint-initdb.d/keycloak_db.sql
+      "
+    volumes:
+      - ./keycloak/keycloak_db.sql:/docker-entrypoint-initdb.d/keycloak_db.sql
+    networks:
+      - backend-network
+    restart: no
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: keycloak
+    command: start-dev --http-port=9090
+    environment:
+      KEYCLOAK_ADMIN: disaster-admin
+      KEYCLOAK_ADMIN_PASSWORD: AdminSecure123!
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres-db:5432/keycloak_db
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: 1234
+      KC_HEALTH_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
+    ports:
+      - "9090:9090"
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      keycloak-db-restore:
+        condition: service_completed_successfully
+    networks:
+      - backend-network
+    restart: always
+
+  # ==============================
   # Zookeeper
   # ==============================
   zookeeper:
@@ -331,3 +374,5 @@ networks:
 
 volumes:
   postgres_data:
+
+

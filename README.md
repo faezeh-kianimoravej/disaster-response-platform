@@ -18,6 +18,7 @@ Built with a microservices backend and a modern React front-end, DRCCS empowers 
 - **Backend:** Java (Maven) microservices  
    `api-gateway`, `discovery-service`, `department-service`, `incident-service`, `municipality-service`, `notification-service`, `region-service`, `deployment-service`, `user-service`
 - **Frontend:** React + TypeScript (Vite) in `client-app/`
+- **Security:** Keycloak
 
 [![Pipeline status](https://gitlab.com/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/badges/main/pipeline.svg)](https://gitlab.com/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/-/pipelines)  
 Latest stable release: [Releases page](https://gitlab.com/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/-/releases)  
@@ -33,7 +34,6 @@ Latest stable release: [Releases page](https://gitlab.com/saxionnl/master-ict-se
 [![Backend coverage](https://gitlab.com/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/-/jobs/artifacts/main/raw/backend-app/badges/coverage.svg?job=test:backend-app)](https://gitlab.com/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/-/pipelines)
 
 [![Backend tests](https://gitlab.com/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/-/jobs/artifacts/main/raw/backend-app/badges/tests.svg?job=test:backend-app)](https://gitlab.com/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/-/pipelines)
-
 ---
 
 ## 📦 User Deployment Guide — Run a Release
@@ -49,10 +49,10 @@ docker-compose pull
 docker-compose up -d
 ```
 
-Services:
+Accessible URL's:
 
 - Frontend: <http://localhost:3000>
-- API Gateway: <http://localhost:8080>
+- Keycloak: <http://localhost:9090>
 - Eureka: <http://localhost:8761>
 
 **📖 Full deployment documentation:** See [`release/README.md`](release/README.md)
@@ -162,7 +162,7 @@ Notes:
 
 ## 📬 Contact / Support
 
-- Open an issue in this repository
+- Open an issue in this repository  
 - Or contact the project coordinator (see [`Docs/Team-Charter.md`](Docs/Team-Charter.md))
 
 ---

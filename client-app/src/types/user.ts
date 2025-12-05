@@ -6,6 +6,8 @@ export interface User {
 	firstName: string;
 	lastName: string;
 	email: string;
+	// Optional Keycloak subject (sub) to correlate backend user with Keycloak
+	keycloakId?: string;
 	mobile: string;
 	roles: Role[];
 	deleted: boolean;
@@ -34,10 +36,4 @@ export interface UserEditFormData {
 	mobile: string;
 	password?: string;
 	roles: Role[];
-}
-
-export interface LoginResponse {
-	email: string;
-	roles: Role[];
-	token: string;
 }

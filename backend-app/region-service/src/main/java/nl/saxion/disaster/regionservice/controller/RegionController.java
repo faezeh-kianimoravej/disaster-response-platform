@@ -9,6 +9,7 @@ import nl.saxion.disaster.regionservice.dto.RegionSummaryDto;
 import nl.saxion.disaster.regionservice.service.contract.RegionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +19,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/regions")
 @RequiredArgsConstructor
+
+@PreAuthorize("hasRole('REGION_ADMIN')")
 public class RegionController {
 
     private final RegionService regionService;

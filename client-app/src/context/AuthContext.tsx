@@ -259,6 +259,33 @@ export function useCurrentUserRoles(): Role[] {
 }
 
 /**
+ * Hook: useGetUserRegionIds
+ * - Returns all region IDs from the current user's roles.
+ */
+export function useGetUserRegionIds(): number[] {
+	const auth = useAuth();
+	return getUserRegionIds(auth?.user);
+}
+
+/**
+ * Hook: useGetUserMunicipalityIds
+ * - Returns all municipality IDs from the current user's roles.
+ */
+export function useGetUserMunicipalityIds(): number[] {
+	const auth = useAuth();
+	return getUserMunicipalityIds(auth?.user);
+}
+
+/**
+ * Hook: useGetUserDepartmentIds
+ * - Returns all department IDs from the current user's roles.
+ */
+export function useGetUserDepartmentIds(): number[] {
+	const auth = useAuth();
+	return getUserDepartmentIds(auth?.user);
+}
+
+/**
  * Hook: useUserHasAccessToRegion
  * - Returns true if the current user has access to the given region (via regionId).
  */
