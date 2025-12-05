@@ -1,28 +1,27 @@
-
-
 server:
   port: 8080
 
 spring:
   application:
     name: api-gateway
-
   main:
     web-application-type: reactive
-
   profiles:
     active: local-docker
 
   cloud:
     gateway:
-
       discovery:
         locator:
           enabled: false
+          lower-case-service-id: true
 
-      httpclient:
-        connect-timeout: 5000
-        response-timeout: 30000ms
+        httpclient:
+          connect-timeout: 5000
+          response-timeout: 30000ms
+
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
 
       globalcors:
         corsConfigurations:
@@ -31,13 +30,15 @@ spring:
             allowedMethods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
             allowedHeaders: ["*"]
             allowCredentials: false
-
-      default-filters:
-        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+            maxAge: 3600
 
       routes:
 
-        # SSE ROUTES
+        # ---------------------------
+        # SSE ROUTES — MUST COME FIRST
+        # ---------------------------
+
+        # Incident SSE
         - id: incident-notification-sse
           uri: lb://notification-service
           predicates:
@@ -47,6 +48,7 @@ spring:
             - RemoveResponseHeader=Transfer-Encoding
             - RemoveResponseHeader=Content-Length
 
+        # Deployment SSE
         - id: deployment-notification-sse
           uri: lb://notification-service
           predicates:
@@ -57,6 +59,7 @@ spring:
             - RemoveResponseHeader=Transfer-Encoding
             - RemoveResponseHeader=Content-Length
 
+        # Chat SSE
         - id: chat-sse
           uri: lb://chat-service
           predicates:
@@ -67,7 +70,10 @@ spring:
             - RemoveResponseHeader=Transfer-Encoding
             - RemoveResponseHeader=Content-Length
 
-        # NORMAL ROUTES (GET with CircuitBreaker)
+        # ---------------------------
+        # NORMAL SERVICES
+        # ---------------------------
+
         - id: region
           uri: lb://region-service
           predicates:
@@ -75,7 +81,7 @@ spring:
           filters:
             - name: CircuitBreaker
               args:
-                name: regionCB
+                name: regionServiceCircuitBreaker
                 fallbackUri: forward:/fallback
 
         - id: department
@@ -85,7 +91,7 @@ spring:
           filters:
             - name: CircuitBreaker
               args:
-                name: departmentCB
+                name: departmentServiceCircuitBreaker
                 fallbackUri: forward:/fallback
 
         - id: resource
@@ -95,7 +101,7 @@ spring:
           filters:
             - name: CircuitBreaker
               args:
-                name: resourceCB
+                name: resourceServiceCircuitBreaker
                 fallbackUri: forward:/fallback
 
         - id: municipality
@@ -105,7 +111,7 @@ spring:
           filters:
             - name: CircuitBreaker
               args:
-                name: municipalityCB
+                name: municipalityServiceCircuitBreaker
                 fallbackUri: forward:/fallback
 
         - id: incident
@@ -115,7 +121,7 @@ spring:
           filters:
             - name: CircuitBreaker
               args:
-                name: incidentCB
+                name: incidentServiceCircuitBreaker
                 fallbackUri: forward:/fallback
 
         - id: location
@@ -125,31 +131,70 @@ spring:
           filters:
             - name: CircuitBreaker
               args:
-                name: locationCB
+                name: locationServiceCircuitBreaker
                 fallbackUri: forward:/fallback
 
-        # DEPLOYMENT SERVICE ROUTES (POST/PUT/DELETE without CircuitBreaker)
+        # Normal Notifications (NON-SSE)
+        - id: notification
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/notifications/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: notificationServiceCircuitBreaker
+                fallbackUri: forward:/fallback
+
+        - id: user
+          uri: lb://user-service
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: userServiceCircuitBreaker
+                fallbackUri: forward:/fallback
+
         - id: deployment-order
           uri: lb://deployment-service
           predicates:
             - Path=/api/deployment-orders/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: deploymentServiceCircuitBreaker
+                fallbackUri: forward:/fallback
 
         - id: response-unit
           uri: lb://deployment-service
           predicates:
             - Path=/api/response-units/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: deploymentServiceCircuitBreaker
+                fallbackUri: forward:/fallback
 
         - id: deployment-request
           uri: lb://deployment-service
           predicates:
             - Path=/api/deployment-requests/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: deploymentServiceCircuitBreaker
+                fallbackUri: forward:/fallback
 
         - id: deployment
           uri: lb://deployment-service
           predicates:
             - Path=/api/deployment/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: deploymentServiceCircuitBreaker
+                fallbackUri: forward:/fallback
 
-        # CHAT
         - id: chat
           uri: lb://chat-service
           predicates:
@@ -157,18 +202,21 @@ spring:
           filters:
             - name: CircuitBreaker
               args:
-                name: chatCB
+                name: chatServiceCircuitBreaker
                 fallbackUri: forward:/fallback
+
+
 
 eureka:
   client:
-    service-url:
-      defaultZone: http://discovery-service:8761/eureka/
+    serviceUrl:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8761/eureka/}
     fetch-registry: true
     register-with-eureka: true
 
   instance:
-    prefer-ip-address: true
+    prefer-ip-address: ${EUREKA_INSTANCE_PREFER_IP_ADDRESS:true}
+    hostname: ${EUREKA_INSTANCE_HOSTNAME:localhost}
     lease-renewal-interval-in-seconds: 10
     lease-expiration-duration-in-seconds: 30
 
