@@ -37,9 +37,3 @@ export interface UserEditFormData {
 	password?: string;
 	roles: Role[];
 }
-
-export interface LoginResponse {
-	email: string;
-	roles: Role[];
-	token: string;
-}

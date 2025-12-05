@@ -1,5 +1,5 @@
 import { BaseApi } from '@/api/base';
-import type { User, UserCreateFormData, UserEditFormData, LoginResponse } from '@/types/user';
+import type { User, UserCreateFormData, UserEditFormData } from '@/types/user';
 import type { Role } from '@/types/role';
 import type { ResponderProfile } from '@/types/responderSpecialization';
 import type { ResponderSpecialization } from '@/types/responderSpecialization';
@@ -185,11 +185,6 @@ export async function updateUser(formData: UserEditFormData): Promise<User> {
 
 export async function removeUser(userId: string | number): Promise<void> {
 	await userApi.delete(`/${userId}`);
-}
-
-export async function login(email: string, password: string): Promise<LoginResponse> {
-	const response = await userApi.post<LoginResponse>('/login', { email, password });
-	return response;
 }
 
 export async function getUsersByRegion(regionId: number): Promise<User[]> {

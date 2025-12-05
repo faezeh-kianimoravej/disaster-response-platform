@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { axios } from '@/lib/axios';
-import { listUsers, getUser, createUser, updateUser, removeUser, login } from '@/api/user';
+import { listUsers, getUser, createUser, updateUser, removeUser } from '@/api/user';
 import type { UserCreateFormData, UserEditFormData } from '@/types/user';
 
 vi.mock('@/lib/axios', () => ({
@@ -145,14 +145,5 @@ describe('User API (contract)', () => {
 		vi.mocked(axios.delete).mockResolvedValueOnce({ data: undefined });
 		await removeUser('7');
 		expect(axios.delete).toHaveBeenCalledWith(expect.stringContaining('/users/7'));
-	});
-
-	it('login - POST /users/login with credentials', async () => {
-		vi.mocked(axios.post).mockResolvedValueOnce({ data: { token: 'abc' } });
-		await login('a@b.com', 'secret');
-		expect(axios.post).toHaveBeenCalledWith(expect.stringMatching(/users.*login/), {
-			email: 'a@b.com',
-			password: 'secret',
-		});
 	});
 });

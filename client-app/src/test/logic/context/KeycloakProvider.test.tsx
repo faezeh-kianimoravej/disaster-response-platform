@@ -139,4 +139,77 @@ describe('KeycloakProvider', () => {
 		expect(localStorage.getItem('auth_token')).toBeNull();
 		expect(mocks.logout).toHaveBeenCalled();
 	});
+
+	it('init failure sets initialized to true but authenticated to false', async () => {
+		const mocks = (
+			globalThis as unknown as { __mock_kc?: Record<string, ReturnType<typeof vi.fn>> }
+		).__mock_kc!;
+		mocks.init?.mockRejectedValueOnce?.(new Error('Keycloak init failed'));
+
+		render(
+			<KeycloakProvider>
+				<StatusConsumer />
+			</KeycloakProvider>
+		);
+
+		await waitFor(() => expect(screen.getByTestId('initialized').textContent).toBe('true'));
+		expect(screen.getByTestId('authenticated').textContent).toBe('false');
+	});
+
+	it('should attempt silent SSO with redirectUri', async () => {
+		const mocks = (
+			globalThis as unknown as { __mock_kc?: Record<string, ReturnType<typeof vi.fn>> }
+		).__mock_kc!;
+
+		render(
+			<KeycloakProvider>
+				<StatusConsumer />
+			</KeycloakProvider>
+		);
+
+		await waitFor(() => expect(mocks.init).toHaveBeenCalled());
+
+		// Verify init was called with check-sso onLoad strategy and silent check SSO redirect
+		const initCall = mocks.init?.mock.calls?.[0]?.[0] as Record<string, unknown>;
+		expect(initCall?.onLoad).toBe('check-sso');
+		expect(String(initCall?.silentCheckSsoRedirectUri)).toContain('/silent-check-sso.html');
+	});
+
+	it('should clean up kc_login_in_progress on successful init', async () => {
+		sessionStorage.setItem('kc_login_in_progress', '1');
+
+		render(
+			<KeycloakProvider>
+				<StatusConsumer />
+			</KeycloakProvider>
+		);
+
+		const mocks = (
+			globalThis as unknown as { __mock_kc?: Record<string, ReturnType<typeof vi.fn>> }
+		).__mock_kc!;
+		await waitFor(() => expect(mocks.init).toHaveBeenCalled());
+
+		// Should be cleaned up
+		expect(sessionStorage.getItem('kc_login_in_progress')).toBeNull();
+	});
+
+	it('should provide keycloak instance through context', async () => {
+		function KeycloakConsumer() {
+			const { keycloak } = useKeycloak();
+			return <div data-testid="token-display">{keycloak?.token}</div>;
+		}
+
+		render(
+			<KeycloakProvider>
+				<KeycloakConsumer />
+			</KeycloakProvider>
+		);
+
+		const mocks = (
+			globalThis as unknown as { __mock_kc?: Record<string, ReturnType<typeof vi.fn>> }
+		).__mock_kc!;
+		await waitFor(() => expect(mocks.init).toHaveBeenCalled());
+
+		await waitFor(() => expect(screen.getByTestId('token-display').textContent).toBe('tok-1'));
+	});
 });
