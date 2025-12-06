@@ -1,4 +1,4 @@
-##### Stage 1: Build the Vite React app
+##### Stage 1: Build the Vite React app (or copy pre-built from CI)
 FROM node:20-alpine AS builder
 WORKDIR /app
 
@@ -17,7 +17,8 @@ RUN npm version $VERSION --no-git-tag-version --allow-same-version
 COPY . .
 
 # Build for production (outDir configured as 'build' in vite.config.ts)
-RUN npm run build
+# Or if build/ exists (from CI), skip rebuild
+RUN if [ -d build ]; then echo "Using pre-built artifacts from CI"; else npm run build; fi
 
 ##### Stage 2: Nginx to serve static files
 FROM nginx:1.27-alpine AS runtime

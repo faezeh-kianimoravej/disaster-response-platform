@@ -136,8 +136,8 @@ describe('useChatMessages hooks', () => {
 				chatGroupId: 1,
 				userId: 1,
 				content: 'Hello',
-				type: 'TEXT' as const,
-				createdAt: new Date('2024-01-15T10:00:00Z'),
+				type: 'DEFAULT' as const,
+				timestamp: new Date('2024-01-15T10:00:00Z'),
 				updatedAt: new Date('2024-01-15T10:00:00Z'),
 			},
 			{
@@ -145,8 +145,8 @@ describe('useChatMessages hooks', () => {
 				chatGroupId: 1,
 				userId: 2,
 				content: 'Hi there',
-				type: 'TEXT' as const,
-				createdAt: new Date('2024-01-15T10:01:00Z'),
+				type: 'DEFAULT' as const,
+				timestamp: new Date('2024-01-15T10:01:00Z'),
 				updatedAt: new Date('2024-01-15T10:01:00Z'),
 			},
 		];
@@ -224,8 +224,8 @@ describe('useChatMessages hooks', () => {
 			chatGroupId: 1,
 			userId: 1,
 			content: 'Hello',
-			type: 'TEXT' as const,
-			createdAt: new Date('2024-01-15T10:00:00Z'),
+			type: 'DEFAULT' as const,
+			timestamp: new Date('2024-01-15T10:00:00Z'),
 			updatedAt: new Date('2024-01-15T10:00:00Z'),
 		};
 

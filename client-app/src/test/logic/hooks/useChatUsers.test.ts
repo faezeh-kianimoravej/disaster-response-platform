@@ -106,24 +106,24 @@ describe('useChatUsers hooks', () => {
 		const mockUsers = [
 			{
 				id: 1,
+				userId: 1,
 				chatGroupId: 1,
-				firstName: 'Alice',
-				lastName: 'Smith',
-				email: 'alice@example.com',
+				joinedAt: new Date('2024-01-15T10:00:00Z'),
+				isActive: true,
 			},
 			{
 				id: 2,
+				userId: 2,
 				chatGroupId: 1,
-				firstName: 'Bob',
-				lastName: 'Jones',
-				email: 'bob@example.com',
+				joinedAt: new Date('2024-01-15T10:05:00Z'),
+				isActive: true,
 			},
 			{
 				id: 3,
+				userId: 3,
 				chatGroupId: 2,
-				firstName: 'Carol',
-				lastName: 'Davis',
-				email: 'carol@example.com',
+				joinedAt: new Date('2024-01-15T10:10:00Z'),
+				isActive: true,
 			},
 		];
 
@@ -189,10 +189,10 @@ describe('useChatUsers hooks', () => {
 	describe('useChatUser', () => {
 		const mockUser = {
 			id: 1,
+			userId: 1,
 			chatGroupId: 1,
-			firstName: 'Alice',
-			lastName: 'Smith',
-			email: 'alice@example.com',
+			joinedAt: new Date('2024-01-15T10:00:00Z'),
+			isActive: true,
 		};
 
 		it('should fetch a specific user by ID', async () => {
@@ -253,7 +253,7 @@ describe('useChatUsers hooks', () => {
 		it('should refetch when userId changes', async () => {
 			vi.mocked(mockedChatUserApi.getChatUserById)
 				.mockResolvedValueOnce(mockUser)
-				.mockResolvedValueOnce({ ...mockUser, userId: 2 });
+				.mockResolvedValueOnce({ ...mockUser, id: 2, userId: 2 });
 
 			const { result, rerender } = renderHook(({ userId }) => useChatUser(userId), {
 				initialProps: { userId: 1 },

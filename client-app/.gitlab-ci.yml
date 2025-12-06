@@ -44,6 +44,7 @@ test:frontend:
   script:
     - mkdir -p test-results
     - npm run lint
+    - npm run build
     - mkdir -p test-results badges || true
     - npm run coverage | tee test-results/vitest-summary.json
     - |
@@ -123,6 +124,7 @@ test:frontend:
         path: client-app/coverage/cobertura-coverage.xml
       junit: client-app/test-results/junit.xml
     paths:
+      - client-app/build/
       - client-app/coverage/cobertura-coverage.xml
       - client-app/test-results/junit.xml
       - client-app/badges/*.svg

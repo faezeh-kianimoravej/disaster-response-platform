@@ -41,7 +41,7 @@ export default function MessageList({
 		if (isDifferentDay) {
 			nodes.push(
 				<div
-					key={`day-${m.chatMessageId ?? m.id ?? i}`}
+					key={`day-${m.chatMessageId ?? i}`}
 					className="text-center text-sm text-slate-500 my-2"
 				>
 					{mDate.toLocaleDateString(undefined, {
