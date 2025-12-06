@@ -32,19 +32,16 @@ describe('useChatUsers hooks', () => {
 	describe('useCreateChatUser', () => {
 		const mockUser = {
 			id: 1,
+			userId: 1,
 			chatGroupId: 1,
-			firstName: 'Alice',
-			lastName: 'Smith',
-			email: 'alice@example.com',
+			joinedAt: new Date('2024-01-15T10:00:00Z'),
+			isActive: true,
 		};
 
 		const createRequest = {
+			userId: 1,
 			chatGroupId: 1,
-			firstName: 'Alice',
-			lastName: 'Smith',
-			email: 'alice@example.com',
 		};
-
 		it('should create a new chat user', async () => {
 			vi.mocked(mockedChatUserApi.createChatUser).mockResolvedValue(mockUser);
 

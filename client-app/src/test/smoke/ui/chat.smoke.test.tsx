@@ -46,11 +46,11 @@ vi.mock('@/hooks/chat/useChatSSE', () => ({
 
 // Minimal props for smoke tests
 const baseMessage = {
-	id: 1,
+	chatMessageId: 'msg-1',
+	chatGroupId: 1,
 	content: 'Hello',
 	timestamp: new Date().toISOString(),
 	userId: 1,
-	username: 'TestUser',
 	type: 'DEFAULT' as const,
 	userFullName: 'Test User',
 };

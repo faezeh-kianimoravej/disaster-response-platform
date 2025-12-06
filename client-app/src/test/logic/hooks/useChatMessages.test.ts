@@ -35,8 +35,8 @@ describe('useChatMessages hooks', () => {
 			chatGroupId: 1,
 			userId: 1,
 			content: 'Hello team',
-			type: 'TEXT' as const,
-			createdAt: new Date('2024-01-15T10:00:00Z'),
+			type: 'DEFAULT' as const,
+			timestamp: new Date('2024-01-15T10:00:00Z'),
 			updatedAt: new Date('2024-01-15T10:00:00Z'),
 		};
 
@@ -44,9 +44,8 @@ describe('useChatMessages hooks', () => {
 			chatGroupId: 1,
 			userId: 1,
 			content: 'Hello team',
-			type: 'TEXT' as const,
+			type: 'DEFAULT' as const,
 		};
-
 		it('should send a message successfully', async () => {
 			vi.mocked(mockedChatMessageApi.createChatMessage).mockResolvedValue(mockMessage);
 

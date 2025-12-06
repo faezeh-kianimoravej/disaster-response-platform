@@ -43,23 +43,15 @@ describe('useChatGroups hooks', () => {
 				name: 'Incident Response Team',
 				createdAt: new Date('2024-01-15T10:00:00Z'),
 				updatedAt: new Date('2024-01-15T10:00:00Z'),
-				members: [
-					{ userId: 1, firstName: 'Alice', lastName: 'Smith' },
-					{ userId: 2, firstName: 'Bob', lastName: 'Jones' },
-				],
 			},
 			{
 				id: 2,
+				incidentId: 102,
 				name: 'Dispatch Coordination',
 				createdAt: new Date('2024-01-15T11:00:00Z'),
 				updatedAt: new Date('2024-01-15T11:00:00Z'),
-				members: [
-					{ userId: 1, firstName: 'Alice', lastName: 'Smith' },
-					{ userId: 3, firstName: 'Carol', lastName: 'Davis' },
-				],
 			},
 		];
-
 		it('should fetch chat groups for a user successfully', async () => {
 			vi.mocked(mockedChatGroupApi.getChatGroupsByUser).mockResolvedValue(mockChatGroups);
 
@@ -130,15 +122,11 @@ describe('useChatGroups hooks', () => {
 	describe('useChatGroupById', () => {
 		const mockChatGroup = {
 			id: 1,
+			incidentId: 101,
 			name: 'Incident Response Team',
 			createdAt: new Date('2024-01-15T10:00:00Z'),
 			updatedAt: new Date('2024-01-15T10:00:00Z'),
-			members: [
-				{ userId: 1, firstName: 'Alice', lastName: 'Smith' },
-				{ userId: 2, firstName: 'Bob', lastName: 'Jones' },
-			],
 		};
-
 		it('should fetch a specific chat group by ID', async () => {
 			vi.mocked(mockedChatGroupApi.getChatGroupById).mockResolvedValue(mockChatGroup);
 

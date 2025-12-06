@@ -70,7 +70,7 @@ export default function MessageList({
 
 		const containerClass = isSystem ? 'py-1' : `${firstInGroup || isOwn ? '' : 'ml-12'} py-1`;
 		nodes.push(
-			<div key={m.chatMessageId ?? m.id ?? i} className={containerClass}>
+			<div key={m.chatMessageId ?? i} className={containerClass}>
 				<MessageItem
 					msg={m}
 					isOwn={isOwn}
