@@ -18,8 +18,12 @@
 
 # **Minutes**
 
-The team reviewed their Quartile 1 score and discussed the main points highlighted in the evaluation. They reflected on areas that need improvement and clarified which aspects require further attention moving forward.
+The team reviewed their Quartile 1 score and reflected on areas needing clarification.
 
-Regarding the future direction of the project, the team discussed possible design-related changes. It was agreed that any design adjustments should only be considered after consulting with the teachers (specifically Dick and Ivo), ensuring that the planned changes align with academic expectations and project requirements.
+It was agreed that no design changes should be implemented before first discussing them with Dick and Ivo.
+
+If the team decides that fitness functions should change, they may propose updates but must get Ivo’s approval beforehand.
+
+For demo meetings, tasks should be split based on members, so each person presents their own work.
 
 The team also agreed that, now that the Quartile 1 results are available, it is important to approach the teachers to request **clear and detailed explanations of their expectations regarding testing**. This clarification will help the team understand exactly what needs to be implemented in this area and ensure their work meets the required standards.
