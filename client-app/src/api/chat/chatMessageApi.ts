@@ -1,7 +1,7 @@
 import { BaseApi } from '@/api/base';
-import type { MessageType } from '@/types/chat';
+import type { MessageType, ChatMessage } from '@/types/chat';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Create API instance for chat endpoints
 const chatApi = new BaseApi(`${API_BASE_URL}/chat`);
@@ -10,11 +10,12 @@ const chatApi = new BaseApi(`${API_BASE_URL}/chat`);
 // Backend DTOs (exact structure)
 // ------------------------------
 export interface ChatMessageDTO {
-	id: string;
+	chatMessageId: number; // Backend sends chatMessageId as Long
 	chatGroupId: number;
 	userId: number; // REQUIRED
 	userFullName?: string;
-	type: MessageType;
+	userRole?: string;
+	messageType: string; // Backend sends messageType
 	content: string;
 	timestamp: string;
 	updatedAt?: string;
@@ -25,21 +26,6 @@ export interface CreateChatMessageDTO {
 	userId: number; // REQUIRED
 	type: MessageType;
 	content: string;
-	meta?: Record<string, unknown>;
-}
-
-// ------------------------------
-// Frontend Types
-// ------------------------------
-export interface ChatMessage {
-	id: string;
-	chatGroupId: number;
-	userId: number;
-	userFullName?: string;
-	type: MessageType;
-	content: string;
-	timestamp: Date;
-	updatedAt?: Date;
 	meta?: Record<string, unknown>;
 }
 
@@ -56,11 +42,11 @@ export interface CreateChatMessageRequest {
 // ------------------------------
 function mapChatMessageDTOToFrontend(dto: ChatMessageDTO): ChatMessage {
 	return {
-		id: dto.id,
+		id: String(dto.chatMessageId), // Convert chatMessageId (number) to id (string)
 		chatGroupId: dto.chatGroupId,
 		userId: dto.userId,
 		...(dto.userFullName && { userFullName: dto.userFullName }),
-		type: dto.type,
+		type: (dto.messageType || 'DEFAULT') as MessageType, // Convert messageType to type
 		content: dto.content,
 		timestamp: new Date(dto.timestamp),
 		...(dto.updatedAt && { updatedAt: new Date(dto.updatedAt) }),

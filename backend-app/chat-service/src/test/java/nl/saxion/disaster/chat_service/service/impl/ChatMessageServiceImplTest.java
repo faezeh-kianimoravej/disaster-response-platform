@@ -20,7 +20,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -83,7 +83,7 @@ class ChatMessageServiceImplTest {
                 .userId(1L)
                 .content("Test message")
                 .messageType(MessageType.DEFAULT)
-                .timestamp(LocalDateTime.now())
+                .timestamp(Instant.now())
                 .build();
     }
 
@@ -122,7 +122,7 @@ class ChatMessageServiceImplTest {
                 .userId(2L)
                 .content("Leader message")
                 .messageType(MessageType.LEADER)
-                .timestamp(LocalDateTime.now())
+                .timestamp(Instant.now())
                 .build();
 
         when(chatGroupRepository.findById(1L)).thenReturn(Optional.of(testChatGroup));
@@ -223,7 +223,7 @@ class ChatMessageServiceImplTest {
                 .userId(1L)
                 .content("Message 1")
                 .messageType(MessageType.DEFAULT)
-                .timestamp(LocalDateTime.now())
+                .timestamp(Instant.now())
                 .build();
 
         ChatMessage message2 = ChatMessage.builder()
@@ -232,7 +232,7 @@ class ChatMessageServiceImplTest {
                 .userId(1L)
                 .content("Message 2")
                 .messageType(MessageType.DEFAULT)
-                .timestamp(LocalDateTime.now())
+                .timestamp(Instant.now())
                 .build();
 
         List<ChatMessage> allMessages = List.of(message1, message2);

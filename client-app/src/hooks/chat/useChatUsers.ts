@@ -3,9 +3,9 @@ import {
 	createChatUser,
 	getAllChatUsers,
 	getChatUserById,
-	type ChatUser,
 	type CreateChatUserRequest,
 } from '@/api/chat/chatUserApi';
+import type { ChatUser } from '@/types/chat';
 import { CHAT_QUERY_KEYS } from '@/hooks/queryKeys';
 import type { ApiError } from '@/api/base';
 

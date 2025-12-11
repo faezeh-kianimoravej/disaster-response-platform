@@ -3,9 +3,9 @@ import {
 	createChatMessage,
 	getChatMessagesByGroup,
 	getChatMessageById,
-	type ChatMessage,
 	type CreateChatMessageRequest,
 } from '@/api/chat/chatMessageApi';
+import type { ChatMessage } from '@/types/chat';
 import { CHAT_QUERY_KEYS } from '@/hooks/queryKeys';
 import type { ApiError } from '@/api/base';
 
@@ -16,16 +16,14 @@ export function useSendMessage() {
 	return useMutation<ChatMessage, ApiError, CreateChatMessageRequest>({
 		mutationFn: (request: CreateChatMessageRequest) => createChatMessage(request),
 		onSuccess: createdMessage => {
-			// Update the group's messages cache
-			queryClient.invalidateQueries({
-				queryKey: CHAT_QUERY_KEYS.messages.byGroup(createdMessage.chatGroupId),
-			});
-			// Update all messages cache
-			queryClient.invalidateQueries({
-				queryKey: CHAT_QUERY_KEYS.messages.all,
-			});
-			// Set the new message in cache
+			// Don't invalidate messages - SSE will provide real-time updates
+			// Just cache the individual message for potential future lookups
 			queryClient.setQueryData(CHAT_QUERY_KEYS.messages.item(createdMessage.id), createdMessage);
+
+			// Invalidate groups to update "last message" and "unread count" in the groups list
+			queryClient.invalidateQueries({
+				queryKey: CHAT_QUERY_KEYS.groups.all,
+			});
 		},
 	});
 }
@@ -36,8 +34,8 @@ export function useMessagesByGroup(groupId: number | undefined) {
 		queryKey: groupId ? CHAT_QUERY_KEYS.messages.byGroup(groupId) : [],
 		queryFn: () => (groupId ? getChatMessagesByGroup(groupId) : []),
 		enabled: !!groupId,
-		staleTime: 1000 * 60 * 2, // 2 minutes (shorter than groups for real-time feel)
-		refetchInterval: 1000 * 30, // Refetch every 30 seconds for new messages
+		staleTime: Infinity, // Don't auto-refetch, rely on SSE for real-time updates
+		refetchOnWindowFocus: false, // Don't refetch on window focus
 	});
 }
 

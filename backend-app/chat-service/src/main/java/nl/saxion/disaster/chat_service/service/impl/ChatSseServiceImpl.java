@@ -19,7 +19,7 @@ public class ChatSseServiceImpl implements ChatSseService {
     private final Map<Long, CopyOnWriteArrayList<SseEmitter>> groupEmitters = new ConcurrentHashMap<>();
 
     @Override
-    public SseEmitter addEmitter(Long chatGroupId, Long userId) {
+    public SseEmitter addEmitter(Long chatGroupId, String userId) {
         log.info("Adding SSE emitter for user {} in chat group {}", userId, chatGroupId);
 
         SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
@@ -43,6 +43,15 @@ public class ChatSseServiceImpl implements ChatSseService {
 
         log.info("SSE emitter added for group {}. Total emitters: {}", 
                 chatGroupId, groupEmitters.get(chatGroupId).size());
+
+        // Send CONNECTION_STATUS event to signal stream is ready
+        try {
+            emitter.send(SseEmitter.event()
+                    .name("connection-status")
+                    .data("{\"status\":\"CONNECTED\"}"));
+        } catch (IOException e) {
+            log.warn("Failed to send CONNECTION_STATUS event: {}", e.getMessage());
+        }
 
         return emitter;
     }
@@ -79,9 +88,8 @@ public class ChatSseServiceImpl implements ChatSseService {
     }
 
     @Override
-    public void removeEmitter(Long chatGroupId, Long userId) {
+    public void removeEmitter(Long chatGroupId, String userId) {
         log.info("Removing SSE emitter for user {} in group {}", userId, chatGroupId);
-        // Note: Since we don't track user-emitter mapping, this will be handled by onCompletion/onTimeout/onError
     }
 
     private void removeEmitterFromGroup(Long chatGroupId, SseEmitter emitter) {

@@ -25,3 +25,4 @@ class MockEventSource {
 	}
 }
 (globalThis as typeof globalThis).EventSource = MockEventSource;
+(globalThis as Record<string, unknown>).EventSourcePolyfill = MockEventSource;

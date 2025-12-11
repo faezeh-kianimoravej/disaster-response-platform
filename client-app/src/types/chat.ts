@@ -17,7 +17,7 @@ export interface SSEMessage {
 	userId?: number;
 	userFullName?: string;
 	content: string;
-	type: 'DEFAULT' | 'LEADER' | 'SYSTEM';
+	type: MessageType;
 	timestamp: string;
 	meta?: Record<string, unknown>;
 }
@@ -26,4 +26,41 @@ export interface Chat {
 	id: number;
 	incidentId: number;
 	name: string;
+}
+
+export interface ChatGroup {
+	id: number;
+	incidentId: number;
+	name: string;
+	createdAt: Date;
+	updatedAt?: Date;
+	lastMessage?: {
+		id: string;
+		content: string;
+		timestamp: Date;
+		userFullName?: string;
+	};
+	unreadCount?: number;
+}
+
+export interface ChatUser {
+	id: number;
+	userId: number;
+	chatGroupId: number;
+	role?: string;
+	joinedAt: Date;
+	lastReadMessageId?: string;
+	isActive: boolean;
+}
+
+export interface ChatMessage {
+	id: string;
+	chatGroupId: number;
+	userId: number;
+	userFullName?: string;
+	type: MessageType;
+	content: string;
+	timestamp: Date;
+	updatedAt?: Date;
+	meta?: Record<string, unknown>;
 }

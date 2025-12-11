@@ -92,18 +92,22 @@ public class ChatGroupServiceImpl implements ChatGroupService {
                         .build();
             }
 
-            // Get unread count
+            // Get unread count (exclude messages sent by the current user)
             ChatUser currentChatUser = chatUserRepository.findByChatGroupIdAndUserId(group.getChatGroupId(), userId)
                     .orElse(null);
             
             Long unreadCount = 0L;
             if (currentChatUser != null && currentChatUser.getLastReadMessageId() != null) {
-                unreadCount = chatMessageRepository.countByChatGroupIdAndChatMessageIdGreaterThan(
-                        group.getChatGroupId(), 
-                        currentChatUser.getLastReadMessageId()
-                );
+                // Count messages after lastReadMessageId that were NOT sent by the current user
+                unreadCount = messages.stream()
+                        .filter(msg -> msg.getChatMessageId() > currentChatUser.getLastReadMessageId())
+                        .filter(msg -> !msg.getUserId().equals(userId))
+                        .count();
             } else if (currentChatUser != null) {
-                unreadCount = (long) messages.size();
+                // Count all messages NOT sent by the current user
+                unreadCount = messages.stream()
+                        .filter(msg -> !msg.getUserId().equals(userId))
+                        .count();
             }
 
             ChatGroupListItemDto dto = ChatGroupListItemDto.builder()

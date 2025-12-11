@@ -14,7 +14,7 @@ describe('notification API', () => {
 		vi.clearAllMocks();
 	});
 
-	it('fetchNotifications - GET /notifications with regionId param', async () => {
+	it('fetchNotifications - GET /notifications/incidents with regionId param', async () => {
 		const mockNotifications = [
 			{
 				notificationId: '1',
@@ -29,10 +29,10 @@ describe('notification API', () => {
 
 		vi.mocked(axios.get).mockResolvedValueOnce({ data: mockNotifications });
 
-		const result = await fetchNotifications(1);
+		const result = await fetchNotifications({ regionId: 1 });
 
 		expect(result).toEqual(mockNotifications);
-		expect(axios.get).toHaveBeenCalledWith(expect.stringContaining('/notifications'), {
+		expect(axios.get).toHaveBeenCalledWith(expect.stringContaining('/notifications/incidents'), {
 			params: { regionId: 1 },
 		});
 	});

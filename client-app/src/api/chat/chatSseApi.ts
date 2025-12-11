@@ -12,6 +12,7 @@ export type ChatSSEEvent = GenericSSEEvent<'MESSAGE' | 'CONNECTION_STATUS'>;
 export interface ChatMessageSSEData {
 	messageId: string;
 	chatGroupId: number;
+	userId?: number;
 	userFullName?: string;
 	content: string;
 	type: 'DEFAULT' | 'LEADER' | 'SYSTEM';
@@ -34,15 +35,13 @@ class ChatSSEApi {
 	 * Connect to chat SSE stream for a specific chat group
 	 * Auth token is automatically added from localStorage via the generic API
 	 * @param chatGroupId The chat group to listen for events
-	 * @param userId The current user's ID
 	 * @param lastMessageId Optional last message ID for resuming from a specific point
 	 */
-	connect(chatGroupId: number, userId: number, lastMessageId?: string): void {
+	connect(chatGroupId: number, lastMessageId?: string): void {
 		const params: Record<string, string | number> = {};
 		if (lastMessageId) {
 			params.lastMessageId = lastMessageId;
 		}
-		params.userId = userId;
 
 		this.api.connect(
 			this.connectionKey,
@@ -99,8 +98,8 @@ class ChatSSEApi {
 const chatSSEApi = new ChatSSEApi();
 
 // Export public functions
-export function connectToChat(chatGroupId: number, userId: number, lastMessageId?: string): void {
-	return chatSSEApi.connect(chatGroupId, userId, lastMessageId);
+export function connectToChat(chatGroupId: number, lastMessageId?: string): void {
+	return chatSSEApi.connect(chatGroupId, lastMessageId);
 }
 
 export function disconnectFromChat(): void {

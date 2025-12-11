@@ -2,6 +2,7 @@ import { render } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type React from 'react';
+// ToastProvider is mocked in tests that need it; keep import light.
 import { ToastProvider } from '@/components/toast/ToastProvider';
 import { NotificationProvider } from '@/context/NotificationContext';
 import { AuthContext, type AuthContextValue } from '@/context/AuthContext';

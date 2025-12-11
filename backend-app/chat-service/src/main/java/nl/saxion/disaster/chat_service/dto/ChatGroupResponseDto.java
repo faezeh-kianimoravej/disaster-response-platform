@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @Builder
@@ -16,6 +16,6 @@ public class ChatGroupResponseDto {
     private Long chatGroupId;
     private Long incidentId;
     private String title;
-    private LocalDateTime createdAt;
+    private Instant createdAt;
     private Boolean isClosed;
 }

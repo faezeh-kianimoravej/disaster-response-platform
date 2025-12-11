@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { NotificationType, type Notification } from '@/types/notification';
 import type { User } from '@/types/user';
 import { config } from '@/config';
-import { markNotificationAsRead } from '@/api/notification/notification';
+import { fetchNotifications, markNotificationAsRead } from '@/api/notification/notification';
 import { showBrowserNotification } from '@/utils/notificationUtils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -57,13 +57,13 @@ export default function useNotifications(
 	const listQuery = useQuery<Notification[], Error>({
 		queryKey: ['notifications', targetType, targetKey],
 		queryFn: async () => {
-			const url = isRegionUser
-				? `${config.api.baseURL}/notifications/incidents?regionId=${regionId}`
-				: `${config.api.baseURL}/notifications/deployment?departmentId=${departmentId}`;
-
-			const res = await fetch(url);
-			if (!res.ok) throw new Error('Failed to fetch notifications');
-			return res.json();
+			if (isRegionUser && regionId != null) {
+				return fetchNotifications({ regionId });
+			}
+			if (!isRegionUser && departmentId != null) {
+				return fetchNotifications({ departmentId });
+			}
+			return [];
 		},
 		enabled: !!targetKey,
 	});
@@ -120,6 +120,7 @@ export default function useNotifications(
 		});
 
 		// Connect
+
 		connectToNotificationStream(streamKey, streamUrl, lastNotificationId ?? undefined);
 
 		return () => {

@@ -31,6 +31,16 @@ public class IncidentNotificationServiceImpl implements IncidentNotificationServ
         log.info("New SSE client connected for region {} ({} active)", regionId, regionEmitters.get(regionId).size());
         emitter.onCompletion(() -> regionEmitters.getOrDefault(regionId, new CopyOnWriteArrayList<>()).remove(emitter));
         emitter.onTimeout(() -> regionEmitters.getOrDefault(regionId, new CopyOnWriteArrayList<>()).remove(emitter));
+        
+        // Send CONNECTION_STATUS event to signal stream is ready
+        try {
+            emitter.send(SseEmitter.event()
+                    .name("connection-status")
+                    .data("{\"status\":\"CONNECTED\"}"));
+        } catch (IOException e) {
+            log.warn("Failed to send CONNECTION_STATUS event: {}", e.getMessage());
+        }
+        
         return emitter;
     }
 

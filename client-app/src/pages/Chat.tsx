@@ -58,10 +58,10 @@ function ChatPageContent() {
 			return {
 				...c,
 				lastActivity,
-				lastMsgText: 'No messages yet...',
+				lastMsgText: c.lastMessage?.content || 'No messages yet...',
 				lastMsgIso,
 				draft: '',
-				unreadCount: 0,
+				unreadCount: c.unreadCount ?? 0,
 			};
 		});
 

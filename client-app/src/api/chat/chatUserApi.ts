@@ -1,4 +1,5 @@
 import { BaseApi } from '@/api/base';
+import type { ChatUser } from '@/types/chat';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const chatUserApi = new BaseApi(`${API_BASE_URL}/chat/users`);
@@ -18,17 +19,6 @@ export interface CreateChatUserDTO {
 	userId: number;
 	chatGroupId: number;
 	role?: string;
-}
-
-// Frontend types
-export interface ChatUser {
-	id: number;
-	userId: number;
-	chatGroupId: number;
-	role?: string;
-	joinedAt: Date;
-	lastReadMessageId?: string;
-	isActive: boolean;
 }
 
 export interface CreateChatUserRequest {
