@@ -1,3 +1,5 @@
+import { EventSourcePolyfill } from 'event-source-polyfill';
+
 export interface GenericSSEEvent<T extends string = string> {
 	type: T;
 	data: unknown;
@@ -28,7 +30,7 @@ interface StreamConfig {
 /**
  * Generic SSE API class supporting both single and multiple concurrent streams.
  * Handles reconnection, event management, and connection pooling.
- * Auth tokens are automatically included via EventSource construction.
+ * Auth tokens are passed via Authorization header using EventSourcePolyfill.
  */
 export class GenericSSEApi<EventType extends GenericSSEEvent = GenericSSEEvent> {
 	private eventSources: Map<string, EventSource> = new Map();
@@ -64,14 +66,15 @@ export class GenericSSEApi<EventType extends GenericSSEEvent = GenericSSEEvent> 
 			});
 		}
 
-		// EventSource doesn't support custom headers, so we must pass token via query param
-		// Backend should validate this token parameter for authentication
 		const token = localStorage.getItem('auth_token');
+		const polyfillOptions: { headers?: Record<string, string>; withCredentials: boolean } = {
+			withCredentials: false,
+		};
 		if (token) {
-			urlObj.searchParams.set('token', token);
+			polyfillOptions.headers = { Authorization: `Bearer ${token}` };
 		}
 
-		const eventSource = new EventSource(urlObj.toString());
+		const eventSource = new EventSourcePolyfill(urlObj.toString(), polyfillOptions);
 		this.streamConfigs.set(connectionKey, config);
 
 		eventSource.onopen = () => {
@@ -100,7 +103,7 @@ export class GenericSSEApi<EventType extends GenericSSEEvent = GenericSSEEvent> 
 		};
 
 		// Listen to the configured event name
-		eventSource.addEventListener(config.eventName, event => {
+		eventSource.addEventListener(config.eventName, (event: MessageEvent) => {
 			try {
 				const data = JSON.parse(event.data);
 				// Find the registered event type for this connection
@@ -115,6 +118,22 @@ export class GenericSSEApi<EventType extends GenericSSEEvent = GenericSSEEvent> 
 						return;
 					}
 				}
+			} catch {
+				// Silent error handling
+			}
+		});
+
+		// Listen for backend-sent CONNECTION_STATUS events
+		eventSource.addEventListener('connection-status', (event: MessageEvent) => {
+			try {
+				const data = JSON.parse(event.data);
+				this.emitEvent(connectionKey, {
+					type: 'CONNECTION_STATUS',
+					data: {
+						status: data.status || 'CONNECTED',
+						timestamp: new Date().toISOString(),
+					},
+				});
 			} catch {
 				// Silent error handling
 			}

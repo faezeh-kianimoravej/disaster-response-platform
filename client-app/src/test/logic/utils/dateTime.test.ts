@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeDate } from '@/utils/dateTime';
+import { normalizeDate, toLocalISOString } from '@/utils/dateTime';
 
 describe('dateTime utils', () => {
 	describe('normalizeDate', () => {
@@ -133,6 +133,84 @@ describe('dateTime utils', () => {
 				expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
 				expect(new Date(result).getTime()).not.toBeNaN();
 			}
+		});
+	});
+
+	describe('toLocalISOString', () => {
+		it('should convert UTC ISO string to local ISO format', () => {
+			const utcString = '2024-01-15T10:30:00Z';
+			const result = toLocalISOString(utcString);
+
+			// Result should be ISO-like format without Z suffix
+			expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/);
+			expect(result).not.toContain('Z');
+		});
+
+		it('should convert Date object to local ISO format', () => {
+			const date = new Date('2024-01-15T10:30:00Z');
+			const result = toLocalISOString(date);
+
+			expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/);
+			expect(result).not.toContain('Z');
+		});
+
+		it('should preserve the UTC moment but display in local time', () => {
+			// Create a UTC moment
+			const utcDate = new Date('2024-01-15T10:30:00Z');
+			const result = toLocalISOString(utcDate);
+
+			// The displayed hour should be adjusted by timezone offset
+			const offset = utcDate.getTimezoneOffset();
+			const expectedHour = utcDate.getUTCHours() - Math.floor(offset / 60);
+			const resultHour = parseInt(result.substring(11, 13));
+			expect(resultHour).toBe(expectedHour);
+		});
+
+		it('should handle UTC string with milliseconds', () => {
+			const utcString = '2024-01-15T10:30:45.123Z';
+			const result = toLocalISOString(utcString);
+
+			expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/);
+			expect(result).not.toContain('Z');
+			expect(result).not.toContain('.');
+		});
+
+		it('should return current date ISO format for invalid input', () => {
+			const result = toLocalISOString('invalid-date');
+
+			expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/);
+			expect(result).not.toContain('Z');
+		});
+
+		it('should handle UTC midnight', () => {
+			const utcMidnight = '2024-01-15T00:00:00Z';
+			const result = toLocalISOString(utcMidnight);
+
+			expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/);
+			expect(result.startsWith('2024-01-15')).toBe(true);
+		});
+
+		it('should handle UTC end of day', () => {
+			const utcEndOfDay = '2024-01-15T23:59:59Z';
+			const result = toLocalISOString(utcEndOfDay);
+
+			expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/);
+		});
+
+		it('should format with leading zeros for single digit time components', () => {
+			// Create a date that will have single-digit hours/minutes when localized
+			const utcDate = new Date('2024-01-15T01:05:09Z');
+			const result = toLocalISOString(utcDate);
+
+			// Should have proper zero-padding
+			expect(result).toMatch(/\d{2}:\d{2}:\d{2}$/);
+		});
+
+		it('should handle leap year dates', () => {
+			const leapYearDate = new Date('2024-02-29T12:00:00Z');
+			const result = toLocalISOString(leapYearDate);
+
+			expect(result).toMatch(/^\d{4}-02-29T\d{2}:\d{2}:\d{2}$/);
 		});
 	});
 });

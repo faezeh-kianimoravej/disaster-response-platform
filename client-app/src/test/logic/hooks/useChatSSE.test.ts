@@ -15,16 +15,16 @@ describe('useChatSSE hook', () => {
 		vi.clearAllMocks();
 	});
 
-	it('should initialize with connected state', () => {
-		const { result } = renderHook(() => useChatSSE(1, 1, 'msg-last'));
+	it('should initialize with disconnected state', () => {
+		const { result } = renderHook(() => useChatSSE(1, 'msg-last'));
 
-		expect(result.current.isConnected).toBe(true);
-		expect(result.current.connectionStatus).toBe('CONNECTED');
+		expect(result.current.isConnected).toBe(false);
+		expect(result.current.connectionStatus).toBe('DISCONNECTED');
 		expect(result.current.newMessages).toEqual([]);
 	});
 
 	it('should return empty new messages initially', () => {
-		const { result } = renderHook(() => useChatSSE(1, 1));
+		const { result } = renderHook(() => useChatSSE(1));
 
 		expect(result.current.newMessages).toBeDefined();
 		expect(Array.isArray(result.current.newMessages)).toBe(true);
@@ -35,7 +35,7 @@ describe('useChatSSE hook', () => {
 			initialProps: { chatGroupId: 1 },
 		});
 
-		expect(result.current.connectionStatus).toBe('CONNECTED');
+		expect(result.current.connectionStatus).toBe('DISCONNECTED');
 
 		rerender({ chatGroupId: 1 });
 
@@ -48,19 +48,19 @@ describe('useChatSSE hook', () => {
 		const { result: result1 } = renderHook(() => useChatSSE(1));
 		const { result: result2 } = renderHook(() => useChatSSE(2));
 
-		expect(result1.current.connectionStatus).toBe('CONNECTED');
-		expect(result2.current.connectionStatus).toBe('CONNECTED');
+		expect(result1.current.connectionStatus).toBe('DISCONNECTED');
+		expect(result2.current.connectionStatus).toBe('DISCONNECTED');
 	});
 
-	it('should accept optional userId and lastMessageId parameters', () => {
-		const { result } = renderHook(() => useChatSSE(1, 42, 'msg-123'));
+	it('should accept optional lastMessageId parameter', () => {
+		const { result } = renderHook(() => useChatSSE(1, 'msg-123'));
 
 		expect(result.current).toBeDefined();
-		expect(result.current.isConnected).toBe(true);
+		expect(result.current.isConnected).toBe(false);
 	});
 
 	it('should not have any errors initially', () => {
-		const { result } = renderHook(() => useChatSSE(1, 1));
+		const { result } = renderHook(() => useChatSSE(1));
 
 		expect(result.current.lastError).toBeUndefined();
 	});
@@ -70,12 +70,12 @@ describe('useChatSSE hook', () => {
 			initialProps: { groupId: 1 },
 		});
 
-		expect(result.current.isConnected).toBe(true);
+		expect(result.current.isConnected).toBe(false);
 
 		rerender({ groupId: 2 });
 
 		await waitFor(() => {
-			expect(result.current.isConnected).toBe(true);
+			expect(result.current.isConnected).toBe(false);
 		});
 	});
 
@@ -87,16 +87,16 @@ describe('useChatSSE hook', () => {
 		expect(result2.current.newMessages).toEqual([]);
 	});
 
-	it('should be connected after mount', async () => {
+	it('should start disconnected after mount', async () => {
 		const { result } = renderHook(() => useChatSSE(1));
 
 		await waitFor(() => {
-			expect(result.current.connectionStatus).toBe('CONNECTED');
+			expect(result.current.connectionStatus).toBe('DISCONNECTED');
 		});
 	});
 
 	it('should expose connection state and new messages', () => {
-		const { result } = renderHook(() => useChatSSE(1, 1, 'msg-last'));
+		const { result } = renderHook(() => useChatSSE(1, 'msg-last'));
 
 		expect(result.current).toHaveProperty('isConnected');
 		expect(result.current).toHaveProperty('connectionStatus');
@@ -105,13 +105,13 @@ describe('useChatSSE hook', () => {
 	});
 
 	it('should handle updates to chat group ID', async () => {
-		const { result, rerender } = renderHook(({ groupId, userId }) => useChatSSE(groupId, userId), {
-			initialProps: { groupId: 1, userId: 1 },
+		const { result, rerender } = renderHook(({ groupId }) => useChatSSE(groupId), {
+			initialProps: { groupId: 1 },
 		});
 
-		expect(result.current.isConnected).toBe(true);
+		expect(result.current.isConnected).toBe(false);
 
-		rerender({ groupId: 5, userId: 1 });
+		rerender({ groupId: 5 });
 
 		await waitFor(() => {
 			expect(result.current).toBeDefined();

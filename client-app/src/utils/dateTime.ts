@@ -39,3 +39,27 @@ export function normalizeDate(input: unknown): string {
 
 	return new Date().toISOString();
 }
+
+/**
+ * Convert UTC ISO 8601 timestamp to user's local timezone ISO string.
+ * The input is assumed to be UTC (with or without Z suffix).
+ * Returns ISO 8601 string with local time components.
+ * @param utcTimestamp UTC timestamp (e.g., "2025-12-11T10:30:00Z")
+ * @returns ISO-like string with local time (e.g., "2025-12-11T11:30:00")
+ */
+export function toLocalISOString(utcTimestamp: string | Date): string {
+	const date = typeof utcTimestamp === 'string' ? new Date(utcTimestamp) : utcTimestamp;
+
+	// Use current date if invalid input
+	const validDate = isNaN(date.getTime()) ? new Date() : date;
+
+	// Format using local time: YYYY-MM-DDTHH:mm:ss
+	const year = validDate.getFullYear();
+	const month = String(validDate.getMonth() + 1).padStart(2, '0');
+	const day = String(validDate.getDate()).padStart(2, '0');
+	const hours = String(validDate.getHours()).padStart(2, '0');
+	const minutes = String(validDate.getMinutes()).padStart(2, '0');
+	const seconds = String(validDate.getSeconds()).padStart(2, '0');
+
+	return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+}

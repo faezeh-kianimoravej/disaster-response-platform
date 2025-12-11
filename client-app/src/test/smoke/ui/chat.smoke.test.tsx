@@ -1,20 +1,39 @@
+import React from 'react';
 import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
+import type { Message, SSEMessage } from '@/types/chat';
+import type { ChatGroup } from '@/types/chat';
 import { renderWithProviders } from '@/test/utils';
 import ChatWindow from '@/components/features/chat/ChatWindow';
 import MessageComposer from '@/components/features/chat/MessageComposer';
 import MessageItem from '@/components/features/chat/MessageItem';
 import MessageList from '@/components/features/chat/MessageList';
 
+// Mock toast provider to avoid timers/DOM work from toasts
+vi.mock('@/components/toast/ToastProvider', () => ({
+	ToastProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+	useToast: () => ({
+		showToast: vi.fn(),
+		showError: vi.fn(),
+		showSuccess: vi.fn(),
+		showWarning: vi.fn(),
+	}),
+}));
+
+// Stable references so ChatWindow effects don't loop on new array instances
+const emptyMessages: Message[] = [];
+const emptySSEMessages: SSEMessage[] = [];
+const emptyGroups: ChatGroup[] = [];
+
 // Mock chat message hooks
 vi.mock('@/hooks/chat/useChatMessages', () => ({
 	useMessagesByGroup: vi.fn(() => ({
-		data: [],
+		data: emptyMessages,
 		isLoading: false,
 		error: null,
 	})),
 	useSendMessage: vi.fn(() => ({
 		mutate: vi.fn(),
-		mutateAsync: vi.fn(),
+		mutateAsync: vi.fn(() => Promise.resolve()),
 		isLoading: false,
 		error: null,
 	})),
@@ -28,7 +47,13 @@ vi.mock('@/hooks/chat/useChatMessages', () => ({
 // Mock chat groups hook
 vi.mock('@/hooks/chat/useChatGroups', () => ({
 	useChatGroups: vi.fn(() => ({
-		data: [],
+		data: emptyGroups,
+		isLoading: false,
+		error: null,
+	})),
+	useMarkMessagesRead: vi.fn(() => ({
+		mutate: vi.fn((_, options) => options?.onSuccess?.()),
+		mutateAsync: vi.fn(() => Promise.resolve()),
 		isLoading: false,
 		error: null,
 	})),
@@ -40,7 +65,7 @@ vi.mock('@/hooks/chat/useChatSSE', () => ({
 		isConnected: true,
 		connectionStatus: 'CONNECTED',
 		lastError: undefined,
-		newMessages: [],
+		newMessages: emptySSEMessages,
 	})),
 }));
 

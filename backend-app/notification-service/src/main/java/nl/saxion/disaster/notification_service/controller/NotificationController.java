@@ -38,6 +38,14 @@ public class NotificationController {
         return ResponseEntity.ok(notificationService.getNotificationsByRegionId(regionId));
     }
 
+    // Backwards-compatible alias for plural path
+    @GetMapping("/incidents")
+    public ResponseEntity<List<IncidentNotificationDto>> getIncidentNotificationsPlural(
+            @RequestParam Long regionId
+    ) {
+        return getIncidentNotifications(regionId);
+    }
+
     @GetMapping("/incident/{id}")
     public ResponseEntity<IncidentNotificationDto> getIncidentNotificationById(@PathVariable Long id) {
         return ResponseEntity.ok(notificationService.getNotificationById(id));

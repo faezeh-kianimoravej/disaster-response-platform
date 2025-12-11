@@ -81,8 +81,8 @@ describe('useChatMessages hooks', () => {
 			});
 
 			await waitFor(() => {
-				expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['chat-messages', 'group', 1] });
-				expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['chat-messages'] });
+				// Should only invalidate groups (not messages) since SSE handles real-time message updates
+				expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['chat-groups'] });
 			});
 		});
 

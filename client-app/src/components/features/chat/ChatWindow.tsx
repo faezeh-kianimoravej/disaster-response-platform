@@ -4,9 +4,10 @@ import MessageList from '@/components/features/chat/MessageList';
 import MessageComposer from '@/components/features/chat/MessageComposer';
 import { useMessagesByGroup } from '@/hooks/chat/useChatMessages';
 import { useChatSSE } from '@/hooks/chat/useChatSSE';
+import { useMarkMessagesRead } from '@/hooks/chat/useChatGroups';
 import { ErrorRetryBlock } from '@/components/ui/ErrorRetry';
 import LoadingPanel from '@/components/ui/LoadingPanel';
-import { normalizeDate } from '@/utils/dateTime';
+import { normalizeDate, toLocalISOString } from '@/utils/dateTime';
 
 interface Props {
 	chatGroupId: number;
@@ -34,7 +35,6 @@ export default function ChatWindow({ chatGroupId, initialMessages = [], currentU
 	);
 }
 
-// Separate component to use hooks conditionally
 function ChatWindowContent({
 	chatGroupId,
 	initialMessages,
@@ -53,51 +53,66 @@ function ChatWindowContent({
 		refetch: refetchMessages,
 	} = useMessagesByGroup(chatGroupId);
 
-	const {
-		newMessages: sseMessages,
-		connectionStatus,
-		clearNewMessages,
-	} = useChatSSE(chatGroupId, currentUserId);
+	const { newMessages: sseMessages, connectionStatus } = useChatSSE(chatGroupId);
+
+	const { mutate: markAsRead } = useMarkMessagesRead();
 
 	const [localMessages, setLocalMessages] = useState<Message[]>([]);
+	const lastMarkedMessageIdRef = useRef<string | null>(null);
 
 	useEffect(() => {
-		if (fetchedMessages.length > 0) {
-			setLocalMessages(prev =>
-				prev.filter(localMsg => {
-					const hasServerVersion = fetchedMessages.some(
-						serverMsg =>
-							serverMsg.content === localMsg.content &&
-							Math.abs(
-								new Date(serverMsg.timestamp).getTime() - new Date(localMsg.timestamp).getTime()
-							) < 5000
-					);
-					return !hasServerVersion;
-				})
-			);
-		}
-	}, [fetchedMessages]);
+		// Only remove local messages when we actually find their server/SSE versions
+		setLocalMessages(prev =>
+			prev.filter(localMsg => {
+				// For local messages with the 'local' meta flag, check more carefully
+				const isLocalOptimistic = localMsg.meta?.local === true;
+
+				if (!isLocalOptimistic) {
+					return true;
+				}
+
+				// Check if message exists in fetched messages by content/userId
+				const hasServerVersion = fetchedMessages.some(
+					serverMsg =>
+						serverMsg.content.trim() === localMsg.content.trim() &&
+						serverMsg.userId === localMsg.userId
+				);
+
+				// Check if message exists in SSE messages by content/userId
+				const hasSSEVersion = sseMessages.some(
+					sseMsg =>
+						sseMsg.content.trim() === localMsg.content.trim() && sseMsg.userId === localMsg.userId
+				);
+
+				// Keep the local message only if neither server nor SSE version exists
+				return !hasServerVersion && !hasSSEVersion;
+			})
+		);
+	}, [fetchedMessages, sseMessages]);
 
 	const allMessages: Message[] = [
-		...initialMessages,
+		...initialMessages.map(msg => ({
+			...msg,
+			userFullName: msg.userId === currentUserId ? 'You' : msg.userFullName,
+		})),
 		...fetchedMessages.map(msg => ({
 			chatMessageId: msg.id,
 			chatGroupId: msg.chatGroupId,
 			userId: msg.userId,
-			userFullName: msg.userFullName,
+			userFullName: msg.userId === currentUserId ? 'You' : msg.userFullName,
 			type: msg.type,
 			content: msg.content,
-			timestamp: normalizeDate(msg.timestamp),
+			timestamp: toLocalISOString(msg.timestamp),
 			meta: msg.meta,
 		})),
 		...sseMessages.map(msg => ({
 			chatMessageId: msg.messageId,
 			chatGroupId: msg.chatGroupId,
 			userId: msg.userId,
-			userFullName: msg.userFullName,
+			userFullName: msg.userId === currentUserId ? 'You' : msg.userFullName,
 			type: msg.type,
 			content: msg.content,
-			timestamp: normalizeDate(msg.timestamp),
+			timestamp: toLocalISOString(msg.timestamp),
 			meta: msg.meta,
 		})),
 		...localMessages.map(m => ({
@@ -119,6 +134,52 @@ function ChatWindowContent({
 		const el = listRef.current;
 		if (el) el.scrollTop = el.scrollHeight;
 	}, [allMessages.length]);
+
+	// Mark messages as read when viewing the chat
+	useEffect(() => {
+		if (!currentUserId || !chatGroupId || allMessages.length === 0) return;
+
+		// Get the latest message ID from fetched/SSE messages (exclude local optimistic)
+		const serverMessages = [
+			...fetchedMessages.map(m => ({ id: m.id, timestamp: m.timestamp })),
+			...sseMessages.map(m => ({ id: m.messageId, timestamp: new Date(m.timestamp) })),
+		].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+		const latestMessage = serverMessages[0];
+
+		// Only mark as read if it's a different message than we last marked
+		if (latestMessage?.id && latestMessage.id !== lastMarkedMessageIdRef.current) {
+			// Debounce: only mark as read after a short delay
+			const timer = setTimeout(() => {
+				markAsRead(
+					{
+						groupId: chatGroupId,
+						userId: currentUserId,
+						messageId: latestMessage.id,
+					},
+					{
+						onSuccess: () => {
+							lastMarkedMessageIdRef.current = latestMessage.id;
+						},
+						onError: error => {
+							// Log for debugging failed mark-as-read operations
+							// eslint-disable-next-line no-console
+							console.warn('[ChatWindow] Failed to mark messages as read:', error);
+						},
+					}
+				);
+			}, 500);
+
+			return () => clearTimeout(timer);
+		}
+
+		return undefined;
+	}, [fetchedMessages.length, sseMessages.length, chatGroupId, currentUserId, markAsRead]);
+
+	// Reset the last marked message when switching chat groups
+	useEffect(() => {
+		lastMarkedMessageIdRef.current = null;
+	}, [chatGroupId]);
 
 	const handleSend = (content: string, type: Message['type'] = 'DEFAULT') => {
 		const msg: Message = {
@@ -168,12 +229,7 @@ function ChatWindowContent({
 				{messagesLoading ? (
 					<LoadingPanel text="Loading messages..." className="h-full" />
 				) : (
-					<MessageList
-						messages={allMessages}
-						currentUserId={currentUserId}
-						sseMessages={sseMessages}
-						clearSSEMessages={clearNewMessages}
-					/>
+					<MessageList messages={allMessages} currentUserId={currentUserId} />
 				)}
 			</div>
 			<MessageComposer onSend={handleSend} incidentId={chatGroupId} />

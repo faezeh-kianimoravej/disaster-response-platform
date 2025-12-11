@@ -4,9 +4,10 @@ import {
 	getChatGroupById,
 	getChatGroupsByUser,
 	addUserToChatGroup,
-	type ChatGroup,
+	updateLastReadMessage,
 	type CreateChatGroupRequest,
 } from '@/api/chat/chatGroupApi';
+import type { ChatGroup } from '@/types/chat';
 import { CHAT_QUERY_KEYS } from '@/hooks/queryKeys';
 import type { ApiError } from '@/api/base';
 
@@ -97,5 +98,20 @@ export const useChatGroup = (groupId: number) => {
 		queryFn: () => getChatGroupById(groupId),
 		enabled: !!groupId,
 		staleTime: 5 * 60 * 1000,
+	});
+};
+
+export const useMarkMessagesRead = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation<void, ApiError, { groupId: number; userId: number; messageId: string }>({
+		mutationFn: ({ groupId, userId, messageId }) =>
+			updateLastReadMessage(groupId, userId, messageId),
+		onSuccess: () => {
+			// Invalidate groups to update unread counts
+			queryClient.invalidateQueries({
+				queryKey: CHAT_QUERY_KEYS.groups.all,
+			});
+		},
 	});
 };

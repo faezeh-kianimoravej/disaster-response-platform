@@ -3,7 +3,7 @@ package nl.saxion.disaster.chat_service.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "chat_groups", uniqueConstraints = {
@@ -28,7 +28,7 @@ public class ChatGroup {
     private String title;
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @Column(name = "is_closed", nullable = false)
     @Builder.Default
@@ -36,7 +36,7 @@ public class ChatGroup {
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
+        this.createdAt = Instant.now();
         if (this.isClosed == null) {
             this.isClosed = false;
         }

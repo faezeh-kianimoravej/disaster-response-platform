@@ -1,32 +1,14 @@
-import React, { useEffect } from 'react';
-import type { Message, SSEMessage } from '@/types/chat';
+import React from 'react';
+import type { Message } from '@/types/chat';
 import MessageItem from './MessageItem';
 
 interface Props {
 	messages: Message[];
 	currentUserId?: number | undefined;
 	focusedMessageId?: string | undefined;
-	sseMessages?: SSEMessage[];
-	clearSSEMessages?: () => void;
 }
 
-export default function MessageList({
-	messages,
-	currentUserId,
-	focusedMessageId,
-	sseMessages = [],
-	clearSSEMessages,
-}: Props) {
-	useEffect(() => {
-		if (sseMessages.length > 0 && clearSSEMessages) {
-			const timer = setTimeout(() => {
-				clearSSEMessages();
-			}, 100);
-			return () => clearTimeout(timer);
-		}
-		return undefined;
-	}, [sseMessages.length, clearSSEMessages]);
-
+export default function MessageList({ messages, currentUserId, focusedMessageId }: Props) {
 	const nodes: React.ReactNode[] = [];
 	const timeThreshold = 1000 * 60 * 2;
 
