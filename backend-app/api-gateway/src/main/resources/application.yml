@@ -124,16 +124,6 @@ spring:
                 name: incidentServiceCircuitBreaker
                 fallbackUri: forward:/fallback
 
-        - id: location
-          uri: lb://location-service
-          predicates:
-            - Path=/api/locations/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: locationServiceCircuitBreaker
-                fallbackUri: forward:/fallback
-
         # Normal Notifications (NON-SSE)
         - id: notification
           uri: lb://notification-service
