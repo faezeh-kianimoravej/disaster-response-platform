@@ -1,4 +1,4 @@
-package nl.saxion.disaster.resourceservice.service;
+package nl.saxion.disaster.resourceservice.unit;
 
 import nl.saxion.disaster.resourceservice.dto.ResourceDto;
 import nl.saxion.disaster.resourceservice.mapper.ResourceMapper;
@@ -8,6 +8,7 @@ import nl.saxion.disaster.resourceservice.model.enums.ResourceKind;
 import nl.saxion.disaster.resourceservice.model.enums.ResourceCategory;
 import nl.saxion.disaster.resourceservice.model.enums.ResourceStatus;
 import nl.saxion.disaster.resourceservice.repository.contract.ResourceRepository;
+import nl.saxion.disaster.resourceservice.service.ResourceServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

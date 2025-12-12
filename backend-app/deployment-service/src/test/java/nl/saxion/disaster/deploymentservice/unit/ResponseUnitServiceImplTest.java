@@ -1,4 +1,4 @@
-package nl.saxion.disaster.deploymentservice.service;
+package nl.saxion.disaster.deploymentservice.unit;
 
 import nl.saxion.disaster.deploymentservice.dto.ResponseUnitCreateDTO;
 import nl.saxion.disaster.deploymentservice.dto.ResponseUnitDTO;
@@ -7,6 +7,7 @@ import nl.saxion.disaster.deploymentservice.enums.ResponseUnitType;
 import nl.saxion.disaster.deploymentservice.model.ResponseUnit;
 import nl.saxion.disaster.deploymentservice.repository.contract.ResponseUnitRepository;
 import nl.saxion.disaster.deploymentservice.mapper.ResponseUnitMapper;
+import nl.saxion.disaster.deploymentservice.service.ResponseUnitServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

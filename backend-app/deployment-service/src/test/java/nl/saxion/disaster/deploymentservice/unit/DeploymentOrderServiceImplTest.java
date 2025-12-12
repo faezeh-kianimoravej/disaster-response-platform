@@ -1,4 +1,4 @@
-package nl.saxion.disaster.deploymentservice.service;
+package nl.saxion.disaster.deploymentservice.unit;
 
 import nl.saxion.disaster.deploymentservice.dto.DeploymentOrderCreateDTO;
 import nl.saxion.disaster.deploymentservice.dto.DeploymentOrderDTO;
@@ -10,6 +10,7 @@ import nl.saxion.disaster.deploymentservice.mapper.DeploymentOrderMapper;
 import nl.saxion.disaster.deploymentservice.model.DeploymentOrder;
 import nl.saxion.disaster.deploymentservice.model.DeploymentRequest;
 import nl.saxion.disaster.deploymentservice.repository.contract.DeploymentOrderRepository;
+import nl.saxion.disaster.deploymentservice.service.DeploymentOrderServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;

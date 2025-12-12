@@ -1,4 +1,4 @@
-package nl.saxion.disaster.regionservice.service;
+package nl.saxion.disaster.regionservice.unit;
 
 import nl.saxion.disaster.regionservice.client.MunicipalityClient;
 import nl.saxion.disaster.regionservice.dto.MunicipalityDto;
@@ -7,6 +7,7 @@ import nl.saxion.disaster.regionservice.dto.RegionSummaryDto;
 import nl.saxion.disaster.regionservice.mapper.RegionMapper;
 import nl.saxion.disaster.regionservice.model.Region;
 import nl.saxion.disaster.regionservice.repository.contract.RegionRepository;
+import nl.saxion.disaster.regionservice.service.RegionServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
