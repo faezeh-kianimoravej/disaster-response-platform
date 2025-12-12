@@ -118,7 +118,7 @@ Added to all service `pom.xml` files (template from `incident-service`):
 
 ### Test Organization
 
-```
+```text
 src/test/java/nl/saxion/disaster/{service}/
 ├── unit/
 │   └── *Test.java (service/model logic)
