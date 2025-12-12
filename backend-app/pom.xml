@@ -17,7 +17,6 @@
         <module>api-gateway</module>
         <module>department-service</module>
         <module>incident-service</module>
-        <module>location-service</module>
         <module>municipality-service</module>
         <module>region-service</module>
         <module>notification-service</module>

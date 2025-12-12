@@ -51,18 +51,16 @@ public record UserRequestDto(
         ResponderProfileDto responderProfile,
 
         @NotBlank(message = "Password is required", groups = OnCreate.class)
-        @Pattern.List({
-                @Pattern(
-                        regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
-                        message = "Password must contain uppercase, lowercase, number, and special character",
-                        groups = OnCreate.class
-                ),
-                @Pattern(
-                        regexp = "^$|^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
-                        message = "Password must be empty or meet complexity requirements",
-                        groups = OnUpdate.class
-                )
-        })
+        @Pattern(
+                regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
+                message = "Password must contain uppercase, lowercase, number, and special character",
+                groups = OnCreate.class
+        )
+        @Pattern(
+                regexp = "^$|^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
+                message = "Password must be empty or meet complexity requirements",
+                groups = OnUpdate.class
+        )
         @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
         String password
 ) {

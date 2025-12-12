@@ -64,12 +64,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -240,5 +234,42 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Integration Tests Profile -->
+        <profile>
+            <id>integration-tests</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <version>3.0.0-M9</version>
+                        <configuration>
+                            <includes>
+                                <include>**/*PropertyTest.java</include>
+                                <include>**/*IntegrationTest.java</include>
+                                <include>**/integration/**/*Test.java</include>
+                            </includes>
+                            <systemPropertyVariables>
+                                <!-- Configure jqwik to run 100 iterations per property in CI -->
+                                <jqwik.tries.default>100</jqwik.tries.default>
+                                <!-- Enable jqwik reporting -->
+                                <jqwik.reporting>true</jqwik.reporting>
+                            </systemPropertyVariables>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>
