@@ -39,26 +39,38 @@ test:backend-app:
       when: always
     - when: never
   script:
+    - echo "[VERSIONS] Maven version:" && mvn --version | head -3
+    - echo "[VERSIONS] Java version:" && java -version
     - mvn -B clean org.jacoco:jacoco-maven-plugin:0.8.10:prepare-agent test org.jacoco:jacoco-maven-plugin:0.8.10:report
     - |
       # Compute coverage percentage from JaCoCo xml (rounded integer) and generate badges
       set -e
+      echo "[BADGE] Starting backend badge generation..."
+      echo "[BADGE] Current directory: $(pwd)"
       JACOCO_XML=$(find . -path "*/target/site/jacoco/jacoco.xml" | head -n1 || true)
+      echo "[BADGE] JaCoCo XML search result: ${JACOCO_XML:-NOT FOUND}"
       PCT=0
       if [ -f "$JACOCO_XML" ]; then
+        echo "[BADGE] Found JaCoCo XML at: $JACOCO_XML"
+        JACOCO_SIZE=$(du -h "$JACOCO_XML" | cut -f1)
+        echo "[BADGE] JaCoCo XML size: $JACOCO_SIZE"
         LINE_MISSED=$(sed -n 's/.*type="LINE" missed="\([0-9]*\)".*/\1/p' "$JACOCO_XML") || LINE_MISSED=0
         LINE_COVERED=$(sed -n 's/.*type="LINE" missed="[0-9]*" covered="\([0-9]*\)".*/\1/p' "$JACOCO_XML") || LINE_COVERED=0
+        echo "[BADGE] Extracted LINE_MISSED=$LINE_MISSED, LINE_COVERED=$LINE_COVERED"
         if [ -z "$LINE_MISSED" ] || [ -z "$LINE_COVERED" ]; then
-          echo "Could not parse LINE counters from $JACOCO_XML"
+          echo "[BADGE] WARNING: Could not parse LINE counters from $JACOCO_XML"
         else
           PCT=$(awk -v m="$LINE_MISSED" -v c="$LINE_COVERED" 'BEGIN{if((m+c)==0) printf "0"; else printf "%d", c/(m+c)*100}')
+          echo "[BADGE] Calculated coverage: ${PCT}%"
           echo "Total Coverage: ${PCT}%"
         fi
       else
-        echo "Jacoco XML not found; skipping coverage summary"
+        echo "[BADGE] ERROR: JaCoCo XML not found; skipping coverage summary"
       fi
       # Generate badges directory
+      echo "[BADGE] Creating badges directory..."
       mkdir -p badges || true
+      echo "[BADGE] Badges directory exists: $(test -d badges && echo 'YES' || echo 'NO')"
       # Coverage badge color logic: green >=90, yellow >=75, orange >=60, red otherwise
       cov=${PCT:-0}
       if [ "$cov" -ge 90 ]; then
@@ -73,17 +85,32 @@ test:backend-app:
       covSvg="<?xml version=\"1.0\"?>\n<svg xmlns='http://www.w3.org/2000/svg' width='110' height='20'>\n  <rect width='110' height='20' fill='#555'/>\n  <rect x='60' width='50' height='20' fill='${covColor}'/>\n  <g fill='#fff' font-family='Verdana,Geneva,sans-serif' font-size='11'>\n    <text x='8' y='14'>coverage</text>\n    <text x='72' y='14'>${cov}%</text>\n  </g>\n</svg>"
       echo -e "$covSvg" > badges/coverage.svg || echo "Failed to write badges/coverage.svg"
       # Find surefire XML files produced by modules and sum tests attributes
+      echo "[BADGE] Searching for surefire reports..."
       TEST_FILES=$(find . -path "./*/target/surefire-reports/TEST-*.xml" -print || true)
+      TEST_FILE_COUNT=$(echo "$TEST_FILES" | grep -c . || echo 0)
+      echo "[BADGE] Found $TEST_FILE_COUNT surefire XML files"
       if [ -z "$TEST_FILES" ]; then
-        echo "No surefire TEST-*.xml files found; writing zero tests badge"
+        echo "[BADGE] WARNING: No surefire TEST-*.xml files found; writing zero tests badge"
         TEST_COUNT=0
       else
+        echo "[BADGE] Surefire files:"
+        echo "$TEST_FILES" | head -10
         TEST_COUNT=$(grep -ho 'tests="[0-9]*"' $TEST_FILES 2>/dev/null | sed 's/tests="\([0-9]*\)"/\1/' | awk '{s+=$1}END{print s+0}')
         TEST_COUNT=${TEST_COUNT:-0}
+        echo "[BADGE] Extracted test count: $TEST_COUNT"
       fi
       testSvg="<?xml version=\"1.0\"?>\n<svg xmlns='http://www.w3.org/2000/svg' width='110' height='20'>\n  <rect width='110' height='20' fill='#555'/>\n  <rect x='60' width='50' height='20' fill='#007ec6'/>\n  <g fill='#fff' font-family='Verdana,Geneva,sans-serif' font-size='11'>\n    <text x='8' y='14'>tests</text>\n    <text x='72' y='14'>${TEST_COUNT}</text>\n  </g>\n</svg>"
-      echo -e "$testSvg" > badges/tests.svg || echo "Failed to write badges/tests.svg"
-      echo "Wrote badges/tests.svg and badges/coverage.svg -> tests=${TEST_COUNT} cov=${cov}%"
+      echo -e "$testSvg" > badges/tests.svg && echo "[BADGE] ✓ Wrote badges/tests.svg" || echo "[BADGE] ✗ Failed to write badges/tests.svg"
+      echo "[BADGE] Badge generation summary -> tests=${TEST_COUNT} cov=${cov}%"
+      echo "[BADGE] Verifying badge files:"
+      test -f badges/tests.svg && echo "[BADGE] ✓ badges/tests.svg exists ($(du -h badges/tests.svg | cut -f1))" || echo "[BADGE] ✗ badges/tests.svg NOT FOUND"
+      test -f badges/coverage.svg && echo "[BADGE] ✓ badges/coverage.svg exists ($(du -h badges/coverage.svg | cut -f1))" || echo "[BADGE] ✗ badges/coverage.svg NOT FOUND"
+      echo "[PRE-ARTIFACT] Listing badges/ directory:"
+      ls -lah badges/ || echo "badges/ directory not found"
+      echo "[PRE-ARTIFACT] Listing target/site/jacoco/ directories:"
+      find . -path "*/target/site/jacoco" -type d -exec sh -c 'echo "Found: {}" && ls -lh "{}"/*.xml 2>/dev/null | head -5' \;
+      echo "[PRE-ARTIFACT] Listing surefire-reports/ directories:"
+      find . -path "*/target/surefire-reports" -type d -exec sh -c 'echo "Found: {}" && ls -lh "{}" | head -10' \;
   artifacts:
     when: always
     reports:

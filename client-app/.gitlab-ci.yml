@@ -42,6 +42,9 @@ test:frontend:
       when: always
     - when: never
   script:
+    - echo "[VERSIONS] Node version:" && node --version
+    - echo "[VERSIONS] NPM version:" && npm --version
+    - echo "[VERSIONS] Vitest version:" && npm list vitest --depth=0 2>/dev/null || echo "vitest not found"
     - mkdir -p test-results
     - npm run lint
     - npm run build
@@ -50,24 +53,45 @@ test:frontend:
     - |
       node - <<'NODE'
       const fs = require('fs');
+      const path = require('path');
       const p = 'test-results/vitest-summary.json';
+      
+      console.log('[BADGE] Starting badge generation...');
+      console.log('[BADGE] Current directory:', process.cwd());
+      console.log('[BADGE] Badges directory exists:', fs.existsSync('badges'));
+      console.log('[BADGE] JUnit file exists:', fs.existsSync('test-results/junit.xml'));
+      console.log('[BADGE] Vitest summary file exists:', fs.existsSync(p));
+      
       let raw = '';
       let total = 0;
-      try { raw = fs.readFileSync(p,'utf8'); } catch(e) { raw = ''; }
+      try { raw = fs.readFileSync(p,'utf8'); } catch(e) { console.error('[BADGE] ERROR reading vitest summary:', e.message); raw = ''; }
+      console.log('[BADGE] Vitest summary length:', raw.length, 'bytes');
+      if (raw.length > 0) console.log('[BADGE] Vitest summary (first 500 chars):', raw.substring(0, 500));
+      
       // If JUnit file exists, parse it to get exact test count (most reliable)
       try {
         if (fs.existsSync('test-results/junit.xml')) {
           const xml = fs.readFileSync('test-results/junit.xml','utf8');
+          console.log('[BADGE] JUnit XML length:', xml.length, 'bytes');
           const matches = xml.match(/tests="(\d+)"/g) || [];
+          console.log('[BADGE] JUnit tests matches found:', matches.length, matches);
           if (matches.length > 0) {
             total = matches.map(m => parseInt(m.match(/(\d+)/)[0],10)).reduce((a,b)=>a+b,0);
+            console.log('[BADGE] Extracted test count from JUnit:', total);
           } else {
             const root = xml.match(/<testsuites[^>]*tests="(\d+)"/);
-            if (root && root[1]) total = parseInt(root[1],10);
+            if (root && root[1]) {
+              total = parseInt(root[1],10);
+              console.log('[BADGE] Extracted test count from testsuites root:', total);
+            } else {
+              console.log('[BADGE] No tests attribute found in JUnit XML');
+            }
           }
+        } else {
+          console.log('[BADGE] JUnit file does not exist');
         }
       } catch(e) {
-        // ignore and fall back to stdout parsing
+        console.error('[BADGE] ERROR parsing JUnit:', e.message);
       }
 
       // Extract last JSON reporter object if present
@@ -76,45 +100,85 @@ test:frontend:
       const firstBrace = raw.lastIndexOf('{', lastBrace);
       if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
         jsonText = raw.slice(firstBrace, lastBrace + 1);
+        console.log('[BADGE] Extracted JSON from vitest summary, length:', jsonText.length);
       } else {
         jsonText = raw;
+        console.log('[BADGE] No JSON object found in vitest summary');
       }
       let j = {};
-      try { j = JSON.parse(jsonText); } catch(e) { j = {}; }
+      try { j = JSON.parse(jsonText); } catch(e) { console.error('[BADGE] ERROR parsing JSON:', e.message); j = {}; }
+      console.log('[BADGE] Parsed JSON keys:', Object.keys(j).slice(0, 10));
+      
       if (typeof j.numTotalTests === 'number') total = j.numTotalTests;
       else if (typeof j.totalTests === 'number') total = j.totalTests;
       else if (j.stats && typeof j.stats.tests === 'number') total = j.stats.tests;
       else if (Array.isArray(j.tests)) total = j.tests.length;
+      
       // If JSON reporter wasn't present, try textual patterns in the captured output
       if (!total) {
+        console.log('[BADGE] JSON parsing failed, attempting regex patterns...');
         // common patterns: 'X passed', 'Total: X tests', 'X tests', 'Tests: X'
         const passedMatch = raw.match(/(\d+)\s+passed/i);
         if (passedMatch && passedMatch[1]) {
           total = parseInt(passedMatch[1], 10);
+          console.log('[BADGE] Extracted from "X passed" pattern:', total);
         } else {
           const totalMatch = raw.match(/Total[:\s]+(\d+)\s+tests?/i) || raw.match(/Tests[:\s]+(\d+)/i);
-          if (totalMatch && totalMatch[1]) total = parseInt(totalMatch[1], 10);
+          if (totalMatch && totalMatch[1]) {
+            total = parseInt(totalMatch[1], 10);
+            console.log('[BADGE] Extracted from "Total" pattern:', total);
+          }
           else {
             // fallback: find a line like 'Test Files  10 passed' or '10 passed in'
             const other = raw.match(/(\d+)\s+passed[^\n]*/i) || raw.match(/(\d+)\s+tests?\b/i);
-            if (other && other[1]) total = parseInt(other[1], 10);
+            if (other && other[1]) {
+              total = parseInt(other[1], 10);
+              console.log('[BADGE] Extracted from fallback pattern:', total);
+            } else {
+              console.log('[BADGE] WARNING: Could not extract test count from output');
+            }
           }
         }
       }
       const testsMsg = String(total);
+      console.log('[BADGE] Final test count:', testsMsg);
+      
       // Coverage: try to match lines like 'All files | ...  82.35%' in the raw output
       const covMatch = raw.match(/All files[^|]*\|[^|]*\s+([0-9]+(?:\.[0-9]+)?)/m);
       let covNum = 0;
-      if (covMatch && covMatch[1]) covNum = Math.round(parseFloat(covMatch[1]));
+      if (covMatch && covMatch[1]) {
+        covNum = Math.round(parseFloat(covMatch[1]));
+        console.log('[BADGE] Extracted coverage from "All files" line:', covNum, '%');
+      } else {
+        console.log('[BADGE] WARNING: Could not extract coverage percentage from output');
+      }
       const covMsg = String(covNum);
       // Choose color: green >=90, yellow >=75, orange >=60, red otherwise
       const covColor = (covNum >= 90) ? '#4c1' : (covNum >= 75) ? '#dfb317' : (covNum >= 60) ? '#f39c12' : '#e05d44';
+      console.log('[BADGE] Coverage color:', covColor, 'for', covNum, '%');
+      
       // Create SVGs
       const testsSvg = `<?xml version="1.0"?>\n<svg xmlns='http://www.w3.org/2000/svg' width='110' height='20'>\n  <rect width='110' height='20' fill='#555'/>\n  <rect x='60' width='50' height='20' fill='#4c1'/>\n  <g fill='#fff' font-family='Verdana,Geneva,sans-serif' font-size='11'>\n    <text x='8' y='14'>tests</text>\n    <text x='72' y='14'>${testsMsg}</text>\n  </g>\n</svg>`;
       const covSvg = `<?xml version="1.0"?>\n<svg xmlns='http://www.w3.org/2000/svg' width='110' height='20'>\n  <rect width='110' height='20' fill='#555'/>\n  <rect x='60' width='50' height='20' fill='${covColor}'/>\n  <g fill='#fff' font-family='Verdana,Geneva,sans-serif' font-size='11'>\n    <text x='8' y='14'>coverage</text>\n    <text x='72' y='14'>${covMsg}%</text>\n  </g>\n</svg>`;
-      try { fs.writeFileSync('badges/tests.svg', testsSvg, 'utf8'); console.log('Wrote badges/tests.svg ->', testsMsg); } catch(e) { console.error('Failed writing tests badge', e); }
-      try { fs.writeFileSync('badges/coverage.svg', covSvg, 'utf8'); console.log('Wrote badges/coverage.svg ->', covMsg); } catch(e) { console.error('Failed writing coverage badge', e); }
+      
+      try { fs.writeFileSync('badges/tests.svg', testsSvg, 'utf8'); console.log('[BADGE] ✓ Wrote badges/tests.svg ->', testsMsg); } catch(e) { console.error('[BADGE] ✗ ERROR writing tests badge:', e.message); }
+      try { fs.writeFileSync('badges/coverage.svg', covSvg, 'utf8'); console.log('[BADGE] ✓ Wrote badges/coverage.svg ->', covMsg + '%'); } catch(e) { console.error('[BADGE] ✗ ERROR writing coverage badge:', e.message); }
+      
+      console.log('[BADGE] Badge generation complete');
+      const testsBadgeExists = fs.existsSync('badges/tests.svg');
+      const covBadgeExists = fs.existsSync('badges/coverage.svg');
+      console.log('[BADGE] Files created - tests.svg:', testsBadgeExists, 'coverage.svg:', covBadgeExists);
       NODE
+    - echo "[PRE-ARTIFACT] Listing coverage/ directory:"
+    - ls -lah coverage/ || echo "coverage/ directory not found"
+    - echo "[PRE-ARTIFACT] Checking cobertura-coverage.xml:"
+    - test -f coverage/cobertura-coverage.xml && echo "✓ Found coverage/cobertura-coverage.xml ($(du -h coverage/cobertura-coverage.xml | cut -f1))" || echo "✗ coverage/cobertura-coverage.xml NOT FOUND"
+    - echo "[PRE-ARTIFACT] Listing badges/ directory:"
+    - ls -lah badges/ || echo "badges/ directory not found"
+    - echo "[PRE-ARTIFACT] Listing test-results/ directory:"
+    - ls -lah test-results/ || echo "test-results/ directory not found"
+    - echo "[PRE-ARTIFACT] Listing build/ directory:"
+    - ls -lah build/ | head -20 || echo "build/ directory not found"
     - npm run format:check
   artifacts:
     when: always
