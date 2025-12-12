@@ -3,6 +3,7 @@ package nl.saxion.disaster.notification_service.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +25,7 @@ public class IncidentNotificationController {
             summary = "Open SSE stream for incidents",
             description = "Opens a Server-Sent Events connection for live incident notifications for all incidents."
     )
-    @GetMapping("/stream/{regionId}")
+    @GetMapping(value = "/stream/{regionId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamNotifications(
             @PathVariable String regionId,
             @RequestParam(value = "lastNotificationId", required = false) Long lastNotificationId,
