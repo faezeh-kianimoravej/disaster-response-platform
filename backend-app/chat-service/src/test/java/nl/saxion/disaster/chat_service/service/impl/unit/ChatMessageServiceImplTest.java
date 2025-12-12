@@ -1,4 +1,4 @@
-package nl.saxion.disaster.chat_service.service.impl;
+package nl.saxion.disaster.chat_service.service.impl.unit;
 
 import nl.saxion.disaster.chat_service.dto.ChatMessageResponseDto;
 import nl.saxion.disaster.chat_service.exception.ChatGroupNotFoundException;
@@ -11,6 +11,7 @@ import nl.saxion.disaster.chat_service.repository.ChatGroupRepository;
 import nl.saxion.disaster.chat_service.repository.ChatMessageRepository;
 import nl.saxion.disaster.chat_service.repository.ChatUserRepository;
 import nl.saxion.disaster.chat_service.service.ChatSseService;
+import nl.saxion.disaster.chat_service.service.impl.ChatMessageServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

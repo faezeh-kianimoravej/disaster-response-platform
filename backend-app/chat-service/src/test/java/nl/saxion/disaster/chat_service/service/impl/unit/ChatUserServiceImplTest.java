@@ -1,4 +1,4 @@
-package nl.saxion.disaster.chat_service.service.impl;
+package nl.saxion.disaster.chat_service.service.impl.unit;
 
 import nl.saxion.disaster.chat_service.client.UserServiceClient;
 import nl.saxion.disaster.chat_service.dto.ChatUserResponseDto;
@@ -10,6 +10,7 @@ import nl.saxion.disaster.chat_service.model.ChatUser;
 import nl.saxion.disaster.chat_service.repository.ChatGroupRepository;
 import nl.saxion.disaster.chat_service.repository.ChatMessageRepository;
 import nl.saxion.disaster.chat_service.repository.ChatUserRepository;
+import nl.saxion.disaster.chat_service.service.impl.ChatUserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

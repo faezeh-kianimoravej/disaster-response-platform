@@ -1,4 +1,4 @@
-package nl.saxion.disaster.deploymentservice.service;
+package nl.saxion.disaster.deploymentservice.unit;
 
 import nl.saxion.disaster.deploymentservice.client.ResourceServiceClient;
 import nl.saxion.disaster.deploymentservice.dto.*;
@@ -9,12 +9,12 @@ import nl.saxion.disaster.deploymentservice.model.ResponseUnit;
 import nl.saxion.disaster.deploymentservice.repository.contract.DeploymentRepository;
 import nl.saxion.disaster.deploymentservice.repository.contract.DeploymentRequestRepository;
 import nl.saxion.disaster.deploymentservice.repository.contract.ResponseUnitRepository;
+import nl.saxion.disaster.deploymentservice.service.DeploymentServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;

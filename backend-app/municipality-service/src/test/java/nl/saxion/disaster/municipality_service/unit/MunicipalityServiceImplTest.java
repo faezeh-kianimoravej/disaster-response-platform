@@ -1,4 +1,4 @@
-package nl.saxion.disaster.municipality_service.service;
+package nl.saxion.disaster.municipality_service.unit;
 
 import nl.saxion.disaster.municipality_service.client.DepartmentClient;
 import nl.saxion.disaster.municipality_service.dto.DepartmentSummaryDto;
@@ -8,6 +8,7 @@ import nl.saxion.disaster.municipality_service.exception.MunicipalityNotFoundExc
 import nl.saxion.disaster.municipality_service.mapper.MunicipalityMapper;
 import nl.saxion.disaster.municipality_service.model.entity.Municipality;
 import nl.saxion.disaster.municipality_service.repository.contract.MunicipalityRepository;
+import nl.saxion.disaster.municipality_service.service.MunicipalityServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

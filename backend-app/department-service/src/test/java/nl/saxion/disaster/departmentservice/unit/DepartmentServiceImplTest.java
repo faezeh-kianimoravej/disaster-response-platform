@@ -1,4 +1,4 @@
-package nl.saxion.disaster.departmentservice.department;
+package nl.saxion.disaster.departmentservice.unit;
 
 import nl.saxion.disaster.departmentservice.client.ResourceClient;
 import nl.saxion.disaster.departmentservice.dto.DepartmentDto;
