@@ -53,7 +53,7 @@ describe('time utils', () => {
 			const now = new Date();
 			const yesterday = new Date();
 			yesterday.setDate(now.getDate() - 1);
-			yesterday.setHours(10, 30, 0, 0);
+			yesterday.setHours(0, 0, 0, 0); // Set to midnight to ensure it's always 24+ hours ago
 			expect(formatRelativeTime(yesterday.toISOString())).toBe('Yesterday');
 		});
 
