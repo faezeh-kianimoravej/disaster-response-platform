@@ -1,4 +1,4 @@
-package nl.saxion.disaster.incident_service.incident;
+package nl.saxion.disaster.incident_service.incident.unit;
 
 import nl.saxion.disaster.incident_service.dto.IncidentRequest;
 import nl.saxion.disaster.incident_service.dto.IncidentResponse;
