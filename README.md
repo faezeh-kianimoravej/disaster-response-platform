@@ -34,6 +34,7 @@ Latest stable release: [Releases page](https://gitlab.com/saxionnl/master-ict-se
 [![Backend coverage](https://gitlab.com/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/-/jobs/artifacts/main/raw/backend-app/badges/coverage.svg?job=test:backend-app)](https://gitlab.com/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/-/pipelines)
 
 [![Backend tests](https://gitlab.com/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/-/jobs/artifacts/main/raw/backend-app/badges/tests.svg?job=test:backend-app)](https://gitlab.com/saxionnl/master-ict-se/software-engineering-project/2025-2026/06/-/pipelines)
+
 ---
 
 ## 📦 User Deployment Guide — Run a Release
@@ -121,7 +122,7 @@ Images: `fkiani/disaster-response-*` on Docker Hub
 
 ## 🏗️ Architecture Overview
 
-- Microservices: incidents, locations, resources, notifications, discovery
+- Microservices: incidents, resources, notifications, discovery
 - React + TypeScript frontend (Vite)
 - REST APIs between services; notifications via push/messaging
 - Each service owns its data and deployment lifecycle
