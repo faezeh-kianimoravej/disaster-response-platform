@@ -12,6 +12,19 @@ export default defineConfig({
 	},
 	build: {
 		outDir: 'build',
+		rollupOptions: {
+			output: {
+                manualChunks: {
+                    'react-core': ['react', 'react-dom'],
+                    'react-router': ['react-router-dom'],
+                    'react-hook-form': ['react-hook-form', '@hookform/resolvers', 'zod'],
+                    'react-query': ['@tanstack/react-query'],
+                    'axios': ['axios'],
+                    'lucide': ['lucide-react'],
+                    'keycloak': ['keycloak-js'],
+                },
+			},
+		},
 	},
 	test: {
 		globals: true,
