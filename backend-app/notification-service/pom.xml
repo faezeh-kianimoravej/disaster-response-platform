@@ -155,7 +155,14 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- TestContainers for future DB tests -->
+        <!-- Spring Boot TestContainers Integration -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- TestContainers for DB integration tests -->
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
