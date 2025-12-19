@@ -3,7 +3,7 @@
 
 **Date:** 18 December 2025  
 **Time:** 09:00–09:30  
-**Location:** Saxion  
+**Location:** Online  
 
 ## Participants
 - Sepideh Qorbani  
