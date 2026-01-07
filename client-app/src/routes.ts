@@ -37,6 +37,7 @@ export const routes = {
 	// Incidents
 	incidents: () => '/incidents',
 	incident: (incidentId: number | string) => `/incidents/${incidentId}`,
+	incidentUpdate: (incidentId: number | string) => `/incidents/${incidentId}/update`,
 	incidentPrioritize: (incidentId: number | string) => `/incidents/${incidentId}/prioritize`,
 	incidentDeploymentOrder: (incidentId: number | string) =>
 		`/incidents/${incidentId}/deployment-order`,

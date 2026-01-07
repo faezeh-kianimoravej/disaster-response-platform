@@ -57,6 +57,7 @@ export const CHAT_QUERY_KEYS = {
 	groups: {
 		all: ['chat-groups'] as const,
 		item: (groupId: number) => ['chat-groups', 'item', groupId] as const,
+		byIncident: (incidentId: number) => ['chat-groups', 'incident', incidentId] as const,
 	},
 	messages: {
 		all: ['chat-messages'] as const,

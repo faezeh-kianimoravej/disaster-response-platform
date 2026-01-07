@@ -19,8 +19,7 @@ const ResponseUnitDetailsPage = lazy(() => import('./pages/ResponseUnitDetailsPa
 const DepartmentPage = lazy(() => import('./pages/DepartmentPage'));
 const DepartmentsPage = lazy(() => import('./pages/DepartmentsPage'));
 const MunicipalitiesPage = lazy(() => import('./pages/MunicipalitiesPage'));
-const IncidentDetailsPage = lazy(() => import('./pages/IncidentDetailsPage'));
-const IncidentPriorityPage = lazy(() => import('./pages/IncidentPriorityPage'));
+const IncidentDetailsPage = lazy(() => import('./pages/IncidentDetailsPage'));const SendCrisisUpdatePage = lazy(() => import('@/pages/SendCrisisUpdatePage'));const IncidentPriorityPage = lazy(() => import('./pages/IncidentPriorityPage'));
 const IncidentDeploymentOrder = lazy(() => import('./pages/IncidentDeploymentOrder'));
 const DeploymentRequestDetailsPage = lazy(() => import('./pages/DeploymentRequestDetailsPage'));
 const ChatPage = lazy(() => import('./pages/Chat'));
@@ -35,8 +34,7 @@ function App() {
 						<Routes>
 							<Route path="/" element={<HomePage />} />
 							<Route path="/dashboard" element={<DashboardPage />} />						<Route path="/responder-dashboard" element={<ResponderDashboardPage />} />
-							<Route path="/incidents/:incidentId" element={<IncidentDetailsPage />} />
-							<Route path="/chat" element={<ChatPage />} />
+							<Route path="/incidents/:incidentId" element={<IncidentDetailsPage />} />						<Route path="/incidents/:incidentId/update" element={<SendCrisisUpdatePage />} />							<Route path="/chat" element={<ChatPage />} />
 							<Route path="/chat/:chatId" element={<ChatPage />} />
 							<Route path="/incidents/:incidentId/prioritize" element={<IncidentPriorityPage />} />
 							<Route

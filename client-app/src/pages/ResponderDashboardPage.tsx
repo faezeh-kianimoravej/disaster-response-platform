@@ -41,7 +41,7 @@ function ResponderDashboardPageContent(): JSX.Element {
 		});
 	}, [incidentsError, incidentsLoading, showSingleError]);
 
-	const handleUpdateClick = (incident: Incident) => navigate(routes.incident(incident.incidentId));
+	const handleUpdateClick = (incident: Incident) => navigate(routes.incidentUpdate(incident.incidentId));
 	const handleChatClick = (incident: Incident) => navigate(routes.chatWith(incident.incidentId));
 
 	const statusOrder: Record<Incident['status'], number> = {
