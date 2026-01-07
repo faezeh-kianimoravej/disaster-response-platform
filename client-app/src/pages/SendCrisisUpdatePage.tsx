@@ -42,9 +42,7 @@ export default function SendCrisisUpdatePage() {
 
 	const toggleAction = (action: QuickActionType) => {
 		setSelectedActions(prev =>
-			prev.includes(action)
-				? prev.filter(a => a !== action)
-				: [...prev, action]
+			prev.includes(action) ? prev.filter(a => a !== action) : [...prev, action]
 		);
 	};
 
@@ -59,7 +57,7 @@ export default function SendCrisisUpdatePage() {
 		try {
 			// Get chat groups for this incident
 			const chatGroups = await getChatGroupsByIncident(incident.incidentId);
-			
+
 			if (chatGroups.length === 0) {
 				alert('No chat group found for this incident.');
 				return;
@@ -74,7 +72,7 @@ export default function SendCrisisUpdatePage() {
 
 			// Construct the update message
 			let updateMessage = '🚨 **Crisis Update**\n\n';
-			
+
 			if (selectedActions.length > 0) {
 				updateMessage += '**Quick Actions:**\n';
 				selectedActions.forEach(action => {
@@ -94,15 +92,14 @@ export default function SendCrisisUpdatePage() {
 				chatGroupId: chatGroup.id,
 				userId: auth.user.userId,
 				type: 'LEADER', // Use LEADER type for crisis updates
-				content: updateMessage
+				content: updateMessage,
 			});
 
 			// Show success message and reset form
 			alert('Crisis update sent successfully!');
 			setSelectedActions([]);
 			setAdditionalNotes('');
-		} catch (error) {
-			console.error('Failed to send crisis update:', error);
+		} catch {
 			alert('Failed to send crisis update. Please try again.');
 		} finally {
 			setIsSubmitting(false);
@@ -117,10 +114,7 @@ export default function SendCrisisUpdatePage() {
 						<div>
 							<h1 className="text-2xl font-bold">Send Crisis Update</h1>
 						</div>
-						<Button 
-							variant="outline" 
-							onClick={() => navigate(routes.responderDashboard())}
-						>
+						<Button variant="outline" onClick={() => navigate(routes.responderDashboard())}>
 							Back
 						</Button>
 					</div>
@@ -128,10 +122,7 @@ export default function SendCrisisUpdatePage() {
 					{loading && <LoadingPanel text="Loading incident..." className="mb-6" />}
 
 					{error && !loading && (
-						<ErrorRetryBlock 
-							message="Unable to load incident." 
-							onRetry={() => fetchIncident?.()} 
-						/>
+						<ErrorRetryBlock message="Unable to load incident." onRetry={() => fetchIncident?.()} />
 					)}
 
 					{!loading && !error && !incident && (
@@ -177,7 +168,7 @@ export default function SendCrisisUpdatePage() {
 							{/* Quick Actions Section */}
 							<div className="mb-6">
 								<h4 className="text-lg font-semibold mb-4">Quick Actions:</h4>
-								
+
 								{/* Quick Action Buttons by Category */}
 								<div className="space-y-6">
 									{Object.entries(getFilteredCategories()).map(([category, actions]) => (
@@ -208,7 +199,7 @@ export default function SendCrisisUpdatePage() {
 								<h4 className="text-lg font-semibold mb-4">Additional Notes:</h4>
 								<textarea
 									value={additionalNotes}
-									onChange={(e) => setAdditionalNotes(e.target.value)}
+									onChange={e => setAdditionalNotes(e.target.value)}
 									placeholder="Enter additional information about the situation..."
 									rows={4}
 									className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -220,7 +211,9 @@ export default function SendCrisisUpdatePage() {
 								<Button
 									variant="primary"
 									onClick={handleSubmit}
-									disabled={isSubmitting || (selectedActions.length === 0 && !additionalNotes.trim())}
+									disabled={
+										isSubmitting || (selectedActions.length === 0 && !additionalNotes.trim())
+									}
 									className="px-8 py-2"
 								>
 									{isSubmitting ? 'Sending Update...' : 'Submit Update'}

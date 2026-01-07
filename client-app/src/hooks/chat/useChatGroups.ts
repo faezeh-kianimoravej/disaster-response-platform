@@ -58,7 +58,8 @@ export function useChatGroupById(groupId: number | undefined) {
 export function useChatGroupsByIncident(incidentId: number | undefined) {
 	return useQuery({
 		queryKey: incidentId ? CHAT_QUERY_KEYS.groups.byIncident(incidentId) : [],
-		queryFn: () => (incidentId ? getChatGroupsByIncident(incidentId) : Promise.reject('No incidentId')),
+		queryFn: () =>
+			incidentId ? getChatGroupsByIncident(incidentId) : Promise.reject('No incidentId'),
 		enabled: !!incidentId,
 		staleTime: 1000 * 60 * 5, // 5 minutes
 	});

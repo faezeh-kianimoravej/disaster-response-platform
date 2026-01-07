@@ -74,12 +74,12 @@ const formatTime = (date: Date): string => {
 	});
 };
 
-export default function IncidentCard({ 
-	incident, 
-	onDetailsClick, 
+export default function IncidentCard({
+	incident,
+	onDetailsClick,
 	onChatClick,
-	primaryButtonText = "Details",
-	showTitleLink = true
+	primaryButtonText = 'Details',
+	showTitleLink = true,
 }: IncidentCardProps) {
 	return (
 		<div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">

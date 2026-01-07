@@ -41,7 +41,8 @@ function ResponderDashboardPageContent(): JSX.Element {
 		});
 	}, [incidentsError, incidentsLoading, showSingleError]);
 
-	const handleUpdateClick = (incident: Incident) => navigate(routes.incidentUpdate(incident.incidentId));
+	const handleUpdateClick = (incident: Incident) =>
+		navigate(routes.incidentUpdate(incident.incidentId));
 	const handleChatClick = (incident: Incident) => navigate(routes.chatWith(incident.incidentId));
 
 	const statusOrder: Record<Incident['status'], number> = {
@@ -71,7 +72,6 @@ function ResponderDashboardPageContent(): JSX.Element {
 			<div className="max-w-6xl mx-auto px-4">
 				<h1 className="text-3xl font-bold text-gray-900 mb-6">Responder Dashboard</h1>
 
-
 				<section aria-busy={incidentsLoading} aria-live="polite">
 					{incidentsLoading && <LoadingPanel text="Loading your incidents..." className="mb-6" />}
 
@@ -99,7 +99,9 @@ function ResponderDashboardPageContent(): JSX.Element {
 								</div>
 							) : (
 								<div className="text-center py-12">
-									<p className="text-gray-500 text-lg">No incidents assigned to you at this time.</p>
+									<p className="text-gray-500 text-lg">
+										No incidents assigned to you at this time.
+									</p>
 								</div>
 							)}
 						</>
