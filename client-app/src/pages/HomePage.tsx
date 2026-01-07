@@ -10,9 +10,11 @@ function getDefaultLandingPage(userRoles: RoleType[]): string {
 	const hasRegionRole = REGION_ROLES.some(role => userRoles.includes(role));
 	const hasMunicipalityRole = MUNICIPALITY_ROLES.some(role => userRoles.includes(role));
 	const hasDepartmentRole = DEPARTMENT_ROLES.some(role => userRoles.includes(role));
+	const hasResponderRole = userRoles.includes('Responder');
 
 	if (hasRegionRole) return routes.dashboard();
 	if (hasMunicipalityRole) return routes.departments();
+	if (hasResponderRole) return routes.responderDashboard();
 	if (hasDepartmentRole) return routes.resources();
 
 	return routes.home();

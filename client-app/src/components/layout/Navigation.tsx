@@ -9,6 +9,7 @@ import {
 	REGION_ROLES,
 	MUNICIPALITY_ROLES,
 	DEPARTMENT_ROLES,
+	RESPONDER_ROLES,
 	createRoles,
 } from '@/types/role';
 
@@ -17,6 +18,7 @@ export default function Navigation() {
 	const showRegion = useUserHasAnyRole(createRoles([...REGION_ROLES]));
 	const showMunicipality = useUserHasAnyRole(createRoles([...MUNICIPALITY_ROLES]));
 	const showDepartment = useUserHasAnyRole(createRoles([...DEPARTMENT_ROLES]));
+	const showResponder = useUserHasAnyRole(createRoles([...RESPONDER_ROLES]));
 
 	// Build nav items with role-based visibility
 	const navItems = [
@@ -27,7 +29,10 @@ export default function Navigation() {
 				]
 			: []),
 		...(showMunicipality ? [{ path: routes.departments(), label: 'Departments' }] : []),
-		...(showDepartment ? [{ path: routes.resources(), label: 'Resources' }] : []),
+		// Show Resources only for non-responder department roles
+		...(showDepartment && !showResponder ? [{ path: routes.resources(), label: 'Resources' }] : []),
+		// Show Responder Dashboard only for responders
+		...(showResponder ? [{ path: routes.responderDashboard(), label: 'Dashboard' }] : []),
 		...(showAdmin ? [{ path: routes.users(), label: 'Users' }] : []),
 		// Chat available for any logged-in user
 		...(useIsUserLoggedIn() ? [{ path: routes.chat(), label: 'Chat' }] : []),

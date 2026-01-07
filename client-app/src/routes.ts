@@ -5,6 +5,9 @@ export const routes = {
 	dashboard: () => '/dashboard',
 	regions: () => '/regions',
 
+	// Responders
+	responderDashboard: () => '/responder-dashboard',
+
 	// Municipalities
 	municipalities: (regionId?: number | string) =>
 		regionId !== undefined ? `/municipalities/${regionId}` : '/municipalities',

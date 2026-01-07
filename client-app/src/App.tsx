@@ -7,6 +7,7 @@ import { AppProviders } from './context/AppProviders';
 // Lazy load all pages
 const HomePage = lazy(() => import('@/pages/HomePage'));
 const DashboardPage = lazy(() => import('@/pages/DashboardPage'));
+const ResponderDashboardPage = lazy(() => import('@/pages/ResponderDashboardPage'));
 const UsersPage = lazy(() => import('@/pages/UsersPage'));
 const UserDetailsPage = lazy(() => import('@/pages/UserDetailsPage'));
 const UserCreatePage = lazy(() => import('@/pages/UserCreatePage'));
@@ -33,8 +34,7 @@ function App() {
 					<Suspense fallback={<div className="loading">Loading...</div>}>
 						<Routes>
 							<Route path="/" element={<HomePage />} />
-							<Route path="/dashboard" element={<DashboardPage />} />
-
+							<Route path="/dashboard" element={<DashboardPage />} />						<Route path="/responder-dashboard" element={<ResponderDashboardPage />} />
 							<Route path="/incidents/:incidentId" element={<IncidentDetailsPage />} />
 							<Route path="/chat" element={<ChatPage />} />
 							<Route path="/chat/:chatId" element={<ChatPage />} />

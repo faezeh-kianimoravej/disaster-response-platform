@@ -7,6 +7,9 @@ interface IncidentCardProps {
 	incident: Incident;
 	onDetailsClick?: (incident: Incident) => void;
 	onChatClick?: (incident: Incident) => void;
+	// Optional customization for responder view
+	primaryButtonText?: string;
+	showTitleLink?: boolean;
 }
 
 const getSeverityVariant = (severity: IncidentSeverity): 'critical' | 'high' | 'medium' | 'low' => {
@@ -71,13 +74,23 @@ const formatTime = (date: Date): string => {
 	});
 };
 
-export default function IncidentCard({ incident, onDetailsClick, onChatClick }: IncidentCardProps) {
+export default function IncidentCard({ 
+	incident, 
+	onDetailsClick, 
+	onChatClick,
+	primaryButtonText = "Details",
+	showTitleLink = true
+}: IncidentCardProps) {
 	return (
 		<div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
 			<h3 className="text-lg font-semibold text-gray-900 mb-3">
-				<Link to={`/incidents/${incident.incidentId}`} className="hover:underline">
-					{incident.title}
-				</Link>
+				{showTitleLink ? (
+					<Link to={`/incidents/${incident.incidentId}`} className="hover:underline">
+						{incident.title}
+					</Link>
+				) : (
+					incident.title
+				)}
 			</h3>
 
 			<div className="flex gap-2 mb-4">
@@ -95,7 +108,7 @@ export default function IncidentCard({ incident, onDetailsClick, onChatClick }: 
 					className="flex-1 hover:bg-blue-700 transition-colors"
 					onClick={() => onDetailsClick?.(incident)}
 				>
-					Details
+					{primaryButtonText}
 				</Button>
 				<Button
 					variant="outline"

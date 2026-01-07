@@ -46,6 +46,10 @@ export const DEPARTMENT_ROLES = [
 	'Responder',
 ] as readonly RoleType[];
 
+export const RESPONDER_ROLES = [
+	'Responder',
+] as readonly RoleType[];
+
 /**
  * Helper function to create a Role object from a RoleType string
  * Useful for creating role objects for permission checks
