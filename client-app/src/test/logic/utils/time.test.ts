@@ -57,12 +57,15 @@ describe('time utils', () => {
 			expect(formatRelativeTime(yesterday.toISOString())).toBe('Yesterday');
 		});
 
-		it('should return formatted date for older dates in the same year', () => {
+		it('should return formatted date for older dates beyond yesterday', () => {
 			const now = new Date();
-			const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
-			const result = formatRelativeTime(twoWeeksAgo.toISOString());
+			// Pick a clearly past date in the current year: two months ago, day 1
+			const targetMonth = Math.max(0, now.getMonth() - 2);
+			const pastDate = new Date(now.getFullYear(), targetMonth, 1);
 
-			// Should be a short, locale date like "1 Jan" or "Jan 1"
+			const result = formatRelativeTime(pastDate.toISOString());
+
+			// Should format as short day+month when still in the same year
 			expect(result).toMatch(/^(\d{1,2}\s+\w{3}|\w{3}\s+\d{1,2})$/);
 		});
 
