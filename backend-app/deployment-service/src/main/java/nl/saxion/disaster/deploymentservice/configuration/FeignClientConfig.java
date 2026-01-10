@@ -1,9 +1,13 @@
 package nl.saxion.disaster.deploymentservice.configuration;
 
+import feign.RequestInterceptor;
 import feign.Response;
 import feign.codec.ErrorDecoder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 @Configuration
 public class FeignClientConfig {
@@ -11,6 +15,22 @@ public class FeignClientConfig {
     @Bean
     public ErrorDecoder errorDecoder() {
         return new FeignCustomErrorDecoder();
+    }
+
+    // Propagate inbound bearer token to downstream Feign calls so chat-service receives Authorization.
+    @Bean
+    public RequestInterceptor bearerTokenRequestInterceptor() {
+        return template -> {
+            ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            if (attrs == null) {
+                return; // no web request context (e.g., async/background)
+            }
+
+            String authHeader = attrs.getRequest().getHeader(HttpHeaders.AUTHORIZATION);
+            if (authHeader != null && !authHeader.isBlank()) {
+                template.header(HttpHeaders.AUTHORIZATION, authHeader);
+            }
+        };
     }
 
     public static class FeignCustomErrorDecoder implements ErrorDecoder {
