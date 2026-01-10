@@ -12,7 +12,7 @@ public interface IncidentService {
 
     IncidentResponse getById(Long id);
 
-    Optional<IncidentResponseDto> getIncidentBasicInfoById(Long id);
+    Optional<IncidentBasicDTO> getIncidentBasicInfoById(Long id);
 
     List<IncidentResponse> list(Optional<String> departmentName);
 

@@ -121,7 +121,7 @@ public class IncidentController {
             @ApiResponse(responseCode = "200", description = "Incident information retrieved successfully"),
             @ApiResponse(responseCode = "404", description = "Incident not found")
     })
-    public ResponseEntity<IncidentResponseDto> getIncidentBasicInfoById(@PathVariable Long id) {
+    public ResponseEntity<IncidentBasicDTO> getIncidentBasicInfoById(@PathVariable Long id) {
         return incidentService.getIncidentBasicInfoById(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());

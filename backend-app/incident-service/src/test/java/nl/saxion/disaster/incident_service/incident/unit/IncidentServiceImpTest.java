@@ -1,5 +1,6 @@
 package nl.saxion.disaster.incident_service.incident.unit;
 
+import nl.saxion.disaster.incident_service.dto.IncidentBasicDTO;
 import nl.saxion.disaster.incident_service.dto.IncidentRequest;
 import nl.saxion.disaster.incident_service.dto.IncidentResponse;
 import nl.saxion.disaster.incident_service.exception.ResourceNotFoundException;
@@ -180,19 +181,27 @@ class IncidentServiceImpTest {
 
     @Test
     void getIncidentBasicInfoById_ShouldReturnBasicInfo_WhenIncidentExists() {
+        // given
         Incident incident = sampleIncident(7L);
         when(repository.findById(7L)).thenReturn(Optional.of(incident));
 
+        // when
         var result = service.getIncidentBasicInfoById(7L);
 
+        // then
         assertThat(result).isPresent();
-        var dto = result.get();
-        assertThat(dto.incidentId()).isEqualTo(7L);
-        assertThat(dto.title()).isEqualTo(incident.getTitle());
-        assertThat(dto.status()).isEqualTo(incident.getStatus().name());
+
+        IncidentBasicDTO dto = result.get();
+
+        assertThat(dto.getIncidentId()).isEqualTo(7L);
+        assertThat(dto.getTitle()).isEqualTo(incident.getTitle());
+        assertThat(dto.getStatus()).isEqualTo(incident.getStatus().name());
+        assertThat(dto.getSeverity()).isEqualTo(incident.getSeverity().name());
+        assertThat(dto.getGripLevel()).isEqualTo(incident.getGripLevel().name());
 
         verify(repository).findById(7L);
     }
+
 
     @Test
     void getIncidentBasicInfoById_ShouldReturnEmpty_WhenNotFound() {

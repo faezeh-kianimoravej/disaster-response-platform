@@ -12,4 +12,6 @@ public interface DeploymentRepository {
     List<Deployment> createDeploymentList(List<Deployment> deployments);
 
     Optional<Deployment> findDeploymentById(Long id);
+
+    Optional<Deployment> findDeploymentByResponseUnitId(Long responseUnitId);
 }

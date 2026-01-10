@@ -1,4 +1,4 @@
-package nl.saxion.disaster.deploymentservice.client;
+package nl.saxion.disaster.incident_service.dto;
 
 import lombok.Data;
 
@@ -6,6 +6,7 @@ import java.time.OffsetDateTime;
 
 @Data
 public class IncidentBasicDTO {
+
     Long incidentId;
     String reportedBy;
     String title;

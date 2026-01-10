@@ -66,6 +66,17 @@ public class ChatGroupServiceImpl implements ChatGroupService {
 
     @Override
     @Transactional(readOnly = true)
+    public ChatGroupResponseDto getChatGroupByIncidentId(Long incidentId) {
+        log.debug("Fetching chat group with incident id: {}", incidentId);
+
+        ChatGroup chatGroup = chatGroupRepository.findByIncidentId(incidentId)
+                .orElseThrow(() -> new ChatGroupNotFoundException(incidentId));
+
+        return mapToResponseDto(chatGroup);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<ChatGroupListItemDto> getChatGroupsByUserId(Long userId) {
         log.debug("Fetching chat groups for user: {}", userId);
 

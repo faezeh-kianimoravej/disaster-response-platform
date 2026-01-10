@@ -356,4 +356,43 @@ public class DeploymentServiceImpl implements DeploymentService {
 
         return dto;
     }
+
+    /**
+     * Retrieves the incident currently assigned to a responder for use in the mobile dashboard.
+     *
+     * When a responder logs into the mobile application, this method is called to determine
+     * which incident is currently assigned to them and to load all required incident details
+     * for display in the responder dashboard.
+     *
+     * Flow:
+     *  1. Resolve the responder's ResponseUnit using the responder (user) ID
+     *  2. Retrieve the latest ASSIGNED Deployment for that ResponseUnit
+     *  3. Extract the incidentId from the Deployment
+     *  4. Call the Incident Service (via Feign) to fetch the IncidentBasicDTO
+     *
+     * @param responderId the user ID of the responder
+     * @return IncidentBasicDTO containing the details of the incident currently assigned to the responder
+     * @throws IllegalArgumentException if no ResponseUnit or no ASSIGNED Deployment is found for the responder
+     * @throws IllegalStateException if the found Deployment does not reference an incident
+     */
+    @Override
+    public IncidentBasicDTO getIncidentBasicDtoForResponder(Long responderId) {
+
+        ResponseUnit responseUnit = responseUnitRepository.findResponseUnitByUserId(responderId)
+                .orElseThrow(() -> new IllegalArgumentException("ResponseUnit not found for userId=" + responderId));
+
+        Long responseUnitId = responseUnit.getUnitId();
+
+        Deployment deployment = deploymentRepository.findDeploymentByResponseUnitId(responseUnitId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "No ASSIGNED Deployment found for responseUnitId=" + responseUnitId));
+
+        Long incidentId = deployment.getIncidentId();
+        if (incidentId == null) {
+            throw new IllegalStateException("Deployment " + deployment.getDeploymentId() + " has null incidentId");
+        }
+
+        // Feign call to incident-service
+        return incidentServiceClient.getIncidentBasicDtoById(incidentId);
+    }
 }
