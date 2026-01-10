@@ -5,6 +5,7 @@ import { createTestQueryClient } from '@/test/utils';
 import {
 	useChatGroups,
 	useChatGroupById,
+	useChatGroupByIncident,
 	useCreateChatGroup,
 	useAddUserToChatGroup,
 } from '@/hooks/chat/useChatGroups';
@@ -14,6 +15,7 @@ import React, { type ReactNode } from 'react';
 vi.mock('@/api/chat/chatGroupApi', () => ({
 	getChatGroupsByUser: vi.fn(),
 	getChatGroupById: vi.fn(),
+	getChatGroupByIncident: vi.fn(),
 	createChatGroup: vi.fn(),
 	addUserToChatGroup: vi.fn(),
 }));
@@ -298,6 +300,91 @@ describe('useChatGroups hooks', () => {
 			await waitFor(() => {
 				expect(result.current.isError).toBe(true);
 			});
+		});
+	});
+
+	describe('useChatGroupByIncident', () => {
+		const mockChatGroup = {
+			id: 1,
+			incidentId: 42,
+			name: 'Warehouse Fire',
+			createdAt: new Date('2024-01-15T10:00:00Z'),
+			unreadCount: 3,
+			lastMessage: {
+				id: '10',
+				content: 'Latest update',
+				timestamp: new Date('2024-01-15T10:30:00Z'),
+				userFullName: 'John Doe',
+			},
+		};
+
+		it('should fetch chat group by incident successfully', async () => {
+			vi.mocked(mockedChatGroupApi.getChatGroupByIncident).mockResolvedValue(mockChatGroup);
+
+			const { result } = renderHook(() => useChatGroupByIncident(42), {
+				wrapper: createWrapper(),
+			});
+
+			await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+			expect(result.current.data).toEqual(mockChatGroup);
+			expect(result.current.isLoading).toBe(false);
+			expect(vi.mocked(mockedChatGroupApi.getChatGroupByIncident)).toHaveBeenCalledWith(42);
+		});
+
+		it('should handle null response when no chat group found', async () => {
+			vi.mocked(mockedChatGroupApi.getChatGroupByIncident).mockResolvedValue(null);
+
+			const { result } = renderHook(() => useChatGroupByIncident(999), {
+				wrapper: createWrapper(),
+			});
+
+			await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+			expect(result.current.data).toBeNull();
+			expect(result.current.isLoading).toBe(false);
+		});
+
+		it('should handle error when fetching chat group', async () => {
+			const error = new Error('Failed to fetch chat group');
+			vi.mocked(mockedChatGroupApi.getChatGroupByIncident).mockRejectedValue(error);
+
+			const { result } = renderHook(() => useChatGroupByIncident(42), {
+				wrapper: createWrapper(),
+			});
+
+			await waitFor(() => expect(result.current.isError).toBe(true));
+
+			expect(result.current.data).toBeUndefined();
+			expect(result.current.error).toEqual(error);
+		});
+
+		it('should not fetch when incidentId is undefined', () => {
+			const { result } = renderHook(() => useChatGroupByIncident(undefined), {
+				wrapper: createWrapper(),
+			});
+
+			expect(result.current.isLoading).toBe(false);
+			expect(result.current.data).toBeUndefined();
+			expect(vi.mocked(mockedChatGroupApi.getChatGroupByIncident)).not.toHaveBeenCalled();
+		});
+
+		it('should use correct query key for caching', async () => {
+			vi.mocked(mockedChatGroupApi.getChatGroupByIncident).mockResolvedValue(mockChatGroup);
+
+			const { result } = renderHook(() => useChatGroupByIncident(42), {
+				wrapper: createWrapper(),
+			});
+
+			await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+			const queryCache = queryClient.getQueryCache();
+			const queries = queryCache.getAll();
+			const matchingQuery = queries.find(
+				q => JSON.stringify(q.queryKey) === JSON.stringify(['chat-groups', 'incident', 42])
+			);
+
+			expect(matchingQuery).toBeDefined();
 		});
 	});
 });
