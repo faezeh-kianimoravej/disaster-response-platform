@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { routes } from '@/routes';
 import { useIncident } from '@/hooks/useIncident';
 import { useAuth } from '@/context/AuthContext';
@@ -11,13 +12,18 @@ import Badge from '@/components/ui/Badge';
 import useSingleErrorToast from '@/hooks/useSingleErrorToast';
 import { RESPONDER_ROLES } from '@/types/role';
 import { QUICK_ACTION_CATEGORIES, type QuickActionType } from '@/types/quickActions';
-import { createChatMessage } from '@/api/chat/chatMessageApi';
+import { useSendMessage } from '@/hooks/chat/useChatMessages';
 import { getChatGroupByIncident } from '@/api/chat/chatGroupApi';
+import { useToast } from '@/components/toast/ToastProvider';
+import { CHAT_QUERY_KEYS } from '@/hooks/queryKeys';
 
 export default function SendCrisisUpdatePage() {
 	const { incidentId } = useParams<{ incidentId: string }>();
 	const navigate = useNavigate();
 	const auth = useAuth();
+	const { showSuccess } = useToast();
+	const sendMessage = useSendMessage();
+	const queryClient = useQueryClient();
 	const showSingleError = useSingleErrorToast();
 
 	const id = incidentId ? Number(incidentId) : undefined;
@@ -81,15 +87,20 @@ export default function SendCrisisUpdatePage() {
 			updateMessage += `*Update sent by ${auth.user.firstName} ${auth.user.lastName || ''} at ${new Date().toLocaleString()}*`;
 
 			// Send message to chat
-			await createChatMessage({
+			await sendMessage.mutateAsync({
 				chatGroupId: chatGroup.id,
 				userId: auth.user.userId,
 				type: 'LEADER', // Use LEADER type for crisis updates
 				content: updateMessage,
 			});
 
+			// Manually invalidate messages cache to ensure real-time updates
+			queryClient.invalidateQueries({
+				queryKey: CHAT_QUERY_KEYS.messages.byGroup(chatGroup.id),
+			});
+
 			// Show success message and reset form
-			alert('Crisis update sent successfully!');
+			showSuccess('Crisis update sent successfully!');
 			setSelectedActions([]);
 			setAdditionalNotes('');
 		} catch {
