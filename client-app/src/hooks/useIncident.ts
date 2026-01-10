@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
 	getIncidents,
-	getActiveIncidentsForResponder,
 	getIncidentById,
 	createIncident,
 	updateIncident,
@@ -18,28 +17,6 @@ export function useIncidents(regionId?: number, options?: { enabled?: boolean })
 		queryKey: listKey,
 		queryFn: () => getIncidents(regionId as number),
 		enabled: enabled && !!regionId && regionId > 0,
-		staleTime: 1000 * 60 * 2,
-	});
-
-	const { data, isLoading, error, refetch } = listQuery;
-
-	return useMemo(
-		() => ({
-			incidents: data ?? [],
-			loading: isLoading,
-			error: error?.message ?? null,
-			refetch,
-		}),
-		[data, isLoading, error, refetch]
-	);
-}
-
-export function useActiveIncidentsForResponder(userId?: number, options?: { enabled?: boolean }) {
-	const enabled = options?.enabled ?? !!userId;
-	const listQuery = useQuery<Incident[], Error>({
-		queryKey: ['incidents', 'active', 'responder', userId],
-		queryFn: () => getActiveIncidentsForResponder(userId as number),
-		enabled: enabled && !!userId && userId > 0,
 		staleTime: 1000 * 60 * 2,
 	});
 

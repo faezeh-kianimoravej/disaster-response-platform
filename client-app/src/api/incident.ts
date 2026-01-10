@@ -12,11 +12,6 @@ export async function getIncidents(regionId: number): Promise<Incident[]> {
 	return fromApiIncidents(apiList);
 }
 
-export async function getActiveIncidentsForResponder(userId: number): Promise<Incident[]> {
-	const apiList = await incidentApi.get<ApiIncident[]>(`/active/responder/${userId}`);
-	return fromApiIncidents(apiList);
-}
-
 export async function getIncidentById(id: number): Promise<Incident | undefined> {
 	try {
 		const data = await incidentApi.get<ApiIncident>(`/${id}`);
