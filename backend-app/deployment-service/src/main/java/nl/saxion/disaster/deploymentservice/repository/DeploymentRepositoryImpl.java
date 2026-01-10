@@ -37,15 +37,16 @@ public class DeploymentRepositoryImpl implements DeploymentRepository {
         Deployment d = entityManager.find(Deployment.class, id);
         return Optional.ofNullable(d);
     }
+
     @Override
     public Optional<Deployment> findDeploymentByResponseUnitId(Long responseUnitId) {
         List<Deployment> result = entityManager.createQuery("""
-                    select d
-                    from Deployment d
-                    where d.responseUnitId = :responseUnitId
-                      and d.status = :status
-                    order by d.createdAt desc
-                """, Deployment.class)
+                select d
+                from Deployment d
+                where d.responseUnitId = :responseUnitId
+                  and d.status = :status
+                order by d.deploymentId desc
+            """, Deployment.class)
                 .setParameter("responseUnitId", responseUnitId)
                 .setParameter("status", DeploymentStatus.ASSIGNED)
                 .setMaxResults(1)
