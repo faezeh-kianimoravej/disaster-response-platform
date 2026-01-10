@@ -3,6 +3,7 @@ import {
 	createChatGroup,
 	getChatGroupById,
 	getChatGroupsByUser,
+	getChatGroupByIncident,
 	addUserToChatGroup,
 	updateLastReadMessage,
 	type CreateChatGroupRequest,
@@ -48,9 +49,19 @@ export function useAddUserToChatGroup() {
 export function useChatGroupById(groupId: number | undefined) {
 	return useQuery({
 		queryKey: groupId ? CHAT_QUERY_KEYS.groups.item(groupId) : [],
-		queryFn: () => (groupId ? getChatGroupById(groupId) : null),
+		queryFn: () => (groupId ? getChatGroupById(groupId) : Promise.reject('No groupId')),
 		enabled: !!groupId,
 		staleTime: 1000 * 60 * 5,
+	});
+}
+
+export function useChatGroupByIncident(incidentId: number | undefined) {
+	return useQuery<ChatGroup | null>({
+		queryKey: incidentId ? CHAT_QUERY_KEYS.groups.byIncident(incidentId) : [],
+		queryFn: () =>
+			incidentId ? getChatGroupByIncident(incidentId) : Promise.reject('No incidentId'),
+		enabled: !!incidentId,
+		staleTime: 1000 * 60 * 5, // 5 minutes
 	});
 }
 

@@ -2,7 +2,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createTestQueryClient } from '@/test/utils';
-import { useAssignResponseUnit, useAssignFillUnit } from '@/hooks/useDeployment';
+import {
+	useAssignResponseUnit,
+	useAssignFillUnit,
+	useIncidentForResponder,
+} from '@/hooks/useDeployment';
 import React, { type ReactNode } from 'react';
 
 // Mock the API module
@@ -11,8 +15,16 @@ vi.mock('@/api/deployment/deployment', () => ({
 	assignFillUnitToDeploymentRequest: vi.fn(),
 }));
 
+// Mock the main deployment API
+vi.mock('@/api/deployment', () => ({
+	getIncidentForResponder: vi.fn(),
+}));
+
 const deploymentApi = await import('@/api/deployment/deployment');
 const mockedApi = vi.mocked(deploymentApi, { partial: true });
+
+const mainDeploymentApi = await import('@/api/deployment');
+const mockedDeploymentApi = vi.mocked(mainDeploymentApi, { partial: true });
 
 describe('useDeployment hooks', () => {
 	let queryClient: QueryClient;
@@ -173,6 +185,76 @@ describe('useDeployment hooks', () => {
 				expect(usersQuery?.state.isInvalidated).toBe(true);
 				expect(resourcesQuery?.state.isInvalidated).toBe(true);
 			});
+		});
+	});
+
+	describe('useIncidentForResponder', () => {
+		const mockIncident = {
+			incidentId: 42,
+			regionId: 1,
+			title: 'Warehouse Fire',
+			location: 'District 9',
+			status: 'Open' as const,
+			severity: 'HIGH' as const,
+			gripLevel: 2,
+			description: 'Fire in warehouse',
+			reportedBy: 'Fire Department',
+			reportedAt: new Date('2024-01-15T10:00:00Z'),
+			createdAt: new Date('2024-01-15T10:00:00Z'),
+			updatedAt: new Date('2024-01-15T10:00:00Z'),
+			latitude: 52.52,
+			longitude: 13.405,
+		};
+
+		it('should fetch incident for responder successfully', async () => {
+			mockedDeploymentApi.getIncidentForResponder.mockResolvedValue(mockIncident);
+
+			const { result } = renderHook(() => useIncidentForResponder(123), {
+				wrapper: createWrapper(),
+			});
+
+			await waitFor(() => expect(result.current.incident).toEqual(mockIncident));
+
+			expect(result.current.incident).toEqual(mockIncident);
+			expect(result.current.loading).toBe(false);
+			expect(mockedDeploymentApi.getIncidentForResponder).toHaveBeenCalledWith(123);
+		});
+
+		it('should handle null response when no incident assigned', async () => {
+			mockedDeploymentApi.getIncidentForResponder.mockResolvedValue(null);
+
+			const { result } = renderHook(() => useIncidentForResponder(456), {
+				wrapper: createWrapper(),
+			});
+
+			await waitFor(() => expect(result.current.incident).toBeNull());
+			await waitFor(() => expect(result.current.loading).toBe(false));
+
+			expect(result.current.incident).toBeNull();
+		});
+
+		it('should handle error when fetching incident', async () => {
+			const error = new Error('Failed to fetch incident');
+			mockedDeploymentApi.getIncidentForResponder.mockRejectedValue(error);
+
+			const { result } = renderHook(() => useIncidentForResponder(789), {
+				wrapper: createWrapper(),
+			});
+
+			await waitFor(() => expect(result.current.error).toBeTruthy());
+
+			expect(result.current.incident).toBeNull();
+			expect(result.current.error).toBe('Failed to fetch incident');
+		});
+
+		it('should not fetch when responderId is undefined', () => {
+			const { result } = renderHook(() => useIncidentForResponder(undefined), {
+				wrapper: createWrapper(),
+			});
+
+			expect(result.current.loading).toBe(false);
+			expect(result.current.incident).toBeNull();
+			expect(mockedDeploymentApi.getIncidentForResponder).not.toHaveBeenCalled();
 		});
 	});
 });

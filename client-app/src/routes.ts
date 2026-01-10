@@ -5,6 +5,9 @@ export const routes = {
 	dashboard: () => '/dashboard',
 	regions: () => '/regions',
 
+	// Responders
+	responderDashboard: () => '/responder-dashboard',
+
 	// Municipalities
 	municipalities: (regionId?: number | string) =>
 		regionId !== undefined ? `/municipalities/${regionId}` : '/municipalities',
@@ -34,6 +37,7 @@ export const routes = {
 	// Incidents
 	incidents: () => '/incidents',
 	incident: (incidentId: number | string) => `/incidents/${incidentId}`,
+	incidentUpdate: (incidentId: number | string) => `/incidents/${incidentId}/update`,
 	incidentPrioritize: (incidentId: number | string) => `/incidents/${incidentId}/prioritize`,
 	incidentDeploymentOrder: (incidentId: number | string) =>
 		`/incidents/${incidentId}/deployment-order`,

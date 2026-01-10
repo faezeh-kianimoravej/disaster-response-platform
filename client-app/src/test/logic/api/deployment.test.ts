@@ -57,4 +57,39 @@ describe('api/deployment', () => {
 		expect(res.success).toBe(true);
 		expect(res.assignedUnitId).toBe(123);
 	});
+
+	it('getIncidentForResponder calls BaseApi.get and returns incident', async () => {
+		vi.spyOn(BaseApi.prototype, 'get').mockResolvedValue({
+			incidentId: 42,
+			regionId: 1,
+			title: 'Test Incident',
+			location: 'Test Location',
+			status: 'Open',
+			severity: 'High',
+			gripLevel: 2,
+			description: 'Test description',
+			reportedAt: '2024-01-15T10:00:00Z',
+			createdAt: '2024-01-15T10:00:00Z',
+			updatedAt: '2024-01-15T10:00:00Z',
+			latitude: null,
+			longitude: null,
+		});
+
+		const deployment = await import('@/api/deployment');
+		const result = await deployment.getIncidentForResponder(123);
+
+		expect(result).toBeDefined();
+		expect(result?.incidentId).toBe(42);
+		expect(result?.title).toBe('Test Incident');
+		expect(BaseApi.prototype.get).toHaveBeenCalledWith('/responder/123/incident');
+	});
+
+	it('getIncidentForResponder returns null on error', async () => {
+		vi.spyOn(BaseApi.prototype, 'get').mockRejectedValue(new Error('Not found'));
+
+		const deployment = await import('@/api/deployment');
+		const result = await deployment.getIncidentForResponder(999);
+
+		expect(result).toBeNull();
+	});
 });
