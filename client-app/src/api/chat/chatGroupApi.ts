@@ -120,12 +120,16 @@ export async function getChatGroupsByUser(userId: number): Promise<ChatGroup[]> 
 }
 
 /**
- * Get chat groups for a specific incident
+ * Get chat group for a specific incident
  * GET /chat/groups/incident/{incidentId}
  */
-export async function getChatGroupsByIncident(incidentId: number): Promise<ChatGroup[]> {
-	const result = await chatGroupApi.get<ChatGroupDTO[]>(`/incident/${incidentId}`);
-	return result.map(mapChatGroupDTOToFrontend);
+export async function getChatGroupByIncident(incidentId: number): Promise<ChatGroup | null> {
+	try {
+		const result = await chatGroupApi.get<ChatGroupDTO>(`/incident/${incidentId}`);
+		return mapChatGroupDTOToFrontend(result);
+	} catch {
+		return null;
+	}
 }
 
 /**

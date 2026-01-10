@@ -12,7 +12,7 @@ import useSingleErrorToast from '@/hooks/useSingleErrorToast';
 import { RESPONDER_ROLES } from '@/types/role';
 import { QUICK_ACTION_CATEGORIES, type QuickActionType } from '@/types/quickActions';
 import { createChatMessage } from '@/api/chat/chatMessageApi';
-import { getChatGroupsByIncident } from '@/api/chat/chatGroupApi';
+import { getChatGroupByIncident } from '@/api/chat/chatGroupApi';
 
 export default function SendCrisisUpdatePage() {
 	const { incidentId } = useParams<{ incidentId: string }>();
@@ -55,19 +55,12 @@ export default function SendCrisisUpdatePage() {
 
 		setIsSubmitting(true);
 		try {
-			// Get chat groups for this incident
-			const chatGroups = await getChatGroupsByIncident(incident.incidentId);
-
-			if (chatGroups.length === 0) {
-				alert('No chat group found for this incident.');
-				return;
-			}
-
-			// Use the first chat group (main incident chat)
-			const chatGroup = chatGroups[0];
+			// Get chat group for this incident
+			const chatGroup = await getChatGroupByIncident(incident.incidentId);
 
 			if (!chatGroup) {
-				throw new Error('Chat group is not available');
+				alert('No chat group found for this incident.');
+				return;
 			}
 
 			// Construct the update message
