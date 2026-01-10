@@ -5,14 +5,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import nl.saxion.disaster.deploymentservice.client.IncidentBasicDTO;
 import nl.saxion.disaster.deploymentservice.dto.DeploymentAssignRequestDTO;
 import nl.saxion.disaster.deploymentservice.dto.DeploymentAssignResponseDTO;
 import nl.saxion.disaster.deploymentservice.service.contract.DeploymentService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/deployment")
@@ -68,5 +66,27 @@ public class DeploymentController {
                 deploymentService.allocateUnitsForDeploymentRequest(dto);
 
         return ResponseEntity.ok(response);
+    }
+
+    // ----------------------------------------------------------------------------------------
+    // Get incident basic info for a responder
+    // ----------------------------------------------------------------------------------------
+    @Operation(
+            summary = "Get current incident details for a responder",
+            description = """
+                Resolves the responder's ResponseUnit, finds the latest ASSIGNED Deployment for that unit,
+                then calls incident-service to fetch the IncidentBasicDTO for the linked incidentId.
+                """,
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Incident retrieved successfully"),
+                    @ApiResponse(responseCode = "404", description = "ResponseUnit / Deployment / Incident not found"),
+                    @ApiResponse(responseCode = "400", description = "Invalid responderId"),
+                    @ApiResponse(responseCode = "500", description = "Unexpected error")
+            }
+    )
+    @GetMapping("/responder/{responderId}/incident")
+    public ResponseEntity<IncidentBasicDTO> getIncidentForResponder(@PathVariable Long responderId) {
+        IncidentBasicDTO incident = deploymentService.getIncidentBasicDtoForResponder(responderId);
+        return ResponseEntity.ok(incident);
     }
 }

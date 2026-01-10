@@ -10,7 +10,9 @@ import nl.saxion.disaster.deploymentservice.dto.ResponseUnitSearchResponseDTO;
 import nl.saxion.disaster.deploymentservice.enums.ResponseUnitStatus;
 import nl.saxion.disaster.deploymentservice.exception.ResourceNotFoundException;
 import nl.saxion.disaster.deploymentservice.mapper.ResponseUnitMapper;
+import nl.saxion.disaster.deploymentservice.model.Deployment;
 import nl.saxion.disaster.deploymentservice.model.ResponseUnit;
+import nl.saxion.disaster.deploymentservice.repository.contract.DeploymentRepository;
 import nl.saxion.disaster.deploymentservice.repository.contract.ResponseUnitRepository;
 import nl.saxion.disaster.deploymentservice.service.contract.ResponseUnitService;
 import nl.saxion.disaster.deploymentservice.util.DistanceCalculator;
@@ -21,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -29,6 +32,7 @@ import java.util.stream.Collectors;
 public class ResponseUnitServiceImpl implements ResponseUnitService {
 
     private final ResponseUnitRepository responseUnitRepository;
+    private final DeploymentRepository deploymentRepository;
     private final ResponseUnitMapper responseUnitMapper;
     private final ResourceServiceClient resourceServiceClient;
     private final IncidentServiceClient incidentServiceClient;
@@ -81,10 +85,10 @@ public class ResponseUnitServiceImpl implements ResponseUnitService {
                             unit.setLatitude(resource.getLatitude());
                             unit.setLongitude(resource.getLongitude());
                             unit.setLastLocationUpdate(LocalDateTime.now());
-                            log.debug("Successfully fetched location from primary resource {} for response unit {}", 
+                            log.debug("Successfully fetched location from primary resource {} for response unit {}",
                                     primaryResource.getResourceId(), dto.getUnitName());
                         } catch (Exception e) {
-                            log.warn("Failed to fetch location from primary resource {} for response unit {}. Location will be updated later. Error: {}", 
+                            log.warn("Failed to fetch location from primary resource {} for response unit {}. Location will be updated later. Error: {}",
                                     primaryResource.getResourceId(), dto.getUnitName(), e.getMessage());
                         }
                     });

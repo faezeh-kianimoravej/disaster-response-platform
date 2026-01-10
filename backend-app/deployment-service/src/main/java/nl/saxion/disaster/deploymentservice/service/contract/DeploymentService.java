@@ -1,5 +1,6 @@
 package nl.saxion.disaster.deploymentservice.service.contract;
 
+import nl.saxion.disaster.deploymentservice.client.IncidentBasicDTO;
 import nl.saxion.disaster.deploymentservice.dto.DeploymentAssignRequestDTO;
 import nl.saxion.disaster.deploymentservice.dto.DeploymentAssignResponseDTO;
 
@@ -33,4 +34,24 @@ public interface DeploymentService {
      * @return response containing the created deployment and updated request status
      */
     DeploymentAssignResponseDTO allocateUnitsForDeploymentRequest(DeploymentAssignRequestDTO dto);
+
+    /**
+     * Retrieves the currently assigned incident for a given responder.
+     *
+     * This method is used by the responder mobile dashboard. When a responder logs in,
+     * the mobile application calls this method to determine which incident is currently
+     * assigned to the responder and to fetch the full incident details required for display.
+     *
+     * The method performs the following steps:
+     *  - Resolves the responder's ResponseUnit using the responder (user) ID
+     *  - Finds the latest ASSIGNED Deployment for that ResponseUnit
+     *  - Extracts the incidentId from the Deployment
+     *  - Calls the Incident Service to fetch the IncidentBasicDTO
+     *
+     * @param responderId the user ID of the responder
+     * @return IncidentBasicDTO containing the details of the incident currently assigned to the responder
+     * @throws IllegalArgumentException if no ResponseUnit or Deployment is found for the responder
+     * @throws IllegalStateException if the found Deployment does not reference an incident
+     */
+    IncidentBasicDTO getIncidentBasicDtoForResponder(Long responderId);
 }

@@ -11,6 +11,8 @@ public interface ChatGroupService {
 
     ChatGroupResponseDto getChatGroupById(Long groupId);
 
+    ChatGroupResponseDto getChatGroupByIncidentId(Long incidentId);
+
     List<ChatGroupListItemDto> getChatGroupsByUserId(Long userId);
 
     void closeChatGroup(Long groupId);

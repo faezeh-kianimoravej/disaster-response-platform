@@ -75,4 +75,16 @@ public class ChatGroupController {
         chatGroupService.closeChatGroup(id);
         return ResponseEntity.noContent().build();
     }
+
+    @Operation(summary = "Get chat group details by incident ID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Chat group found"),
+            @ApiResponse(responseCode = "404", description = "Chat group not found")
+    })
+    @GetMapping("/{incidentId}")
+    public ResponseEntity<ChatGroupResponseDto> getChatGroupByIncidentId(@PathVariable Long incidentId) {
+        log.debug("Fetching chat group by incident id: {}", incidentId);
+        ChatGroupResponseDto response = chatGroupService.getChatGroupByIncidentId(incidentId);
+        return ResponseEntity.ok(response);
+    }
 }

@@ -12,4 +12,7 @@ public interface IncidentServiceClient {
 
     @GetMapping("/api/incidents/{incidentId}")
     IncidentBasicDTO getIncidentById(@PathVariable("incidentId") Long incidentId);
+
+    @GetMapping("/api/incidents/{id}/basic")
+    IncidentBasicDTO getIncidentBasicDtoById(@PathVariable("id") Long id);
 }

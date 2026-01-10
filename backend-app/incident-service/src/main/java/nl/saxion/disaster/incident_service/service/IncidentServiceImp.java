@@ -84,14 +84,32 @@ public class IncidentServiceImp implements IncidentService {
      * or an empty Optional if not found
      */
     @Override
-    public Optional<IncidentResponseDto> getIncidentBasicInfoById(Long id) {
+    public Optional<IncidentBasicDTO> getIncidentBasicInfoById(Long id) {
         return repository.findById(id)
-                .map(incident -> new IncidentResponseDto(
-                        incident.getIncidentId(),
-                        incident.getTitle(),
-                        incident.getStatus().name()
-                ));
+                .map(incident -> {
+                    IncidentBasicDTO dto = new IncidentBasicDTO();
+
+                    dto.setIncidentId(incident.getIncidentId());
+                    dto.setReportedBy(incident.getReportedBy());
+                    dto.setTitle(incident.getTitle());
+                    dto.setDescription(incident.getDescription());
+
+                    dto.setSeverity(incident.getSeverity() == null ? null : incident.getSeverity().name());
+                    dto.setGripLevel(incident.getGripLevel() == null ? null : incident.getGripLevel().name());
+                    dto.setStatus(incident.getStatus() == null ? null : incident.getStatus().name());
+
+                    dto.setReportedAt(incident.getReportedAt());
+                    dto.setLocation(incident.getLocation());
+                    dto.setLatitude(incident.getLatitude());
+                    dto.setLongitude(incident.getLongitude());
+                    dto.setRegionId(incident.getRegionId());
+                    dto.setCreatedAt(incident.getCreatedAt());
+                    dto.setUpdatedAt(incident.getUpdatedAt());
+
+                    return dto;
+                });
     }
+
 
     public List<IncidentResponse> list(Optional<String> reportedBy) {
         List<Incident> list = reportedBy.map(repository::findByReportedBy)
