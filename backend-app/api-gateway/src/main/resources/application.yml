@@ -1,5 +1,9 @@
 server:
   port: 8080
+  ssl:
+    enabled: true
+    certificate: file:/certs/tls.crt
+    certificate-private-key: file:/certs/tls.key
 
 spring:
   application:

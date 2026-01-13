@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import Keycloak, { KeycloakInstance } from 'keycloak-js';
 
 const keycloakConfig = {
-	url: 'http://localhost:9090/',
+	url: 'https://PC-Ben:9090/',
 	realm: 'DRCCS',
 	clientId: 'react-frontend',
 } as const;

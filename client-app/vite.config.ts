@@ -2,6 +2,8 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath, URL } from 'url';
+import fs from 'fs';
+import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -9,6 +11,14 @@ export default defineConfig({
 	server: {
 		port: 3000,
 		open: true,
+	},
+	preview: {
+		host: true,
+		allowedHosts: ['pc-ben', 'PC-Ben', 'localhost', '192.168.1.141'],
+		https: {
+			cert: fs.readFileSync(path.join(__dirname, 'PC-Ben+2.pem')),
+			key: fs.readFileSync(path.join(__dirname, 'PC-Ben+2-key.pem')),
+		},
 	},
 	build: {
 		outDir: 'build',
