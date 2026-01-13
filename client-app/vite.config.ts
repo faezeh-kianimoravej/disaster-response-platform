@@ -15,10 +15,14 @@ export default defineConfig({
 	preview: {
 		host: true,
 		allowedHosts: ['pc-ben', 'PC-Ben', 'localhost', '192.168.1.141'],
-		https: {
-			cert: fs.readFileSync(path.join(__dirname, 'PC-Ben+2.pem')),
-			key: fs.readFileSync(path.join(__dirname, 'PC-Ben+2-key.pem')),
-		},
+		// HTTPS for LAN demo - only enabled if certificate files exist
+		...(fs.existsSync(path.join(__dirname, 'PC-Ben+2.pem')) && 
+		    fs.existsSync(path.join(__dirname, 'PC-Ben+2-key.pem')) ? {
+			https: {
+				cert: fs.readFileSync(path.join(__dirname, 'PC-Ben+2.pem')),
+				key: fs.readFileSync(path.join(__dirname, 'PC-Ben+2-key.pem')),
+			},
+		} : {}),
 	},
 	build: {
 		outDir: 'build',
