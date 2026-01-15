@@ -5,6 +5,8 @@ import io.restassured.http.ContentType;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.Arbitraries;
 import nl.saxion.disaster.deploymentservice.config.TestContainersConfig;
+import nl.saxion.disaster.deploymentservice.enums.ResponseUnitStatus;
+import nl.saxion.disaster.deploymentservice.enums.ResponseUnitType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -12,6 +14,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+
+import java.util.concurrent.ThreadLocalRandom;
 
 import static net.jqwik.api.Arbitraries.integers;
 import static net.jqwik.api.Arbitraries.strings;
@@ -61,15 +65,16 @@ class ResponseUnitControllerIntegrationTest {
     @Test
     void createResponseUnitWithValidData_shouldReturn201() {
         Arbitrary<String> names = strings().alpha().ofMinLength(1).ofMaxLength(255);
-        Arbitrary<String> units = Arbitraries.of("UNIT_1", "UNIT_2", "UNIT_3");
-        
-        names.flatMap(name -> 
-            units.map(unit -> new Object[]{name, unit})
+        Arbitrary<ResponseUnitType> unitTypes = Arbitraries.of(ResponseUnitType.values());
+
+        names.flatMap(name ->
+            unitTypes.map(type -> new Object[]{name, type})
         ).sampleStream().limit(20).forEach(params -> {
             String name = (String) params[0];
-            String unit = (String) params[1];
-            
-            String payload = createResponseUnitPayload(name, unit);
+            ResponseUnitType unitType = (ResponseUnitType) params[1];
+
+            long departmentId = ThreadLocalRandom.current().nextLong(1, 5);
+            String payload = createResponseUnitPayload(name, unitType, departmentId, ResponseUnitStatus.AVAILABLE);
             
             given()
                 .contentType(ContentType.JSON)
@@ -114,7 +119,7 @@ class ResponseUnitControllerIntegrationTest {
     @Test
     void createResponseUnitWithInvalidName_shouldFailValidation() {
         strings().alpha().ofMinLength(256).ofMaxLength(500).sampleStream().limit(20).forEach(longName -> {
-            String payload = createResponseUnitPayload(longName, "UNIT_1");
+            String payload = createResponseUnitPayload(longName, ResponseUnitType.COMMAND_VEHICLE, 1L, ResponseUnitStatus.AVAILABLE);
             
             given()
                 .contentType(ContentType.JSON)
@@ -137,11 +142,18 @@ class ResponseUnitControllerIntegrationTest {
      */
     @Test
     void updateResponseUnitStatus_shouldReturn200Or404() {
-        Arbitrary<String> statuses = Arbitraries.of("AVAILABLE", "DEPLOYED", "UNAVAILABLE");
+        Arbitrary<ResponseUnitStatus> statuses = Arbitraries.of(ResponseUnitStatus.values());
+        ResponseUnitType unitType = ResponseUnitType.COMMAND_VEHICLE;
         
         integers().between(1, 1000).sampleStream().limit(20).forEach(id -> {
             statuses.sampleStream().limit(5).forEach(status -> {
-                String payload = String.format("{\"status\":\"%s\"}", status);
+                long departmentId = ThreadLocalRandom.current().nextLong(1, 5);
+                String payload = createResponseUnitPayload(
+                    "Unit-" + id + "-" + status.name(),
+                    unitType,
+                    departmentId,
+                    status
+                );
                 
                 given()
                     .contentType(ContentType.JSON)
@@ -161,11 +173,13 @@ class ResponseUnitControllerIntegrationTest {
     /**
      * Helper: Generate JSON payload for response unit creation.
      */
-    private String createResponseUnitPayload(String name, String unit) {
+    private String createResponseUnitPayload(String unitName, ResponseUnitType unitType, long departmentId, ResponseUnitStatus status) {
         return String.format(
-            "{\"name\":\"%s\",\"unit\":\"%s\"}",
-            escapeJson(name),
-            escapeJson(unit)
+            "{\"unitName\":\"%s\",\"departmentId\":%d,\"unitType\":\"%s\",\"status\":\"%s\",\"defaultResources\":[],\"defaultPersonnel\":[]}",
+            escapeJson(unitName),
+            departmentId,
+            unitType.name(),
+            status.name()
         );
     }
 
