@@ -119,6 +119,7 @@ test:backend-app:
 # Integration test job (runs unit + integration tests on main/tags)
 integration:backend-app:
   extends: .backend-app-base
+  image: docker:26.1.4-cli
   stage: test
   rules:
     # Run on tags and main only
@@ -144,12 +145,22 @@ integration:backend-app:
     TESTCONTAINERS_EXPERIMENTAL_DOCKER_CLIENT_ENABLED: "true"
     JAVA_TOOL_OPTIONS: "-Ddocker.host=tcp://docker:2375 -Dtestcontainers.dockerclient.strategy=org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy"
   before_script:
+    - |
+      if ! command -v java >/dev/null 2>&1 || ! command -v mvn >/dev/null 2>&1; then
+        echo "[SETUP] Installing OpenJDK 21 + Maven"
+        apk add --no-cache openjdk21-jdk maven >/dev/null
+      fi
     - cd backend-app
     - export DOCKER_HOST="${DOCKER_HOST:-tcp://docker:2375}"
     - export DOCKER_TLS_VERIFY=""
     - export DOCKER_CERT_PATH=""
     - export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE="$DOCKER_HOST"
     - export TESTCONTAINERS_HOST_OVERRIDE="${TESTCONTAINERS_HOST_OVERRIDE:-docker}"
+    - |
+      cat <<'EOF' > ~/.testcontainers.properties
+      docker.host=tcp://docker:2375
+      docker.client.strategy=org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy
+      EOF
     - echo "[ENV] Docker/Testcontainers configuration"
     - env | grep -E 'DOCKER|TESTCONTAINERS' | sort
     # Install Docker CLI for Testcontainers without relying on OS package mirrors
