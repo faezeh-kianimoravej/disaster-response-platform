@@ -134,6 +134,8 @@ integration:backend-app:
     DOCKER_TLS_CERTDIR: ""
     DOCKER_HOST: tcp://docker:2375
     DOCKER_DRIVER: overlay2
+    # docker:dind (Docker 25+) requires API v1.44+, so pin client version for Testcontainers
+    DOCKER_API_VERSION: "1.44"
     # Testcontainers environment variables for Docker-in-Docker
     TESTCONTAINERS_RYUK_DISABLED: "true"
     TESTCONTAINERS_HOST_OVERRIDE: docker
