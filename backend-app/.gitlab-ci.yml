@@ -141,8 +141,23 @@ integration:backend-app:
     TESTCONTAINERS_HOST_OVERRIDE: docker
   before_script:
     - cd backend-app
-    # Install Docker CLI for Testcontainers
-    - apt-get update -qq && apt-get install -y -qq docker.io > /dev/null
+    # Install Docker CLI for Testcontainers without relying on OS package mirrors
+    - |
+      if ! command -v docker >/dev/null 2>&1; then
+        echo "[DOCKER] docker CLI not found; downloading static binary..."
+        DOWNLOAD_URL="https://download.docker.com/linux/static/stable/x86_64/docker-26.1.4.tgz"
+        TMP_TAR="/tmp/docker.tgz"
+        if command -v curl >/dev/null 2>&1; then
+          curl -fsSL "$DOWNLOAD_URL" -o "$TMP_TAR"
+        else
+          echo "[DOCKER] curl not available, installing it via apt..."
+          apt-get update -qq && apt-get install -y -qq curl
+          curl -fsSL "$DOWNLOAD_URL" -o "$TMP_TAR"
+        fi
+        tar -xzf "$TMP_TAR" -C /tmp docker/docker
+        install -m 755 /tmp/docker/docker /usr/local/bin/docker
+        rm -rf /tmp/docker "$TMP_TAR"
+      fi
     # Verify Docker connectivity to DinD service
     - echo "Waiting for Docker daemon at $DOCKER_HOST..."
     - for i in {1..30}; do docker -H $DOCKER_HOST version && break || ([ $i -lt 30 ] && sleep 2); done
