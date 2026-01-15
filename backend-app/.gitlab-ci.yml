@@ -140,6 +140,8 @@ integration:backend-app:
     TESTCONTAINERS_RYUK_DISABLED: "true"
     TESTCONTAINERS_HOST_OVERRIDE: docker
     TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: tcp://docker:2375
+    TESTCONTAINERS_DOCKER_CLIENT_STRATEGY: org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy
+    JAVA_TOOL_OPTIONS: "-Ddocker.host=tcp://docker:2375"
   before_script:
     - cd backend-app
     - export DOCKER_HOST="${DOCKER_HOST:-tcp://docker:2375}"
