@@ -1,4 +1,4 @@
-package nl.saxion.disaster.deploymentservice.responseunit.integration;
+package nl.saxion.disaster.deploymentservice.integration;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
