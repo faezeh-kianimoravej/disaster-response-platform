@@ -46,7 +46,8 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.0
     container_name: keycloak
-    command: start-dev --http-port=9090
+    # Use dev mode with HTTPS - more permissive for local development
+    command: start-dev --https-port=9090
     environment:
       KEYCLOAK_ADMIN: disaster-admin
       KEYCLOAK_ADMIN_PASSWORD: AdminSecure123!
@@ -56,8 +57,14 @@ services:
       KC_DB_PASSWORD: 1234
       KC_HEALTH_ENABLED: "true"
       KC_METRICS_ENABLED: "true"
+      KC_HTTPS_CERTIFICATE_KEY_FILE: /certs/tls.key
+      KC_HTTPS_CERTIFICATE_FILE: /certs/tls.crt
+    volumes:
+      - ../client-app/PC-Ben+2.pem:/certs/tls.crt:ro
+      - ../client-app/PC-Ben+2-key.pem:/certs/tls.key:ro
     ports:
-      - "9090:9090"
+      - "8090:8080"  # HTTP for internal Docker network
+      - "9090:9090"  # HTTPS for external access
     depends_on:
       postgres-db:
         condition: service_healthy
@@ -137,6 +144,8 @@ services:
       - backend-network
     volumes:
       - ./api-gateway/target/api-gateway-1.0.0-dev.jar:/app/app.jar:ro
+      - ../client-app/PC-Ben+2.pem:/certs/tls.crt:ro
+      - ../client-app/PC-Ben+2-key.pem:/certs/tls.key:ro
     working_dir: /app
     entrypoint: [ "java", "-jar", "app.jar" ]
     restart: on-failure
