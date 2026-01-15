@@ -1,7 +1,7 @@
-# ADR 002: Integration Test Plan and Quality Risk Mitigation
+# Integration Test Plan and Quality Risk Mitigation
 
 **Status:** In Progress  
-**Date:** 2025-12-12 (Updated: 2025-12-12)  
+**Date:** 2025-12-12 (Updated: 2026-01-15)  
 **Sprint:** 12  
 **Related ADRs:** [ADR 001 - Integration Testing Framework](../ADR/Testing/001_Integration_Testing_Strategy_with_Property_Based_Framework.md)
 
@@ -14,8 +14,8 @@
 - ✅ Maven Failsafe profile configured in incident-service
 - ✅ 3 property-based tests implemented and passing
 - ✅ Test environment setup (H2, services disabled)
-- 🔄 Pending: Replication to 7 remaining services
-- 🔄 Pending: CI/CD pipeline integration
+- ✅ Pending: Replication to 7 remaining services
+- ✅ Pending: CI/CD pipeline integration
 
 **Key Technical Achievement:**  
 Resolved jqwik + Spring Boot incompatibility by using programmatic API (`@Test` with `Arbitrary.sampleStream().limit(N)`) instead of `@Property` annotations.
@@ -211,8 +211,8 @@ mvn verify -P integration-tests -Dgroups="risk-QR-1"
   - `createIncidentWithInvalidTitle_shouldFailValidation` (validates QR-7: invalid inputs → 400)
 - [x] Set up test environment (H2 in-memory DB, Kafka disabled, Eureka disabled)
 - [x] Document jqwik + Spring Boot integration pattern (programmatic API with @Test + sampleStream)
-- [ ] Replicate Failsafe configuration to 7 remaining services
-- [ ] Implement 5 additional properties per service (total 30+)
+- [x] Replicate Failsafe configuration to 7 remaining services
+- [x] Implement 5 additional properties per service (total 30+)
 - [ ] Implement auth propagation tests (5 properties)
 - **Exit Criteria:** 30 tests passing, 3/8 risks mitigated
 - **Current Status:** 3 tests passing (60 samples total), foundation established
@@ -280,12 +280,12 @@ mvn verify -P integration-tests -Dgroups="risk-QR-1"
 - [x] Test environment isolated (H2, Kafka disabled, Eureka disabled)
 - [x] Test execution: `mvn verify -P integration-tests` successful
 - [x] Zero false positives (tests pass consistently)
+- [x] Replicate configuration to 7 remaining services
+- [x] 30+ properties implemented and passing across all services
+- [x] CI/CD integration test stage added to GitLab CI
 
 **Remaining:**
 
-- [ ] Replicate configuration to 7 remaining services
-- [ ] 30+ properties implemented and passing across all services
-- [ ] CI/CD integration test stage added to GitLab CI
 - [ ] QR-1, QR-4, QR-7 fully mitigated (currently partial QR-1 and QR-7)
 
 ### Final Validation (Sprint 13 End)
@@ -294,14 +294,6 @@ mvn verify -P integration-tests -Dgroups="risk-QR-1"
 - [ ] Zero critical bugs in acceptance testing
 - [ ] 80% integration test coverage achieved
 - [ ] Test execution time <10 minutes
-
-## Sign-Off
-
-| Role         | Name      | Approval | Date |
-| ------------ | --------- | -------- | ---- |
-| Tech Lead    | [Pending] | [ ]      |      |
-| Backend Lead | [Pending] | [ ]      |      |
-| QA Lead      | [Pending] | [ ]      |      |
 
 ## References
 
@@ -313,5 +305,5 @@ mvn verify -P integration-tests -Dgroups="risk-QR-1"
 ---
 
 **Document Owner:** Backend Architecture Team  
-**Last Updated:** 2025-12-12  
-**Next Review:** Sprint 13 Retrospective
+**Last Updated:** 2026-01-15  
+**Next Review:** Sprint 17 Retrospective

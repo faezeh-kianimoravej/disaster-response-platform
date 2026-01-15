@@ -123,12 +123,62 @@ test:backend-app:
     expire_in: 30 days
   coverage: '/Total Coverage: ([0-9]{1,3})%/'
 
+# Integration test job (runs Maven Failsafe with integration-tests profile)
+integration:backend-app:
+  extends: .backend-app-base
+  stage: test
+  needs:
+    - job: test:backend-app
+      artifacts: true
+      optional: true
+  rules:
+    # Run full (unit + integration) only on main and tags
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+(-rc\d+)?$/'
+      when: always
+    # Run tests only when backend-app files change
+    - changes:
+        - backend-app/**/*
+      when: always
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      when: always
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: always
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: always
+    - when: never
+  services:
+    - name: docker:dind
+      command: ["--tls=false"]
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_DRIVER: overlay2
+    # Allow Testcontainers to reuse Ryuk/daemon in CI for faster startup
+    TESTCONTAINERS_RYUK_DISABLED: "true"
+  script:
+    - echo "[VERSIONS] Maven version:" && mvn --version | head -3
+    - echo "[VERSIONS] Java version:" && java -version
+    - mvn -B -P integration-tests org.jacoco:jacoco-maven-plugin:0.8.10:prepare-agent verify org.jacoco:jacoco-maven-plugin:0.8.10:report
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - backend-app/*/target/failsafe-reports/TEST-*.xml
+    paths:
+      - backend-app/*/target/failsafe-reports/TEST-*.xml
+      - backend-app/*/target/site/jacoco/jacoco.xml
+    expire_in: 30 days
+  coverage: '/Total Coverage: ([0-9]{1,3})%/'
+
 # Post coverage job: convert JaCoCo XML to a minimal Cobertura XML, publish as artifact, and post MR note
 post-coverage:backend:
   image: alpine:latest
   stage: test
   needs:
     - job: test:backend-app
+      artifacts: true
+      optional: true
+    - job: integration:backend-app
       artifacts: true
       optional: true
   rules:
@@ -138,7 +188,8 @@ post-coverage:backend:
   script:
     - |
       # Find jacoco.xml produced by the test job
-      JACOCO_XML=$(find . -path "*/target/site/jacoco/jacoco.xml" | head -n1 || true)
+      # Prefer integration coverage when available (main/tags), otherwise fall back to unit coverage
+      JACOCO_XML=$(find backend-app -path "*/target/site/jacoco/jacoco.xml" | sort | head -n1 || true)
       if [ -z "$JACOCO_XML" ] || [ ! -f "$JACOCO_XML" ]; then
         echo "Jacoco XML not found; skipping Cobertura artifact creation"
         exit 0
