@@ -139,8 +139,16 @@ integration:backend-app:
     # Testcontainers environment variables for Docker-in-Docker
     TESTCONTAINERS_RYUK_DISABLED: "true"
     TESTCONTAINERS_HOST_OVERRIDE: docker
+    TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: tcp://docker:2375
   before_script:
     - cd backend-app
+    - export DOCKER_HOST="${DOCKER_HOST:-tcp://docker:2375}"
+    - export DOCKER_TLS_VERIFY=""
+    - export DOCKER_CERT_PATH=""
+    - export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE="$DOCKER_HOST"
+    - export TESTCONTAINERS_HOST_OVERRIDE="${TESTCONTAINERS_HOST_OVERRIDE:-docker}"
+    - echo "[ENV] Docker/Testcontainers configuration"
+    - env | grep -E 'DOCKER|TESTCONTAINERS' | sort
     # Install Docker CLI for Testcontainers without relying on OS package mirrors
     - |
       if ! command -v docker >/dev/null 2>&1; then
