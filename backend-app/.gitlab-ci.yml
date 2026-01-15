@@ -129,21 +129,19 @@ integration:backend-app:
       when: always
     - when: never
   services:
-    - name: docker:dind
+    - name: docker:24.0.9-dind
       command: ["--tls=false"]
   variables:
     DOCKER_TLS_CERTDIR: ""
     DOCKER_HOST: tcp://docker:2375
     DOCKER_DRIVER: overlay2
-    # docker:dind (Docker 25+) requires API v1.44+, so pin client version for Testcontainers
-    DOCKER_API_VERSION: "1.44"
     # Testcontainers environment variables for Docker-in-Docker
     TESTCONTAINERS_RYUK_DISABLED: "true"
     TESTCONTAINERS_HOST_OVERRIDE: docker
     TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: tcp://docker:2375
     TESTCONTAINERS_DOCKER_CLIENT_STRATEGY: org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy
     TESTCONTAINERS_EXPERIMENTAL_DOCKER_CLIENT_ENABLED: "true"
-    JAVA_TOOL_OPTIONS: "-Ddocker.host=tcp://docker:2375 -Ddocker.api.version=1.44 -Dtestcontainers.dockerclient.strategy=org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy"
+    JAVA_TOOL_OPTIONS: "-Ddocker.host=tcp://docker:2375 -Dtestcontainers.dockerclient.strategy=org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy"
   before_script:
     - |
       if ! command -v java >/dev/null 2>&1 || ! command -v mvn >/dev/null 2>&1; then
@@ -152,7 +150,6 @@ integration:backend-app:
       fi
     - cd backend-app
     - export DOCKER_HOST="${DOCKER_HOST:-tcp://docker:2375}"
-    - export DOCKER_API_VERSION="${DOCKER_API_VERSION:-1.44}"
     - export DOCKER_TLS_VERIFY=""
     - export DOCKER_CERT_PATH=""
     - export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE="$DOCKER_HOST"
@@ -161,7 +158,6 @@ integration:backend-app:
       cat <<'EOF' > ~/.testcontainers.properties
       docker.host=tcp://docker:2375
       docker.client.strategy=org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy
-      docker.api.version=1.44
       EOF
     - echo "[ENV] Docker/Testcontainers configuration"
     - env | grep -E 'DOCKER|TESTCONTAINERS' | sort
@@ -169,7 +165,7 @@ integration:backend-app:
     - |
       if ! command -v docker >/dev/null 2>&1; then
         echo "[DOCKER] docker CLI not found; downloading static binary..."
-        DOWNLOAD_URL="https://download.docker.com/linux/static/stable/x86_64/docker-26.1.4.tgz"
+        DOWNLOAD_URL="https://download.docker.com/linux/static/stable/x86_64/docker-24.0.9.tgz"
         TMP_TAR="/tmp/docker.tgz"
         if command -v curl >/dev/null 2>&1; then
           curl -fsSL "$DOWNLOAD_URL" -o "$TMP_TAR"
