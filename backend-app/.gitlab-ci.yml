@@ -141,7 +141,11 @@ integration:backend-app:
     - cd backend-app
     # Install Docker CLI for Testcontainers
     - apt-get update -qq && apt-get install -y -qq docker.io > /dev/null
-    - docker version
+    # Verify Docker connectivity to DinD service
+    - echo "Waiting for Docker daemon at $DOCKER_HOST..."
+    - for i in {1..30}; do docker -H $DOCKER_HOST version && break || ([ $i -lt 30 ] && sleep 2); done
+    - echo "Docker connection verified"
+    - docker -H $DOCKER_HOST ps
   script:
     - echo "[VERSIONS] Maven version:" && mvn --version | head -3
     - echo "[VERSIONS] Java version:" && java -version
