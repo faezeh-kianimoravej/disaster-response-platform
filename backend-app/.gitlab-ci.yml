@@ -143,7 +143,7 @@ integration:backend-app:
     TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: tcp://docker:2375
     TESTCONTAINERS_DOCKER_CLIENT_STRATEGY: org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy
     TESTCONTAINERS_EXPERIMENTAL_DOCKER_CLIENT_ENABLED: "true"
-    JAVA_TOOL_OPTIONS: "-Ddocker.host=tcp://docker:2375 -Dtestcontainers.dockerclient.strategy=org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy"
+    JAVA_TOOL_OPTIONS: "-Ddocker.host=tcp://docker:2375 -Ddocker.api.version=1.44 -Dtestcontainers.dockerclient.strategy=org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy"
   before_script:
     - |
       if ! command -v java >/dev/null 2>&1 || ! command -v mvn >/dev/null 2>&1; then
@@ -152,6 +152,7 @@ integration:backend-app:
       fi
     - cd backend-app
     - export DOCKER_HOST="${DOCKER_HOST:-tcp://docker:2375}"
+    - export DOCKER_API_VERSION="${DOCKER_API_VERSION:-1.44}"
     - export DOCKER_TLS_VERIFY=""
     - export DOCKER_CERT_PATH=""
     - export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE="$DOCKER_HOST"
@@ -160,6 +161,7 @@ integration:backend-app:
       cat <<'EOF' > ~/.testcontainers.properties
       docker.host=tcp://docker:2375
       docker.client.strategy=org.testcontainers.dockerclient.EnvironmentAndSystemPropertyClientProviderStrategy
+      docker.api.version=1.44
       EOF
     - echo "[ENV] Docker/Testcontainers configuration"
     - env | grep -E 'DOCKER|TESTCONTAINERS' | sort
