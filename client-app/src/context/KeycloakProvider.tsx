@@ -14,6 +14,7 @@ export interface KeycloakContextType {
 	keycloak: KeycloakInstance;
 	initialized: boolean;
 	isAuthenticated: boolean;
+	isOffline: boolean;
 	login: () => Promise<void>;
 	logout: () => Promise<void>;
 }
@@ -23,8 +24,30 @@ export const KeycloakContext = createContext<KeycloakContextType | undefined>(un
 export const KeycloakProvider = ({ children }: { children: React.ReactNode }) => {
 	const [initialized, setInitialized] = useState(false);
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
+	const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
+	// Monitor online/offline status
 	useEffect(() => {
+		const handleOnline = () => setIsOffline(false);
+		const handleOffline = () => setIsOffline(true);
+
+		window.addEventListener('online', handleOnline);
+		window.addEventListener('offline', handleOffline);
+
+		return () => {
+			window.removeEventListener('online', handleOnline);
+			window.removeEventListener('offline', handleOffline);
+		};
+	}, []);
+
+	// Keycloak initialization - only when online
+	useEffect(() => {
+		if (isOffline) {
+			// Skip auth initialization when offline
+			setInitialized(true);
+			setIsAuthenticated(false);
+			return;
+		}
 		const initOptions: Record<string, unknown> = { onLoad: 'check-sso' };
 		try {
 			initOptions.silentCheckSsoRedirectUri = `${window.location.origin}/silent-check-sso.html`;
@@ -46,7 +69,7 @@ export const KeycloakProvider = ({ children }: { children: React.ReactNode }) =>
 				setIsAuthenticated(false);
 			}
 		})();
-	}, []);
+	}, [isOffline]);
 
 	useEffect(() => {
 		let refreshHandle: number | undefined;
@@ -87,6 +110,9 @@ export const KeycloakProvider = ({ children }: { children: React.ReactNode }) =>
 	}, [initialized, isAuthenticated]);
 
 	const login = async () => {
+		if (isOffline) {
+			return; // Don't attempt login when offline
+		}
 		try {
 			sessionStorage.setItem('kc_login_in_progress', '1');
 		} catch {}
@@ -103,7 +129,9 @@ export const KeycloakProvider = ({ children }: { children: React.ReactNode }) =>
 	};
 
 	return (
-		<KeycloakContext.Provider value={{ keycloak, initialized, isAuthenticated, login, logout }}>
+		<KeycloakContext.Provider
+			value={{ keycloak, initialized, isAuthenticated, isOffline, login, logout }}
+		>
 			{children}
 		</KeycloakContext.Provider>
 	);

@@ -11,7 +11,42 @@ export default defineConfig({
 		VitePWA({
 			registerType: 'autoUpdate',
 			workbox: {
-				globPatterns: ['**/*.{js,css,html,ico,png,svg}']
+				globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+				// Add runtime caching for API calls
+				runtimeCaching: [
+					{
+						urlPattern: /^https:\/\/.*\/api\/.*/i,
+						handler: 'CacheFirst',
+						options: {
+							cacheName: 'api-cache',
+							expiration: {
+								maxEntries: 100,
+								maxAgeSeconds: 60 * 60 * 24, // 24 hours
+							},
+							cacheableResponse: {
+								statuses: [0, 200],
+							},
+						},
+					},
+					{
+						// Cache all other network requests
+						urlPattern: /^https?.*/,
+						handler: 'NetworkFirst',
+						options: {
+							cacheName: 'offlineCache',
+							expiration: {
+								maxEntries: 200,
+								maxAgeSeconds: 60 * 60 * 24, // 24 hours
+							},
+						},
+					},
+				],
+				// Skip waiting and claim clients immediately
+				skipWaiting: true,
+				clientsClaim: true,
+				// Add navigation fallback
+				navigateFallback: '/index.html',
+				navigateFallbackDenylist: [/^\/_/, /\/[^/?]+\.[^/]+$/],
 			},
 			manifest: {
 				id: '/',

@@ -25,20 +25,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 		}
 
 		// Fallback: if Keycloak isn't authenticated but there's a valid token in
-		// localStorage (e.g. after a hard refresh), parse it and set a partial user
-		// so guarded pages don't immediately trigger a login redirect.
+		// localStorage (e.g. after a hard refresh or when offline), parse it and restore user data
 		try {
-			const stored = localStorage.getItem('auth_token');
-			if (stored) {
-				const parsed = parseJwt(stored);
+			const storedToken = localStorage.getItem('auth_token');
+			const storedUser = localStorage.getItem('auth_user');
+			
+			if (storedToken && storedUser) {
+				const parsedToken = parseJwt(storedToken);
+				const parsedUser = JSON.parse(storedUser);
+				
+				if (parsedToken && tokenHasValidExpiry(parsedToken) && parsedUser) {
+					// Use the stored complete user data instead of just token data
+					setAuth({ isLoggedIn: true, user: parsedUser as User, token: storedToken });
+					return;
+				}
+			} else if (storedToken) {
+				// Fallback to token parsing if user data is not available
+				const parsed = parseJwt(storedToken);
 				if (parsed && tokenHasValidExpiry(parsed)) {
 					const partialUser = mapTokenToPartialUser(parsed);
-					setAuth({ isLoggedIn: true, user: partialUser as unknown as User, token: stored });
+					setAuth({ isLoggedIn: true, user: partialUser as unknown as User, token: storedToken });
 					return;
 				}
 			}
-		} catch {
-			// ignore storage/parse errors and fall through to logged-out state
+		} catch (error) {
+			console.warn('Failed to restore auth data from localStorage:', error);
 		}
 
 		setAuth({ isLoggedIn: false, user: null, token: undefined });
@@ -53,7 +64,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	// When the backend user (looked up by email) arrives, replace the partial user.
 	useEffect(() => {
 		if (backendUserByEmail) {
-			setAuth({ isLoggedIn: true, user: backendUserByEmail as User, token: keycloak?.token });
+			const newAuthState = { isLoggedIn: true, user: backendUserByEmail as User, token: keycloak?.token };
+			setAuth(newAuthState);
+			
+			// Store the complete user data in localStorage for offline access
+			try {
+				localStorage.setItem('auth_user', JSON.stringify(backendUserByEmail));
+			} catch (error) {
+				console.warn('Failed to store user data in localStorage:', error);
+			}
 		}
 	}, [backendUserByEmail, keycloak?.token]);
 
