@@ -4,6 +4,7 @@ import './index.css';
 import App from './App';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { registerSW } from 'virtual:pwa-register';
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -24,3 +25,6 @@ root.render(
 		</QueryClientProvider>
 	</React.StrictMode>
 );
+
+// Register service worker for PWA functionality
+registerSW({ immediate: true });
