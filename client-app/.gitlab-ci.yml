@@ -10,16 +10,15 @@ variables:
   cache:
     key:
       files:
-        - client-app/package-lock.json
+        - package-lock.json
     paths:
-      - client-app/node_modules/
+      - node_modules/
 
 # Base job template for client-app jobs
 .client-app-base:
   image: node:${NODE_VERSION}
   <<: *client-app-cache
   before_script:
-    - cd client-app
     - npm ci
 
 # Test job (full coverage on main & MRs to main)
@@ -32,7 +31,7 @@ test:frontend:
       when: always
     # Run tests only when client-app files change (or manual/schedule)
     - changes:
-        - client-app/**/*
+        - "**/*"
       when: always
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
       when: always

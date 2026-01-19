@@ -3,6 +3,12 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import React from 'react';
 import { TestProviders, createTestQueryClient } from '@/test/utils';
 
+// Mock needs to be defined before any imports that might use it
+vi.mock('@/context/KeycloakProvider', () => ({
+	useKeycloak: () => keycloakMock,
+	KeycloakContext: React.createContext(undefined),
+}));
+
 function base64(payload: unknown) {
 	return Buffer.from(JSON.stringify(payload))
 		.toString('base64')
@@ -43,14 +49,6 @@ let keycloakMock: KCMock = {
 	login: vi.fn().mockResolvedValue(undefined),
 	logout: vi.fn().mockResolvedValue(undefined),
 };
-
-// Create a mock KeycloakContext using React's createContext
-const mockKeycloakContext = React.createContext(undefined);
-
-vi.mock('@/context/KeycloakProvider', () => ({
-	useKeycloak: () => keycloakMock,
-	KeycloakContext: mockKeycloakContext,
-}));
 
 const backendUser: Record<string, unknown> = {
 	id: 99,
