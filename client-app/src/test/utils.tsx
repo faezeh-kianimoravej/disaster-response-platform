@@ -119,6 +119,8 @@ function TestProviders({
 	);
 }
 
+export { TestProviders };
+
 export function renderWithProviders(ui: React.ReactElement, options?: TestProvidersOptions) {
 	return render(<TestProviders options={options ?? {}}>{ui}</TestProviders>);
 }
