@@ -103,9 +103,13 @@ export function useChatSSE(chatGroupId: number, lastMessageId?: string) {
 		};
 	}, [chatGroupId, lastMessageId, handleSSEEvent]);
 
-	// Clear new messages when chat group changes
+	// Clear new messages only when explicitly changing to a different chat group
+	// (not when component remounts for the same group)
 	useEffect(() => {
-		setNewMessages([]);
+		const prevChatGroupId = chatGroupIdRef.current;
+		if (prevChatGroupId !== chatGroupId && prevChatGroupId !== 0) {
+			setNewMessages([]);
+		}
 	}, [chatGroupId]);
 
 	const clearNewMessages = useCallback(() => {
