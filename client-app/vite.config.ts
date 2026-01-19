@@ -11,43 +11,108 @@ export default defineConfig({
 		VitePWA({
 			registerType: 'autoUpdate',
 			workbox: {
-				globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-				// Add runtime caching for API calls
+				globPatterns: ['**/*.{js,css,html,ico,png,svg,json}'],
+
+				// SPA fallback - but deny API/auth routes
+				navigateFallback: '/index.html',
+				navigateFallbackDenylist: [
+					/^\/api\//,           // Never fallback for API routes
+					/^\/realms\//,        // Never fallback for Keycloak realms
+					/^\/protocol\//,      // Never fallback for Keycloak protocol
+					/^\/_/,               // Never fallback for system routes
+					/\/[^/?]+\.[^/]+$/,   // Never fallback for files with extensions
+					/\/stream/,           // Never fallback for SSE streams
+					/\/notifications\//,  // Never fallback for notification endpoints
+				],
+
 				runtimeCaching: [
+					// HIGHEST PRIORITY: NetworkOnly for specific SSE streaming patterns
 					{
-						urlPattern: /^https:\/\/.*\/api\/.*/i,
+						urlPattern: ({ url }) => 
+							/\/api\/.*\/stream\//.test(url.pathname) ||
+							/\/api\/notifications\//.test(url.pathname) ||
+							url.pathname.includes('/deployment/stream/') ||
+							url.pathname.endsWith('/stream') ||
+							url.pathname.includes('/stream/'),
+						handler: 'NetworkOnly',
+					},
+
+					// HIGHEST PRIORITY: NetworkOnly for requests with SSE Accept header
+					{
+						urlPattern: ({ request }) => {
+							const acceptHeader = request.headers.get('Accept');
+							return acceptHeader?.includes('text/event-stream') || false;
+						},
+						handler: 'NetworkOnly',
+					},
+
+					// CRITICAL: NetworkOnly for ALL backend requests (localhost:8080)
+					{
+						urlPattern: ({ url }) => 
+							url.hostname === 'localhost' && url.port === '8080',
+						handler: 'NetworkOnly',
+					},
+					
+					// CRITICAL: NetworkOnly for ANY /api/ path (regardless of origin)
+					{
+						urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
+						handler: 'NetworkOnly',
+					},
+					
+					// CRITICAL: NetworkOnly for Keycloak auth server (port 9090)
+					{
+						urlPattern: ({ url }) => 
+							url.hostname === 'localhost' && url.port === '9090',
+						handler: 'NetworkOnly',
+					},
+					
+					// CRITICAL: NetworkOnly for auth paths
+					{
+						urlPattern: ({ url }) => 
+							url.pathname.includes('/realms/') || 
+							url.pathname.includes('/protocol/') ||
+							url.pathname.includes('/auth/'),
+						handler: 'NetworkOnly',
+					},
+					
+					// CRITICAL: NetworkOnly for streams and real-time endpoints
+					{
+						urlPattern: ({ url }) => 
+							url.pathname.includes('/stream') ||
+							url.pathname.includes('/notifications/') ||
+							url.pathname.includes('/sse/'),
+						handler: 'NetworkOnly',
+					},
+					
+					// ONLY cache same-origin static assets (very restrictive)
+					{
+						urlPattern: ({ url, request }) =>
+							url.origin === self.location.origin &&
+							!url.pathname.startsWith('/api/') &&
+							!url.pathname.includes('/stream') &&
+							!url.pathname.includes('/notifications/') &&
+							!url.pathname.includes('/realms/') &&
+							!url.pathname.includes('/protocol/') &&
+							(request.destination === 'image' ||
+								request.destination === 'style' ||
+								request.destination === 'font' ||
+								request.destination === 'script'),
 						handler: 'CacheFirst',
 						options: {
-							cacheName: 'api-cache',
-							expiration: {
-								maxEntries: 100,
-								maxAgeSeconds: 60 * 60 * 24, // 24 hours
-							},
-							cacheableResponse: {
-								statuses: [0, 200],
-							},
-						},
-					},
-					{
-						// Cache all other network requests
-						urlPattern: /^https?.*/,
-						handler: 'NetworkFirst',
-						options: {
-							cacheName: 'offlineCache',
-							expiration: {
-								maxEntries: 200,
-								maxAgeSeconds: 60 * 60 * 24, // 24 hours
+							cacheName: 'static-assets',
+							expiration: { 
+								maxEntries: 50, 
+								maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
 							},
 						},
 					},
 				],
-				// Skip waiting and claim clients immediately
+
 				skipWaiting: true,
 				clientsClaim: true,
-				// Add navigation fallback
-				navigateFallback: '/index.html',
-				navigateFallbackDenylist: [/^\/_/, /\/[^/?]+\.[^/]+$/],
 			},
+
+
 			manifest: {
 				id: '/',
 				name: 'Disaster Response Crisis Communication System',
@@ -63,26 +128,26 @@ export default defineConfig({
 						src: '/pwa-192x192.png',
 						sizes: '192x192',
 						type: 'image/png',
-						purpose: 'any maskable'
+						purpose: 'any maskable',
 					},
 					{
 						src: '/pwa-512x512.png',
 						sizes: '512x512',
 						type: 'image/png',
-						purpose: 'any maskable'
+						purpose: 'any maskable',
 					},
 					{
 						src: '/favicon.jpg',
 						sizes: '428x393',
 						type: 'image/jpeg',
-						purpose: 'any'
-					}
+						purpose: 'any',
+					},
 				],
 				categories: ['productivity', 'utilities'],
 				lang: 'en',
-				orientation: 'any'
-			}
-		})
+				orientation: 'any',
+			},
+		}),
 	],
 	server: {
 		port: 3000,

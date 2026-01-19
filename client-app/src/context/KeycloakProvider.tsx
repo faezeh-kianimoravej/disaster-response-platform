@@ -29,7 +29,11 @@ export const KeycloakProvider = ({ children }: { children: React.ReactNode }) =>
 	// Monitor online/offline status
 	useEffect(() => {
 		const handleOnline = () => setIsOffline(false);
-		const handleOffline = () => setIsOffline(true);
+		const handleOffline = () => {
+			setIsOffline(true);
+			// When going offline, preserve current authentication state
+			// Don't reset isAuthenticated if we're already authenticated
+		};
 
 		window.addEventListener('online', handleOnline);
 		window.addEventListener('offline', handleOffline);
@@ -42,8 +46,25 @@ export const KeycloakProvider = ({ children }: { children: React.ReactNode }) =>
 
 	// Keycloak initialization - only when online
 	useEffect(() => {
+		// If we're going offline but already initialized and authenticated, don't reset
+		if (isOffline && initialized && isAuthenticated) {
+			return;
+		}
+
 		if (isOffline) {
-			// Skip auth initialization when offline
+			// When offline, check if we have cached auth state
+			try {
+				const storedToken = localStorage.getItem('auth_token');
+				if (storedToken) {
+					// We have cached auth, so mark as initialized but maintain auth state
+					setInitialized(true);
+					// Don't change isAuthenticated if we have cached credentials
+					return;
+				}
+			} catch (e) {
+				console.warn('Failed to check cached auth when offline:', e);
+			}
+			// No cached auth, mark as not authenticated
 			setInitialized(true);
 			setIsAuthenticated(false);
 			return;
@@ -125,6 +146,8 @@ export const KeycloakProvider = ({ children }: { children: React.ReactNode }) =>
 		} catch {
 			// ignore
 		}
+		// Dispatch logout event for service worker cleanup
+		window.dispatchEvent(new CustomEvent('app-logout'));
 		await keycloak.logout();
 	};
 

@@ -1,98 +1,230 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AuthContext, type AuthState } from './AuthContext';
 import { useKeycloak } from './KeycloakProvider';
-import { mapTokenToPartialUser, tokenHasValidExpiry } from '@/utils/auth';
-import { parseJwt } from '@/utils/auth';
+import { mapTokenToPartialUser, tokenHasValidExpiry, parseJwt } from '@/utils/auth';
 import { useUserByEmail } from '@/hooks/useUser';
+import { useQueryClient } from '@tanstack/react-query';
 import type { User } from '@/types/user';
 
 /**
  * AuthProvider
- * - Reads Keycloak state and populates AuthContext with a partial user immediately
- * - Attempts to fetch the authoritative backend user (by keycloakId) and replace it
+ * - Uses Keycloak auth when available
+ * - Restores from localStorage when offline/refresh (guarded to avoid cross-user leakage)
+ * - Fetches authoritative backend user by email when online
+ * - Resets React Query cache ONLY on real user switch or logout (fixes blank/no-data issue)
  */
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-	const { keycloak, initialized, isAuthenticated } = useKeycloak();
-	const [auth, setAuth] = useState<AuthState>({ isLoggedIn: false, user: null, token: undefined });
+  const { keycloak, initialized, isAuthenticated } = useKeycloak();
+  const queryClient = useQueryClient();
 
-	useEffect(() => {
-		if (!initialized) return;
+  const [auth, setAuth] = useState<AuthState>({
+    isLoggedIn: false,
+    user: null,
+    token: undefined,
+  });
 
-		if (isAuthenticated && keycloak?.tokenParsed && tokenHasValidExpiry(keycloak.tokenParsed)) {
-			const partialUser = mapTokenToPartialUser(keycloak.tokenParsed);
-			setAuth({ isLoggedIn: true, user: partialUser as unknown as User, token: keycloak.token });
-			return;
-		}
+  // Track last "known" userId to detect real user switches
+  const previousUserIdRef = useRef<number | null>(null);
 
-		// Fallback: if Keycloak isn't authenticated but there's a valid token in
-		// localStorage (e.g. after a hard refresh or when offline), parse it and restore user data
-		try {
-			const storedToken = localStorage.getItem('auth_token');
-			const storedUser = localStorage.getItem('auth_user');
-			
-			if (storedToken && storedUser) {
-				const parsedToken = parseJwt(storedToken);
-				const parsedUser = JSON.parse(storedUser);
-				
-				if (parsedToken && tokenHasValidExpiry(parsedToken) && parsedUser) {
-					// Use the stored complete user data instead of just token data
-					setAuth({ isLoggedIn: true, user: parsedUser as User, token: storedToken });
-					return;
-				}
-			} else if (storedToken) {
-				// Fallback to token parsing if user data is not available
-				const parsed = parseJwt(storedToken);
-				if (parsed && tokenHasValidExpiry(parsed)) {
-					const partialUser = mapTokenToPartialUser(parsed);
-					setAuth({ isLoggedIn: true, user: partialUser as unknown as User, token: storedToken });
-					return;
-				}
-			}
-		} catch (error) {
-			console.warn('Failed to restore auth data from localStorage:', error);
-		}
+  type TokenWithEmail = { email?: string; sub?: string };
 
-		setAuth({ isLoggedIn: false, user: null, token: undefined });
-	}, [initialized, isAuthenticated, keycloak]);
+  const tokenParsed = keycloak?.tokenParsed as TokenWithEmail | undefined;
+  const emailFromToken = tokenParsed?.email;
 
-	type TokenWithEmail = { email?: string };
-	const email = (keycloak?.tokenParsed as TokenWithEmail | undefined)?.email;
-	const { user: backendUserByEmail } = useUserByEmail(email ?? undefined, {
-		enabled: Boolean(isAuthenticated && email),
-	});
+  const clearPersistedAuth = () => {
+    try {
+      localStorage.removeItem('auth_user');
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user_email'); // helper for restore guard
+    } catch (e) {
+      console.warn('Failed to clear persisted auth:', e);
+    }
+  };
 
-	// When the backend user (looked up by email) arrives, replace the partial user.
-	useEffect(() => {
-		if (backendUserByEmail) {
-			const newAuthState = { isLoggedIn: true, user: backendUserByEmail as User, token: keycloak?.token };
-			setAuth(newAuthState);
-			
-			// Store the complete user data in localStorage for offline access
-			try {
-				localStorage.setItem('auth_user', JSON.stringify(backendUserByEmail));
-			} catch (error) {
-				console.warn('Failed to store user data in localStorage:', error);
-			}
-		}
-	}, [backendUserByEmail, keycloak?.token]);
+  const persistAuth = (token: string | undefined, user: unknown, email?: string) => {
+    try {
+      if (token) localStorage.setItem('auth_token', token);
+      if (email) localStorage.setItem('auth_user_email', email);
+      if (user) localStorage.setItem('auth_user', JSON.stringify(user));
+    } catch (e) {
+      console.warn('Failed to persist auth:', e);
+    }
+  };
 
-	// Provide setAuth and updateUser hooks for consumers
-	const value = {
-		...auth,
-		setAuth: (a: AuthState) => setAuth(a),
-		updateUser: (patch: Partial<User> | null) => {
-			if (patch === null) {
-				setAuth(s => ({ ...s, user: null }));
-			} else {
-				setAuth(s => ({
-					...s,
-					user: { ...(s.user as unknown as User), ...(patch as unknown as User) },
-				}));
-			}
-		},
-	};
+  /**
+   * 1) Base auth state:
+   * - If Keycloak authenticated & token valid -> set partial user and persist.
+   * - Else attempt restore from localStorage (useful offline/hard refresh).
+   */
+  useEffect(() => {
+    if (!initialized) return;
 
-	return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+    // ONLINE / normal case: Keycloak session is valid
+    if (isAuthenticated && keycloak?.tokenParsed && tokenHasValidExpiry(keycloak.tokenParsed)) {
+      const partialUser = mapTokenToPartialUser(keycloak.tokenParsed);
+
+      setAuth({
+        isLoggedIn: true,
+        user: partialUser as unknown as User,
+        token: keycloak.token,
+      });
+
+      persistAuth(keycloak.token, partialUser, emailFromToken);
+      return;
+    }
+
+    // OFFLINE / refresh fallback: restore from localStorage
+    try {
+      const storedToken = localStorage.getItem('auth_token');
+      const storedUserJson = localStorage.getItem('auth_user');
+      const storedEmail = localStorage.getItem('auth_user_email');
+
+      if (storedToken) {
+        const parsed = parseJwt(storedToken);
+        // For offline scenarios, be more lenient with token expiry
+        const tokenOk = parsed && (navigator.onLine ? tokenHasValidExpiry(parsed) : true);
+
+        if (!tokenOk && navigator.onLine) {
+          // Only clear if we're online and token is definitely invalid
+          clearPersistedAuth();
+        } else if (storedUserJson) {
+          const storedUser = JSON.parse(storedUserJson) as Partial<User> | null;
+
+          // Prevent cross-user leakage using email guard when possible
+          const restoredEmail = storedEmail ?? (storedUser as any)?.email;
+          if (restoredEmail && emailFromToken && restoredEmail !== emailFromToken) {
+            clearPersistedAuth();
+          } else {
+            setAuth({
+              isLoggedIn: true,
+              user: storedUser as User,
+              token: storedToken,
+            });
+            
+            // Dispatch auth-ready event for offline scenarios too
+            const userId = (storedUser as any)?.userId || (storedUser as any)?.id;
+            if (userId) {
+              window.dispatchEvent(new CustomEvent('app-auth-ready'));
+            }
+            return;
+          }
+        } else {
+          // No stored full user -> fallback to token-derived partial user
+          const partialUser = mapTokenToPartialUser(parsed as any);
+          setAuth({
+            isLoggedIn: true,
+            user: partialUser as unknown as User,
+            token: storedToken,
+          });
+          persistAuth(storedToken, partialUser, (parsed as any)?.email);
+          
+          // Dispatch auth-ready event for token-only restoration
+          window.dispatchEvent(new CustomEvent('app-auth-ready'));
+          return;
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to restore auth data from localStorage:', error);
+    }
+
+    // Default: not logged in
+    setAuth({ isLoggedIn: false, user: null, token: undefined });
+  }, [initialized, isAuthenticated, keycloak, emailFromToken]);
+
+  /**
+   * 2) Fetch authoritative backend user by email once authenticated online.
+   */
+  const { user: backendUserByEmail } = useUserByEmail(emailFromToken ?? undefined, {
+    enabled: Boolean(isAuthenticated && emailFromToken),
+  });
+
+  /**
+   * 3) When backend user arrives, replace partial user and persist full user.
+   */
+  useEffect(() => {
+    if (!backendUserByEmail) return;
+
+    setAuth((prev) => ({
+      ...prev,
+      isLoggedIn: true,
+      user: backendUserByEmail as User,
+      token: keycloak?.token ?? prev.token,
+    }));
+
+    persistAuth(
+      keycloak?.token,
+      backendUserByEmail,
+      (backendUserByEmail as any)?.email ?? emailFromToken
+    );
+
+    // Dispatch app-auth-ready event when backend user is loaded and app is stable
+    window.dispatchEvent(new CustomEvent('app-auth-ready'));
+  }, [backendUserByEmail, keycloak?.token, emailFromToken]);
+
+  /**
+   * 4) IMPORTANT FIX: React Query cache reset policy
+   * - Do NOT clear on every auth.user change (partial -> full user is a change)
+   * - Only clear when:
+   *   a) logout
+   *   b) real user switch: previousUserId !== currentUserId
+   */
+  const currentUserId: number | null = (auth.user as any)?.userId ?? null;
+
+  useEffect(() => {
+    const prevUserId = previousUserIdRef.current;
+
+    // LOGOUT
+    if (!auth.isLoggedIn) {
+      if (prevUserId !== null) {
+        queryClient.cancelQueries();
+        queryClient.clear();
+        // Dispatch app-logout event
+        window.dispatchEvent(new CustomEvent('app-logout'));
+      }
+      previousUserIdRef.current = null;
+      clearPersistedAuth();
+      return;
+    }
+
+    // Logged in but we still don't have a stable userId yet -> do nothing
+    if (!currentUserId) return;
+
+    // First time we have a stable userId after login
+    if (prevUserId === null) {
+      previousUserIdRef.current = currentUserId;
+      // Force data refresh under the new user context
+      queryClient.invalidateQueries();
+      return;
+    }
+
+    // USER SWITCH
+    if (prevUserId !== currentUserId) {
+      queryClient.cancelQueries();
+      queryClient.clear();
+      previousUserIdRef.current = currentUserId;
+      queryClient.invalidateQueries();
+    }
+  }, [auth.isLoggedIn, currentUserId, queryClient]);
+
+  /**
+   * Expose setAuth/updateUser for consumers
+   */
+  const value = {
+    ...auth,
+    setAuth: (a: AuthState) => setAuth(a),
+    updateUser: (patch: Partial<User> | null) => {
+      if (patch === null) {
+        setAuth((s) => ({ ...s, user: null }));
+      } else {
+        setAuth((s) => ({
+          ...s,
+          user: { ...(s.user as unknown as User), ...(patch as unknown as User) },
+        }));
+      }
+    },
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export default AuthProvider;

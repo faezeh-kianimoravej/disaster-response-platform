@@ -10,44 +10,56 @@ const queryClient = new QueryClient({
 	defaultOptions: {
 		queries: {
 			staleTime: 1000 * 60 * 5, // 5 minutes
-			gcTime: 1000 * 60 * 60 * 24, // 24 hours (previously cacheTime)
+			gcTime: 1000 * 60 * 60 * 24, // 24 hours
 			retry: (failureCount) => {
 				// Don't retry when offline
 				if (!navigator.onLine) return false;
-				return failureCount < 1;
+				return failureCount < 2;
 			},
-			retryOnMount: false, // Prevent retry on mount when offline
-			refetchOnWindowFocus: false, // Disable automatic refetch
-			refetchOnReconnect: true, // Re-fetch when network reconnects
-			refetchOnMount: false, // Don't refetch on mount, use cache
-			networkMode: 'offlineFirst', // Always use cache when offline
+			retryOnMount: true,
+			refetchOnWindowFocus: true, // better after returning to app
+			refetchOnReconnect: true,
+			refetchOnMount: true,
 		},
 		mutations: {
 			retry: (failureCount) => {
-				// Don't retry mutations when offline
 				if (!navigator.onLine) return false;
-				return failureCount < 1;
+				return failureCount < 2;
 			},
-			networkMode: 'online', // Only allow mutations when online
+			networkMode: 'online',
 		},
 	},
 });
 
-// Handle online/offline events for React Query
-window.addEventListener('online', () => {
-	// When coming back online, resume mutations and refetch stale data
-	queryClient.resumePausedMutations();
-	queryClient.refetchQueries({ 
-		type: 'active',
-		stale: true
-	});
-});
+// Avoid multiple listeners in dev/HMR
+declare global {
+	interface Window {
+		__rqOnlineOfflineListenersAdded?: boolean;
+		__swRegistered?: boolean;
+		__updateSW?: ((reloadPage?: boolean) => Promise<void>) | undefined;
+	}
+}
 
-window.addEventListener('offline', () => {
-	// When going offline, don't clear anything - just pause mutations
-	// Keep all cached data intact for offline usage
-	console.log('App went offline - using cached data');
-});
+if (!window.__rqOnlineOfflineListenersAdded) {
+	window.__rqOnlineOfflineListenersAdded = true;
+
+	window.addEventListener('online', () => {
+		// Resume paused mutations and force queries to become stale so they refetch properly
+		try {
+			queryClient.resumePausedMutations();
+		} catch {
+			// ignore
+		}
+
+		// Cancel any stuck in-flight requests and invalidate everything so new mounts fetch fresh data
+		queryClient.cancelQueries();
+		queryClient.invalidateQueries();
+	});
+
+	window.addEventListener('offline', () => {
+		console.log('App went offline - using cached data');
+	});
+}
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
@@ -59,23 +71,48 @@ root.render(
 	</React.StrictMode>
 );
 
-// Register service worker for PWA functionality
-const updateSW = registerSW({
-	immediate: true,
-	onNeedRefresh() {
-		// Auto-update in development, prompt user in production
-		if (process.env.NODE_ENV === 'development') {
-			updateSW(true);
-		} else {
-			// In production, you could show a toast to user here
-			// For now, auto-update to ensure offline functionality works
-			updateSW(true);
+// Register service worker ONLY after auth is ready
+if (!window.__swRegistered) {
+	window.__swRegistered = true;
+
+	window.addEventListener('app-auth-ready', () => {
+		if (window.__updateSW) return; // Already registered
+
+		console.log('Auth ready - registering service worker');
+		window.__updateSW = registerSW({
+			immediate: false, // Don't register immediately
+			onNeedRefresh() {
+				// Auto-update to ensure offline functionality works
+				window.__updateSW?.(true);
+			},
+			onOfflineReady() {
+				console.log('App ready to work offline');
+			},
+			onRegisteredSW(swUrl) {
+				console.log('Service worker registered:', swUrl);
+			},
+		});
+	});
+
+	// Handle logout: unregister service workers
+	window.addEventListener('app-logout', async () => {
+		console.log('Logout detected - unregistering service workers');
+		try {
+			if ('serviceWorker' in navigator) {
+				const registrations = await navigator.serviceWorker.getRegistrations();
+				await Promise.all(registrations.map(reg => reg.unregister()));
+			}
+			
+			// Clear cache storage
+			if ('caches' in window) {
+				const cacheNames = await caches.keys();
+				await Promise.all(cacheNames.map(name => caches.delete(name)));
+			}
+		} catch (error) {
+			console.warn('Failed to cleanup service workers on logout:', error);
 		}
-	},
-	onOfflineReady() {
-		console.log('App ready to work offline');
-	},
-	onRegisteredSW(swUrl, _r) {
-		console.log('Service worker registered:', swUrl);
-	},
-});
+		
+		// Reset SW state
+		window.__updateSW = undefined;
+	});
+}
