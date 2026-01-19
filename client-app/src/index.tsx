@@ -11,7 +11,7 @@ const queryClient = new QueryClient({
 		queries: {
 			staleTime: 1000 * 60 * 5, // 5 minutes
 			gcTime: 1000 * 60 * 60 * 24, // 24 hours
-			retry: (failureCount) => {
+			retry: failureCount => {
 				// Don't retry when offline
 				if (!navigator.onLine) return false;
 				return failureCount < 2;
@@ -22,7 +22,7 @@ const queryClient = new QueryClient({
 			refetchOnMount: true,
 		},
 		mutations: {
-			retry: (failureCount) => {
+			retry: failureCount => {
 				if (!navigator.onLine) return false;
 				return failureCount < 2;
 			},
@@ -57,7 +57,7 @@ if (!window.__rqOnlineOfflineListenersAdded) {
 	});
 
 	window.addEventListener('offline', () => {
-		console.log('App went offline - using cached data');
+		// App went offline - using cached data
 	});
 }
 
@@ -78,7 +78,7 @@ if (!window.__swRegistered) {
 	window.addEventListener('app-auth-ready', () => {
 		if (window.__updateSW) return; // Already registered
 
-		console.log('Auth ready - registering service worker');
+		// Auth ready - registering service worker
 		window.__updateSW = registerSW({
 			immediate: false, // Don't register immediately
 			onNeedRefresh() {
@@ -86,32 +86,32 @@ if (!window.__swRegistered) {
 				window.__updateSW?.(true);
 			},
 			onOfflineReady() {
-				console.log('App ready to work offline');
+				// App ready to work offline
 			},
-			onRegisteredSW(swUrl) {
-				console.log('Service worker registered:', swUrl);
+			onRegisteredSW(_swUrl) {
+				// Service worker registered
 			},
 		});
 	});
 
 	// Handle logout: unregister service workers
 	window.addEventListener('app-logout', async () => {
-		console.log('Logout detected - unregistering service workers');
+		// Logout detected - unregistering service workers
 		try {
 			if ('serviceWorker' in navigator) {
 				const registrations = await navigator.serviceWorker.getRegistrations();
 				await Promise.all(registrations.map(reg => reg.unregister()));
 			}
-			
+
 			// Clear cache storage
 			if ('caches' in window) {
 				const cacheNames = await caches.keys();
 				await Promise.all(cacheNames.map(name => caches.delete(name)));
 			}
-		} catch (error) {
-			console.warn('Failed to cleanup service workers on logout:', error);
+		} catch (_error) {
+			// Failed to cleanup service workers on logout
 		}
-		
+
 		// Reset SW state
 		window.__updateSW = undefined;
 	});

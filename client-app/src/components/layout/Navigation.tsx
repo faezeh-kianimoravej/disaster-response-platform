@@ -44,7 +44,8 @@ export default function Navigation() {
 		<>
 			{isOffline && (
 				<div className="bg-yellow-100 border-b border-yellow-400 text-yellow-700 px-4 py-2 text-sm text-center">
-					<span className="font-medium">Offline:</span> You are viewing cached data. Some features may be limited.
+					<span className="font-medium">Offline:</span> You are viewing cached data. Some features
+					may be limited.
 				</div>
 			)}
 			<nav className="bg-[#164273] shadow-lg">

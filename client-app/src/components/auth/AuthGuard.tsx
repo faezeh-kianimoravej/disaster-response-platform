@@ -61,13 +61,13 @@ export default function AuthGuard({ children, ...opts }: Props) {
 		// Check if we have cached auth token and/or user data
 		const cachedToken = localStorage.getItem('auth_token');
 		const cachedUser = localStorage.getItem('auth_user');
-		
+
 		// If we have cached token or user data, allow access (AuthProvider will handle restoring the state)
 		if ((cachedToken || cachedUser) && (isLoggedIn || !keycloakInitialized)) {
 			// User has cached auth data, allow access
 			return children as JSX.Element;
 		}
-		
+
 		// No cached auth data, show offline message
 		return (
 			<LoadingPanel text="You are currently offline. Please check your internet connection to sign in." />

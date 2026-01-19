@@ -66,7 +66,7 @@ export default function MessageComposer({ onSend, textareaRef, incidentId }: Pro
 				content: trimmed,
 				type: 'DEFAULT',
 				timestamp: new Date(),
-				meta: { offline: true }
+				meta: { offline: true },
 			});
 		} else {
 			// Send immediately when online
@@ -81,16 +81,16 @@ export default function MessageComposer({ onSend, textareaRef, incidentId }: Pro
 					onSuccess: () => {
 						setTimeout(() => usedRef.current?.focus(), 0);
 					},
-					onError: (error) => {
+					onError: _error => {
 						// If send fails while "online", add to queue as fallback
-						console.warn('Send failed, adding to offline queue:', error);
+						// Send failed, adding to offline queue
 						addMessage({
 							chatGroupId: incidentId,
 							userId: userId,
 							content: trimmed,
 							type: 'DEFAULT',
 							timestamp: new Date(),
-							meta: { failedSend: true }
+							meta: { failedSend: true },
 						});
 					},
 				}
@@ -149,7 +149,7 @@ export default function MessageComposer({ onSend, textareaRef, incidentId }: Pro
 								{isOffline ? 'Offline - messages will be queued' : 'Online'}
 							</span>
 						</div>
-						
+
 						{(pendingCount > 0 || failedCount > 0) && (
 							<div className="flex items-center gap-3">
 								{pendingCount > 0 && (
@@ -158,7 +158,7 @@ export default function MessageComposer({ onSend, textareaRef, incidentId }: Pro
 										<span>{pendingCount} pending</span>
 									</div>
 								)}
-								
+
 								{failedCount > 0 && (
 									<div className="flex items-center gap-2">
 										<div className="flex items-center gap-1 text-red-600">
@@ -189,7 +189,7 @@ export default function MessageComposer({ onSend, textareaRef, incidentId }: Pro
 					rows={1}
 					ref={usedRef}
 					className="flex-1 resize-none rounded-md border border-slate-200 p-2 pr-3 focus:outline-none focus:ring-2 focus:ring-sky-300 min-h-[40px] max-h-[240px] overflow-auto"
-					placeholder={isOffline ? "Message will be sent when back online..." : "Type a message..."}
+					placeholder={isOffline ? 'Message will be sent when back online...' : 'Type a message...'}
 				/>
 				<div className="flex flex-col justify-end">
 					<Button
