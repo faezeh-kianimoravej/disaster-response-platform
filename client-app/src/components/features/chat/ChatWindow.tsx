@@ -60,7 +60,7 @@ function ChatWindowContent({
 	useEffect(() => {
 		const prevStatus = lastConnectionStatusRef.current;
 		lastConnectionStatusRef.current = connectionStatus;
-		
+
 		// If we just reconnected, refetch to catch missed messages
 		if (prevStatus === 'DISCONNECTED' && connectionStatus === 'CONNECTED') {
 			refetchMessages();
@@ -91,16 +91,20 @@ function ChatWindowContent({
 							serverMsg.content.trim() === localMsg.content.trim() &&
 							serverMsg.userId === localMsg.userId &&
 							// Also check timestamp proximity (within 10 seconds)
-							Math.abs(new Date(serverMsg.timestamp).getTime() - new Date(localMsg.timestamp).getTime()) < 10000
+							Math.abs(
+								new Date(serverMsg.timestamp).getTime() - new Date(localMsg.timestamp).getTime()
+							) < 10000
 					);
 
 					// Check if message exists in SSE messages by content/userId
 					const hasSSEVersion = sseMessages.some(
 						sseMsg =>
-							sseMsg.content.trim() === localMsg.content.trim() && 
+							sseMsg.content.trim() === localMsg.content.trim() &&
 							sseMsg.userId === localMsg.userId &&
 							// Also check timestamp proximity (within 10 seconds)
-							Math.abs(new Date(sseMsg.timestamp).getTime() - new Date(localMsg.timestamp).getTime()) < 10000
+							Math.abs(
+								new Date(sseMsg.timestamp).getTime() - new Date(localMsg.timestamp).getTime()
+							) < 10000
 					);
 
 					// Keep the local message only if neither server nor SSE version exists
