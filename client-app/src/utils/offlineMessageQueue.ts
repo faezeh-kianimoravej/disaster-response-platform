@@ -40,7 +40,7 @@ class OfflineMessageQueue {
 					status: 'pending' as const, // Reset status on reload
 				}));
 			}
-		} catch (_error) {
+		} catch {
 			// Failed to load offline message queue
 			this.queue = [];
 		}
@@ -49,7 +49,7 @@ class OfflineMessageQueue {
 	private saveToStorage() {
 		try {
 			localStorage.setItem(this.storageKey, JSON.stringify(this.queue));
-		} catch (_error) {
+		} catch {
 			// Failed to save offline message queue
 		}
 	}
@@ -153,7 +153,7 @@ class OfflineMessageQueue {
 						this.removeMessage(message.id);
 						// Message removed from queue
 					}, 1000);
-				} catch (_error) {
+				} catch {
 					// Failed to send queued message
 
 					if (message.attempts >= 3) {

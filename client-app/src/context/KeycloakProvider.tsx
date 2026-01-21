@@ -61,7 +61,7 @@ export const KeycloakProvider = ({ children }: { children: React.ReactNode }) =>
 					// Don't change isAuthenticated if we have cached credentials
 					return;
 				}
-			} catch (_e) {
+			} catch {
 				// Failed to check cached auth when offline
 			}
 			// No cached auth, mark as not authenticated

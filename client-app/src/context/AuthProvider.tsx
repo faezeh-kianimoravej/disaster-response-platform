@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 			localStorage.removeItem('auth_user');
 			localStorage.removeItem('auth_token');
 			localStorage.removeItem('auth_user_email'); // helper for restore guard
-		} catch (_e) {
+		} catch {
 			// Failed to clear persisted auth
 		}
 	};
@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 			if (token) localStorage.setItem('auth_token', token);
 			if (email) localStorage.setItem('auth_user_email', email);
 			if (user) localStorage.setItem('auth_user', JSON.stringify(user));
-		} catch (_e) {
+		} catch {
 			// Failed to persist auth
 		}
 	};
@@ -125,7 +125,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 					return;
 				}
 			}
-		} catch (_error) {
+		} catch {
 			// Failed to restore auth data from localStorage
 		}
 

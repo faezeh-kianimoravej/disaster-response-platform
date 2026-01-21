@@ -88,7 +88,7 @@ if (!window.__swRegistered) {
 			onOfflineReady() {
 				// App ready to work offline
 			},
-			onRegisteredSW(_swUrl) {
+			onRegisteredSW() {
 				// Service worker registered
 			},
 		});
@@ -108,7 +108,7 @@ if (!window.__swRegistered) {
 				const cacheNames = await caches.keys();
 				await Promise.all(cacheNames.map(name => caches.delete(name)));
 			}
-		} catch (_error) {
+		} catch {
 			// Failed to cleanup service workers on logout
 		}
 

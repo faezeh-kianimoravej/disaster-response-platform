@@ -81,7 +81,7 @@ export default function MessageComposer({ onSend, textareaRef, incidentId }: Pro
 					onSuccess: () => {
 						setTimeout(() => usedRef.current?.focus(), 0);
 					},
-					onError: _error => {
+					onError: () => {
 						// If send fails while "online", add to queue as fallback
 						// Send failed, adding to offline queue
 						addMessage({
