@@ -30,6 +30,7 @@ vi.mock('@/hooks/chat/useChatMessages', () => ({
 		data: emptyMessages,
 		isLoading: false,
 		error: null,
+		refetch: vi.fn(() => Promise.resolve()),
 	})),
 	useSendMessage: vi.fn(() => ({
 		mutate: vi.fn(),
