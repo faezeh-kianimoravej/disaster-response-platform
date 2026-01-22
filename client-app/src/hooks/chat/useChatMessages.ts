@@ -34,8 +34,9 @@ export function useMessagesByGroup(groupId: number | undefined) {
 		queryKey: groupId ? CHAT_QUERY_KEYS.messages.byGroup(groupId) : [],
 		queryFn: () => (groupId ? getChatMessagesByGroup(groupId) : []),
 		enabled: !!groupId,
-		staleTime: Infinity, // Don't auto-refetch, rely on SSE for real-time updates
-		refetchOnWindowFocus: false, // Don't refetch on window focus
+		staleTime: 1000 * 60 * 5, // 5 minutes - allow reasonable caching but not forever
+		refetchOnWindowFocus: true, // Refetch on window focus to catch missed messages
+		refetchOnReconnect: true, // Refetch when network reconnects
 	});
 }
 

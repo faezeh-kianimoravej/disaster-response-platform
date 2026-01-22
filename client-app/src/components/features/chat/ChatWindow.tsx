@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import type { Message } from '@/types/chat';
 import MessageList from '@/components/features/chat/MessageList';
 import MessageComposer from '@/components/features/chat/MessageComposer';
@@ -55,6 +55,18 @@ function ChatWindowContent({
 
 	const { newMessages: sseMessages, connectionStatus } = useChatSSE(chatGroupId);
 
+	// Refetch messages when SSE connection is restored after being disconnected
+	const lastConnectionStatusRef = useRef<string>('DISCONNECTED');
+	useEffect(() => {
+		const prevStatus = lastConnectionStatusRef.current;
+		lastConnectionStatusRef.current = connectionStatus;
+
+		// If we just reconnected, refetch to catch missed messages
+		if (prevStatus === 'DISCONNECTED' && connectionStatus === 'CONNECTED') {
+			refetchMessages();
+		}
+	}, [connectionStatus, refetchMessages]);
+
 	const { mutate: markAsRead } = useMarkMessagesRead();
 
 	const [localMessages, setLocalMessages] = useState<Message[]>([]);
@@ -62,32 +74,46 @@ function ChatWindowContent({
 
 	useEffect(() => {
 		// Only remove local messages when we actually find their server/SSE versions
-		setLocalMessages(prev =>
-			prev.filter(localMsg => {
-				// For local messages with the 'local' meta flag, check more carefully
-				const isLocalOptimistic = localMsg.meta?.local === true;
+		// Add a small delay to ensure we don't remove messages too eagerly
+		const timeoutId = setTimeout(() => {
+			setLocalMessages(prev =>
+				prev.filter(localMsg => {
+					// For local messages with the 'local' meta flag, check more carefully
+					const isLocalOptimistic = localMsg.meta?.local === true;
 
-				if (!isLocalOptimistic) {
-					return true;
-				}
+					if (!isLocalOptimistic) {
+						return true;
+					}
 
-				// Check if message exists in fetched messages by content/userId
-				const hasServerVersion = fetchedMessages.some(
-					serverMsg =>
-						serverMsg.content.trim() === localMsg.content.trim() &&
-						serverMsg.userId === localMsg.userId
-				);
+					// Check if message exists in fetched messages by content/userId
+					const hasServerVersion = fetchedMessages.some(
+						serverMsg =>
+							serverMsg.content.trim() === localMsg.content.trim() &&
+							serverMsg.userId === localMsg.userId &&
+							// Also check timestamp proximity (within 10 seconds)
+							Math.abs(
+								new Date(serverMsg.timestamp).getTime() - new Date(localMsg.timestamp).getTime()
+							) < 10000
+					);
 
-				// Check if message exists in SSE messages by content/userId
-				const hasSSEVersion = sseMessages.some(
-					sseMsg =>
-						sseMsg.content.trim() === localMsg.content.trim() && sseMsg.userId === localMsg.userId
-				);
+					// Check if message exists in SSE messages by content/userId
+					const hasSSEVersion = sseMessages.some(
+						sseMsg =>
+							sseMsg.content.trim() === localMsg.content.trim() &&
+							sseMsg.userId === localMsg.userId &&
+							// Also check timestamp proximity (within 10 seconds)
+							Math.abs(
+								new Date(sseMsg.timestamp).getTime() - new Date(localMsg.timestamp).getTime()
+							) < 10000
+					);
 
-				// Keep the local message only if neither server nor SSE version exists
-				return !hasServerVersion && !hasSSEVersion;
-			})
-		);
+					// Keep the local message only if neither server nor SSE version exists
+					return !hasServerVersion && !hasSSEVersion;
+				})
+			);
+		}, 500); // Small delay to prevent race conditions
+
+		return () => clearTimeout(timeoutId);
 	}, [fetchedMessages, sseMessages]);
 
 	const allMessages: Message[] = [
@@ -180,6 +206,21 @@ function ChatWindowContent({
 	useEffect(() => {
 		lastMarkedMessageIdRef.current = null;
 	}, [chatGroupId]);
+
+	// Handle visibility changes to refetch messages when user returns to chat
+	const handleVisibilityChange = useCallback(() => {
+		if (!document.hidden && chatGroupId) {
+			// User returned to the tab - refetch messages to catch any that were missed
+			refetchMessages();
+		}
+	}, [chatGroupId, refetchMessages]);
+
+	useEffect(() => {
+		document.addEventListener('visibilitychange', handleVisibilityChange);
+		return () => {
+			document.removeEventListener('visibilitychange', handleVisibilityChange);
+		};
+	}, [handleVisibilityChange]);
 
 	const handleSend = (content: string, type: Message['type'] = 'DEFAULT') => {
 		const msg: Message = {

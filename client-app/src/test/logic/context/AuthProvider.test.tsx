@@ -1,5 +1,13 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
+import React from 'react';
+import { TestProviders, createTestQueryClient } from '@/test/utils';
+
+// Mock needs to be defined before any imports that might use it
+vi.mock('@/context/KeycloakProvider', () => ({
+	useKeycloak: () => keycloakMock,
+	KeycloakContext: React.createContext(undefined),
+}));
 
 function base64(payload: unknown) {
 	return Buffer.from(JSON.stringify(payload))
@@ -42,10 +50,6 @@ let keycloakMock: KCMock = {
 	logout: vi.fn().mockResolvedValue(undefined),
 };
 
-vi.mock('@/context/KeycloakProvider', () => ({
-	useKeycloak: () => keycloakMock,
-}));
-
 const backendUser: Record<string, unknown> = {
 	id: 99,
 	firstName: 'Backend',
@@ -82,10 +86,13 @@ describe('AuthProvider', () => {
 	});
 
 	it('uses keycloak tokenParsed to set partial user then replaces with backend user', async () => {
+		const queryClient = createTestQueryClient();
 		render(
-			<AuthProvider>
-				<Consumer />
-			</AuthProvider>
+			<TestProviders options={{ queryClient }}>
+				<AuthProvider>
+					<Consumer />
+				</AuthProvider>
+			</TestProviders>
 		);
 
 		await waitFor(() => expect(screen.getByTestId('isLoggedIn').textContent).toBe('true'));
@@ -114,10 +121,13 @@ describe('AuthProvider', () => {
 
 		useUserByEmailMock = () => ({ user: null });
 
+		const queryClient = createTestQueryClient();
 		render(
-			<AuthProvider>
-				<Consumer />
-			</AuthProvider>
+			<TestProviders options={{ queryClient }}>
+				<AuthProvider>
+					<Consumer />
+				</AuthProvider>
+			</TestProviders>
 		);
 
 		await waitFor(() => expect(screen.getByTestId('isLoggedIn').textContent).toBe('true'));

@@ -14,6 +14,7 @@ export interface KeycloakContextType {
 	keycloak: KeycloakInstance;
 	initialized: boolean;
 	isAuthenticated: boolean;
+	isOffline: boolean;
 	login: () => Promise<void>;
 	logout: () => Promise<void>;
 }
@@ -23,8 +24,51 @@ export const KeycloakContext = createContext<KeycloakContextType | undefined>(un
 export const KeycloakProvider = ({ children }: { children: React.ReactNode }) => {
 	const [initialized, setInitialized] = useState(false);
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
+	const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
+	// Monitor online/offline status
 	useEffect(() => {
+		const handleOnline = () => setIsOffline(false);
+		const handleOffline = () => {
+			setIsOffline(true);
+			// When going offline, preserve current authentication state
+			// Don't reset isAuthenticated if we're already authenticated
+		};
+
+		window.addEventListener('online', handleOnline);
+		window.addEventListener('offline', handleOffline);
+
+		return () => {
+			window.removeEventListener('online', handleOnline);
+			window.removeEventListener('offline', handleOffline);
+		};
+	}, []);
+
+	// Keycloak initialization - only when online
+	useEffect(() => {
+		// If we're going offline but already initialized and authenticated, don't reset
+		if (isOffline && initialized && isAuthenticated) {
+			return;
+		}
+
+		if (isOffline) {
+			// When offline, check if we have cached auth state
+			try {
+				const storedToken = localStorage.getItem('auth_token');
+				if (storedToken) {
+					// We have cached auth, so mark as initialized but maintain auth state
+					setInitialized(true);
+					// Don't change isAuthenticated if we have cached credentials
+					return;
+				}
+			} catch {
+				// Failed to check cached auth when offline
+			}
+			// No cached auth, mark as not authenticated
+			setInitialized(true);
+			setIsAuthenticated(false);
+			return;
+		}
 		const initOptions: Record<string, unknown> = { onLoad: 'check-sso' };
 		try {
 			initOptions.silentCheckSsoRedirectUri = `${window.location.origin}/silent-check-sso.html`;
@@ -46,7 +90,7 @@ export const KeycloakProvider = ({ children }: { children: React.ReactNode }) =>
 				setIsAuthenticated(false);
 			}
 		})();
-	}, []);
+	}, [isOffline]);
 
 	useEffect(() => {
 		let refreshHandle: number | undefined;
@@ -87,6 +131,9 @@ export const KeycloakProvider = ({ children }: { children: React.ReactNode }) =>
 	}, [initialized, isAuthenticated]);
 
 	const login = async () => {
+		if (isOffline) {
+			return; // Don't attempt login when offline
+		}
 		try {
 			sessionStorage.setItem('kc_login_in_progress', '1');
 		} catch {}
@@ -99,11 +146,15 @@ export const KeycloakProvider = ({ children }: { children: React.ReactNode }) =>
 		} catch {
 			// ignore
 		}
+		// Dispatch logout event for service worker cleanup
+		window.dispatchEvent(new CustomEvent('app-logout'));
 		await keycloak.logout();
 	};
 
 	return (
-		<KeycloakContext.Provider value={{ keycloak, initialized, isAuthenticated, login, logout }}>
+		<KeycloakContext.Provider
+			value={{ keycloak, initialized, isAuthenticated, isOffline, login, logout }}
+		>
 			{children}
 		</KeycloakContext.Provider>
 	);

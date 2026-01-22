@@ -1,15 +1,22 @@
 {
-	"short_name": "DRCCS",
-	"name": "Disaster Response Crisis Communication System",
-	"icons": [
-		{
-			"src": "favicon.jpg",
-			"sizes": "192x192 64x64 32x32 24x24 16x16",
-			"type": "image/jpg"
-		}
-	],
-	"start_url": ".",
-	"display": "standalone",
-	"theme_color": "#000000",
-	"background_color": "#ffffff"
+  "name": "Disaster Response Crisis Communication System",
+  "short_name": "DRCCS",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#1e40af",
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
 }

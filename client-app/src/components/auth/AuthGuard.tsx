@@ -42,8 +42,11 @@ export type AuthGuardOptions = {
  */
 export default function AuthGuard({ children, ...opts }: Props) {
 	const isLoggedIn = useIsUserLoggedIn();
-	const { initialized: keycloakInitialized, isAuthenticated: keycloakAuthenticated } =
-		useKeycloak();
+	const {
+		initialized: keycloakInitialized,
+		isAuthenticated: keycloakAuthenticated,
+		isOffline,
+	} = useKeycloak();
 
 	const required = opts.requireRoles ?? [];
 	const hasAnyRole = useUserHasAnyRole(required);
@@ -52,6 +55,24 @@ export default function AuthGuard({ children, ...opts }: Props) {
 	const municipalityCheck = useUserHasAccessToMunicipality(opts.requireAccessToMunicipality);
 	const departmentCheck = useUserHasAccessToDepartment(opts.requireAccessToDepartment);
 	const resourceCheck = useUserHasAccessToResource(opts.requireAccessToResource);
+
+	// When offline, check if we have cached auth data and allow access
+	if (isOffline) {
+		// Check if we have cached auth token and/or user data
+		const cachedToken = localStorage.getItem('auth_token');
+		const cachedUser = localStorage.getItem('auth_user');
+
+		// If we have cached token or user data, allow access (AuthProvider will handle restoring the state)
+		if ((cachedToken || cachedUser) && (isLoggedIn || !keycloakInitialized)) {
+			// User has cached auth data, allow access
+			return children as JSX.Element;
+		}
+
+		// No cached auth data, show offline message
+		return (
+			<LoadingPanel text="You are currently offline. Please check your internet connection to sign in." />
+		) as JSX.Element;
+	}
 
 	if (!keycloakInitialized) {
 		return (<LoadingPanel text="Authenticating" />) as JSX.Element;
