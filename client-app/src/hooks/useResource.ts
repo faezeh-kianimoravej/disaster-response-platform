@@ -7,9 +7,8 @@ import {
 	updateResource,
 	deleteResource,
 } from '@/api/resource';
-import type { Resource } from '@/types/resource';
+import type { Resource, ResourceFormData, ResourceStatus } from '@/types/resource';
 import { RESOURCE_QUERY_KEYS } from '@/hooks/queryKeys';
-import type { ResourceFormData } from '@/types/resource';
 
 export function useResources(departmentId?: number, options?: { enabled?: boolean }) {
 	const enabled = options?.enabled ?? !!departmentId;
@@ -75,8 +74,8 @@ export function useResource(id?: number, options?: { enabled?: boolean }) {
 
 export function useCreateResource(departmentId: number) {
 	const queryClient = useQueryClient();
-	return useMutation<Resource, Error, ResourceFormData>({
-		mutationFn: data => addResource(data),
+	return useMutation<Resource, Error, { data: ResourceFormData; status?: ResourceStatus }>({
+		mutationFn: ({ data, status }) => addResource(data, status),
 		onSuccess: saved => {
 			queryClient.invalidateQueries({ queryKey: RESOURCE_QUERY_KEYS.list(departmentId) });
 			queryClient.setQueryData(RESOURCE_QUERY_KEYS.item(saved.resourceId), saved);
