@@ -249,16 +249,17 @@ export default function IncidentDeploymentOrder() {
 										<tbody>
 											{deploymentOrders.map(order => (
 												<tr key={order.deploymentOrderId} className="hover:bg-gray-50">
-													<td className="px-4 py-2">
-														{order.orderedAt.toLocaleString()}
-													</td>
+													<td className="px-4 py-2">{order.orderedAt.toLocaleString()}</td>
 													<td className="px-4 py-2">
 														{order.deploymentRequests.length > 0 ? (
 															<div className="space-y-1">
 																{order.deploymentRequests.map((req, idx) => (
 																	<div key={idx} className="text-sm">
 																		<span className="font-medium">{req.requestedUnitType}</span>
-																		<span className="text-gray-600"> × {req.requestedQuantity}</span>
+																		<span className="text-gray-600">
+																			{' '}
+																			× {req.requestedQuantity}
+																		</span>
 																	</div>
 																))}
 															</div>

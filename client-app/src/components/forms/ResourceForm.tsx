@@ -185,10 +185,10 @@ export default function ResourceForm({
 			if (isNewResource) {
 				// Set status to AVAILABLE for all new resources
 				const status = 'AVAILABLE' as const;
-				
-				const created = await createMutation.mutateAsync({ 
-					data: payload, 
-					status
+
+				const created = await createMutation.mutateAsync({
+					data: payload,
+					status,
 				});
 				showSuccess(`Resource "${created.name}" has been created successfully!`);
 				navigate(routes.resources(departmentId));

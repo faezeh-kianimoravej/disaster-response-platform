@@ -69,13 +69,17 @@ class OfflineMessageQueue {
 		this.onlineListenerAdded = true;
 	}
 
-	addMessage(message: Omit<QueuedMessage, 'id' | 'attempts' | 'status'>, messageId?: string): QueuedMessage {
+	addMessage(
+		message: Omit<QueuedMessage, 'id' | 'attempts' | 'status'>,
+		messageId?: string
+	): QueuedMessage {
 		// Check for duplicates based on content, chatGroupId, userId and recent timestamp
-		const existing = this.queue.find(msg => 
-			msg.content === message.content && 
-			msg.chatGroupId === message.chatGroupId && 
-			msg.userId === message.userId &&
-			(Math.abs(msg.timestamp.getTime() - message.timestamp.getTime()) < 30000) // Within 30 seconds
+		const existing = this.queue.find(
+			msg =>
+				msg.content === message.content &&
+				msg.chatGroupId === message.chatGroupId &&
+				msg.userId === message.userId &&
+				Math.abs(msg.timestamp.getTime() - message.timestamp.getTime()) < 30000 // Within 30 seconds
 		);
 
 		if (existing) {
@@ -138,12 +142,13 @@ class OfflineMessageQueue {
 
 			// Remove duplicates based on content, chatGroupId, userId, and close timestamp
 			const uniqueMessages = pendingMessages.filter((msg, index, arr) => {
-				return !arr.some((otherMsg, otherIndex) => 
-					otherIndex < index && 
-					otherMsg.content === msg.content && 
-					otherMsg.chatGroupId === msg.chatGroupId && 
-					otherMsg.userId === msg.userId &&
-					Math.abs(otherMsg.timestamp.getTime() - msg.timestamp.getTime()) < 10000 // Within 10 seconds
+				return !arr.some(
+					(otherMsg, otherIndex) =>
+						otherIndex < index &&
+						otherMsg.content === msg.content &&
+						otherMsg.chatGroupId === msg.chatGroupId &&
+						otherMsg.userId === msg.userId &&
+						Math.abs(otherMsg.timestamp.getTime() - msg.timestamp.getTime()) < 10000 // Within 10 seconds
 				);
 			});
 

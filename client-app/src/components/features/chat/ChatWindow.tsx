@@ -114,7 +114,7 @@ function ChatWindowContent({
 	// Create a deduplicated messages array
 	const allMessages: Message[] = (() => {
 		const messageMap = new Map<string, Message>();
-		
+
 		// Add initial messages
 		initialMessages.forEach(msg => {
 			const key = `${msg.chatMessageId}-${msg.chatGroupId}`;
@@ -158,18 +158,17 @@ function ChatWindowContent({
 		localMessages.forEach(msg => {
 			const isLocalOptimistic = msg.meta?.local === true;
 			if (!isLocalOptimistic) return;
-			
+
 			// Check if this local message already has a server version
 			const hasServerVersion = Array.from(messageMap.values()).some(
 				existingMsg =>
 					existingMsg.content.trim() === msg.content.trim() &&
 					existingMsg.userId === msg.userId &&
 					!existingMsg.chatMessageId.startsWith('local-') &&
-					Math.abs(
-						new Date(existingMsg.timestamp).getTime() - new Date(msg.timestamp).getTime()
-					) < 30000
+					Math.abs(new Date(existingMsg.timestamp).getTime() - new Date(msg.timestamp).getTime()) <
+						30000
 			);
-			
+
 			if (!hasServerVersion) {
 				const key = `${msg.chatMessageId}-${msg.chatGroupId}`;
 				messageMap.set(key, {
@@ -178,7 +177,7 @@ function ChatWindowContent({
 				});
 			}
 		});
-		
+
 		return Array.from(messageMap.values());
 	})().sort((a, b) => {
 		const timeA = new Date(a.timestamp).getTime();

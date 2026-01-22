@@ -63,8 +63,12 @@ function mapDeploymentRequestDTO(dto: DeploymentRequestDTO): DeploymentRequest {
 		priority: dto.priority,
 		requestedUnitType: dto.requestedUnitType,
 		requestedQuantity: Number(dto.requestedQuantity),
-		...(dto.assignedUnitId !== undefined && dto.assignedUnitId !== null ? { assignedUnitId: Number(dto.assignedUnitId) } : {}),
-		...(dto.assignedBy !== undefined && dto.assignedBy !== null ? { assignedBy: Number(dto.assignedBy) } : {}),
+		...(dto.assignedUnitId !== undefined && dto.assignedUnitId !== null
+			? { assignedUnitId: Number(dto.assignedUnitId) }
+			: {}),
+		...(dto.assignedBy !== undefined && dto.assignedBy !== null
+			? { assignedBy: Number(dto.assignedBy) }
+			: {}),
 		...(dto.assignedAt ? { assignedAt: new Date(dto.assignedAt) } : {}),
 		status: dto.status,
 	};
@@ -111,34 +115,39 @@ export async function createDeploymentOrder(
 	return mapDeploymentOrderDTO(result);
 }
 
-export async function getDeploymentOrderByIncidentId(incidentId: number): Promise<DeploymentOrder[]> {
+export async function getDeploymentOrderByIncidentId(
+	incidentId: number
+): Promise<DeploymentOrder[]> {
 	try {
-		const response = await deploymentOrderApi.get<DeploymentOrderDTO | DeploymentOrderDTO[]>(`/incident/${incidentId}`);
-		
+		const response = await deploymentOrderApi.get<DeploymentOrderDTO | DeploymentOrderDTO[]>(
+			`/incident/${incidentId}`
+		);
+
 		// If the response is null, undefined, or empty, return empty array
 		if (!response) {
 			return [];
 		}
-		
+
 		// Handle array response - return all deployment orders
 		if (Array.isArray(response)) {
 			if (response.length === 0) {
 				return [];
 			}
-			
+
 			// Sort by date (most recent first) and return all
-			const sortedOrders = response.sort((a, b) => 
-				new Date(b.orderedAt).getTime() - new Date(a.orderedAt).getTime()
+			const sortedOrders = response.sort(
+				(a, b) => new Date(b.orderedAt).getTime() - new Date(a.orderedAt).getTime()
 			);
-			
+
 			return sortedOrders.map(order => mapDeploymentOrderDTO(order));
 		}
-		
+
 		// Handle single object response
 		return [mapDeploymentOrderDTO(response)];
-	} catch (error: any) {
+	} catch (error: unknown) {
 		// If no deployment order exists (404), return empty array instead of throwing
-		if (error.status === 404) {
+		const apiError = error as { status?: number };
+		if (apiError.status === 404) {
 			return [];
 		}
 		// Re-throw other errors

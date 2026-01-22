@@ -36,14 +36,16 @@ describe('useDeploymentOrder hooks', () => {
 	});
 
 	it('useDeploymentOrderByIncidentId fetches and returns data', async () => {
-		const mock: DeploymentOrder[] = [{
-			deploymentOrderId: 1,
-			incidentId: 99,
-			orderedBy: 2,
-			orderedAt: new Date(),
-			deploymentRequests: [],
-			incidentSeverity: 'LOW' as IncidentSeverity,
-		}];
+		const mock: DeploymentOrder[] = [
+			{
+				deploymentOrderId: 1,
+				incidentId: 99,
+				orderedBy: 2,
+				orderedAt: new Date(),
+				deploymentRequests: [],
+				incidentSeverity: 'LOW' as IncidentSeverity,
+			},
+		];
 		vi.mocked(mockedApi.getDeploymentOrderByIncidentId).mockResolvedValueOnce(mock);
 
 		const { result } = renderHook(() => useDeploymentOrderByIncidentId(99), {
