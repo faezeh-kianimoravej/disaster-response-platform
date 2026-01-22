@@ -1,0 +1,28 @@
+{
+  "realm": "DRCCS",
+  "attributes": {
+    "access-token-lifespan": "300",
+    "client-session-idle-timeout": "36000",
+    "frontendUrl": "http://localhost:3000",
+    "kc.realm.cors": "true",
+    "kc.realm.cors.allowed-origins": "http://localhost:3000"
+  },
+  "clients": [
+    {
+      "clientId": "react-frontend",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": [
+        "http://localhost:3000/*"
+      ],
+      "postLogoutRedirectUris": [
+        "http://localhost:3000"
+      ],
+      "webOrigins": [
+        "http://localhost:3000"
+      ]
+    }
+  ]
+}
