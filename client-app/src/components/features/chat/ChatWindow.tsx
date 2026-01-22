@@ -72,80 +72,115 @@ function ChatWindowContent({
 	const [localMessages, setLocalMessages] = useState<Message[]>([]);
 	const lastMarkedMessageIdRef = useRef<string | null>(null);
 
+	// Remove local messages immediately when SSE or fetched versions arrive
 	useEffect(() => {
-		// Only remove local messages when we actually find their server/SSE versions
-		// Add a small delay to ensure we don't remove messages too eagerly
-		const timeoutId = setTimeout(() => {
-			setLocalMessages(prev =>
-				prev.filter(localMsg => {
-					// For local messages with the 'local' meta flag, check more carefully
-					const isLocalOptimistic = localMsg.meta?.local === true;
+		setLocalMessages(prev =>
+			prev.filter(localMsg => {
+				// For local messages with the 'local' meta flag, check for server confirmations
+				const isLocalOptimistic = localMsg.meta?.local === true;
 
-					if (!isLocalOptimistic) {
-						return true;
-					}
+				if (!isLocalOptimistic) {
+					return true;
+				}
 
-					// Check if message exists in fetched messages by content/userId
-					const hasServerVersion = fetchedMessages.some(
-						serverMsg =>
-							serverMsg.content.trim() === localMsg.content.trim() &&
-							serverMsg.userId === localMsg.userId &&
-							// Also check timestamp proximity (within 10 seconds)
-							Math.abs(
-								new Date(serverMsg.timestamp).getTime() - new Date(localMsg.timestamp).getTime()
-							) < 10000
-					);
+				// Check if message exists in fetched messages by content/userId
+				const hasServerVersion = fetchedMessages.some(
+					serverMsg =>
+						serverMsg.content.trim() === localMsg.content.trim() &&
+						serverMsg.userId === localMsg.userId &&
+						// Check timestamp proximity (within 30 seconds)
+						Math.abs(
+							new Date(serverMsg.timestamp).getTime() - new Date(localMsg.timestamp).getTime()
+						) < 30000
+				);
 
-					// Check if message exists in SSE messages by content/userId
-					const hasSSEVersion = sseMessages.some(
-						sseMsg =>
-							sseMsg.content.trim() === localMsg.content.trim() &&
-							sseMsg.userId === localMsg.userId &&
-							// Also check timestamp proximity (within 10 seconds)
-							Math.abs(
-								new Date(sseMsg.timestamp).getTime() - new Date(localMsg.timestamp).getTime()
-							) < 10000
-					);
+				// Check if message exists in SSE messages by content/userId
+				const hasSSEVersion = sseMessages.some(
+					sseMsg =>
+						sseMsg.content.trim() === localMsg.content.trim() &&
+						sseMsg.userId === localMsg.userId &&
+						// Check timestamp proximity (within 30 seconds)
+						Math.abs(
+							new Date(sseMsg.timestamp).getTime() - new Date(localMsg.timestamp).getTime()
+						) < 30000
+				);
 
-					// Keep the local message only if neither server nor SSE version exists
-					return !hasServerVersion && !hasSSEVersion;
-				})
-			);
-		}, 500); // Small delay to prevent race conditions
-
-		return () => clearTimeout(timeoutId);
+				// Keep the local message only if neither server nor SSE version exists
+				return !hasServerVersion && !hasSSEVersion;
+			})
+		);
 	}, [fetchedMessages, sseMessages]);
 
-	const allMessages: Message[] = [
-		...initialMessages.map(msg => ({
-			...msg,
-			userFullName: msg.userId === currentUserId ? 'You' : msg.userFullName,
-		})),
-		...fetchedMessages.map(msg => ({
-			chatMessageId: msg.id,
-			chatGroupId: msg.chatGroupId,
-			userId: msg.userId,
-			userFullName: msg.userId === currentUserId ? 'You' : msg.userFullName,
-			type: msg.type,
-			content: msg.content,
-			timestamp: toLocalISOString(msg.timestamp),
-			meta: msg.meta,
-		})),
-		...sseMessages.map(msg => ({
-			chatMessageId: msg.messageId,
-			chatGroupId: msg.chatGroupId,
-			userId: msg.userId,
-			userFullName: msg.userId === currentUserId ? 'You' : msg.userFullName,
-			type: msg.type,
-			content: msg.content,
-			timestamp: toLocalISOString(msg.timestamp),
-			meta: msg.meta,
-		})),
-		...localMessages.map(m => ({
-			...m,
-			timestamp: normalizeDate(m.timestamp),
-		})),
-	].sort((a, b) => {
+	// Create a deduplicated messages array
+	const allMessages: Message[] = (() => {
+		const messageMap = new Map<string, Message>();
+		
+		// Add initial messages
+		initialMessages.forEach(msg => {
+			const key = `${msg.chatMessageId}-${msg.chatGroupId}`;
+			messageMap.set(key, {
+				...msg,
+				userFullName: msg.userId === currentUserId ? 'You' : msg.userFullName,
+			});
+		});
+
+		// Add fetched messages (these override initials)
+		fetchedMessages.forEach(msg => {
+			const key = `${msg.id}-${msg.chatGroupId}`;
+			messageMap.set(key, {
+				chatMessageId: msg.id,
+				chatGroupId: msg.chatGroupId,
+				userId: msg.userId,
+				userFullName: msg.userId === currentUserId ? 'You' : msg.userFullName,
+				type: msg.type,
+				content: msg.content,
+				timestamp: toLocalISOString(msg.timestamp),
+				meta: msg.meta,
+			});
+		});
+
+		// Add SSE messages (these override fetched if same ID)
+		sseMessages.forEach(msg => {
+			const key = `${msg.messageId}-${msg.chatGroupId}`;
+			messageMap.set(key, {
+				chatMessageId: msg.messageId,
+				chatGroupId: msg.chatGroupId,
+				userId: msg.userId,
+				userFullName: msg.userId === currentUserId ? 'You' : msg.userFullName,
+				type: msg.type,
+				content: msg.content,
+				timestamp: toLocalISOString(msg.timestamp),
+				meta: msg.meta,
+			});
+		});
+
+		// Add local messages (only if not already confirmed by server)
+		localMessages.forEach(msg => {
+			const isLocalOptimistic = msg.meta?.local === true;
+			if (!isLocalOptimistic) return;
+			
+			// Check if this local message already has a server version
+			const hasServerVersion = Array.from(messageMap.values()).some(
+				existingMsg =>
+					existingMsg.content.trim() === msg.content.trim() &&
+					existingMsg.userId === msg.userId &&
+					!existingMsg.chatMessageId.startsWith('local-') &&
+					Math.abs(
+						new Date(existingMsg.timestamp).getTime() - new Date(msg.timestamp).getTime()
+					) < 30000
+			);
+			
+			if (!hasServerVersion) {
+				const key = `${msg.chatMessageId}-${msg.chatGroupId}`;
+				messageMap.set(key, {
+					...msg,
+					timestamp: normalizeDate(msg.timestamp),
+				});
+			}
+		});
+		
+		return Array.from(messageMap.values());
+	})().sort((a, b) => {
 		const timeA = new Date(a.timestamp).getTime();
 		const timeB = new Date(b.timestamp).getTime();
 
@@ -202,9 +237,11 @@ function ChatWindowContent({
 		return undefined;
 	}, [fetchedMessages.length, sseMessages.length, chatGroupId, currentUserId, markAsRead]);
 
-	// Reset the last marked message when switching chat groups
+	// Reset the last marked message and clear local messages when switching chat groups
 	useEffect(() => {
 		lastMarkedMessageIdRef.current = null;
+		// Clear local messages when switching chats to prevent stale optimistic updates
+		setLocalMessages([]);
 	}, [chatGroupId]);
 
 	// Handle visibility changes to refetch messages when user returns to chat
