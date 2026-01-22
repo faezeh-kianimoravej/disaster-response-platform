@@ -1,0 +1,171 @@
+{
+  "realm": "DRCCS",
+  "enabled": true,
+  "roles": {
+    "realm": [
+      { "name": "CITIZEN", "description": "Citizen user" },
+      { "name": "RESPONDER", "description": "Emergency responder" },
+      { "name": "OFFICER_ON_DUTY", "description": "Officer on duty" },
+      { "name": "LEADER_COPI", "description": "Leader CoPI" },
+      { "name": "CALAMITY_COORDINATOR", "description": "Calamity coordinator" },
+      { "name": "OPERATIONAL_LEADER", "description": "Operational leader" },
+      { "name": "MAYOR", "description": "Mayor" },
+      { "name": "CHAIR_SAFETY_REGION", "description": "Chair of Safety Region" },
+      { "name": "DEPARTMENT_ADMIN", "description": "Department administrator" },
+      { "name": "MUNICIPALITY_ADMIN", "description": "Municipality administrator" },
+      { "name": "REGION_ADMIN", "description": "Region administrator" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "react-frontend",
+      "name": "React Frontend",
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "bearerOnly": false,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "authorizationServicesEnabled": false,
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "rootUrl": "http://localhost:3000",
+      "baseUrl": "/",
+      "redirectUris": ["http://localhost:3000/*"],
+      "webOrigins": ["*"],
+      "protocolMappers": [
+        {
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "api-gateway",
+      "name": "API Gateway",
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "bearerOnly": true,
+      "serviceAccountsEnabled": false,
+      "authorizationServicesEnabled": false,
+      "protocolMappers": [
+        {
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "user-service",
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "bearerOnly": true,
+      "protocolMappers": [
+        {
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "region-service",
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "bearerOnly": true
+    },
+    {
+      "clientId": "municipality-service",
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "bearerOnly": true
+    },
+    {
+      "clientId": "department-service",
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "bearerOnly": true
+    },
+    {
+      "clientId": "resource-service",
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "bearerOnly": true
+    },
+    {
+      "clientId": "notification-service",
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "bearerOnly": true
+    },
+    {
+      "clientId": "incident-service",
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "bearerOnly": true
+    },
+    {
+      "clientId": "location-service",
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "bearerOnly": true
+    }
+  ],
+  "users": [
+    {
+      "username": "region.admin@disaster.nl",
+      "email": "region.admin@disaster.nl",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "Admin@123", "temporary": false }],
+      "realmRoles": ["REGION_ADMIN"]
+    },
+    {
+      "username": "municipality.deventer@disaster.nl",
+      "email": "municipality.deventer@disaster.nl",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "Admin@123", "temporary": false }],
+      "realmRoles": ["MUNICIPALITY_ADMIN"]
+    },
+    {
+      "username": "dept.fire.deventer@disaster.nl",
+      "email": "dept.fire.deventer@disaster.nl",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "Admin@123", "temporary": false }],
+      "realmRoles": ["DEPARTMENT_ADMIN"]
+    }
+  ]
+}
