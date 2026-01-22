@@ -59,9 +59,10 @@ export default function IncidentDeploymentOrder() {
 	} = useMunicipalities(incident?.regionId, { enabled: !!incident?.regionId });
 	const createDeploymentOrderMutation = useCreateDeploymentOrder();
 	const {
-		data: existingOrder,
+		data: deploymentOrders = [],
 		isLoading: existingOrderLoading,
 		error: existingOrderError,
+		isError: hasExistingOrderError,
 	} = useDeploymentOrderByIncidentId(incidentIdNumber);
 
 	// Search filter form state
@@ -116,7 +117,7 @@ export default function IncidentDeploymentOrder() {
 				loading: municipalitiesLoading,
 				message: 'Unable to load municipalities.',
 			});
-		} else if (existingOrderError) {
+		} else if (existingOrderError && hasExistingOrderError) {
 			showSingleError({
 				key: `deployment-order.${incidentIdNumber ?? 'unknown'}`,
 				error: existingOrderError,
@@ -131,6 +132,9 @@ export default function IncidentDeploymentOrder() {
 		incidentLoading,
 		departmentsLoading,
 		municipalitiesLoading,
+		existingOrderError,
+		existingOrderLoading,
+		hasExistingOrderError,
 		incidentIdNumber,
 		showSingleError,
 	]);
@@ -218,61 +222,61 @@ export default function IncidentDeploymentOrder() {
 						</div>
 					</div>
 
-					{/* Existing deployment order (if any) */}
+					{/* Existing deployment orders (if any) */}
 					<div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 mb-6">
 						{existingOrderLoading ? (
-							<LoadingPanel text="Loading existing deployment order..." className="py-4" />
-						) : existingOrder ? (
+							<LoadingPanel text="Loading existing deployment orders..." className="py-4" />
+						) : hasExistingOrderError ? (
+							<ErrorRetryInline
+								message="Failed to load deployment orders"
+								onRetry={() => window.location.reload()}
+							/>
+						) : deploymentOrders.length > 0 ? (
 							<>
-								<h3 className="text-lg font-semibold mb-2">Existing Deployment Order</h3>
-								<div className="text-sm text-gray-700 mb-4">
-									<div className="mb-1">
-										Ordered at: {new Date(existingOrder.orderedAt).toLocaleString()}
-									</div>
-									<div className="mb-1">Incident severity: {existingOrder.incidentSeverity}</div>
-									{existingOrder.notes ? (
-										<div className="text-sm text-gray-600">Notes: {existingOrder.notes}</div>
-									) : null}
-								</div>
-								{existingOrder.deploymentRequests.length === 0 ? (
-									<div className="text-gray-500">No requests in this deployment order.</div>
-								) : (
+								<h3 className="text-lg font-semibold mb-4">Existing Deployment Orders</h3>
+								<div className="overflow-x-auto">
 									<table className="min-w-full divide-y divide-gray-200">
 										<thead>
 											<tr>
 												<th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-													Department
+													Ordered At
 												</th>
 												<th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-													Requested Unit Type
-												</th>
-												<th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-													Quantity
-												</th>
-												<th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-													Status
+													Requested Units
 												</th>
 											</tr>
 										</thead>
 										<tbody>
-											{existingOrder.deploymentRequests.map(req => (
-												<tr key={req.requestId} className="hover:bg-gray-50">
+											{deploymentOrders.map(order => (
+												<tr key={order.deploymentOrderId} className="hover:bg-gray-50">
 													<td className="px-4 py-2">
-														{departments.find(
-															(d: Department) => d.departmentId === req.targetDepartmentId
-														)?.name ?? req.targetDepartmentId}
+														{order.orderedAt.toLocaleString()}
 													</td>
-													<td className="px-4 py-2">{req.requestedUnitType}</td>
-													<td className="px-4 py-2">{req.requestedQuantity}</td>
-													<td className="px-4 py-2">{req.status}</td>
+													<td className="px-4 py-2">
+														{order.deploymentRequests.length > 0 ? (
+															<div className="space-y-1">
+																{order.deploymentRequests.map((req, idx) => (
+																	<div key={idx} className="text-sm">
+																		<span className="font-medium">{req.requestedUnitType}</span>
+																		<span className="text-gray-600"> × {req.requestedQuantity}</span>
+																	</div>
+																))}
+															</div>
+														) : (
+															<span className="text-gray-500">No requests</span>
+														)}
+													</td>
 												</tr>
 											))}
 										</tbody>
 									</table>
-								)}
+								</div>
 							</>
 						) : (
-							<div className="text-gray-500">No existing deployment orders for this incident.</div>
+							<div className="text-gray-500 text-center py-4">
+								<div className="text-lg mb-2">No existing deployment orders for this incident.</div>
+								<div className="text-sm">You can create a new deployment order below.</div>
+							</div>
 						)}
 					</div>
 
