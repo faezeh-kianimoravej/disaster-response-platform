@@ -76,18 +76,18 @@ describe('IncidentDeploymentOrder page', () => {
 
 	it('renders existing deployment order when present', () => {
 		mockUseDeploymentOrderByIncidentId.mockReturnValue({
-			data: {
+			data: [{
 				deploymentOrderId: 1,
 				incidentId: 42,
 				orderedBy: 1,
-				orderedAt: new Date().toISOString(),
+				orderedAt: new Date('2026-01-22T10:53:18.297+00:00'),
 				deploymentRequests: [
 					{
 						requestId: 2,
 						incidentId: 42,
 						deploymentOrderId: 1,
 						requestedBy: 1,
-						requestedAt: new Date().toISOString(),
+						requestedAt: new Date('2026-01-22T10:53:18.297+00:00'),
 						targetDepartmentId: 10,
 						priority: 'HIGH',
 						requestedUnitType: 'AMBULANCE',
@@ -96,7 +96,7 @@ describe('IncidentDeploymentOrder page', () => {
 					},
 				],
 				incidentSeverity: 'HIGH',
-			},
+			}],
 			isLoading: false,
 			error: null,
 		});
@@ -106,14 +106,14 @@ describe('IncidentDeploymentOrder page', () => {
 			routePath: '/incidents/:incidentId/deployment-order',
 		});
 
-		expect(screen.getByText(/Existing Deployment Order/i)).toBeInTheDocument();
-		expect(screen.getAllByText(/Alpha Dept/)[0]).toBeInTheDocument();
+		expect(screen.getByText(/Existing Deployment Orders/i)).toBeInTheDocument();
+		expect(screen.getByText(/1\/22\/2026/)).toBeInTheDocument();
 		expect(screen.getByText(/AMBULANCE/)).toBeInTheDocument();
 	});
 
 	it('renders no existing order message when none', () => {
 		mockUseDeploymentOrderByIncidentId.mockReturnValue({
-			data: undefined,
+			data: [],
 			isLoading: false,
 			error: null,
 		});
