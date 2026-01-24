@@ -10,11 +10,14 @@ export function useDeploymentOrderByIncidentId(
 	incidentId?: number,
 	options?: { enabled?: boolean }
 ) {
-	return useQuery<DeploymentOrder | undefined, Error>({
+	return useQuery<DeploymentOrder[], Error>({
 		queryKey: incidentId
 			? DEPLOYMENT_ORDER_QUERY_KEYS.byIncident(incidentId)
 			: ['deployment-order', 'none'],
-		queryFn: () => (incidentId ? getDeploymentOrderByIncidentId(incidentId) : undefined),
+		queryFn: async () => {
+			if (!incidentId) return [];
+			return await getDeploymentOrderByIncidentId(incidentId);
+		},
 		enabled: (options?.enabled ?? true) && !!incidentId,
 		staleTime: 1000 * 60 * 5,
 	});

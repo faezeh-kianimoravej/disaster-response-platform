@@ -1,5 +1,5 @@
 import { BaseApi } from '@/api/base';
-import type { Resource, ResourceFormData } from '@/types/resource';
+import type { Resource, ResourceFormData, ResourceStatus } from '@/types/resource';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const resourceApi = new BaseApi(`${API_BASE_URL}/resources`);
@@ -71,8 +71,13 @@ export async function getResourceById(id: number): Promise<Resource> {
 	return fromApiResource(data);
 }
 
-export async function addResource(formData: ResourceFormData): Promise<Resource> {
-	const created = await resourceApi.post<ApiResource>('', formData);
+export async function addResource(
+	formData: ResourceFormData,
+	status?: ResourceStatus
+): Promise<Resource> {
+	// Include status in payload if provided
+	const payload = status ? { ...formData, status } : formData;
+	const created = await resourceApi.post<ApiResource>('', payload);
 	return fromApiResource(created);
 }
 

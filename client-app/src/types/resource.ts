@@ -114,4 +114,5 @@ export interface ResourceFormData {
 	image?: string;
 	latitude?: number | null;
 	longitude?: number | null;
+	status?: ResourceStatus; // Optional - for setting initial status
 }

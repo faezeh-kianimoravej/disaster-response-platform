@@ -25,91 +25,17 @@ export default defineConfig({
 					/\/notifications\//,  // Never fallback for notification endpoints
 				],
 
-				runtimeCaching: [
-					// HIGHEST PRIORITY: NetworkOnly for specific SSE streaming patterns
-					{
-						urlPattern: ({ url }) => 
-							/\/api\/.*\/stream\//.test(url.pathname) ||
-							/\/api\/notifications\//.test(url.pathname) ||
-							url.pathname.includes('/deployment/stream/') ||
-							url.pathname.endsWith('/stream') ||
-							url.pathname.includes('/stream/'),
-						handler: 'NetworkOnly',
-					},
-
-					// HIGHEST PRIORITY: NetworkOnly for requests with SSE Accept header
-					{
-						urlPattern: ({ request }) => {
-							const acceptHeader = request.headers.get('Accept');
-							return acceptHeader?.includes('text/event-stream') || false;
-						},
-						handler: 'NetworkOnly',
-					},
-
-					// CRITICAL: NetworkOnly for ALL backend requests (localhost:8080)
-					{
-						urlPattern: ({ url }) => 
-							url.hostname === 'localhost' && url.port === '8080',
-						handler: 'NetworkOnly',
-					},
-					
-					// CRITICAL: NetworkOnly for ANY /api/ path (regardless of origin)
-					{
-						urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
-						handler: 'NetworkOnly',
-					},
-					
-					// CRITICAL: NetworkOnly for Keycloak auth server (port 9090)
-					{
-						urlPattern: ({ url }) => 
-							url.hostname === 'localhost' && url.port === '9090',
-						handler: 'NetworkOnly',
-					},
-					
-					// CRITICAL: NetworkOnly for auth paths
-					{
-						urlPattern: ({ url }) => 
-							url.pathname.includes('/realms/') || 
-							url.pathname.includes('/protocol/') ||
-							url.pathname.includes('/auth/'),
-						handler: 'NetworkOnly',
-					},
-					
-					// CRITICAL: NetworkOnly for streams and real-time endpoints
-					{
-						urlPattern: ({ url }) => 
-							url.pathname.includes('/stream') ||
-							url.pathname.includes('/notifications/') ||
-							url.pathname.includes('/sse/'),
-						handler: 'NetworkOnly',
-					},
-					
-					// ONLY cache same-origin static assets (very restrictive)
-					{
-						urlPattern: ({ url, request }) =>
-							url.origin === self.location.origin &&
-							!url.pathname.startsWith('/api/') &&
-							!url.pathname.includes('/stream') &&
-							!url.pathname.includes('/notifications/') &&
-							!url.pathname.includes('/realms/') &&
-							!url.pathname.includes('/protocol/') &&
-							(request.destination === 'image' ||
-								request.destination === 'style' ||
-								request.destination === 'font' ||
-								request.destination === 'script'),
-						handler: 'CacheFirst',
-						options: {
-							cacheName: 'static-assets',
-							expiration: { 
-								maxEntries: 50, 
-								maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
-							},
-						},
-					},
-				],
+				// DISABLE runtime caching entirely to prevent SW interference
+				runtimeCaching: [],
 
 				skipWaiting: true,
 				clientsClaim: true,
+				
+				// Generate SW that explicitly ignores external requests
+				mode: 'generateSW',
+				
+				// Custom service worker configuration to avoid intercepting API calls
+				additionalManifestEntries: undefined,
 			},
 
 

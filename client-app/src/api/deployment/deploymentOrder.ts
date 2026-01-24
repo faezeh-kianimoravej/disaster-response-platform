@@ -11,13 +11,13 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // --- DTOs ---
 interface DeploymentOrderDTO {
-	deploymentOrderId: number;
-	incidentId: number;
-	orderedBy: number;
+	deploymentOrderId: number | string;
+	incidentId: number | string;
+	orderedBy: number | string;
 	orderedAt: string;
 	deploymentRequests: DeploymentRequestDTO[];
 	incidentSeverity: IncidentSeverity;
-	notes?: string;
+	notes?: string | null;
 }
 
 interface DeploymentOrderCreateDTO {
@@ -35,18 +35,18 @@ interface DeploymentOrderCreateRequestDTO {
 }
 
 interface DeploymentRequestDTO {
-	requestId: number;
-	incidentId: number;
-	deploymentOrderId: number;
-	requestedBy: number;
+	requestId: number | string;
+	incidentId: number | string;
+	deploymentOrderId: number | string;
+	requestedBy: number | string;
 	requestedAt: string;
-	targetDepartmentId: number;
+	targetDepartmentId: number | string;
 	priority: IncidentSeverity;
 	requestedUnitType: ResponseUnitType;
-	requestedQuantity: number;
-	assignedUnitId?: number;
-	assignedBy?: number;
-	assignedAt?: string;
+	requestedQuantity: number | string;
+	assignedUnitId?: number | string | null;
+	assignedBy?: number | string | null;
+	assignedAt?: string | null;
 	status: DeploymentRequestStatus;
 	notes?: string;
 }
@@ -54,17 +54,21 @@ interface DeploymentRequestDTO {
 // --- Mapping ---
 function mapDeploymentRequestDTO(dto: DeploymentRequestDTO): DeploymentRequest {
 	return {
-		requestId: dto.requestId,
-		incidentId: dto.incidentId,
-		deploymentOrderId: dto.deploymentOrderId,
-		requestedBy: dto.requestedBy,
+		requestId: Number(dto.requestId),
+		incidentId: Number(dto.incidentId),
+		deploymentOrderId: Number(dto.deploymentOrderId),
+		requestedBy: Number(dto.requestedBy),
 		requestedAt: new Date(dto.requestedAt),
-		targetDepartmentId: dto.targetDepartmentId,
+		targetDepartmentId: Number(dto.targetDepartmentId),
 		priority: dto.priority,
 		requestedUnitType: dto.requestedUnitType,
-		requestedQuantity: dto.requestedQuantity,
-		...(dto.assignedUnitId !== undefined ? { assignedUnitId: dto.assignedUnitId } : {}),
-		...(dto.assignedBy !== undefined ? { assignedBy: dto.assignedBy } : {}),
+		requestedQuantity: Number(dto.requestedQuantity),
+		...(dto.assignedUnitId !== undefined && dto.assignedUnitId !== null
+			? { assignedUnitId: Number(dto.assignedUnitId) }
+			: {}),
+		...(dto.assignedBy !== undefined && dto.assignedBy !== null
+			? { assignedBy: Number(dto.assignedBy) }
+			: {}),
 		...(dto.assignedAt ? { assignedAt: new Date(dto.assignedAt) } : {}),
 		status: dto.status,
 	};
@@ -72,13 +76,13 @@ function mapDeploymentRequestDTO(dto: DeploymentRequestDTO): DeploymentRequest {
 
 function mapDeploymentOrderDTO(dto: DeploymentOrderDTO): DeploymentOrder {
 	return {
-		deploymentOrderId: dto.deploymentOrderId,
-		incidentId: dto.incidentId,
-		orderedBy: dto.orderedBy,
+		deploymentOrderId: Number(dto.deploymentOrderId),
+		incidentId: Number(dto.incidentId),
+		orderedBy: Number(dto.orderedBy),
 		orderedAt: new Date(dto.orderedAt),
-		deploymentRequests: dto.deploymentRequests.map(mapDeploymentRequestDTO),
+		deploymentRequests: dto.deploymentRequests?.map(mapDeploymentRequestDTO) || [],
 		incidentSeverity: dto.incidentSeverity,
-		...(dto.notes !== undefined ? { notes: dto.notes } : {}),
+		...(dto.notes !== undefined && dto.notes !== null ? { notes: dto.notes } : {}),
 	};
 }
 
@@ -111,7 +115,42 @@ export async function createDeploymentOrder(
 	return mapDeploymentOrderDTO(result);
 }
 
-export async function getDeploymentOrderByIncidentId(incidentId: number): Promise<DeploymentOrder> {
-	const dto = await deploymentOrderApi.get<DeploymentOrderDTO>(`/incident/${incidentId}`);
-	return mapDeploymentOrderDTO(dto);
+export async function getDeploymentOrderByIncidentId(
+	incidentId: number
+): Promise<DeploymentOrder[]> {
+	try {
+		const response = await deploymentOrderApi.get<DeploymentOrderDTO | DeploymentOrderDTO[]>(
+			`/incident/${incidentId}`
+		);
+
+		// If the response is null, undefined, or empty, return empty array
+		if (!response) {
+			return [];
+		}
+
+		// Handle array response - return all deployment orders
+		if (Array.isArray(response)) {
+			if (response.length === 0) {
+				return [];
+			}
+
+			// Sort by date (most recent first) and return all
+			const sortedOrders = response.sort(
+				(a, b) => new Date(b.orderedAt).getTime() - new Date(a.orderedAt).getTime()
+			);
+
+			return sortedOrders.map(order => mapDeploymentOrderDTO(order));
+		}
+
+		// Handle single object response
+		return [mapDeploymentOrderDTO(response)];
+	} catch (error: unknown) {
+		// If no deployment order exists (404), return empty array instead of throwing
+		const apiError = error as { status?: number };
+		if (apiError.status === 404) {
+			return [];
+		}
+		// Re-throw other errors
+		throw error;
+	}
 }

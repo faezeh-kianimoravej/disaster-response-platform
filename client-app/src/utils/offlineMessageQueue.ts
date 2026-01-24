@@ -69,10 +69,27 @@ class OfflineMessageQueue {
 		this.onlineListenerAdded = true;
 	}
 
-	addMessage(message: Omit<QueuedMessage, 'id' | 'attempts' | 'status'>): QueuedMessage {
+	addMessage(
+		message: Omit<QueuedMessage, 'id' | 'attempts' | 'status'>,
+		messageId?: string
+	): QueuedMessage {
+		// Check for duplicates based on content, chatGroupId, userId and recent timestamp
+		const existing = this.queue.find(
+			msg =>
+				msg.content === message.content &&
+				msg.chatGroupId === message.chatGroupId &&
+				msg.userId === message.userId &&
+				Math.abs(msg.timestamp.getTime() - message.timestamp.getTime()) < 30000 // Within 30 seconds
+		);
+
+		if (existing) {
+			// Duplicate message found - return existing
+			return existing;
+		}
+
 		const queuedMessage: QueuedMessage = {
 			...message,
-			id: `queued-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+			id: messageId || `queued-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
 			attempts: 0,
 			status: navigator.onLine ? 'sending' : 'pending',
 		};
@@ -118,13 +135,35 @@ class OfflineMessageQueue {
 		this.isProcessing = true;
 
 		try {
+			// Get unique pending messages (deduplicate)
 			const pendingMessages = this.queue.filter(
 				msg => msg.status === 'pending' || msg.status === 'failed'
 			);
 
-			// Processing pending messages
+			// Remove duplicates based on content, chatGroupId, userId, and close timestamp
+			const uniqueMessages = pendingMessages.filter((msg, index, arr) => {
+				return !arr.some(
+					(otherMsg, otherIndex) =>
+						otherIndex < index &&
+						otherMsg.content === msg.content &&
+						otherMsg.chatGroupId === msg.chatGroupId &&
+						otherMsg.userId === msg.userId &&
+						Math.abs(otherMsg.timestamp.getTime() - msg.timestamp.getTime()) < 10000 // Within 10 seconds
+				);
+			});
 
-			for (const message of pendingMessages) {
+			// Remove duplicates from queue
+			if (uniqueMessages.length < pendingMessages.length) {
+				pendingMessages.forEach(msg => {
+					if (!uniqueMessages.includes(msg)) {
+						this.removeMessage(msg.id);
+					}
+				});
+			}
+
+			// Processing unique pending messages
+
+			for (const message of uniqueMessages) {
 				if (!navigator.onLine) {
 					// Stopping queue processing - went offline
 					break;
@@ -241,8 +280,8 @@ export function useOfflineMessageQueue() {
 		queue,
 		pendingCount,
 		failedCount,
-		addMessage: (message: Omit<QueuedMessage, 'id' | 'attempts' | 'status'>) =>
-			offlineMessageQueue.addMessage(message),
+		addMessage: (message: Omit<QueuedMessage, 'id' | 'attempts' | 'status'>, messageId?: string) =>
+			offlineMessageQueue.addMessage(message, messageId),
 		retryFailed: () => offlineMessageQueue.retryFailed(),
 		clearQueue: () => offlineMessageQueue.clearQueue(),
 	};

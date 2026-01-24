@@ -87,6 +87,10 @@ describe('DeploymentOrder API (contract)', () => {
 			expect.stringContaining('/deployment-orders/incident/123'),
 			{ params: undefined }
 		);
-		expect(r.incidentId).toBe(123);
+		expect(Array.isArray(r)).toBe(true);
+		expect(r.length).toBeGreaterThan(0);
+		if (r.length > 0) {
+			expect(r[0]?.incidentId).toBe(123);
+		}
 	});
 });

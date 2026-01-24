@@ -58,16 +58,22 @@ export default function MessageComposer({ onSend, textareaRef, incidentId }: Pro
 		onSend(trimmed, 'DEFAULT');
 		setText('');
 
+		const messageTimestamp = new Date();
+		const tempMessageId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
 		if (isOffline) {
 			// Add to offline queue when offline
-			addMessage({
-				chatGroupId: incidentId,
-				userId: userId,
-				content: trimmed,
-				type: 'DEFAULT',
-				timestamp: new Date(),
-				meta: { offline: true },
-			});
+			addMessage(
+				{
+					chatGroupId: incidentId,
+					userId: userId,
+					content: trimmed,
+					type: 'DEFAULT',
+					timestamp: messageTimestamp,
+					meta: { offline: true },
+				},
+				tempMessageId
+			);
 		} else {
 			// Send immediately when online
 			sendMessageMutation(
@@ -79,19 +85,29 @@ export default function MessageComposer({ onSend, textareaRef, incidentId }: Pro
 				},
 				{
 					onSuccess: () => {
+						// Message sent successfully - no need to queue
 						setTimeout(() => usedRef.current?.focus(), 0);
 					},
-					onError: () => {
-						// If send fails while "online", add to queue as fallback
-						// Send failed, adding to offline queue
-						addMessage({
-							chatGroupId: incidentId,
-							userId: userId,
-							content: trimmed,
-							type: 'DEFAULT',
-							timestamp: new Date(),
-							meta: { failedSend: true },
-						});
+					onError: error => {
+						// Only add to queue if it's a network error, not server error
+						const isNetworkError =
+							!error || error.message?.includes('fetch') || error.message?.includes('network');
+
+						if (isNetworkError) {
+							// Network failed, add to offline queue for retry
+							addMessage(
+								{
+									chatGroupId: incidentId,
+									userId: userId,
+									content: trimmed,
+									type: 'DEFAULT',
+									timestamp: messageTimestamp,
+									meta: { failedSend: true },
+								},
+								tempMessageId
+							);
+						}
+						// Don't queue server errors (400, 401, etc.) as they won't succeed on retry
 					},
 				}
 			);
