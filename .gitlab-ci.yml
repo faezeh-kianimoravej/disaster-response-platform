@@ -62,7 +62,7 @@ validate:version:
   needs:
     - job: validate:version
       artifacts: true
-    - job: test:backend-app
+    - job: integration:backend-app
       artifacts: true
     - job: test:frontend
       artifacts: true
@@ -257,7 +257,7 @@ image:frontend:
   needs:
     - job: validate:version
       artifacts: true
-    - job: test:backend-app
+    - job: integration:backend-app
       artifacts: true
     - job: test:frontend
       artifacts: true
